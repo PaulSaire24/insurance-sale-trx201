@@ -1,0 +1,12 @@
+{
+    "component": "r2artifact",
+    "repoName": "insurance-sale-trx201",
+    "uuaa": "rbvd",
+    "slave_label": "apx",
+    "extra_properties": null,
+    "apxrepoBranch": "master",
+    "componentPaaSId": "insurance-sale-trx201",
+    "appPaaSId": "rbvd",
+    "proyectPaaSId": "pe.rbvd.app-id-105529.dsg",
+    "resource_type": "du_online"
+}
