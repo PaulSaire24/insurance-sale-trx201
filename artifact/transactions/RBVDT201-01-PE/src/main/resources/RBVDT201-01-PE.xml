@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<transaction xmlns="http://www.w3schools.com" transactionName="RBVDT201" application="RBVD" version="01" country="PE" language="ES">
+	<paramsIn>
+		<parameter order="1" name="quotationId" mandatory="0" type="String" size="20"/>
+		<parameter order="2" name="productId" mandatory="0" type="String" size="40"/>
+		<dto order="3" name="productPlan" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.PolicyProductPlan" artifactId="RBVDC201">
+			<parameter order="1" name="id" mandatory="1" type="String" size="10"/>
+		</dto>
+		<dto order="4" name="paymentMethod" mandatory="1" package="com.bbva.pisd.dto.insurance.policy.PolicyPaymentMethodDTO" artifactId="RBVDC201">
+			<parameter order="1" name="paymentType" mandatory="1" type="String" size="30"/>
+			<list order="2" name="relatedContracts" mandatory="1">
+				<dto order="1" name="Type" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.RelatedContractDTO" artifactId="RBVDC201">
+					<parameter order="1" name="contractId" mandatory="1" type="String" size="20"/>
+					<parameter order="2" name="number" mandatory="0" type="String" size="20"/>
+					<dto order="3" name="product" mandatory="1" package="com.bbva.pisd.dto.insurance.policy.RelatedContractProductDTO" artifactId="RBVDC201">
+						<parameter order="1" name="id" mandatory="1" type="String" size="30"/>
+					</dto>
+				</dto>
+			</list>
+			<parameter order="3" name="installmentFrequency" mandatory="1" type="String" size="20"/>
+		</dto>
+		<dto order="5" name="validityPeriod" mandatory="0" package="com.bbva.pisd.dto.insurance.commons.ValidityPeriodDTO" artifactId="RBVDC201">
+			<parameter order="1" name="startDate" mandatory="1" type="Date (YYYY-MM-DD)" size="0"/>
+		</dto>
+		<dto order="6" name="totalAmount" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.TotalAmountDTO" artifactId="RBVDC201">
+			<parameter order="1" name="amount" mandatory="1" type="Double" size="15"/>
+			<parameter order="2" name="currency" mandatory="1" type="String" size="3"/>
+		</dto>
+		<dto order="7" name="insuredAmount" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.InsuredAmountDTO" artifactId="RBVDC201">
+			<parameter order="1" name="amount" mandatory="1" type="Double" size="15"/>
+			<parameter order="2" name="currency" mandatory="1" type="String" size="3"/>
+		</dto>
+		<parameter order="8" name="isDataTreatment" mandatory="1" type="Boolean" size="0"/>
+		<dto order="9" name="holder" mandatory="0" package="com.bbva.pisd.dto.insurance.commons.HolderDTO" artifactId="RBVDC201">
+			<parameter order="1" name="id" mandatory="0" type="String" size="8"/>
+			<dto order="2" name="identityDocument" mandatory="1" package="com.bbva.pisd.dto.insurance.commons.IdentityDocumentDTO" artifactId="RBVDC201">
+				<dto order="1" name="documentType" mandatory="1" package="com.bbva.pisd.dto.insurance.commons.DocumentTypeDTO" artifactId="RBVDC201">
+					<parameter order="1" name="id" mandatory="1" type="String" size="30"/>
+				</dto>
+				<parameter order="2" name="number" mandatory="1" type="String" size="11"/>
+			</dto>
+			<list order="3" name="contactDetails" mandatory="0">
+				<dto order="1" name="Type" mandatory="0" package="com.bbva.pisd.dto.insurance.commons.ContactDetailDTO" artifactId="RBVDC201">
+					<dto order="1" name="contact" mandatory="1" package="com.bbva.pisd.dto.insurance.commons.ContactDTO" artifactId="RBVDC201">
+						<parameter order="1" name="contactDetailType" mandatory="1" type="String" size="30"/>
+						<parameter order="2" name="address" mandatory="1" type="String" size="100"/>
+						<parameter order="3" name="phoneNumber" mandatory="1" type="String" size="40"/>
+					</dto>
+				</dto>
+			</list>
+		</dto>
+		<list order="10" name="relatedContracts" mandatory="0">
+			<dto order="1" name="Type" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.RelatedContractDTO" artifactId="RBVDC201">
+				<dto order="1" name="relationType" mandatory="1" package="com.bbva.pisd.dto.insurance.policy.RelationTypeDTO" artifactId="RBVDC201">
+					<parameter order="1" name="id" mandatory="1" type="String" size="50"/>
+				</dto>
+				<dto order="2" name="contractDetails" mandatory="1" package="com.bbva.pisd.dto.insurance.policy.ContractDetailsDTO" artifactId="RBVDC201">
+					<parameter order="1" name="contractType" mandatory="1" type="String" size="50"/>
+					<parameter order="2" name="contractId" mandatory="1" type="String" size="30"/>
+					<dto order="3" name="numberType" mandatory="1" package="com.bbva.pisd.dto.insurance.policy.NumberTypeDTO" artifactId="RBVDC201">
+						<parameter order="1" name="id" mandatory="1" type="String" size="30"/>
+					</dto>
+					<parameter order="4" name="number" mandatory="1" type="String" size="30"/>
+				</dto>
+			</dto>
+		</list>
+		<dto order="11" name="installmentPlan" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.PolicyInstallmentPlanDTO" artifactId="RBVDC201">
+			<parameter order="1" name="startDate" mandatory="1" type="Date (YYYY-MM-DD)" size="0"/>
+			<parameter order="2" name="maturityDate" mandatory="0" type="Date (YYYY-MM-DD)" size="0"/>
+			<dto order="3" name="period" mandatory="1" package="com.bbva.pisd.dto.insurance.commons.PaymentPeriodDTO" artifactId="RBVDC201">
+				<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+			</dto>
+			<dto order="4" name="paymentAmount" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.PaymentAmountDTO" artifactId="RBVDC201">
+				<parameter order="1" name="amount" mandatory="1" type="Double" size="15"/>
+				<parameter order="2" name="currency" mandatory="1" type="String" size="3"/>
+			</dto>
+			<parameter order="5" name="totalNumberInstallments" mandatory="0" type="Long" size="4"/>
+		</dto>
+		<parameter order="12" name="hasAcceptedContract" mandatory="0" type="Boolean" size="0"/>
+		<dto order="13" name="inspection" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.PolicyInspectionDTO" artifactId="RBVDC201">
+			<parameter order="1" name="isRequired" mandatory="0" type="Boolean" size="0"/>
+			<list order="2" name="contactDetails" mandatory="0">
+				<dto order="1" name="Type" mandatory="0" package="com.bbva.pisd.dto.insurance.commons.ContactDetailDTO" artifactId="RBVDC201">
+					<dto order="1" name="contact" mandatory="1" package="com.bbva.pisd.dto.insurance.commons.ContactDTO" artifactId="RBVDC201">
+						<parameter order="1" name="contactDetailType" mandatory="1" type="String" size="30"/>
+						<parameter order="2" name="address" mandatory="1" type="String" size="100"/>
+						<parameter order="3" name="phoneNumber" mandatory="1" type="String" size="40"/>
+					</dto>
+				</dto>
+			</list>
+			<parameter order="3" name="fullName" mandatory="0" type="String" size="80"/>
+		</dto>
+		<dto order="14" name="firstInstallment" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.FirstInstallmentDTO" artifactId="RBVDC201">
+			<parameter order="1" name="isPaymentRequired" mandatory="0" type="Boolean" size="0"/>
+			<dto order="2" name="paymentAmount" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.PaymentAmountDTO" artifactId="RBVDC201">
+				<parameter order="1" name="amount" mandatory="1" type="Double" size="15"/>
+				<parameter order="2" name="currency" mandatory="1" type="String" size="3"/>
+			</dto>
+		</dto>
+		<list order="15" name="participants" mandatory="0">
+			<dto order="1" name="Type" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.ParticipantDTO" artifactId="RBVDC201">
+				<dto order="1" name="identityDocument" mandatory="0" package="com.bbva.pisd.dto.insurance.commons.IdentityDocumentDTO" artifactId="RBVDC201">
+					<dto order="1" name="documentType" mandatory="1" package="com.bbva.pisd.dto.insurance.commons.DocumentTypeDTO" artifactId="RBVDC201">
+						<parameter order="1" name="id" mandatory="1" type="String" size="30"/>
+					</dto>
+					<parameter order="2" name="number" mandatory="1" type="String" size="11"/>
+				</dto>
+				<dto order="2" name="participantType" mandatory="1" package="com.bbva.pisd.dto.insurance.policy.ParticipantTypeDTO" artifactId="RBVDC201">
+					<parameter order="1" name="id" mandatory="1" type="String" size="50"/>
+				</dto>
+				<parameter order="3" name="customerId" mandatory="0" type="String" size="8"/>
+				<parameter order="4" name="startDate" mandatory="0" type="Date (YYYY-MM-DD)" size="0"/>
+				<parameter order="5" name="endDate" mandatory="0" type="Date (YYYY-MM-DD)" size="0"/>
+				<dto order="6" name="relationship" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.RelationshipDTO" artifactId="RBVDC201">
+					<parameter order="1" name="id" mandatory="1" type="String" size="30"/>
+				</dto>
+				<parameter order="7" name="benefitPercentage" mandatory="0" type="Double" size="10"/>
+				<dto order="8" name="benefitAmount" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.BenefitAmountDTO" artifactId="RBVDC201">
+					<parameter order="1" name="amount" mandatory="1" type="Double" size="15"/>
+					<parameter order="2" name="currency" mandatory="1" type="String" size="3"/>
+				</dto>
+				<parameter order="9" name="fullName" mandatory="0" type="String" size="80"/>
+			</dto>
+		</list>
+		<dto order="16" name="businessAgent" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.BusinessAgentDTO" artifactId="RBVDC201">
+			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+		</dto>
+		<dto order="17" name="promoter" mandatory="0" package="com.bbva.pisd.dto.insurance.policy.PromoterDTO" artifactId="RBVDC201">
+			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+		</dto>
+		<dto order="18" name="bank" mandatory="0" package="com.bbva.pisd.dto.insurance.commons.BankDTO" artifactId="RBVDC201">
+			<parameter order="1" name="id" mandatory="1" type="String" size="8"/>
+			<dto order="2" name="branch" mandatory="1" package="com.bbva.pisd.dto.insurance.commons.BranchDTO" artifactId="RBVDC201">
+				<parameter order="1" name="id" mandatory="1" type="String" size="8"/>
+			</dto>
+		</dto>
+		<parameter order="19" name="identityVerificationCode" mandatory="0" type="String" size="15"/>
+		<dto order="20" name="insuranceCompany" mandatory="0" package="com.bbva.pisd.dto.insurance.commons.InsuranceCompanyDTO" artifactId="RBVDC201">
+			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+		</dto>
+	</paramsIn>
+	<paramsOut>
+		<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+	</paramsOut>
+	<description>Trx to create a policy</description>
+</transaction>
