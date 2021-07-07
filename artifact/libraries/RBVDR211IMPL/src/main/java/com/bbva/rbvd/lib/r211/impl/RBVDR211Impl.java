@@ -1,7 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl;
 
 import com.bbva.apx.exception.business.BusinessException;
-import com.bbva.pisd.dto.insurance.dao.InsuranceProductModalityDAO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
@@ -42,6 +41,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			Map<String, Object> productModality = validateResponseQueryInsuranceProductModality(responseQueryInsuranceProductModality);
 
+			Map<String, Object> responseContainingRimacQuotation = this.pisdR012.executeRegisterAdditionalCompanyQuotaId(requestBody.getQuotationId());
+
+			String rimacQuotationId = (String) responseContainingRimacQuotation.get(RBVDProperties.FIELD_INSURANCE_COMPANY_QUOTA_ID.getValue());
+
 			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
 
 			//TENGO QUE VALIDAR QUE ASO ME HAYA RESPONDIDO CORRECTAMENTE!
@@ -50,7 +53,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			String secondParticularDataValue = createSecondDataValue(asoResponse);
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), secondParticularDataValue, requestBody.getSaleChannelId());
 
-			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, requestBody.getQuotationId(), requestBody.getTraceId());
+			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, rimacQuotationId, requestBody.getTraceId());
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody,
 					insuranceProductDao.getInsuranceProductId(), asoResponse.getData().getContractId());
@@ -97,6 +100,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			return responseBody;
 		} catch (BusinessException ex) {
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Business exception message: {} *****", ex.getMessage());
+			this.addAdvice(ex.getAdviceCode());
 			return null;
 		}
 
@@ -104,7 +108,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private InsuranceProductDAO validateResponseQueryInsuranceProduct(Map<String, Object> responseQueryInsuranceProduct) {
 		if(isEmpty(responseQueryInsuranceProduct)) {
-			RBVDValidation.build(RBVDErrors.INCORRECT_PRODUCT_ID);
+			throw RBVDValidation.build(RBVDErrors.INCORRECT_PRODUCT_ID);
 		}
 		InsuranceProductDAO insuranceProduct = new InsuranceProductDAO();
 		insuranceProduct.setInsuranceProductId((BigDecimal) responseQueryInsuranceProduct.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
@@ -114,7 +118,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private Map<String, Object> validateResponseQueryInsuranceProductModality(Map<String, Object> responseQueryInsuranceProductModality) {
 		List<Map<String, Object>> response = (List<Map<String, Object>>) responseQueryInsuranceProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
 		if(isEmpty(response)) {
-			RBVDValidation.build(RBVDErrors.INCORRECT_PLAN_ID);
+			throw RBVDValidation.build(RBVDErrors.INCORRECT_PLAN_ID);
 		}
 		return response.get(0);
 	}

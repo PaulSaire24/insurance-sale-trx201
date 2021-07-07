@@ -233,14 +233,12 @@ public class MapperHelperTest {
         assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.getPremiumAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount()), validation.getSettlePendingPremiumAmount());
         assertEquals(apxRequest.getInstallmentPlan().getPaymentAmount().getCurrency(), validation.getCurrencyId());
-        assertEquals("01/05/2022", validation.getLastInstallmentDate());
         assertEquals(BigDecimal.valueOf(apxRequest.getInsuredAmount().getAmount()), validation.getInsuredAmount());
         assertEquals("08", validation.getBeneficiaryType());
         assertEquals(BigDecimal.valueOf(0), validation.getRenewalNumber());
         assertEquals(N_VALUE, validation.getPolicyPymtPendDueDebtType());
         assertEquals(N_VALUE, validation.getCtrctDisputeStatusType());
         assertEquals("0241", validation.getContractPreviousBranchId());
-        assertEquals("01/07/2021", validation.getPeriodNextPaymentDate());
         assertEquals(N_VALUE, validation.getEndorsementPolicyIndType());
         assertEquals("PEN", validation.getInsrncCoContractStatusType());
         assertEquals("FOR", validation.getContractStatusId());
@@ -305,6 +303,7 @@ public class MapperHelperTest {
         when(contractDao.getDomicileContractId()).thenReturn("domicileContract");
         when(contractDao.getCardIssuingMarkType()).thenReturn(N_VALUE);
         when(contractDao.getIssuedReceiptNumber()).thenReturn(BigDecimal.valueOf(12));
+        when(contractDao.getValidityMonthsNumber()).thenReturn(BigDecimal.valueOf(12));
         when(contractDao.getPaymentFrequencyId()).thenReturn(BigDecimal.valueOf(1));
         when(contractDao.getPremiumAmount()).thenReturn(BigDecimal.valueOf(124.0));
         when(contractDao.getSettlePendingPremiumAmount()).thenReturn(BigDecimal.valueOf(124.0));
@@ -474,9 +473,7 @@ public class MapperHelperTest {
         assertEquals(apxRequest.getFirstInstallment().getPaymentAmount().getCurrency(), validation.getCurrencyId());
         assertEquals(currentDate, validation.getReceiptIssueDate());
         assertEquals(currentDate, validation.getReceiptStartDate());
-        assertEquals("01/06/2021", validation.getReceiptEndDate());
         assertEquals(currentDate, validation.getReceiptCollectionDate());
-        assertEquals("01/06/2021", validation.getReceiptExpirationDate());
         assertEquals(currentDate, validation.getReceiptsTransmissionDate());
         assertEquals("00", validation.getReceiptCollectionStatusType());
         assertEquals("T", validation.getPaymentMethodType());

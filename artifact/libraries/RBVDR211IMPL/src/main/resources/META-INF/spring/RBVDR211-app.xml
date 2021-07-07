@@ -3,6 +3,8 @@
 		http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 	<bean id="rbvdR211" class="com.bbva.rbvd.lib.r211.impl.RBVDR211Impl" parent="rbvdR211Abstract">
 		<property name="rbvdR201" ref="rbvdR201"/>
+		<property name="mapperHelper" ref="mapperHelper"/>
 		<property name="pisdR012" ref="pisdR012"/>
 	</bean>
+	<bean id="mapperHelper" class="com.bbva.rbvd.lib.r211.impl.util.MapperHelper" />
 </beans>

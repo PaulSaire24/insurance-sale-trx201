@@ -7,8 +7,7 @@
 	<bean id="rbvdR211Abstract" abstract="true" class="com.bbva.rbvd.lib.r211.impl.RBVDR211Abstract">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 	</bean>
-	<bean id="applicationConfigurationService" factory-bean="applicationConfigurationServiceFactory"
-		factory-method="getApplicationConfigurationService">
+	<bean id="applicationConfigurationService" factory-bean="applicationConfigurationServiceFactory" factory-method="getApplicationConfigurationService">
 		<constructor-arg type="org.osgi.framework.BundleContext" ref="bundleContext" />
 	</bean>
 </beans>
