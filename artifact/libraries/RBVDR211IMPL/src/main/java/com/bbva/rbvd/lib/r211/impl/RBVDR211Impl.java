@@ -1,25 +1,27 @@
 package com.bbva.rbvd.lib.r211.impl;
 
 import com.bbva.apx.exception.business.BusinessException;
+import com.bbva.pisd.dto.insurance.dao.InsuranceProductModalityDAO;
+import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
-import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
+import com.bbva.rbvd.dto.insrncsale.dao.*;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.util.*;
+
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211Impl.class);
-
-	private static final String ELECTRONIC_DELIVERY_VALUE = "S";
-	private static final String EMAIL_VALUE = "EMAIL";
-	private static final String PHONE_NUMBER_VALUE = "PHONE";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -30,25 +32,65 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		PolicyDTO responseBody = null;
 
 		try {
-			PolicyASO responseASO = rbvdR201.executePrePolicyEmissionASO(requestBody);
+			Map<String, Object> responseQueryInsuranceProduct = this.pisdR012.
+					executeInsuranceProduct(this.mapperHelper.insuranceProductFilterCreation(requestBody.getProductId()));
 
-			EmisionBO rimacRequest = createRequestBodyRimac(requestBody.getInspection());
-			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Rimac request body: {}", rimacRequest);
+			InsuranceProductDAO insuranceProductDao = validateResponseQueryInsuranceProduct(responseQueryInsuranceProduct);
 
-			String rimacQuotation = null;
+			Map<String, Object> responseQueryInsuranceProductModality = this.pisdR012.
+					executeInsuranceProductModality(this.mapperHelper.productModalityFiltersCreation(insuranceProductDao.getInsuranceProductId(), requestBody.getProductPlan().getId()));
 
-			EmisionBO rimacResponse = null;
+			Map<String, Object> productModality = validateResponseQueryInsuranceProductModality(responseQueryInsuranceProductModality);
 
-			if(Objects.nonNull(responseASO)) {
-				rimacQuotation = responseASO.getData().getExternalQuotationId();
-				rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, rimacQuotation, requestBody.getTraceId());
+			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
+
+			//TENGO QUE VALIDAR QUE ASO ME HAYA RESPONDIDO CORRECTAMENTE!
+
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building Rimac request *****");
+			String secondParticularDataValue = createSecondDataValue(asoResponse);
+			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), secondParticularDataValue, requestBody.getSaleChannelId());
+
+			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, requestBody.getQuotationId(), requestBody.getTraceId());
+
+			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody,
+					insuranceProductDao.getInsuranceProductId(), asoResponse.getData().getContractId());
+			contractDao.setValidityMonthsNumber((BigDecimal) productModality.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue()));
+			Map<String, Object> argumentsForSaveContract = this.mapperHelper.createSaveContractArguments(contractDao);
+			argumentsForSaveContract.forEach(
+					(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveContract parameter {} with value: {} *****", key, value));
+
+			this.pisdR012.executeSaveContract(argumentsForSaveContract);
+
+			InsuranceCtrReceiptsDAO receiptDao = this.mapperHelper.buildInsuranceCtrReceipt(asoResponse, rimacResponse, requestBody);
+			Map<String, Object> argumentsForSaveReceipt = this.mapperHelper.createSaveReceiptsArguments(receiptDao);
+			argumentsForSaveReceipt.forEach(
+					(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value));
+
+			this.pisdR012.executeSaveFirstReceipt(argumentsForSaveReceipt);
+
+			IsrcContractMovDAO contractMovDao = this.mapperHelper.buildIsrcContractMov(asoResponse, requestBody.getCreationUser(), requestBody.getUserAudit());
+			Map<String, Object> argumentsForContractMov = this.mapperHelper.createSaveContractMovArguments(contractMovDao);
+			argumentsForContractMov.forEach(
+					(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy | SaveContractMov parameter {} with value: {} *****", key, value));
+
+			this.pisdR012.executeSaveContractMove(argumentsForContractMov);
+
+			Map<String, Object> responseQueryRoles = this.pisdR012.executeGetRolesByProductAndModality(insuranceProductDao.getInsuranceProductId(), requestBody.getProductId());
+
+			if(!isEmpty((List) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue()))) {
+				List<IsrcContractParticipantDAO> participants = this.mapperHelper.buildIsrcContractParticipants(requestBody, responseQueryRoles, asoResponse.getData().getId());
+				Map<String, Object>[] arguments = new HashMap[participants.size()];
+				for(int i = 0; i < participants.size(); i++) {
+					arguments[i] = this.mapperHelper.createSaveParticipantArguments(participants.get(i));
+				}
+				Arrays.stream(arguments).forEach(
+						argumentsMap -> argumentsMap.forEach(
+								(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy | SaveParticipants parameter {} with value: {} *****", key, value)));
+				this.pisdR012.executeSaveParticipants(arguments);
 			}
 
-			if(Objects.nonNull(rimacResponse)) {
-				responseBody = new PolicyDTO();
-				responseBody.setId(rimacResponse.getPayload().getNumeroPoliza());
-			}
-
+			responseBody = new PolicyDTO();
+			responseBody.setId(asoResponse.getData().getId());
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Response: {}", responseBody);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy END *****");
 
@@ -60,32 +102,31 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	}
 
-	private EmisionBO createRequestBodyRimac(PolicyInspectionDTO inspection) {
-		EmisionBO rimacRequest = new EmisionBO();
-
-		PayloadEmisionBO payload = new PayloadEmisionBO();
-
-		ContactoInspeccionBO contactoInspeccion = new ContactoInspeccionBO();
-		contactoInspeccion.setNombre(inspection.getFullName());
-
-		ContactDetailDTO contactEmail = inspection.getContactDetails().stream().
-				filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(EMAIL_VALUE)).findFirst().orElse(null);
-
-		ContactDetailDTO contactPhone = inspection.getContactDetails().stream().
-				filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(PHONE_NUMBER_VALUE)).findFirst().orElse(null);
-
-		if(Objects.nonNull(contactEmail)) {
-			contactoInspeccion.setCorreo(contactEmail.getContact().getAddress());
+	private InsuranceProductDAO validateResponseQueryInsuranceProduct(Map<String, Object> responseQueryInsuranceProduct) {
+		if(isEmpty(responseQueryInsuranceProduct)) {
+			RBVDValidation.build(RBVDErrors.INCORRECT_PRODUCT_ID);
 		}
-		if(Objects.nonNull(contactPhone)) {
-			contactoInspeccion.setTelefono(contactPhone.getContact().getPhoneNumber());
-		}
-
-		payload.setContactoInspeccion(contactoInspeccion);
-		payload.setEnvioElectronico(ELECTRONIC_DELIVERY_VALUE);
-
-		rimacRequest.setPayload(payload);
-		return rimacRequest;
+		InsuranceProductDAO insuranceProduct = new InsuranceProductDAO();
+		insuranceProduct.setInsuranceProductId((BigDecimal) responseQueryInsuranceProduct.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
+		return insuranceProduct;
 	}
+
+	private Map<String, Object> validateResponseQueryInsuranceProductModality(Map<String, Object> responseQueryInsuranceProductModality) {
+		List<Map<String, Object>> response = (List<Map<String, Object>>) responseQueryInsuranceProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
+		if(isEmpty(response)) {
+			RBVDValidation.build(RBVDErrors.INCORRECT_PLAN_ID);
+		}
+		return response.get(0);
+	}
+
+	private String createSecondDataValue(PolicyASO asoResponse) {
+		RelatedContractDTO relatedContract = asoResponse.getData().getRelatedContracts().get(0);
+		String kindOfAccount = relatedContract.getProduct().getId().equals("CARD") ? "TARJETA" : "CUENTA";
+		int beginIndex = relatedContract.getNumber().length() - 4;
+		String accountNumber = "***".concat(relatedContract.getNumber().substring(beginIndex));
+		String accountCurrency = Objects.nonNull(asoResponse.getData().getFirstInstallment().getExchangeRate()) ? "PEN" : "USD";
+		return kindOfAccount.concat("||").concat(accountNumber).concat("||").concat(accountCurrency);
+	}
+
 
 }

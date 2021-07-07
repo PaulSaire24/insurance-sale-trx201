@@ -20,10 +20,14 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 	public void execute() {
 		LOGGER.info("RBVDT20101PETransaction - START");
 
+		RBVDR211 rbvdR211 = this.getServiceLibrary(RBVDR211.class);
+
 		String traceId = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.REQUESTID);
 		LOGGER.info("Cabecera traceId: {}", traceId);
-
-		RBVDR211 rbvdR211 = this.getServiceLibrary(RBVDR211.class);
+		String saleChannelId = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.CHANNELCODE);
+		LOGGER.info("Cabecera channel-code: {}", saleChannelId);
+		String user = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE);
+		LOGGER.info("Cabecera user-code: {}", user);
 
 		PolicyDTO requestBody = new PolicyDTO();
 		requestBody.setQuotationId(this.getQuotationid());
@@ -48,6 +52,9 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		requestBody.setInsuranceCompany(this.getInsurancecompany());
 
 		requestBody.setTraceId(traceId);
+		requestBody.setSaleChannelId(saleChannelId);
+		requestBody.setCreationUser(user);
+		requestBody.setUserAudit(user);
 
 		PolicyDTO responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
