@@ -5,6 +5,8 @@ import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.lib.r012.PISDR012;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
@@ -12,7 +14,6 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +25,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -51,7 +54,14 @@ public class RBVDR211Test {
 	private PolicyDTO requestBody;
 
 	private Map<String, Object> responseQueryInsuranceProduct;
+
 	private Map<String, Object> responseQueryProductModality;
+	private List<Map<String, Object>> modalities;
+	private Map<String, Object> modalityData;
+
+	private Map<String, Object> responseQueryGetInsuranceCompanyQuotaId;
+
+	private PolicyASO asoResponse;
 
 	@Before
 	public void setUp() throws IOException {
@@ -75,6 +85,12 @@ public class RBVDR211Test {
 		when(responseQueryInsuranceProduct.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
 
 		responseQueryProductModality = mock(Map.class);
+		modalities = mock(List.class);
+		modalityData = mock(Map.class);
+
+		responseQueryGetInsuranceCompanyQuotaId = mock(Map.class);
+
+		asoResponse = mockData.getEmisionASOResponse();
 	}
 
 	@Test
@@ -102,6 +118,35 @@ public class RBVDR211Test {
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INCORRECT_PLAN_ID.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWitContractInsertionError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWitContractInsertionError...");
+
+		when(pisdR012.executeInsuranceProduct(anyMap())).thenReturn(responseQueryInsuranceProduct);
+
+		when(modalityData.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue())).thenReturn(BigDecimal.valueOf(12));
+		when(modalities.get(0)).thenReturn(modalityData);
+		when(responseQueryProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(modalities);
+		when(pisdR012.executeInsuranceProductModality(anyMap())).thenReturn(responseQueryProductModality);
+
+		when(responseQueryGetInsuranceCompanyQuotaId.get(RBVDProperties.FIELD_INSURANCE_COMPANY_QUOTA_ID.getValue())).
+				thenReturn("58676a43-ba16-45b3-b626-48b1eba0581b");
+		when(pisdR012.executeRegisterAdditionalCompanyQuotaId(anyString())).thenReturn(responseQueryGetInsuranceCompanyQuotaId);
+
+		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
+
+		when(mapperHelper.buildInsuranceContract(anyObject(), anyObject(), any(), anyString())).thenReturn(new InsuranceContractDAO());
+
+		when(mapperHelper.createSaveContractArguments(anyObject())).thenReturn(new HashMap<>());
+
+		when(pisdR012.executeSaveContract(anyMap())).thenReturn(-1);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
 	}
 	
 }

@@ -33,6 +33,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	@Override
 	public PolicyASO executePrePolicyEmissionASO(PolicyDTO requestBody) {
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO START *****");
+		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO Request body: {}", JsonHelper.getInstance().toJsonString(requestBody));
 
 		PolicyASO responseBody = null;
 

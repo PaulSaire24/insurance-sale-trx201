@@ -1,21 +1,42 @@
 package com.bbva.rbvd.lib.r211.impl.util;
 
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
+
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
+
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
+
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
-import com.bbva.rbvd.dto.insrncsale.policy.*;
+
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.FirstInstallmentDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
+
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.*;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Date;
 
 public class MapperHelper {
 
@@ -153,17 +174,13 @@ public class MapperHelper {
             contractDao.setInsuranceContractEndDate(format.format(rimacResponse.getPayload().getFechaFinal()));
 
             int numeroCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().size();
-            Date fechaUltimaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
-                    stream().filter(cuota -> cuota.getCuota() == numeroCuotas).findFirst().get().getFechaVencimiento();
+            CuotaFinancimientoBO ultimaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
+                    stream().filter(cuota -> cuota.getCuota() == numeroCuotas).findFirst().orElse(null);
 
-            contractDao.setLastInstallmentDate(format.format(fechaUltimaCuota));
-
-            if(numeroCuotas == 1) {
-                contractDao.setPeriodNextPaymentDate(format.format(fechaUltimaCuota));
-            } else {
-                Date fechaSegundaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
-                        stream().filter(cuota -> cuota.getCuota() == 2).findFirst().get().getFechaVencimiento();
-                contractDao.setPeriodNextPaymentDate(format.format(fechaSegundaCuota));
+            if(Objects.nonNull(ultimaCuota)) {
+                contractDao.setLastInstallmentDate(format.format(ultimaCuota.getFechaVencimiento()));
+                contractDao.setPeriodNextPaymentDate((numeroCuotas == 1) ?
+                        format.format(ultimaCuota.getFechaVencimiento()) : getNextPaymentDate(rimacResponse));
             }
 
             contractDao.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
@@ -204,6 +221,16 @@ public class MapperHelper {
                 ? S_VALUE : N_VALUE);
         contractDao.setBiometryTransactionId(apxRequest.getIdentityVerificationCode());
         return contractDao;
+    }
+
+    private String getNextPaymentDate(EmisionBO rimacResponse) {
+        String nextPaymentDate = null;
+        CuotaFinancimientoBO segundaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
+                stream().filter(cuota -> cuota.getCuota() == 2).findFirst().orElse(null);
+        if(Objects.nonNull(segundaCuota)) {
+            nextPaymentDate = format.format(segundaCuota.getFechaVencimiento());
+        }
+        return nextPaymentDate;
     }
 
     public Map<String, Object> createSaveContractArguments(InsuranceContractDAO contractDao) {
@@ -310,10 +337,12 @@ public class MapperHelper {
         receiptDao.setGlBranchId(asoResponse.getData().getId().substring(4, 8));
 
         if(Objects.nonNull(rimacResponse)) {
-            Date endDate = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
-                    filter(cuota -> cuota.getCuota() == 1).findFirst().get().getFechaVencimiento();
-            receiptDao.setReceiptEndDate(format.format(endDate));
-            receiptDao.setReceiptExpirationDate(format.format(endDate));
+            CuotaFinancimientoBO primeraCuota = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
+                    filter(cuota -> cuota.getCuota() == 1).findFirst().orElse(null);
+            if(Objects.nonNull(primeraCuota)) {
+                receiptDao.setReceiptEndDate(format.format(primeraCuota.getFechaVencimiento()));
+                receiptDao.setReceiptExpirationDate(format.format(primeraCuota.getFechaVencimiento()));
+            }
         } else {
             receiptDao.setReceiptEndDate(currentDate);
             receiptDao.setReceiptExpirationDate(currentDate);

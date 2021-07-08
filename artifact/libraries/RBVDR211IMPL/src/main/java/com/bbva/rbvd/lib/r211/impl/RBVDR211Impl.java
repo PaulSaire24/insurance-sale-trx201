@@ -4,17 +4,30 @@ import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.dao.*;
+
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceProductDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
+
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.*;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Arrays;
+import java.util.Objects;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -56,27 +69,27 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, rimacQuotationId, requestBody.getTraceId());
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody,
-					insuranceProductDao.getInsuranceProductId(), asoResponse.getData().getContractId());
+					insuranceProductDao.getInsuranceProductId(), asoResponse.getData().getId());
 			contractDao.setValidityMonthsNumber((BigDecimal) productModality.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue()));
 			Map<String, Object> argumentsForSaveContract = this.mapperHelper.createSaveContractArguments(contractDao);
 			argumentsForSaveContract.forEach(
 					(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveContract parameter {} with value: {} *****", key, value));
 
-			this.pisdR012.executeSaveContract(argumentsForSaveContract);
+			validateInsertion(this.pisdR012.executeSaveContract(argumentsForSaveContract), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
 
 			InsuranceCtrReceiptsDAO receiptDao = this.mapperHelper.buildInsuranceCtrReceipt(asoResponse, rimacResponse, requestBody);
 			Map<String, Object> argumentsForSaveReceipt = this.mapperHelper.createSaveReceiptsArguments(receiptDao);
 			argumentsForSaveReceipt.forEach(
 					(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value));
 
-			this.pisdR012.executeSaveFirstReceipt(argumentsForSaveReceipt);
+			validateInsertion(this.pisdR012.executeSaveFirstReceipt(argumentsForSaveReceipt), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
 
 			IsrcContractMovDAO contractMovDao = this.mapperHelper.buildIsrcContractMov(asoResponse, requestBody.getCreationUser(), requestBody.getUserAudit());
 			Map<String, Object> argumentsForContractMov = this.mapperHelper.createSaveContractMovArguments(contractMovDao);
 			argumentsForContractMov.forEach(
 					(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy | SaveContractMov parameter {} with value: {} *****", key, value));
 
-			this.pisdR012.executeSaveContractMove(argumentsForContractMov);
+			validateInsertion(this.pisdR012.executeSaveContractMove(argumentsForContractMov), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_MOV_TABLE);
 
 			Map<String, Object> responseQueryRoles = this.pisdR012.executeGetRolesByProductAndModality(insuranceProductDao.getInsuranceProductId(), requestBody.getProductId());
 
@@ -89,7 +102,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				Arrays.stream(arguments).forEach(
 						argumentsMap -> argumentsMap.forEach(
 								(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy | SaveParticipants parameter {} with value: {} *****", key, value)));
-				this.pisdR012.executeSaveParticipants(arguments);
+				validateInsertionParticipants(this.pisdR012.executeSaveParticipants(arguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
 			}
 
 			responseBody = new PolicyDTO();
@@ -123,8 +136,20 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		return response.get(0);
 	}
 
+	private void validateInsertion(int insertedRows, RBVDErrors error) {
+		if(insertedRows != 1) {
+			throw RBVDValidation.build(error);
+		}
+	}
+
+	private void validateInsertionParticipants(int[] executeSaveParticipants, RBVDErrors error) {
+		if(Objects.isNull(executeSaveParticipants) || executeSaveParticipants.length == 0) {
+			throw RBVDValidation.build(error);
+		}
+	}
+
 	private String createSecondDataValue(PolicyASO asoResponse) {
-		RelatedContractDTO relatedContract = asoResponse.getData().getRelatedContracts().get(0);
+		RelatedContractDTO relatedContract = asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0);
 		String kindOfAccount = relatedContract.getProduct().getId().equals("CARD") ? "TARJETA" : "CUENTA";
 		int beginIndex = relatedContract.getNumber().length() - 4;
 		String accountNumber = "***".concat(relatedContract.getNumber().substring(beginIndex));
