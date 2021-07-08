@@ -6,6 +6,7 @@ import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.elara.utility.api.connector.APIConnector;
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 import com.bbva.pisd.lib.r014.PISDR014;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
@@ -75,7 +76,7 @@ public class RBVDR201Test {
 
 		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new RestClientException(MESSAGE_EXCEPTION));
 
-		PolicyASO validation = rbvdr201.executePrePolicyEmissionASO(new PolicyDTO());
+		PolicyASO validation = rbvdr201.executePrePolicyEmissionASO(new DataASO());
 
 		assertNull(validation);
 	}
@@ -88,7 +89,7 @@ public class RBVDR201Test {
 
 		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenReturn(responseBody);
 
-		PolicyASO validation = rbvdr201.executePrePolicyEmissionASO(new PolicyDTO());
+		PolicyASO validation = rbvdr201.executePrePolicyEmissionASO(new DataASO());
 
 		assertNotNull(validation);
 		assertNotNull(validation.getData());

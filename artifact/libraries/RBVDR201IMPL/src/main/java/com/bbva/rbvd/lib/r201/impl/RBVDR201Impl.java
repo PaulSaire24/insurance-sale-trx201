@@ -1,6 +1,7 @@
 package com.bbva.rbvd.lib.r201.impl;
 
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
@@ -31,13 +32,13 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	private static final String TRACE_ID_HEADER = "traceId";
 
 	@Override
-	public PolicyASO executePrePolicyEmissionASO(PolicyDTO requestBody) {
+	public PolicyASO executePrePolicyEmissionASO(DataASO requestBody) {
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO START *****");
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO Request body: {}", JsonHelper.getInstance().toJsonString(requestBody));
 
 		PolicyASO responseBody = null;
 
-		HttpEntity<PolicyDTO> entity = new HttpEntity<>(requestBody, createHttpHeaders());
+		HttpEntity<DataASO> entity = new HttpEntity<>(requestBody, createHttpHeaders());
 
 		try {
 			responseBody = this.internalApiConnector.postForObject(ID_API_INSURANCES_CREATE_INSURANCE_ASO, entity, PolicyASO.class);

@@ -1,6 +1,10 @@
 package com.bbva.rbvd.util;
 
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.DetailASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.FactorASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
@@ -77,7 +81,7 @@ public class MapperHelperTest {
 
     @Test
     public void buildAsoRequest_OK() {
-        PolicyDTO validation = mapperHelper.buildAsoRequest(apxRequest);
+        DataASO validation = mapperHelper.buildAsoRequest(apxRequest);
 
         assertNotNull(validation.getQuotationId());
         assertNotNull(validation.getProductId());
@@ -492,9 +496,9 @@ public class MapperHelperTest {
         assertEquals(apxRequest.getBank().getBranch().getId(), validation.getLastChangeBranchId());
         assertEquals("0241", validation.getGlBranchId());
 
-        ExchangeRateDTO exchangeRate = new ExchangeRateDTO();
-        DetailDTO detail = new DetailDTO();
-        FactorDTO factor = new FactorDTO();
+        ExchangeRateASO exchangeRate = new ExchangeRateASO();
+        DetailASO detail = new DetailASO();
+        FactorASO factor = new FactorASO();
         factor.setRatio(3.93);
         factor.setValue(550.2);
         detail.setFactor(factor);

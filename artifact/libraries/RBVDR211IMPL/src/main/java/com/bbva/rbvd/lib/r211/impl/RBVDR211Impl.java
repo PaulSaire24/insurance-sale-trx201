@@ -2,6 +2,7 @@ package com.bbva.rbvd.lib.r211.impl;
 
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
@@ -12,7 +13,6 @@ import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
@@ -149,7 +149,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	}
 
 	private String createSecondDataValue(PolicyASO asoResponse) {
-		RelatedContractDTO relatedContract = asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0);
+		RelatedContractASO relatedContract = asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0);
 		String kindOfAccount = relatedContract.getProduct().getId().equals("CARD") ? "TARJETA" : "CUENTA";
 		int beginIndex = relatedContract.getNumber().length() - 4;
 		String accountNumber = "***".concat(relatedContract.getNumber().substring(beginIndex));

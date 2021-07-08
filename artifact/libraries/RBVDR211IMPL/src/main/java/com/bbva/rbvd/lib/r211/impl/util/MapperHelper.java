@@ -2,7 +2,8 @@ package com.bbva.rbvd.lib.r211.impl.util;
 
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
-import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.aso.*;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.*;
 
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
@@ -71,47 +72,126 @@ public class MapperHelper {
         return filters;
     }
 
-    public PolicyDTO buildAsoRequest(PolicyDTO apxRequest) {
-        PolicyDTO requestAso = new PolicyDTO();
+    public DataASO buildAsoRequest(PolicyDTO apxRequest) {
+        DataASO requestAso = new DataASO();
+
         requestAso.setQuotationId(apxRequest.getQuotationId());
         requestAso.setProductId(apxRequest.getProductId());
-        requestAso.setProductPlan(apxRequest.getProductPlan());
 
-        PolicyPaymentMethodDTO paymentMethod = new PolicyPaymentMethodDTO();
+        ProductPlanASO productPlan = new ProductPlanASO();
+        productPlan.setId(apxRequest.getProductPlan().getId());
+        requestAso.setProductPlan(productPlan);
+
+        PaymentMethodASO paymentMethod = new PaymentMethodASO();
+
+        RelatedContractASO paymentRelatedContract = new RelatedContractASO();
+
+        RelatedContractProductASO product = new RelatedContractProductASO();
+        product.setId(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId());
+        paymentRelatedContract.setProduct(product);
+        paymentRelatedContract.setNumber(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getNumber());
+
+        paymentMethod.setRelatedContracts(Collections.singletonList(paymentRelatedContract));
         paymentMethod.setPaymentType(apxRequest.getPaymentMethod().getPaymentType());
         paymentMethod.setInstallmentFrequency(apxRequest.getPaymentMethod().getInstallmentFrequency());
-        RelatedContractDTO paymentRelatedContract = new RelatedContractDTO();
-        paymentRelatedContract.setNumber(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getNumber());
-        paymentRelatedContract.setProduct(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getProduct());
-        paymentMethod.setRelatedContracts(Collections.singletonList(paymentRelatedContract));
-
         requestAso.setPaymentMethod(paymentMethod);
-        requestAso.setValidityPeriod(apxRequest.getValidityPeriod());
-        requestAso.setTotalAmount(apxRequest.getTotalAmount());
-        requestAso.setInsuredAmount(apxRequest.getInsuredAmount());
 
-        HolderDTO holder = new HolderDTO();
+        ValidityPeriodASO validityPeriod = new ValidityPeriodASO();
+        validityPeriod.setStartDate(apxRequest.getValidityPeriod().getStartDate());
+
+        requestAso.setValidityPeriod(validityPeriod);
+
+        TotalAmountASO totalAmount = new TotalAmountASO();
+        totalAmount.setAmount(apxRequest.getTotalAmount().getAmount());
+        totalAmount.setCurrency(apxRequest.getTotalAmount().getCurrency());
+
+        requestAso.setTotalAmount(totalAmount);
+
+        InsuredAmountASO insuredAmount = new InsuredAmountASO();
+        insuredAmount.setAmount(apxRequest.getInsuredAmount().getAmount());
+        insuredAmount.setCurrency(apxRequest.getInsuredAmount().getCurrency());
+
+        requestAso.setInsuredAmount(insuredAmount);
+
+        HolderASO holder = new HolderASO();
+
+        IdentityDocumentASO identityDocument = new IdentityDocumentASO();
+        DocumentTypeASO documentType = new DocumentTypeASO();
+        documentType.setId(apxRequest.getHolder().getIdentityDocument().getDocumentType().getId());
+        identityDocument.setDocumentType(documentType);
+        identityDocument.setNumber(apxRequest.getHolder().getIdentityDocument().getNumber());
+
+        holder.setIdentityDocument(identityDocument);
         holder.setId(apxRequest.getHolder().getId());
-        holder.setIdentityDocument(apxRequest.getHolder().getIdentityDocument());
 
         requestAso.setHolder(holder);
-        requestAso.setInstallmentPlan(apxRequest.getInstallmentPlan());
 
-        FirstInstallmentDTO firstInstallment = new FirstInstallmentDTO();
+        InstallmentPlanASO installmentPlan = new InstallmentPlanASO();
+        installmentPlan.setStartDate(apxRequest.getInstallmentPlan().getStartDate());
+        installmentPlan.setMaturityDate(apxRequest.getInstallmentPlan().getMaturityDate());
+        installmentPlan.setTotalNumberInstallments(apxRequest.getInstallmentPlan().getTotalNumberInstallments());
+
+        PaymentPeriodASO period = new PaymentPeriodASO();
+        period.setId(apxRequest.getInstallmentPlan().getPeriod().getId());
+
+        installmentPlan.setPeriod(period);
+
+        PaymentAmountASO paymentAmount = new PaymentAmountASO();
+        paymentAmount.setAmount(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount());
+        paymentAmount.setCurrency(apxRequest.getInstallmentPlan().getPaymentAmount().getCurrency());
+
+        installmentPlan.setPaymentAmount(paymentAmount);
+
+        requestAso.setInstallmentPlan(installmentPlan);
+
+        FirstInstallmentASO firstInstallment = new FirstInstallmentASO();
         firstInstallment.setIsPaymentRequired(apxRequest.getFirstInstallment().getIsPaymentRequired());
 
         requestAso.setFirstInstallment(firstInstallment);
 
-        ParticipantDTO participant = new ParticipantDTO();
-        participant.setParticipantType(apxRequest.getParticipants().get(0).getParticipantType());
+        ParticipantASO participant = new ParticipantASO();
+
+        ParticipantTypeASO participantType = new ParticipantTypeASO();
+        participantType.setId(apxRequest.getParticipants().get(0).getParticipantType().getId());
+
+        participant.setParticipantType(participantType);
         participant.setCustomerId(apxRequest.getParticipants().get(0).getCustomerId());
-        participant.setIdentityDocument(apxRequest.getParticipants().get(0).getIdentityDocument());
+
+        IdentityDocumentASO participantIdentityDocument = new IdentityDocumentASO();
+
+        DocumentTypeASO participantDocumentType = new DocumentTypeASO();
+        participantDocumentType.setId(apxRequest.getParticipants().get(0).getIdentityDocument().getDocumentType().getId());
+        participantIdentityDocument.setDocumentType(participantDocumentType);
+        participantIdentityDocument.setNumber(apxRequest.getParticipants().get(0).getIdentityDocument().getNumber());
+
+        participant.setIdentityDocument(participantIdentityDocument);
 
         requestAso.setParticipants(Collections.singletonList(participant));
-        requestAso.setBusinessAgent(apxRequest.getBusinessAgent());
-        requestAso.setPromoter(apxRequest.getPromoter());
-        requestAso.setBank(apxRequest.getBank());
-        requestAso.setInsuranceCompany(apxRequest.getInsuranceCompany());
+
+        BusinessAgentASO businessAgent = new BusinessAgentASO();
+        businessAgent.setId(apxRequest.getBusinessAgent().getId());
+
+        requestAso.setBusinessAgent(businessAgent);
+
+        PromoterASO promoter = new PromoterASO();
+        promoter.setId(apxRequest.getPromoter().getId());
+
+        requestAso.setPromoter(promoter);
+
+        BankASO bank = new BankASO();
+
+        BranchASO branch = new BranchASO();
+        branch.setId(apxRequest.getBank().getBranch().getId());
+        bank.setBranch(branch);
+        bank.setId(apxRequest.getBank().getId());
+
+        requestAso.setBank(bank);
+
+        InsuranceCompanyASO insuranceCompany = new InsuranceCompanyASO();
+        insuranceCompany.setId(apxRequest.getInsuranceCompany().getId());
+
+        requestAso.setInsuranceCompany(insuranceCompany);
+
         return requestAso;
     }
 
