@@ -2,8 +2,30 @@ package com.bbva.rbvd.lib.r211.impl.util;
 
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
-import com.bbva.rbvd.dto.insrncsale.aso.*;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.*;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
+import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
+import com.bbva.rbvd.dto.insrncsale.aso.IdentityDocumentASO;
+import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
+import com.bbva.rbvd.dto.insrncsale.aso.PaymentAmountASO;
+
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.ProductPlanASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PaymentMethodASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.ValidityPeriodASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.TotalAmountASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuredAmountASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.InstallmentPlanASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PaymentPeriodASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.FirstInstallmentASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.ParticipantASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.ParticipantTypeASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.BusinessAgentASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PromoterASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuranceCompanyASO;
 
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
@@ -12,7 +34,6 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
@@ -21,9 +42,6 @@ import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.FirstInstallmentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
@@ -38,6 +56,7 @@ import java.util.Objects;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 public class MapperHelper {
 
@@ -47,6 +66,7 @@ public class MapperHelper {
     private static final String PHONE_NUMBER_VALUE = "PHONE";
     private static final String PARTICULAR_DATA_THIRD_CHANNEL = "CANAL_TERCERO";
     private static final String PARTICULAR_DATA_ACCOUNT_DATA = "DATOS_DE_CUENTA";
+    private static final String PARTICULAR_DATA_CERT_BANCO = "NRO_CERT_BANCO";
     private static final String S_VALUE = "S";
     private static final String N_VALUE = "N";
     private static final Long INDICATOR_INSPECTION_VALUE = 1L;
@@ -195,7 +215,7 @@ public class MapperHelper {
         return requestAso;
     }
 
-    public EmisionBO buildRequestBodyRimac(PolicyInspectionDTO inspection, String secondParticularDataValue, String channelCode) {
+    public EmisionBO buildRequestBodyRimac(PolicyInspectionDTO inspection, String secondParticularDataValue, String channelCode, String dataId) {
         EmisionBO rimacRequest = new EmisionBO();
 
         PayloadEmisionBO payload = new PayloadEmisionBO();
@@ -227,6 +247,12 @@ public class MapperHelper {
         segundoDatoParticular.setCodigo("");
         segundoDatoParticular.setValor(secondParticularDataValue);
         datosParticulares.add(segundoDatoParticular);
+
+        DatoParticularBO tercerDatoParticular = new DatoParticularBO();
+        tercerDatoParticular.setEtiqueta(PARTICULAR_DATA_CERT_BANCO);
+        tercerDatoParticular.setCodigo("");
+        tercerDatoParticular.setValor(dataId);
+        datosParticulares.add(tercerDatoParticular);
 
         payload.setDatosParticulares(datosParticulares);
         payload.setEnvioElectronico(S_VALUE);
@@ -500,26 +526,24 @@ public class MapperHelper {
 
 
     public List<IsrcContractParticipantDAO> buildIsrcContractParticipants(PolicyDTO requestBody, Map<String, Object> responseQueryRoles, String id) {
-        List<IsrcContractParticipantDAO> participantsList = new ArrayList<>();
-
         ParticipantDTO participant = requestBody.getParticipants().get(0);
 
         List<Map<String, Object>> roles = (List<Map<String, Object>>) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
+        return roles.stream().map(rol -> createParticipantDao(id, rol, participant, requestBody)).collect(Collectors.toList());
+    }
 
-        for(Map<String, Object> rol : roles) {
-            IsrcContractParticipantDAO participantDao = new IsrcContractParticipantDAO();
-            participantDao.setEntityId(id.substring(0,4));
-            participantDao.setBranchId(id.substring(4, 8));
-            participantDao.setIntAccountId(id.substring(10));
-            participantDao.setParticipantRoleId((BigDecimal) rol.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
-            participantDao.setPersonalDocType(participant.getIdentityDocument().getDocumentType().getId());
-            participantDao.setParticipantPersonalId(participant.getIdentityDocument().getNumber());
-            participantDao.setCustomerId(participant.getCustomerId());
-            participantDao.setCreationUserId(requestBody.getCreationUser());
-            participantDao.setUserAuditId(requestBody.getUserAudit());
-            participantsList.add(participantDao);
-        }
-        return participantsList;
+    private IsrcContractParticipantDAO createParticipantDao(String id, Map<String, Object> rol, ParticipantDTO participant, PolicyDTO requestBody) {
+        IsrcContractParticipantDAO participantDao = new IsrcContractParticipantDAO();
+        participantDao.setEntityId(id.substring(0,4));
+        participantDao.setBranchId(id.substring(4, 8));
+        participantDao.setIntAccountId(id.substring(10));
+        participantDao.setParticipantRoleId((BigDecimal) rol.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
+        participantDao.setPersonalDocType(participant.getIdentityDocument().getDocumentType().getId());
+        participantDao.setParticipantPersonalId(participant.getIdentityDocument().getNumber());
+        participantDao.setCustomerId(participant.getCustomerId());
+        participantDao.setCreationUserId(requestBody.getCreationUser());
+        participantDao.setUserAuditId(requestBody.getUserAudit());
+        return participantDao;
     }
 
     public Map<String, Object> createSaveParticipantArguments(IsrcContractParticipantDAO participant) {

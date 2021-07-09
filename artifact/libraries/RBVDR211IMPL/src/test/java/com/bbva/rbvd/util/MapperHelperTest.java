@@ -141,7 +141,7 @@ public class MapperHelperTest {
     @Test
     public void buildRequestBodyRimac_OK() {
         PolicyInspectionDTO inspection = apxRequest.getInspection();
-        EmisionBO validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue","channelCode");
+        EmisionBO validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue","channelCode", "dataId");
 
         assertNotNull(validation.getPayload().getContactoInspeccion());
         assertNotNull(validation.getPayload().getContactoInspeccion().getNombre());
@@ -167,6 +167,8 @@ public class MapperHelperTest {
         assertEquals("channelCode", validation.getPayload().getDatosParticulares().get(0).getValor());
         assertEquals("DATOS_DE_CUENTA", validation.getPayload().getDatosParticulares().get(1).getEtiqueta());
         assertEquals("secondValue", validation.getPayload().getDatosParticulares().get(1).getValor());
+        assertEquals("NRO_CERT_BANCO", validation.getPayload().getDatosParticulares().get(2).getEtiqueta());
+        assertEquals("dataId", validation.getPayload().getDatosParticulares().get(2).getValor());
         assertEquals(S_VALUE, validation.getPayload().getEnvioElectronico());
         assertEquals(N_VALUE, validation.getPayload().getIndCobro());
         assertEquals(Optional.of(1L).get(), validation.getPayload().getIndInspeccion());

@@ -63,8 +63,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			//TENGO QUE VALIDAR QUE ASO ME HAYA RESPONDIDO CORRECTAMENTE!
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building Rimac request *****");
-			String secondParticularDataValue = createSecondDataValue(asoResponse);
-			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), secondParticularDataValue, requestBody.getSaleChannelId());
+			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
+					requestBody.getSaleChannelId(), asoResponse.getData().getId());
 
 			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, rimacQuotationId, requestBody.getTraceId());
 
@@ -154,7 +154,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		int beginIndex = relatedContract.getNumber().length() - 4;
 		String accountNumber = "***".concat(relatedContract.getNumber().substring(beginIndex));
 		String accountCurrency = Objects.nonNull(asoResponse.getData().getFirstInstallment().getExchangeRate()) ? "PEN" : "USD";
-		return kindOfAccount.concat("||").concat(accountNumber).concat("||").concat(accountCurrency);
+		return kindOfAccount.concat("|").concat(accountNumber).concat("|").concat(accountCurrency);
 	}
 
 
