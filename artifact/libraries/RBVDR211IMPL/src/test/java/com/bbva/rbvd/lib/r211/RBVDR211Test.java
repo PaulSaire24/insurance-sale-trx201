@@ -115,7 +115,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INCORRECT_PRODUCT_ID.getAdviceCode());
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
 	}
 
 	@Test
@@ -130,7 +130,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INCORRECT_PLAN_ID.getAdviceCode());
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
 	}
 
 	@Test

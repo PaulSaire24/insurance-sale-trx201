@@ -6,7 +6,6 @@ import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceProductDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
@@ -47,10 +46,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Map<String, Object> responseQueryInsuranceProduct = this.pisdR012.
 					executeInsuranceProduct(this.mapperHelper.insuranceProductFilterCreation(requestBody.getProductId()));
 
-			InsuranceProductDAO insuranceProductDao = validateResponseQueryInsuranceProduct(responseQueryInsuranceProduct);
+			BigDecimal insuranceProductId = validateResponseQueryInsuranceProduct(responseQueryInsuranceProduct);
 
 			Map<String, Object> responseQueryInsuranceProductModality = this.pisdR012.
-					executeInsuranceProductModality(this.mapperHelper.productModalityFiltersCreation(insuranceProductDao.getInsuranceProductId(), requestBody.getProductPlan().getId()));
+					executeInsuranceProductModality(this.mapperHelper.productModalityFiltersCreation(insuranceProductId, requestBody.getProductPlan().getId()));
 
 			Map<String, Object> productModality = validateResponseQueryInsuranceProductModality(responseQueryInsuranceProductModality);
 
@@ -69,7 +68,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, rimacQuotationId, requestBody.getTraceId());
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody,
-					insuranceProductDao.getInsuranceProductId(), asoResponse.getData().getId());
+					insuranceProductId, asoResponse.getData().getId());
 			contractDao.setValidityMonthsNumber((BigDecimal) productModality.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue()));
 			Map<String, Object> argumentsForSaveContract = this.mapperHelper.createSaveContractArguments(contractDao);
 			argumentsForSaveContract.forEach(
@@ -91,7 +90,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			validateInsertion(this.pisdR012.executeSaveContractMove(argumentsForContractMov), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_MOV_TABLE);
 
-			Map<String, Object> responseQueryRoles = this.pisdR012.executeGetRolesByProductAndModality(insuranceProductDao.getInsuranceProductId(), requestBody.getProductId());
+			Map<String, Object> responseQueryRoles = this.pisdR012.executeGetRolesByProductAndModality(insuranceProductId, requestBody.getProductPlan().getId());
 
 			if(!isEmpty((List) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue()))) {
 				List<IsrcContractParticipantDAO> participants = this.mapperHelper.buildIsrcContractParticipants(requestBody, responseQueryRoles, asoResponse.getData().getId());
@@ -119,19 +118,17 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	}
 
-	private InsuranceProductDAO validateResponseQueryInsuranceProduct(Map<String, Object> responseQueryInsuranceProduct) {
+	private BigDecimal validateResponseQueryInsuranceProduct(Map<String, Object> responseQueryInsuranceProduct) {
 		if(isEmpty(responseQueryInsuranceProduct)) {
-			throw RBVDValidation.build(RBVDErrors.INCORRECT_PRODUCT_ID);
+			throw RBVDValidation.build(RBVDErrors.QUERY_EMPTY_RESULT);
 		}
-		InsuranceProductDAO insuranceProduct = new InsuranceProductDAO();
-		insuranceProduct.setInsuranceProductId((BigDecimal) responseQueryInsuranceProduct.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
-		return insuranceProduct;
+		return ((BigDecimal) responseQueryInsuranceProduct.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
 	}
 
 	private Map<String, Object> validateResponseQueryInsuranceProductModality(Map<String, Object> responseQueryInsuranceProductModality) {
 		List<Map<String, Object>> response = (List<Map<String, Object>>) responseQueryInsuranceProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
 		if(isEmpty(response)) {
-			throw RBVDValidation.build(RBVDErrors.INCORRECT_PLAN_ID);
+			throw RBVDValidation.build(RBVDErrors.QUERY_EMPTY_RESULT);
 		}
 		return response.get(0);
 	}

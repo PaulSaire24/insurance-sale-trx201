@@ -94,7 +94,6 @@ public class RBVDR201Test {
 		assertNotNull(validation);
 		assertNotNull(validation.getData());
 		assertNotNull(validation.getData().getId());
-		assertNotNull(validation.getData().getPolicyNumber());
 		assertNotNull(validation.getData().getProductId());
 		assertNotNull(validation.getData().getProductDescription());
 		assertNotNull(validation.getData().getProductPlan());
@@ -127,7 +126,6 @@ public class RBVDR201Test {
 		assertNotNull(validation.getData().getInsuranceCompany());
 		assertNotNull(validation.getData().getInsuranceCompany().getId());
 		assertNotNull(validation.getData().getInsuranceCompany().getName());
-		assertNotNull(validation.getData().getExternalQuotationId());
 	}
 
 	@Test
@@ -187,8 +185,5 @@ public class RBVDR201Test {
 		assertNotNull(validation.getPayload().getAsegurado());
 
 	}
-
-
-
 	
 }

@@ -1,5 +1,6 @@
 package com.bbva.rbvd.util;
 
+import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
@@ -31,6 +32,7 @@ import static org.mockito.Mockito.*;
 public class MapperHelperTest {
 
     private final MapperHelper mapperHelper = new MapperHelper();
+    private ApplicationConfigurationService applicationConfigurationService;
     private final MockData mockData = MockData.getInstance();
 
     private final SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
@@ -49,6 +51,9 @@ public class MapperHelperTest {
 
     @Before
     public void setUp() throws IOException {
+        applicationConfigurationService = mock(ApplicationConfigurationService.class);
+        mapperHelper.setApplicationConfigurationService(applicationConfigurationService);
+
         contractDao = mock(InsuranceContractDAO.class);
         receiptDao = mock(InsuranceCtrReceiptsDAO.class);
         contractMovDao = mock(IsrcContractMovDAO.class);
@@ -159,6 +164,7 @@ public class MapperHelperTest {
         assertNotNull(validation.getPayload().getEnvioElectronico());
         assertNotNull(validation.getPayload().getIndCobro());
         assertNotNull(validation.getPayload().getIndInspeccion());
+        assertNotNull(validation.getPayload().getIndValidaciones());
 
         assertEquals(inspection.getFullName(), validation.getPayload().getContactoInspeccion().getNombre());
         assertEquals(inspection.getContactDetails().get(0).getContact().getAddress(), validation.getPayload().getContactoInspeccion().getCorreo());
@@ -172,6 +178,7 @@ public class MapperHelperTest {
         assertEquals(S_VALUE, validation.getPayload().getEnvioElectronico());
         assertEquals(N_VALUE, validation.getPayload().getIndCobro());
         assertEquals(Optional.of(1L).get(), validation.getPayload().getIndInspeccion());
+        assertEquals(N_VALUE, validation.getPayload().getIndValidaciones());
     }
 
     @Test
@@ -370,7 +377,6 @@ public class MapperHelperTest {
         assertNotNull(validation.get(RBVDProperties.FIELD_INSURED_AMOUNT.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_BENEFICIARY_TYPE.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_RENEWAL_NUMBER.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_POLICY_PYMT_PEND_DUE_DEBT_TYPE.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_CTRCT_DISPUTE_STATUS_TYPE.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_CONTRACT_PREVIOUS_BRANCH_ID.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
@@ -419,7 +425,6 @@ public class MapperHelperTest {
         assertEquals(contractDao.getInsuredAmount(), validation.get(RBVDProperties.FIELD_INSURED_AMOUNT.getValue()));
         assertEquals(contractDao.getBeneficiaryType(), validation.get(RBVDProperties.FIELD_BENEFICIARY_TYPE.getValue()));
         assertEquals(contractDao.getRenewalNumber(), validation.get(RBVDProperties.FIELD_RENEWAL_NUMBER.getValue()));
-        assertEquals(contractDao.getPolicyPymtPendDueDebtType(), validation.get(RBVDProperties.FIELD_POLICY_PYMT_PEND_DUE_DEBT_TYPE.getValue()));
         assertEquals(contractDao.getCtrctDisputeStatusType(), validation.get(RBVDProperties.FIELD_CTRCT_DISPUTE_STATUS_TYPE.getValue()));
         assertEquals(contractDao.getContractPreviousBranchId(), validation.get(RBVDProperties.FIELD_CONTRACT_PREVIOUS_BRANCH_ID.getValue()));
         assertEquals(contractDao.getPeriodNextPaymentDate(), validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
@@ -441,6 +446,7 @@ public class MapperHelperTest {
 
     @Test
     public void buildInsuranceCtrReceipt_OK() {
+        asoResponse.getData().getFirstInstallment().setOperationDate(null);
         InsuranceCtrReceiptsDAO validation = mapperHelper.buildInsuranceCtrReceipt(asoResponse, rimacResponse, apxRequest);
 
         assertNotNull(validation.getEntityId());
@@ -474,8 +480,10 @@ public class MapperHelperTest {
         assertEquals(BigDecimal.valueOf(4), validation.getPolicyReceiptId());
         assertEquals(BigDecimal.valueOf(0), validation.getInsuranceCompanyId());
         assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.getPremiumPaymentReceiptAmount());
-        assertEquals(BigDecimal.valueOf(0), validation.getFixingExchangeRateAmount());
-        assertEquals(BigDecimal.valueOf(0), validation.getPremiumCurrencyExchAmount());
+        assertEquals(BigDecimal.valueOf(asoResponse.getData()
+                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()), validation.getFixingExchangeRateAmount());
+        assertEquals(BigDecimal.valueOf(asoResponse.getData()
+                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.getPremiumCurrencyExchAmount());
         assertEquals(apxRequest.getFirstInstallment().getPaymentAmount().getCurrency(), validation.getCurrencyId());
         assertEquals(currentDate, validation.getReceiptIssueDate());
         assertEquals(currentDate, validation.getReceiptStartDate());
@@ -719,6 +727,8 @@ public class MapperHelperTest {
         Map<String, Object> response = new HashMap<>();
         response.put(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue(), responseQueryRoles);
 
+        when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
+
         List<IsrcContractParticipantDAO> validation = mapperHelper.buildIsrcContractParticipants(apxRequest, response, "00163789533573412294");
 
         ParticipantDTO participant = apxRequest.getParticipants().get(0);
@@ -754,7 +764,7 @@ public class MapperHelperTest {
         assertEquals("3573412294", validation.get(0).getIntAccountId());
         assertEquals(BigDecimal.valueOf(1), validation.get(0).getParticipantRoleId());
         assertEquals(BigDecimal.valueOf(1), validation.get(0).getPartyOrderNumber());
-        assertEquals(participant.getIdentityDocument().getDocumentType().getId(), validation.get(0).getPersonalDocType());
+        assertEquals("L", validation.get(0).getPersonalDocType());
         assertEquals(participant.getIdentityDocument().getNumber(), validation.get(0).getParticipantPersonalId());
         assertEquals(participant.getCustomerId(), validation.get(0).getCustomerId());
         assertEquals("TI", validation.get(0).getCustomerRelationshipType());
@@ -767,7 +777,7 @@ public class MapperHelperTest {
         assertEquals("3573412294", validation.get(1).getIntAccountId());
         assertEquals(BigDecimal.valueOf(2), validation.get(1).getParticipantRoleId());
         assertEquals(BigDecimal.valueOf(1), validation.get(1).getPartyOrderNumber());
-        assertEquals(participant.getIdentityDocument().getDocumentType().getId(), validation.get(1).getPersonalDocType());
+        assertEquals("L", validation.get(1).getPersonalDocType());
         assertEquals(participant.getIdentityDocument().getNumber(), validation.get(1).getParticipantPersonalId());
         assertEquals(participant.getCustomerId(), validation.get(1).getCustomerId());
         assertEquals("TI", validation.get(1).getCustomerRelationshipType());

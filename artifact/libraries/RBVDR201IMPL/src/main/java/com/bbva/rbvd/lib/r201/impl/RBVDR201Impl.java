@@ -33,11 +33,14 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	@Override
 	public PolicyASO executePrePolicyEmissionASO(DataASO requestBody) {
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO START *****");
-		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO Request body: {}", requestBody);
+
+		String jsonString = getRequestBodyInStringFormat(requestBody);
+
+		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO Request body: {}", jsonString);
 
 		PolicyASO responseBody = null;
 
-		HttpEntity<DataASO> entity = new HttpEntity<>(requestBody, createHttpHeaders());
+		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeaders());
 
 		try {
 			responseBody = this.internalApiConnector.postForObject(ID_API_INSURANCES_CREATE_INSURANCE_ASO, entity, PolicyASO.class);
@@ -82,7 +85,8 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	private HttpHeaders createHttpHeaders() {
 		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
+		MediaType mediaType = new MediaType("application","json", StandardCharsets.UTF_8);
+		headers.setContentType(mediaType);
 		headers.set("BCS-Operation-Tracer", "1");
 		return headers;
 	}
@@ -98,7 +102,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		return headers;
 	}
 
-	private String getRequestBodyInStringFormat(EmisionBO requestBody) {
+	private String getRequestBodyInStringFormat(Object requestBody) {
 		return JsonHelper.getInstance().toJsonString(requestBody);
 	}
 

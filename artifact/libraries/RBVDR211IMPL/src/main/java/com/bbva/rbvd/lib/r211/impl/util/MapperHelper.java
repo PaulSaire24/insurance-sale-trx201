@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl.util;
 
+import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
@@ -78,6 +79,8 @@ public class MapperHelper {
     private static final String FIRST_RECEIPT_STATUS_TYPE_VALUE = "COB";
 
     private final SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+
+    private ApplicationConfigurationService applicationConfigurationService;
 
     public Map<String, Object> insuranceProductFilterCreation(String productId) {
         Map<String, Object> filter = new HashMap<>();
@@ -258,6 +261,7 @@ public class MapperHelper {
         payload.setEnvioElectronico(S_VALUE);
         payload.setIndCobro(N_VALUE);
         payload.setIndInspeccion(INDICATOR_INSPECTION_VALUE);
+        payload.setIndValidaciones(N_VALUE);
 
         rimacRequest.setPayload(payload);
         return rimacRequest;
@@ -371,7 +375,6 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_INSURED_AMOUNT.getValue(), contractDao.getInsuredAmount());
         arguments.put(RBVDProperties.FIELD_BENEFICIARY_TYPE.getValue(), contractDao.getBeneficiaryType());
         arguments.put(RBVDProperties.FIELD_RENEWAL_NUMBER.getValue(), contractDao.getRenewalNumber());
-        arguments.put(RBVDProperties.FIELD_POLICY_PYMT_PEND_DUE_DEBT_TYPE.getValue(), contractDao.getPolicyPymtPendDueDebtType());
         arguments.put(RBVDProperties.FIELD_CTRCT_DISPUTE_STATUS_TYPE.getValue(), contractDao.getCtrctDisputeStatusType());
         arguments.put(RBVDProperties.FIELD_CONTRACT_PREVIOUS_BRANCH_ID.getValue(), contractDao.getContractPreviousBranchId());
         arguments.put(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue(), contractDao.getPeriodNextPaymentDate());
@@ -413,7 +416,9 @@ public class MapperHelper {
 
         String currentDate = format.format(new Date());
 
-        receiptDao.setPremiumChargeOperationId(asoResponse.getData().getFirstInstallment().getOperationNumber());
+        if(asoResponse.getData().getFirstInstallment().getOperationNumber().length() >= 11) {
+            receiptDao.setPremiumChargeOperationId(asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
+        }
         receiptDao.setCurrencyId(requestBody.getFirstInstallment().getPaymentAmount().getCurrency());
         receiptDao.setReceiptStartDate(currentDate);
 
@@ -538,7 +543,7 @@ public class MapperHelper {
         participantDao.setBranchId(id.substring(4, 8));
         participantDao.setIntAccountId(id.substring(10));
         participantDao.setParticipantRoleId((BigDecimal) rol.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
-        participantDao.setPersonalDocType(participant.getIdentityDocument().getDocumentType().getId());
+        participantDao.setPersonalDocType(this.applicationConfigurationService.getProperty(participant.getIdentityDocument().getDocumentType().getId()));
         participantDao.setParticipantPersonalId(participant.getIdentityDocument().getNumber());
         participantDao.setCustomerId(participant.getCustomerId());
         participantDao.setCreationUserId(requestBody.getCreationUser());
@@ -561,6 +566,10 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), participant.getCreationUserId());
         arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), participant.getUserAuditId());
         return arguments;
+    }
+
+    public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
+        this.applicationConfigurationService = applicationConfigurationService;
     }
 
 }
