@@ -6,10 +6,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.*;
 
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 
@@ -43,19 +40,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		PolicyDTO responseBody = null;
 
 		try {
-			Map<String, Object> responseQueryInsuranceProduct = this.pisdR012.
-					executeInsuranceProduct(this.mapperHelper.insuranceProductFilterCreation(requestBody.getProductId()));
 
-			BigDecimal insuranceProductId = validateResponseQueryInsuranceProduct(responseQueryInsuranceProduct);
+			Map<String, Object> responseQueryGetRequiredFields = pisdR012.executeGetRequiredFieldsForEmissionService(requestBody.getQuotationId());
 
-			Map<String, Object> responseQueryInsuranceProductModality = this.pisdR012.
-					executeInsuranceProductModality(this.mapperHelper.productModalityFiltersCreation(insuranceProductId, requestBody.getProductPlan().getId()));
-
-			Map<String, Object> productModality = validateResponseQueryInsuranceProductModality(responseQueryInsuranceProductModality);
-
-			Map<String, Object> responseContainingRimacQuotation = this.pisdR012.executeRegisterAdditionalCompanyQuotaId(requestBody.getQuotationId());
-
-			String rimacQuotationId = (String) responseContainingRimacQuotation.get(RBVDProperties.FIELD_INSURANCE_COMPANY_QUOTA_ID.getValue());
+			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields);
 
 			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
 
@@ -65,23 +53,24 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
 					requestBody.getSaleChannelId(), asoResponse.getData().getId());
 
-			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, rimacQuotationId, requestBody.getTraceId());
+			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId());
 
-			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody,
-					insuranceProductId, asoResponse.getData().getId());
-			contractDao.setValidityMonthsNumber((BigDecimal) productModality.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue()));
+			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody, emissionDao, asoResponse.getData().getId());
+
 			Map<String, Object> argumentsForSaveContract = this.mapperHelper.createSaveContractArguments(contractDao);
 			argumentsForSaveContract.forEach(
 					(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveContract parameter {} with value: {} *****", key, value));
 
 			validateInsertion(this.pisdR012.executeSaveContract(argumentsForSaveContract), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
 
-			InsuranceCtrReceiptsDAO receiptDao = this.mapperHelper.buildInsuranceCtrReceipt(asoResponse, rimacResponse, requestBody);
-			Map<String, Object> argumentsForSaveReceipt = this.mapperHelper.createSaveReceiptsArguments(receiptDao);
-			argumentsForSaveReceipt.forEach(
-					(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value));
+			Map<String, Object>[] receiptsArguments = this.mapperHelper.
+					createSaveReceiptsArguments(this.mapperHelper.buildInsuranceCtrReceipt(asoResponse, rimacResponse, requestBody));
 
-			validateInsertion(this.pisdR012.executeSaveFirstReceipt(argumentsForSaveReceipt), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
+			Arrays.stream(receiptsArguments).
+					forEach(receiptArguments -> receiptArguments.
+							forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value)));
+
+			validateMultipleInsertion(this.pisdR012.executeSaveReceipts(receiptsArguments), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
 
 			IsrcContractMovDAO contractMovDao = this.mapperHelper.buildIsrcContractMov(asoResponse, requestBody.getCreationUser(), requestBody.getUserAudit());
 			Map<String, Object> argumentsForContractMov = this.mapperHelper.createSaveContractMovArguments(contractMovDao);
@@ -90,7 +79,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			validateInsertion(this.pisdR012.executeSaveContractMove(argumentsForContractMov), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_MOV_TABLE);
 
-			Map<String, Object> responseQueryRoles = this.pisdR012.executeGetRolesByProductAndModality(insuranceProductId, requestBody.getProductPlan().getId());
+			Map<String, Object> responseQueryRoles = this.pisdR012.executeGetRolesByProductAndModality(emissionDao.getInsuranceProductId(), requestBody.getProductPlan().getId());
 
 			if(!isEmpty((List) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue()))) {
 				List<IsrcContractParticipantDAO> participants = this.mapperHelper.buildIsrcContractParticipants(requestBody, responseQueryRoles, asoResponse.getData().getId());
@@ -101,7 +90,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				Arrays.stream(arguments).forEach(
 						argumentsMap -> argumentsMap.forEach(
 								(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy | SaveParticipants parameter {} with value: {} *****", key, value)));
-				validateInsertionParticipants(this.pisdR012.executeSaveParticipants(arguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
+				validateMultipleInsertion(this.pisdR012.executeSaveParticipants(arguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
 			}
 
 			responseBody = new PolicyDTO();
@@ -118,20 +107,18 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	}
 
-	private BigDecimal validateResponseQueryInsuranceProduct(Map<String, Object> responseQueryInsuranceProduct) {
-		if(isEmpty(responseQueryInsuranceProduct)) {
-			throw RBVDValidation.build(RBVDErrors.QUERY_EMPTY_RESULT);
+	private RequiredFieldsEmissionDAO validateResponseQueryGetRequiredFields(Map<String, Object> responseQueryGetRequiredFields) {
+		if(isEmpty(responseQueryGetRequiredFields)) {
+			throw RBVDValidation.build(RBVDErrors.NON_EXISTENT_QUOTATION);
 		}
-		return ((BigDecimal) responseQueryInsuranceProduct.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
+		RequiredFieldsEmissionDAO emissionDao = new RequiredFieldsEmissionDAO();
+		emissionDao.setInsuranceProductId((BigDecimal) responseQueryGetRequiredFields.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
+		emissionDao.setContractDurationNumber((BigDecimal) responseQueryGetRequiredFields.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue()));
+		emissionDao.setPaymentFrequencyId((BigDecimal) responseQueryGetRequiredFields.get(RBVDProperties.FIELD_PAYMENT_FREQUENCY_ID.getValue()));
+		emissionDao.setInsuranceCompanyQuotaId((String) responseQueryGetRequiredFields.get(RBVDProperties.FIELD_INSURANCE_COMPANY_QUOTA_ID.getValue()));
+		return emissionDao;
 	}
 
-	private Map<String, Object> validateResponseQueryInsuranceProductModality(Map<String, Object> responseQueryInsuranceProductModality) {
-		List<Map<String, Object>> response = (List<Map<String, Object>>) responseQueryInsuranceProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
-		if(isEmpty(response)) {
-			throw RBVDValidation.build(RBVDErrors.QUERY_EMPTY_RESULT);
-		}
-		return response.get(0);
-	}
 
 	private void validateInsertion(int insertedRows, RBVDErrors error) {
 		if(insertedRows != 1) {
@@ -139,8 +126,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		}
 	}
 
-	private void validateInsertionParticipants(int[] executeSaveParticipants, RBVDErrors error) {
-		if(Objects.isNull(executeSaveParticipants) || executeSaveParticipants.length == 0) {
+	private void validateMultipleInsertion(int[] insertedRows, RBVDErrors error) {
+		if(Objects.isNull(insertedRows) || insertedRows.length == 0) {
 			throw RBVDValidation.build(error);
 		}
 	}

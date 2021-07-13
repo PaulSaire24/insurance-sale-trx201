@@ -37,10 +37,7 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.*;
 
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
@@ -73,27 +70,18 @@ public class MapperHelper {
     private static final Long INDICATOR_INSPECTION_VALUE = 1L;
     private static final String PAYMENT_METHOD_VALUE = "DIRECT_DEBIT";
     private static final String COLLECTION_STATUS_FIRST_RECEIPT_VALUE = "00";
+    private static final String COLLECTION_STATUS_NEXT_VALUES = "02";
     private static final String CARD_PRODUCT_ID = "CARD";
     private static final String CARD_METHOD_TYPE = "T";
     private static final String ACCOUNT_METHOD_TYPE = "C";
     private static final String FIRST_RECEIPT_STATUS_TYPE_VALUE = "COB";
+    private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
+    private static final String NEXT_RECEIPTS_START_DATE_VALUE = "01/01/2021";
 
     private final SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+    private final String currentDate = format.format(new Date());
 
     private ApplicationConfigurationService applicationConfigurationService;
-
-    public Map<String, Object> insuranceProductFilterCreation(String productId) {
-        Map<String, Object> filter = new HashMap<>();
-        filter.put(PISDProperties.FILTER_INSURANCE_PRODUCT_TYPE.getValue(), productId);
-        return filter;
-    }
-
-    public Map<String, Object> productModalityFiltersCreation(BigDecimal insuranceProductId, String insuranceModalityType) {
-        Map<String, Object> filters = new HashMap<>();
-        filters.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), insuranceProductId);
-        filters.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), Collections.singletonList(insuranceModalityType));
-        return filters;
-    }
 
     public DataASO buildAsoRequest(PolicyDTO apxRequest) {
         DataASO requestAso = new DataASO();
@@ -267,7 +255,7 @@ public class MapperHelper {
         return rimacRequest;
     }
 
-    public InsuranceContractDAO buildInsuranceContract(EmisionBO rimacResponse, PolicyDTO apxRequest, BigDecimal productId, String asoId) {
+    public InsuranceContractDAO buildInsuranceContract(EmisionBO rimacResponse, PolicyDTO apxRequest, RequiredFieldsEmissionDAO emissionDao, String asoId) {
         InsuranceContractDAO contractDao = new InsuranceContractDAO();
 
         contractDao.setEntityId(asoId.substring(0, 4));
@@ -276,44 +264,47 @@ public class MapperHelper {
         contractDao.setFirstVerfnDigitId(asoId.substring(8,9));
         contractDao.setSecondVerfnDigitId(asoId.substring(9,10));
         contractDao.setPolicyQuotaInternalId(apxRequest.getQuotationId());
-        contractDao.setInsuranceProductId(productId);
+        contractDao.setInsuranceProductId(emissionDao.getInsuranceProductId());
         contractDao.setInsuranceModalityType(apxRequest.getProductPlan().getId());
         contractDao.setInsuranceCompanyId(new BigDecimal(apxRequest.getInsuranceCompany().getId()));
         if(Objects.nonNull(rimacResponse)) {
             contractDao.setPolicyId(rimacResponse.getPayload().getNumeroPoliza());
-            contractDao.setInsuranceContractEndDate(format.format(rimacResponse.getPayload().getFechaFinal()));
+            contractDao.setInsuranceContractEndDate(rimacResponse.getPayload().getFechaFinal());
 
             int numeroCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().size();
             CuotaFinancimientoBO ultimaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
                     stream().filter(cuota -> cuota.getCuota() == numeroCuotas).findFirst().orElse(null);
 
             if(Objects.nonNull(ultimaCuota)) {
-                contractDao.setLastInstallmentDate(format.format(ultimaCuota.getFechaVencimiento()));
+                contractDao.setLastInstallmentDate(ultimaCuota.getFechaVencimiento());
                 contractDao.setPeriodNextPaymentDate((numeroCuotas == 1) ?
-                        format.format(ultimaCuota.getFechaVencimiento()) : getNextPaymentDate(rimacResponse));
+                        ultimaCuota.getFechaVencimiento() : getNextPaymentDate(rimacResponse));
             }
 
             contractDao.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
         } else {
-            contractDao.setInsuranceContractEndDate(format.format(new Date()));
-            contractDao.setLastInstallmentDate(format.format(new Date()));
-            contractDao.setPeriodNextPaymentDate(format.format(new Date()));
+            contractDao.setInsuranceContractEndDate(currentDate);
+            contractDao.setLastInstallmentDate(currentDate);
+            contractDao.setPeriodNextPaymentDate(currentDate);
         }
         contractDao.setInsuranceManagerId(apxRequest.getBusinessAgent().getId());
         contractDao.setInsurancePromoterId(apxRequest.getPromoter().getId());
         contractDao.setContractManagerBranchId(asoId.substring(4, 8));
-        contractDao.setContractInceptionDate(format.format(new Date()));
+        contractDao.setContractInceptionDate(currentDate);
         contractDao.setInsuranceContractStartDate(format.format(apxRequest.getValidityPeriod().getStartDate()));
+
+        contractDao.setValidityMonthsNumber(emissionDao.getContractDurationNumber());
+
         contractDao.setCustomerId(apxRequest.getHolder().getId());
         contractDao.setDomicileContractId(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId());
         contractDao.setIssuedReceiptNumber(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()));
 
-        contractDao.setPaymentFrequencyId(BigDecimal.valueOf(1));
+        contractDao.setPaymentFrequencyId(emissionDao.getPaymentFrequencyId());
 
         contractDao.setPremiumAmount(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()));
         contractDao.setSettlePendingPremiumAmount(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount()));
         contractDao.setCurrencyId(apxRequest.getInstallmentPlan().getPaymentAmount().getCurrency());
-        contractDao.setInstallmentPeriodFinalDate(format.format(new Date()));
+        contractDao.setInstallmentPeriodFinalDate(currentDate);
         contractDao.setInsuredAmount(BigDecimal.valueOf(apxRequest.getInsuredAmount().getAmount()));
         contractDao.setContractPreviousBranchId(asoId.substring(4, 8));
         contractDao.setCreationUserId(apxRequest.getCreationUser());
@@ -338,7 +329,7 @@ public class MapperHelper {
         CuotaFinancimientoBO segundaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
                 stream().filter(cuota -> cuota.getCuota() == 2).findFirst().orElse(null);
         if(Objects.nonNull(segundaCuota)) {
-            nextPaymentDate = format.format(segundaCuota.getFechaVencimiento());
+            nextPaymentDate = segundaCuota.getFechaVencimiento();
         }
         return nextPaymentDate;
     }
@@ -395,108 +386,155 @@ public class MapperHelper {
         return arguments;
     }
 
-    public InsuranceCtrReceiptsDAO buildInsuranceCtrReceipt(PolicyASO asoResponse, EmisionBO rimacResponse, PolicyDTO requestBody) {
-        InsuranceCtrReceiptsDAO receiptDao = new InsuranceCtrReceiptsDAO();
-        receiptDao.setEntityId(asoResponse.getData().getId().substring(0, 4));
-        receiptDao.setBranchId(asoResponse.getData().getId().substring(4, 8));
-        receiptDao.setIntAccountId(asoResponse.getData().getId().substring(10));
-        receiptDao.setPolicyReceiptId(new BigDecimal(asoResponse.getData().getId().substring(8,9)));
-        receiptDao.setInsuranceCompanyId(new BigDecimal(asoResponse.getData().getId().substring(9,10)));
-        receiptDao.setPremiumPaymentReceiptAmount(BigDecimal.valueOf(requestBody.getFirstInstallment().getPaymentAmount().getAmount()));
+    public List<InsuranceCtrReceiptsDAO> buildInsuranceCtrReceipt(PolicyASO asoResponse, EmisionBO rimacResponse, PolicyDTO requestBody) {
+        List<InsuranceCtrReceiptsDAO> receiptList = new ArrayList<>();
+
+        InsuranceCtrReceiptsDAO firstReceipt = new InsuranceCtrReceiptsDAO();
+        firstReceipt.setEntityId(asoResponse.getData().getId().substring(0, 4));
+        firstReceipt.setBranchId(asoResponse.getData().getId().substring(4, 8));
+        firstReceipt.setIntAccountId(asoResponse.getData().getId().substring(10));
+        firstReceipt.setInsuranceCompanyId(new BigDecimal(asoResponse.getData().getId().substring(9,10)));
+        firstReceipt.setPremiumPaymentReceiptAmount(BigDecimal.valueOf(requestBody.getFirstInstallment().getPaymentAmount().getAmount()));
 
         if(Objects.nonNull(asoResponse.getData().getFirstInstallment().getExchangeRate())) {
-            receiptDao.setFixingExchangeRateAmount(BigDecimal.valueOf(asoResponse.getData()
+            firstReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(asoResponse.getData()
                     .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()));
-            receiptDao.setPremiumCurrencyExchAmount(BigDecimal.valueOf(asoResponse.getData()
+            firstReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(asoResponse.getData()
                     .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()));
         } else {
-            receiptDao.setFixingExchangeRateAmount(BigDecimal.valueOf(0));
-            receiptDao.setPremiumCurrencyExchAmount(BigDecimal.valueOf(0));
+            firstReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(0));
+            firstReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(0));
         }
-
-        String currentDate = format.format(new Date());
 
         if(asoResponse.getData().getFirstInstallment().getOperationNumber().length() >= 11) {
-            receiptDao.setPremiumChargeOperationId(asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
+            firstReceipt.setPremiumChargeOperationId(asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
         }
-        receiptDao.setCurrencyId(requestBody.getFirstInstallment().getPaymentAmount().getCurrency());
-        receiptDao.setReceiptStartDate(currentDate);
+        firstReceipt.setCurrencyId(requestBody.getFirstInstallment().getPaymentAmount().getCurrency());
+        firstReceipt.setReceiptStartDate(format.format(requestBody.getValidityPeriod().getStartDate()));
 
         if(Objects.nonNull(asoResponse.getData().getFirstInstallment().getOperationDate())) {
-            receiptDao.setReceiptIssueDate(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()));
-            receiptDao.setReceiptCollectionDate(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()));
-            receiptDao.setReceiptsTransmissionDate(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()));
+            firstReceipt.setReceiptIssueDate(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()));
+            firstReceipt.setReceiptCollectionDate(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()));
+            firstReceipt.setReceiptsTransmissionDate(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()));
         } else {
-            receiptDao.setReceiptIssueDate(currentDate);
-            receiptDao.setReceiptCollectionDate(currentDate);
-            receiptDao.setReceiptsTransmissionDate(currentDate);
+            firstReceipt.setReceiptIssueDate(currentDate);
+            firstReceipt.setReceiptCollectionDate(currentDate);
+            firstReceipt.setReceiptsTransmissionDate(currentDate);
         }
 
-        receiptDao.setReceiptCollectionStatusType(COLLECTION_STATUS_FIRST_RECEIPT_VALUE);
-        receiptDao.setInsuranceCollectionMoveId(asoResponse.getData().getFirstInstallment().getTransactionNumber());
-        receiptDao.setPaymentMethodType(requestBody.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId().
+        firstReceipt.setReceiptCollectionStatusType(COLLECTION_STATUS_FIRST_RECEIPT_VALUE);
+        firstReceipt.setInsuranceCollectionMoveId(asoResponse.getData().getFirstInstallment().getTransactionNumber());
+        firstReceipt.setPaymentMethodType(requestBody.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId().
                 equals(CARD_PRODUCT_ID) ? CARD_METHOD_TYPE : ACCOUNT_METHOD_TYPE);
-        receiptDao.setDebitAccountId(requestBody.getPaymentMethod().getRelatedContracts().get(0).getContractId());
-        receiptDao.setDebitChannelType(requestBody.getSaleChannelId());
-        receiptDao.setReceiptStatusType(FIRST_RECEIPT_STATUS_TYPE_VALUE);
-        receiptDao.setCreationUserId(requestBody.getCreationUser());
-        receiptDao.setUserAuditId(requestBody.getUserAudit());
-        receiptDao.setManagementBranchId(asoResponse.getData().getId().substring(4, 8));
-        receiptDao.setFixPremiumAmount(BigDecimal.valueOf(requestBody.getFirstInstallment().getPaymentAmount().getAmount()));
-        receiptDao.setSettlementFixPremiumAmount(BigDecimal.valueOf(requestBody.getInstallmentPlan().getPaymentAmount().getAmount()));
-        receiptDao.setLastChangeBranchId(requestBody.getBank().getBranch().getId());
-        receiptDao.setGlBranchId(asoResponse.getData().getId().substring(4, 8));
+        firstReceipt.setDebitAccountId(requestBody.getPaymentMethod().getRelatedContracts().get(0).getContractId());
+        firstReceipt.setDebitChannelType(requestBody.getSaleChannelId());
+        firstReceipt.setReceiptStatusType(FIRST_RECEIPT_STATUS_TYPE_VALUE);
+        firstReceipt.setCreationUserId(requestBody.getCreationUser());
+        firstReceipt.setUserAuditId(requestBody.getUserAudit());
+        firstReceipt.setManagementBranchId(asoResponse.getData().getId().substring(4, 8));
+        firstReceipt.setFixPremiumAmount(BigDecimal.valueOf(requestBody.getFirstInstallment().getPaymentAmount().getAmount()));
+        firstReceipt.setSettlementFixPremiumAmount(BigDecimal.valueOf(requestBody.getInstallmentPlan().getPaymentAmount().getAmount()));
+        firstReceipt.setLastChangeBranchId(requestBody.getBank().getBranch().getId());
+        firstReceipt.setGlBranchId(asoResponse.getData().getId().substring(4, 8));
 
-        if(Objects.nonNull(rimacResponse)) {
-            CuotaFinancimientoBO primeraCuota = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
-                    filter(cuota -> cuota.getCuota() == 1).findFirst().orElse(null);
-            if(Objects.nonNull(primeraCuota)) {
-                receiptDao.setReceiptEndDate(format.format(primeraCuota.getFechaVencimiento()));
-                receiptDao.setReceiptExpirationDate(format.format(primeraCuota.getFechaVencimiento()));
-            }
-        } else {
-            receiptDao.setReceiptEndDate(currentDate);
-            receiptDao.setReceiptExpirationDate(currentDate);
+        CuotaFinancimientoBO primeraCuota = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
+                filter(cuota -> cuota.getCuota() == 1).findFirst().orElse(null);
+        if(Objects.nonNull(primeraCuota)) {
+            firstReceipt.setPolicyReceiptId(BigDecimal.valueOf(primeraCuota.getCuota()));
+            firstReceipt.setReceiptEndDate(primeraCuota.getFechaVencimiento());
+            firstReceipt.setReceiptExpirationDate(primeraCuota.getFechaVencimiento());
         }
-        return receiptDao;
+
+        receiptList.add(firstReceipt);
+
+        List<CuotaFinancimientoBO> siguientesCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
+                filter(cuota -> cuota.getCuota() != 1).collect(Collectors.toList());
+
+        if(siguientesCuotas.size() >= 1) {
+            siguientesCuotas.forEach(cuota -> receiptList.add(createNextReceipt(firstReceipt, cuota)));
+        }
+
+        return receiptList;
     }
 
-    public Map<String, Object> createSaveReceiptsArguments(InsuranceCtrReceiptsDAO receiptDao) {
-        Map<String, Object> arguments = new HashMap<>();
-        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), receiptDao.getEntityId());
-        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), receiptDao.getBranchId());
-        arguments.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), receiptDao.getIntAccountId());
-        arguments.put(RBVDProperties.FIELD_POLICY_RECEIPT_ID.getValue(), receiptDao.getPolicyReceiptId());
-        arguments.put(RBVDProperties.FIELD_INSURANCE_COMPANY_ID.getValue(), receiptDao.getInsuranceCompanyId());
-        arguments.put(RBVDProperties.FIELD_PREMIUM_PAYMENT_RECEIPT_AMOUNT.getValue(), receiptDao.getPremiumPaymentReceiptAmount());
-        arguments.put(RBVDProperties.FIELD_FIXING_EXCHANGE_RATE_AMOUNT.getValue(), receiptDao.getFixingExchangeRateAmount());
-        arguments.put(RBVDProperties.FIELD_PREMIUM_CURRENCY_EXCH_AMOUNT.getValue(), receiptDao.getPremiumCurrencyExchAmount());
-        arguments.put(RBVDProperties.FIELD_PREMIUM_CHARGE_OPERATION_ID.getValue(), receiptDao.getPremiumChargeOperationId());
-        arguments.put(RBVDProperties.FIELD_CURRENCY_ID.getValue(), receiptDao.getCurrencyId());
-        arguments.put(RBVDProperties.FIELD_RECEIPT_ISSUE_DATE.getValue(), receiptDao.getReceiptIssueDate());
-        arguments.put(RBVDProperties.FIELD_RECEIPT_START_DATE.getValue(), receiptDao.getReceiptStartDate());
-        arguments.put(RBVDProperties.FIELD_RECEIPT_END_DATE.getValue(), receiptDao.getReceiptEndDate());
-        arguments.put(RBVDProperties.FIELD_RECEIPT_COLLECTION_DATE.getValue(), receiptDao.getReceiptCollectionDate());
-        arguments.put(RBVDProperties.FIELD_RECEIPT_EXPIRATION_DATE.getValue(), receiptDao.getReceiptExpirationDate());
-        arguments.put(RBVDProperties.FIELD_RECEIPTS_TRANSMISSION_DATE.getValue(), receiptDao.getReceiptsTransmissionDate());
-        arguments.put(RBVDProperties.FIELD_RECEIPT_COLLECTION_STATUS_TYPE.getValue(), receiptDao.getReceiptCollectionStatusType());
-        arguments.put(RBVDProperties.FIELD_INSURANCE_COLLECTION_MOVE_ID.getValue(), receiptDao.getInsuranceCollectionMoveId());
-        arguments.put(RBVDProperties.FIELD_PAYMENT_METHOD_TYPE.getValue(), receiptDao.getPaymentMethodType());
-        arguments.put(RBVDProperties.FIELD_DEBIT_ACCOUNT_ID.getValue(), receiptDao.getDebitAccountId());
-        arguments.put(RBVDProperties.FIELD_DEBIT_CHANNEL_TYPE.getValue(), receiptDao.getDebitChannelType());
-        arguments.put(RBVDProperties.FIELD_CHARGE_ATTEMPTS_NUMBER.getValue(), receiptDao.getChargeAttemptsNumber());
-        arguments.put(RBVDProperties.FIELD_INSRNC_CO_RECEIPT_STATUS_TYPE.getValue(), receiptDao.getInsrncCoReceiptStatusType());
-        arguments.put(RBVDProperties.FIELD_RECEIPT_STATUS_TYPE.getValue(), receiptDao.getReceiptStatusType());
-        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), receiptDao.getCreationUserId());
-        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), receiptDao.getUserAuditId());
-        arguments.put(RBVDProperties.FIELD_MANAGEMENT_BRANCH_ID.getValue(), receiptDao.getManagementBranchId());
-        arguments.put(RBVDProperties.FIELD_VARIABLE_PREMIUM_AMOUNT.getValue(), receiptDao.getVariablePremiumAmount());
-        arguments.put(RBVDProperties.FIELD_FIX_PREMIUM_AMOUNT.getValue(), receiptDao.getFixPremiumAmount());
-        arguments.put(RBVDProperties.FIELD_SETTLEMENT_VAR_PREMIUM_AMOUNT.getValue(), receiptDao.getSettlementVarPremiumAmount());
-        arguments.put(RBVDProperties.FIELD_SETTLEMENT_FIX_PREMIUM_AMOUNT.getValue(), receiptDao.getSettlementFixPremiumAmount());
-        arguments.put(RBVDProperties.FIELD_LAST_CHANGE_BRANCH_ID.getValue(), receiptDao.getLastChangeBranchId());
-        arguments.put(RBVDProperties.FIELD_GL_BRANCH_ID.getValue(), receiptDao.getGlBranchId());
-        return arguments;
+    private InsuranceCtrReceiptsDAO createNextReceipt(InsuranceCtrReceiptsDAO firstReceipt, CuotaFinancimientoBO cuota) {
+        InsuranceCtrReceiptsDAO nextReceipt = new InsuranceCtrReceiptsDAO();
+
+        String dueDate = cuota.getFechaVencimiento();
+
+        nextReceipt.setEntityId(firstReceipt.getEntityId());
+        nextReceipt.setBranchId(firstReceipt.getBranchId());
+        nextReceipt.setIntAccountId(firstReceipt.getIntAccountId());
+        nextReceipt.setPolicyReceiptId(BigDecimal.valueOf(cuota.getCuota()));
+        nextReceipt.setPremiumPaymentReceiptAmount(BigDecimal.valueOf(0));
+        nextReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(0));
+        nextReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(0));
+        nextReceipt.setReceiptIssueDate(currentDate);
+        nextReceipt.setReceiptStartDate(NEXT_RECEIPTS_START_DATE_VALUE);
+        nextReceipt.setReceiptEndDate(dueDate);
+        nextReceipt.setReceiptCollectionDate(currentDate);
+        nextReceipt.setReceiptExpirationDate(dueDate);
+        nextReceipt.setReceiptsTransmissionDate(currentDate);
+        nextReceipt.setReceiptCollectionStatusType(COLLECTION_STATUS_NEXT_VALUES);
+        nextReceipt.setPaymentMethodType(firstReceipt.getPaymentMethodType());
+        nextReceipt.setDebitAccountId(firstReceipt.getDebitAccountId());
+        nextReceipt.setReceiptStatusType(NEXT_RECEIPTS_STATUS_TYPE_VALUE);
+        nextReceipt.setCreationUserId(firstReceipt.getCreationUserId());
+        nextReceipt.setUserAuditId(firstReceipt.getUserAuditId());
+        nextReceipt.setManagementBranchId(firstReceipt.getManagementBranchId());
+        nextReceipt.setFixPremiumAmount(firstReceipt.getFixPremiumAmount());
+        nextReceipt.setSettlementFixPremiumAmount(firstReceipt.getSettlementFixPremiumAmount());
+        nextReceipt.setGlBranchId(firstReceipt.getGlBranchId());
+
+        return nextReceipt;
+    }
+
+    public Map<String, Object>[] createSaveReceiptsArguments(List<InsuranceCtrReceiptsDAO> receipts) {
+        Map<String, Object>[] receiptsArguments = new HashMap[receipts.size()];
+        for(int i = 0; i < receipts.size(); i++) {
+            receiptsArguments[i] = createReceipt(receipts.get(i));
+        }
+        return receiptsArguments;
+    }
+
+    private Map<String, Object> createReceipt(InsuranceCtrReceiptsDAO receiptDao) {
+        Map<String, Object> receiptArguments = new HashMap<>();
+
+        receiptArguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), receiptDao.getEntityId());
+        receiptArguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), receiptDao.getBranchId());
+        receiptArguments.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), receiptDao.getIntAccountId());
+        receiptArguments.put(RBVDProperties.FIELD_POLICY_RECEIPT_ID.getValue(), receiptDao.getPolicyReceiptId());
+        receiptArguments.put(RBVDProperties.FIELD_INSURANCE_COMPANY_ID.getValue(), receiptDao.getInsuranceCompanyId());
+        receiptArguments.put(RBVDProperties.FIELD_PREMIUM_PAYMENT_RECEIPT_AMOUNT.getValue(), receiptDao.getPremiumPaymentReceiptAmount());
+        receiptArguments.put(RBVDProperties.FIELD_FIXING_EXCHANGE_RATE_AMOUNT.getValue(), receiptDao.getFixingExchangeRateAmount());
+        receiptArguments.put(RBVDProperties.FIELD_PREMIUM_CURRENCY_EXCH_AMOUNT.getValue(), receiptDao.getPremiumCurrencyExchAmount());
+        receiptArguments.put(RBVDProperties.FIELD_PREMIUM_CHARGE_OPERATION_ID.getValue(), receiptDao.getPremiumChargeOperationId());
+        receiptArguments.put(RBVDProperties.FIELD_CURRENCY_ID.getValue(), receiptDao.getCurrencyId());
+        receiptArguments.put(RBVDProperties.FIELD_RECEIPT_ISSUE_DATE.getValue(), receiptDao.getReceiptIssueDate());
+        receiptArguments.put(RBVDProperties.FIELD_RECEIPT_START_DATE.getValue(), receiptDao.getReceiptStartDate());
+        receiptArguments.put(RBVDProperties.FIELD_RECEIPT_END_DATE.getValue(), receiptDao.getReceiptEndDate());
+        receiptArguments.put(RBVDProperties.FIELD_RECEIPT_COLLECTION_DATE.getValue(), receiptDao.getReceiptCollectionDate());
+        receiptArguments.put(RBVDProperties.FIELD_RECEIPT_EXPIRATION_DATE.getValue(), receiptDao.getReceiptExpirationDate());
+        receiptArguments.put(RBVDProperties.FIELD_RECEIPTS_TRANSMISSION_DATE.getValue(), receiptDao.getReceiptsTransmissionDate());
+        receiptArguments.put(RBVDProperties.FIELD_RECEIPT_COLLECTION_STATUS_TYPE.getValue(), receiptDao.getReceiptCollectionStatusType());
+        receiptArguments.put(RBVDProperties.FIELD_INSURANCE_COLLECTION_MOVE_ID.getValue(), receiptDao.getInsuranceCollectionMoveId());
+        receiptArguments.put(RBVDProperties.FIELD_PAYMENT_METHOD_TYPE.getValue(), receiptDao.getPaymentMethodType());
+        receiptArguments.put(RBVDProperties.FIELD_DEBIT_ACCOUNT_ID.getValue(), receiptDao.getDebitAccountId());
+        receiptArguments.put(RBVDProperties.FIELD_DEBIT_CHANNEL_TYPE.getValue(), receiptDao.getDebitChannelType());
+        receiptArguments.put(RBVDProperties.FIELD_CHARGE_ATTEMPTS_NUMBER.getValue(), receiptDao.getChargeAttemptsNumber());
+        receiptArguments.put(RBVDProperties.FIELD_INSRNC_CO_RECEIPT_STATUS_TYPE.getValue(), receiptDao.getInsrncCoReceiptStatusType());
+        receiptArguments.put(RBVDProperties.FIELD_RECEIPT_STATUS_TYPE.getValue(), receiptDao.getReceiptStatusType());
+        receiptArguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), receiptDao.getCreationUserId());
+        receiptArguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), receiptDao.getUserAuditId());
+        receiptArguments.put(RBVDProperties.FIELD_MANAGEMENT_BRANCH_ID.getValue(), receiptDao.getManagementBranchId());
+        receiptArguments.put(RBVDProperties.FIELD_VARIABLE_PREMIUM_AMOUNT.getValue(), receiptDao.getVariablePremiumAmount());
+        receiptArguments.put(RBVDProperties.FIELD_FIX_PREMIUM_AMOUNT.getValue(), receiptDao.getFixPremiumAmount());
+        receiptArguments.put(RBVDProperties.FIELD_SETTLEMENT_VAR_PREMIUM_AMOUNT.getValue(), receiptDao.getSettlementVarPremiumAmount());
+        receiptArguments.put(RBVDProperties.FIELD_SETTLEMENT_FIX_PREMIUM_AMOUNT.getValue(), receiptDao.getSettlementFixPremiumAmount());
+        receiptArguments.put(RBVDProperties.FIELD_LAST_CHANGE_BRANCH_ID.getValue(), receiptDao.getLastChangeBranchId());
+        receiptArguments.put(RBVDProperties.FIELD_GL_BRANCH_ID.getValue(), receiptDao.getGlBranchId());
+
+        return receiptArguments;
     }
 
     public IsrcContractMovDAO buildIsrcContractMov(PolicyASO asoResponse, String creationUser, String userAudit) {
@@ -505,7 +543,7 @@ public class MapperHelper {
         isrcContractMovDao.setBranchId(asoResponse.getData().getId().substring(4, 8));
         isrcContractMovDao.setIntAccountId(asoResponse.getData().getId().substring(10));
         isrcContractMovDao.setPolicyMovementNumber(BigDecimal.valueOf(1));
-        isrcContractMovDao.setGlAccountDate(format.format(new Date()));
+        isrcContractMovDao.setGlAccountDate(currentDate);
         isrcContractMovDao.setGlBranchId(asoResponse.getData().getId().substring(4, 8));
         isrcContractMovDao.setCreationUserId(creationUser);
         isrcContractMovDao.setUserAuditId(userAudit);

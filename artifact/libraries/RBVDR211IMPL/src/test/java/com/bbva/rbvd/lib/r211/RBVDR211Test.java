@@ -25,8 +25,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,13 +54,7 @@ public class RBVDR211Test {
 
 	private PolicyDTO requestBody;
 
-	private Map<String, Object> responseQueryInsuranceProduct;
-
-	private Map<String, Object> responseQueryProductModality;
-	private List<Map<String, Object>> modalities;
-	private Map<String, Object> modalityData;
-
-	private Map<String, Object> responseQueryGetInsuranceCompanyQuotaId;
+	private Map<String, Object> responseQueryGetRequiredFields;
 
 	private Map<String, Object> responseQueryRoles;
 	private List<Map<String, Object>> roles;
@@ -79,74 +73,46 @@ public class RBVDR211Test {
 		pisdR012 = mock(PISDR012.class);
 		mapperHelper = mock(MapperHelper.class);
 
-		requestBody = mockData.getCreateInsuranceRequestBody();
-
 		rbvdr211.setApplicationConfigurationService(applicationConfigurationService);
 		rbvdr211.setRbvdR201(rbvdr201);
 		rbvdr211.setPisdR012(pisdR012);
 		rbvdr211.setMapperHelper(mapperHelper);
 
-		responseQueryInsuranceProduct = mock(Map.class);
-		when(responseQueryInsuranceProduct.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
+		requestBody = mockData.getCreateInsuranceRequestBody();
 
-		responseQueryProductModality = mock(Map.class);
-		modalities = mock(List.class);
-		modalityData = mock(Map.class);
+		responseQueryGetRequiredFields = mock(Map.class);
 
-		responseQueryGetInsuranceCompanyQuotaId = mock(Map.class);
+		when(responseQueryGetRequiredFields.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
+		when(responseQueryGetRequiredFields.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue())).thenReturn(BigDecimal.valueOf(12));
+		when(responseQueryGetRequiredFields.get(RBVDProperties.FIELD_PAYMENT_FREQUENCY_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
+		when(responseQueryGetRequiredFields.get(RBVDProperties.FIELD_INSURANCE_COMPANY_QUOTA_ID.getValue())).thenReturn("rimacQuotation");
 
 		responseQueryRoles = mock(Map.class);
 		roles = mock(List.class);
 		firstRole = mock(Map.class);
 
 		asoResponse = mockData.getEmisionASOResponse();
-
-		when(responseQueryGetInsuranceCompanyQuotaId.get(RBVDProperties.FIELD_INSURANCE_COMPANY_QUOTA_ID.getValue())).
-				thenReturn("58676a43-ba16-45b3-b626-48b1eba0581b");
-		when(pisdR012.executeRegisterAdditionalCompanyQuotaId(anyString())).thenReturn(responseQueryGetInsuranceCompanyQuotaId);
 	}
 
 	@Test
-	public void executeBusinessLogicEmissionPrePolicyWithErrorInsuranceProduct() {
-		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithErrorInsuranceProduct...");
+	public void executeBusinessLogicEmissionPrePolicyWithNonExistentQuotation() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithNonExistentQuotation...");
 
-		when(pisdR012.executeInsuranceProduct(anyMap())).thenReturn(null);
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(null);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
-	}
-
-	@Test
-	public void executeBusinessLogicEmissionPrePolicyWithErrorProductModality() {
-		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithErrorProductModality...");
-
-		when(pisdR012.executeInsuranceProduct(anyMap())).thenReturn(responseQueryInsuranceProduct);
-
-		when(responseQueryProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(new ArrayList<>());
-		when(pisdR012.executeInsuranceProductModality(anyMap())).thenReturn(responseQueryProductModality);
-
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-
-		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
 	}
 
 	@Test
 	public void executeBusinessLogicEmissionPrePolicyWitContractInsertionError() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWitContractInsertionError...");
 
-		when(pisdR012.executeInsuranceProduct(anyMap())).thenReturn(responseQueryInsuranceProduct);
-
-		when(modalityData.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue())).thenReturn(BigDecimal.valueOf(12));
-		when(modalities.get(0)).thenReturn(modalityData);
-		when(responseQueryProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(modalities);
-		when(pisdR012.executeInsuranceProductModality(anyMap())).thenReturn(responseQueryProductModality);
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
-
-		when(mapperHelper.buildInsuranceContract(anyObject(), anyObject(), any(), anyString())).thenReturn(new InsuranceContractDAO());
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(-1);
 
@@ -160,20 +126,18 @@ public class RBVDR211Test {
 	public void executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError...");
 
-		when(pisdR012.executeInsuranceProduct(anyMap())).thenReturn(responseQueryInsuranceProduct);
-
-		when(modalityData.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue())).thenReturn(BigDecimal.valueOf(12));
-		when(modalities.get(0)).thenReturn(modalityData);
-		when(responseQueryProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(modalities);
-		when(pisdR012.executeInsuranceProductModality(anyMap())).thenReturn(responseQueryProductModality);
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
 
-		when(mapperHelper.buildInsuranceContract(anyObject(), anyObject(), any(), anyString())).thenReturn(new InsuranceContractDAO());
-
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(-1);
+		Map<String, Object>[] receiptsArguments = new Map[1];
+		receiptsArguments[0] = new HashMap<>();
+
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(receiptsArguments);
+
+		when(pisdR012.executeSaveReceipts(any())).thenReturn(null);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -185,20 +149,18 @@ public class RBVDR211Test {
 	public void executeBusinessLogicEmissionPrePolicyWithContractMovInsertionError() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithContractMovInsertionError...");
 
-		when(pisdR012.executeInsuranceProduct(anyMap())).thenReturn(responseQueryInsuranceProduct);
-
-		when(modalityData.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue())).thenReturn(BigDecimal.valueOf(12));
-		when(modalities.get(0)).thenReturn(modalityData);
-		when(responseQueryProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(modalities);
-		when(pisdR012.executeInsuranceProductModality(anyMap())).thenReturn(responseQueryProductModality);
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
 
-		when(mapperHelper.buildInsuranceContract(anyObject(), anyObject(), any(), anyString())).thenReturn(new InsuranceContractDAO());
-
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(1);
+		Map<String, Object>[] receiptsArguments = new Map[1];
+		receiptsArguments[0] = new HashMap<>();
+
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(receiptsArguments);
+
+		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
 
 		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(-1);
 
@@ -212,20 +174,18 @@ public class RBVDR211Test {
 	public void executeBusinessLogicEmissionPrePolicyWithParticipantsInsertionError() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithParticipantsInsertionError...");
 
-		when(pisdR012.executeInsuranceProduct(anyMap())).thenReturn(responseQueryInsuranceProduct);
-
-		when(modalityData.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue())).thenReturn(BigDecimal.valueOf(12));
-		when(modalities.get(0)).thenReturn(modalityData);
-		when(responseQueryProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(modalities);
-		when(pisdR012.executeInsuranceProductModality(anyMap())).thenReturn(responseQueryProductModality);
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
 
-		when(mapperHelper.buildInsuranceContract(anyObject(), anyObject(), any(), anyString())).thenReturn(new InsuranceContractDAO());
-
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(1);
+		Map<String, Object>[] receiptsArguments = new Map[1];
+		receiptsArguments[0] = new HashMap<>();
+
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(receiptsArguments);
+
+		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
 
 		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
 
@@ -239,7 +199,7 @@ public class RBVDR211Test {
 
 		when(mapperHelper.buildIsrcContractParticipants(anyObject(), anyMap(), anyString())).thenReturn(Collections.singletonList(new IsrcContractParticipantDAO()));
 
-		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[0]);
+		when(pisdR012.executeSaveParticipants(any())).thenReturn(null);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -251,20 +211,18 @@ public class RBVDR211Test {
 	public void executeBusinessLogicEmissionPrePolicyOK() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyOK...");
 
-		when(pisdR012.executeInsuranceProduct(anyMap())).thenReturn(responseQueryInsuranceProduct);
-
-		when(modalityData.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue())).thenReturn(BigDecimal.valueOf(12));
-		when(modalities.get(0)).thenReturn(modalityData);
-		when(responseQueryProductModality.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(modalities);
-		when(pisdR012.executeInsuranceProductModality(anyMap())).thenReturn(responseQueryProductModality);
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
 
-		when(mapperHelper.buildInsuranceContract(anyObject(), anyObject(), any(), anyString())).thenReturn(new InsuranceContractDAO());
-
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(1);
+		Map<String, Object>[] receiptsArguments = new Map[1];
+		receiptsArguments[0] = new HashMap<>();
+
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(receiptsArguments);
+
+		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
 
 		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
 

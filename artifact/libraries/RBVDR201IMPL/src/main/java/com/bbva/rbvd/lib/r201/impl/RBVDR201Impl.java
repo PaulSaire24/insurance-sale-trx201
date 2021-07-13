@@ -44,23 +44,26 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 		try {
 			responseBody = this.internalApiConnector.postForObject(ID_API_INSURANCES_CREATE_INSURANCE_ASO, entity, PolicyASO.class);
+			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Response: {}", getRequestBodyInStringFormat(responseBody));
+			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO END *****");
+			return responseBody;
 		} catch (RestClientException ex) {
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Exception: {}", ex.getMessage());
+			return null;
 		}
 
-		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Response: {}", responseBody);
-		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO END *****");
-		return responseBody;
 	}
 
 	@Override
 	public EmisionBO executePrePolicyEmissionService(EmisionBO requestBody, String quotationId, String traceId) {
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService START *****");
-		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Param: {}", requestBody);
+
+		String jsonString = getRequestBodyInStringFormat(requestBody);
+
+		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Param: {}", jsonString);
 
 		EmisionBO responseBody = null;
 
-		String jsonString = getRequestBodyInStringFormat(requestBody);
 		String uri = URI_EMISSION.replace("-", quotationId);
 
 		SignatureAWS signature = this.pisdR014.executeSignatureConstruction(jsonString, HttpMethod.POST,
@@ -74,13 +77,13 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		try {
 			responseBody = this.externalApiConnector.postForObject(ID_API_PRE_POLICY_EMISSION_RIMAC, entity,
 					EmisionBO.class, uriParam);
+			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Response: {}", getRequestBodyInStringFormat(responseBody));
+			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService END *****");
+			return responseBody;
 		} catch (RestClientException ex) {
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
+			return null;
 		}
-
-		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Response: {}", responseBody);
-		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService END *****");
-		return responseBody;
 	}
 
 	private HttpHeaders createHttpHeaders() {
