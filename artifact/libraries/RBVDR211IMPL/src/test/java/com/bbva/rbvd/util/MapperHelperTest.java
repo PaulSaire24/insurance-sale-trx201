@@ -187,12 +187,10 @@ public class MapperHelperTest {
         assertNotNull(validation.getInsurancePromoterId());
         assertNotNull(validation.getContractManagerBranchId());
         assertNotNull(validation.getInsuranceContractStartDate());
-        assertNotNull(validation.getValidityMonthsNumber());
         assertNull(validation.getCustomerId());
         assertNotNull(validation.getDomicileContractId());
         assertNotNull(validation.getCardIssuingMarkType());
         assertNotNull(validation.getIssuedReceiptNumber());
-        assertNotNull(validation.getPaymentFrequencyId());
         assertNotNull(validation.getPremiumAmount());
         assertNotNull(validation.getSettlePendingPremiumAmount());
         assertNotNull(validation.getCurrencyId());
@@ -219,7 +217,7 @@ public class MapperHelperTest {
         assertEquals("4", validation.getFirstVerfnDigitId());
         assertEquals("0", validation.getSecondVerfnDigitId());
         assertEquals(apxRequest.getQuotationId(), validation.getPolicyQuotaInternalId());
-        assertEquals(requiredFieldsEmissionDao.getInsuranceProductId(), validation.getInsuranceProductId());
+        assertEquals(BigDecimal.valueOf(1), validation.getInsuranceProductId());
         assertEquals(apxRequest.getProductPlan().getId(), validation.getInsuranceModalityType());
         assertEquals(new BigDecimal(apxRequest.getInsuranceCompany().getId()), validation.getInsuranceCompanyId());
         assertEquals(rimacResponse.getPayload().getNumeroPoliza(), validation.getPolicyId());
@@ -227,13 +225,11 @@ public class MapperHelperTest {
         assertEquals(apxRequest.getPromoter().getId(), validation.getInsurancePromoterId());
         assertEquals("0241", validation.getContractManagerBranchId());
         assertEquals(format.format(apxRequest.getValidityPeriod().getStartDate()), validation.getInsuranceContractStartDate());
-        assertEquals(requiredFieldsEmissionDao.getContractDurationNumber(), validation.getValidityMonthsNumber());
-        assertEquals(rimacResponse.getPayload().getFechaFinal(), validation.getInsuranceContractEndDate());
+        assertEquals(format.format(rimacResponse.getPayload().getFechaFinal()), validation.getInsuranceContractEndDate());
         assertEquals(apxRequest.getHolder().getId(), validation.getCustomerId());
         assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId(), validation.getDomicileContractId());
         assertEquals(N_VALUE, validation.getCardIssuingMarkType());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()), validation.getIssuedReceiptNumber());
-        assertEquals(requiredFieldsEmissionDao.getPaymentFrequencyId(), validation.getPaymentFrequencyId());
         assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.getPremiumAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount()), validation.getSettlePendingPremiumAmount());
         assertEquals(apxRequest.getInstallmentPlan().getPaymentAmount().getCurrency(), validation.getCurrencyId());
@@ -260,16 +256,16 @@ public class MapperHelperTest {
         CuotaFinancimientoBO cuota = new CuotaFinancimientoBO();
         cuota.setCuota(1L);
         cuota.setMonto(77.03);
-        cuota.setFechaVencimiento("14/07/2021");
+        cuota.setFechaVencimiento(new Date());
         cuota.setMoneda("USD");
 
         rimacResponse.getPayload().setCuotasFinanciamiento(Collections.singletonList(cuota));
 
         validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
 
-        assertEquals(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getFechaVencimiento(),
+        assertEquals(format.format(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getFechaVencimiento()),
                 validation.getLastInstallmentDate());
-        assertEquals(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getFechaVencimiento(),
+        assertEquals(format.format(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getFechaVencimiento()),
                 validation.getPeriodNextPaymentDate());
 
         apxRequest.getFirstInstallment().setIsPaymentRequired(true);
@@ -469,7 +465,7 @@ public class MapperHelperTest {
         assertEquals("0241", validation.get(0).getBranchId());
         assertEquals("0000001102", validation.get(0).getIntAccountId());
         assertEquals(BigDecimal.valueOf(1), validation.get(0).getPolicyReceiptId());
-        assertEquals(BigDecimal.valueOf(0), validation.get(0).getInsuranceCompanyId());
+        assertEquals(BigDecimal.valueOf(1), validation.get(0).getInsuranceCompanyId());
         assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.get(0).getPremiumPaymentReceiptAmount());
         assertEquals(BigDecimal.valueOf(asoResponse.getData()
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()), validation.get(0).getFixingExchangeRateAmount());
@@ -790,33 +786,33 @@ public class MapperHelperTest {
         when(participantDao.getCreationUserId()).thenReturn("creationUser");
         when(participantDao.getUserAuditId()).thenReturn("userAudit");
 
-        Map<String, Object> validation = mapperHelper.createSaveParticipantArguments(participantDao);
+        Map<String, Object>[] validation = mapperHelper.createSaveParticipantArguments(Collections.singletonList(participantDao));
 
-        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_PARTY_ORDER_NUMBER.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_PERSONAL_DOC_TYPE.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_CUSTOMER_RELATIONSHIP_TYPE.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_PARTY_ORDER_NUMBER.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_PERSONAL_DOC_TYPE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_CUSTOMER_RELATIONSHIP_TYPE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
 
-        assertEquals(participantDao.getEntityId(), validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
-        assertEquals(participantDao.getBranchId(), validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
-        assertEquals(participantDao.getIntAccountId(), validation.get(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue()));
-        assertEquals(participantDao.getParticipantRoleId(), validation.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
-        assertEquals(participantDao.getPartyOrderNumber(), validation.get(RBVDProperties.FIELD_PARTY_ORDER_NUMBER.getValue()));
-        assertEquals(participantDao.getPersonalDocType(), validation.get(RBVDProperties.FIELD_PERSONAL_DOC_TYPE.getValue()));
-        assertEquals(participantDao.getParticipantPersonalId(), validation.get(RBVDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue()));
-        assertEquals(participantDao.getCustomerId(), validation.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
-        assertEquals(participantDao.getCustomerRelationshipType(), validation.get(RBVDProperties.FIELD_CUSTOMER_RELATIONSHIP_TYPE.getValue()));
-        assertEquals(participantDao.getRegistrySituationType(), validation.get(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue()));
-        assertEquals(participantDao.getCreationUserId(), validation.get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
-        assertEquals(participantDao.getUserAuditId(), validation.get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
+        assertEquals(participantDao.getEntityId(), validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
+        assertEquals(participantDao.getBranchId(), validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
+        assertEquals(participantDao.getIntAccountId(), validation[0].get(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue()));
+        assertEquals(participantDao.getParticipantRoleId(), validation[0].get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
+        assertEquals(participantDao.getPartyOrderNumber(), validation[0].get(RBVDProperties.FIELD_PARTY_ORDER_NUMBER.getValue()));
+        assertEquals(participantDao.getPersonalDocType(), validation[0].get(RBVDProperties.FIELD_PERSONAL_DOC_TYPE.getValue()));
+        assertEquals(participantDao.getParticipantPersonalId(), validation[0].get(RBVDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue()));
+        assertEquals(participantDao.getCustomerId(), validation[0].get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
+        assertEquals(participantDao.getCustomerRelationshipType(), validation[0].get(RBVDProperties.FIELD_CUSTOMER_RELATIONSHIP_TYPE.getValue()));
+        assertEquals(participantDao.getRegistrySituationType(), validation[0].get(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue()));
+        assertEquals(participantDao.getCreationUserId(), validation[0].get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
+        assertEquals(participantDao.getUserAuditId(), validation[0].get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
     }
 
 }

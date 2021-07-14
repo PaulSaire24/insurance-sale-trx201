@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
@@ -82,14 +81,15 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Map<String, Object> responseQueryRoles = this.pisdR012.executeGetRolesByProductAndModality(emissionDao.getInsuranceProductId(), requestBody.getProductPlan().getId());
 
 			if(!isEmpty((List) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue()))) {
+
 				List<IsrcContractParticipantDAO> participants = this.mapperHelper.buildIsrcContractParticipants(requestBody, responseQueryRoles, asoResponse.getData().getId());
-				Map<String, Object>[] arguments = new HashMap[participants.size()];
-				for(int i = 0; i < participants.size(); i++) {
-					arguments[i] = this.mapperHelper.createSaveParticipantArguments(participants.get(i));
-				}
+
+				Map<String, Object>[] arguments = this.mapperHelper.createSaveParticipantArguments(participants);
+
 				Arrays.stream(arguments).forEach(
 						argumentsMap -> argumentsMap.forEach(
 								(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy | SaveParticipants parameter {} with value: {} *****", key, value)));
+
 				validateMultipleInsertion(this.pisdR012.executeSaveParticipants(arguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
 			}
 

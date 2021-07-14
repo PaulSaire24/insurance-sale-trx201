@@ -43,6 +43,10 @@ import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -56,9 +60,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-public class MapperHelper {
+import static org.springframework.util.CollectionUtils.isEmpty;
 
-    private static final String DATE_FORMAT = "dd/MM/yyyy";
+public class MapperHelper {
 
     private static final String EMAIL_VALUE = "EMAIL";
     private static final String PHONE_NUMBER_VALUE = "PHONE";
@@ -78,8 +82,10 @@ public class MapperHelper {
     private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
     private static final String NEXT_RECEIPTS_START_DATE_VALUE = "01/01/2021";
 
-    private final SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+    private final SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
     private final String currentDate = format.format(new Date());
+
+    private final DateTimeFormatter dtFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     private ApplicationConfigurationService applicationConfigurationService;
 
@@ -269,16 +275,20 @@ public class MapperHelper {
         contractDao.setInsuranceCompanyId(new BigDecimal(apxRequest.getInsuranceCompany().getId()));
         if(Objects.nonNull(rimacResponse)) {
             contractDao.setPolicyId(rimacResponse.getPayload().getNumeroPoliza());
-            contractDao.setInsuranceContractEndDate(rimacResponse.getPayload().getFechaFinal());
+
+            contractDao.setInsuranceContractEndDate(format.format(rimacResponse.getPayload().getFechaFinal()));
 
             int numeroCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().size();
             CuotaFinancimientoBO ultimaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
                     stream().filter(cuota -> cuota.getCuota() == numeroCuotas).findFirst().orElse(null);
 
             if(Objects.nonNull(ultimaCuota)) {
-                contractDao.setLastInstallmentDate(ultimaCuota.getFechaVencimiento());
+
+                String lastInstDate = format.format(ultimaCuota.getFechaVencimiento());
+
+                contractDao.setLastInstallmentDate(lastInstDate);
                 contractDao.setPeriodNextPaymentDate((numeroCuotas == 1) ?
-                        ultimaCuota.getFechaVencimiento() : getNextPaymentDate(rimacResponse));
+                        lastInstDate : getNextPaymentDate(rimacResponse));
             }
 
             contractDao.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
@@ -329,7 +339,7 @@ public class MapperHelper {
         CuotaFinancimientoBO segundaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
                 stream().filter(cuota -> cuota.getCuota() == 2).findFirst().orElse(null);
         if(Objects.nonNull(segundaCuota)) {
-            nextPaymentDate = segundaCuota.getFechaVencimiento();
+            nextPaymentDate = format.format(segundaCuota.getFechaVencimiento());
         }
         return nextPaymentDate;
     }
@@ -393,7 +403,7 @@ public class MapperHelper {
         firstReceipt.setEntityId(asoResponse.getData().getId().substring(0, 4));
         firstReceipt.setBranchId(asoResponse.getData().getId().substring(4, 8));
         firstReceipt.setIntAccountId(asoResponse.getData().getId().substring(10));
-        firstReceipt.setInsuranceCompanyId(new BigDecimal(asoResponse.getData().getId().substring(9,10)));
+        firstReceipt.setInsuranceCompanyId(new BigDecimal(requestBody.getInsuranceCompany().getId()));
         firstReceipt.setPremiumPaymentReceiptAmount(BigDecimal.valueOf(requestBody.getFirstInstallment().getPaymentAmount().getAmount()));
 
         if(Objects.nonNull(asoResponse.getData().getFirstInstallment().getExchangeRate())) {
@@ -440,9 +450,10 @@ public class MapperHelper {
         CuotaFinancimientoBO primeraCuota = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
                 filter(cuota -> cuota.getCuota() == 1).findFirst().orElse(null);
         if(Objects.nonNull(primeraCuota)) {
+            String expirationDate = format.format(primeraCuota.getFechaVencimiento());
             firstReceipt.setPolicyReceiptId(BigDecimal.valueOf(primeraCuota.getCuota()));
-            firstReceipt.setReceiptEndDate(primeraCuota.getFechaVencimiento());
-            firstReceipt.setReceiptExpirationDate(primeraCuota.getFechaVencimiento());
+            firstReceipt.setReceiptEndDate(expirationDate);
+            firstReceipt.setReceiptExpirationDate(expirationDate);
         }
 
         receiptList.add(firstReceipt);
@@ -450,7 +461,7 @@ public class MapperHelper {
         List<CuotaFinancimientoBO> siguientesCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
                 filter(cuota -> cuota.getCuota() != 1).collect(Collectors.toList());
 
-        if(siguientesCuotas.size() >= 1) {
+        if(!isEmpty(siguientesCuotas)) {
             siguientesCuotas.forEach(cuota -> receiptList.add(createNextReceipt(firstReceipt, cuota)));
         }
 
@@ -460,11 +471,12 @@ public class MapperHelper {
     private InsuranceCtrReceiptsDAO createNextReceipt(InsuranceCtrReceiptsDAO firstReceipt, CuotaFinancimientoBO cuota) {
         InsuranceCtrReceiptsDAO nextReceipt = new InsuranceCtrReceiptsDAO();
 
-        String dueDate = cuota.getFechaVencimiento();
+        String dueDate = format.format(cuota.getFechaVencimiento());
 
         nextReceipt.setEntityId(firstReceipt.getEntityId());
         nextReceipt.setBranchId(firstReceipt.getBranchId());
         nextReceipt.setIntAccountId(firstReceipt.getIntAccountId());
+        nextReceipt.setInsuranceCompanyId(firstReceipt.getInsuranceCompanyId());
         nextReceipt.setPolicyReceiptId(BigDecimal.valueOf(cuota.getCuota()));
         nextReceipt.setPremiumPaymentReceiptAmount(BigDecimal.valueOf(0));
         nextReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(0));
@@ -589,20 +601,28 @@ public class MapperHelper {
         return participantDao;
     }
 
-    public Map<String, Object> createSaveParticipantArguments(IsrcContractParticipantDAO participant) {
+    public Map<String, Object>[] createSaveParticipantArguments(List<IsrcContractParticipantDAO> participants) {
+        Map<String, Object>[] participantsArguments = new HashMap[participants.size()];
+        for(int i = 0; i < participants.size(); i++) {
+            participantsArguments[i] = createParticipant(participants.get(i));
+        }
+        return participantsArguments;
+    }
+
+    private Map<String, Object> createParticipant(IsrcContractParticipantDAO participantDao) {
         Map<String, Object> arguments = new HashMap<>();
-        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), participant.getEntityId());
-        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), participant.getBranchId());
-        arguments.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), participant.getIntAccountId());
-        arguments.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), participant.getParticipantRoleId());
-        arguments.put(RBVDProperties.FIELD_PARTY_ORDER_NUMBER.getValue(), participant.getPartyOrderNumber());
-        arguments.put(RBVDProperties.FIELD_PERSONAL_DOC_TYPE.getValue(), participant.getPersonalDocType());
-        arguments.put(RBVDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue(), participant.getParticipantPersonalId());
-        arguments.put(RBVDProperties.FIELD_CUSTOMER_ID.getValue(), participant.getCustomerId());
-        arguments.put(RBVDProperties.FIELD_CUSTOMER_RELATIONSHIP_TYPE.getValue(), participant.getCustomerRelationshipType());
-        arguments.put(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue(), participant.getRegistrySituationType());
-        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), participant.getCreationUserId());
-        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), participant.getUserAuditId());
+        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), participantDao.getEntityId());
+        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), participantDao.getBranchId());
+        arguments.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), participantDao.getIntAccountId());
+        arguments.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), participantDao.getParticipantRoleId());
+        arguments.put(RBVDProperties.FIELD_PARTY_ORDER_NUMBER.getValue(), participantDao.getPartyOrderNumber());
+        arguments.put(RBVDProperties.FIELD_PERSONAL_DOC_TYPE.getValue(), participantDao.getPersonalDocType());
+        arguments.put(RBVDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue(), participantDao.getParticipantPersonalId());
+        arguments.put(RBVDProperties.FIELD_CUSTOMER_ID.getValue(), participantDao.getCustomerId());
+        arguments.put(RBVDProperties.FIELD_CUSTOMER_RELATIONSHIP_TYPE.getValue(), participantDao.getCustomerRelationshipType());
+        arguments.put(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue(), participantDao.getRegistrySituationType());
+        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), participantDao.getCreationUserId());
+        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), participantDao.getUserAuditId());
         return arguments;
     }
 

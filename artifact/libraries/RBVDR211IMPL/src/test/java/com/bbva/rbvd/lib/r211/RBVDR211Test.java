@@ -25,7 +25,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,10 +131,10 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		Map<String, Object>[] receiptsArguments = new Map[1];
-		receiptsArguments[0] = new HashMap<>();
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
 
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(receiptsArguments);
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
 
 		when(pisdR012.executeSaveReceipts(any())).thenReturn(null);
 
@@ -155,10 +154,10 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		Map<String, Object>[] receiptsArguments = new Map[1];
-		receiptsArguments[0] = new HashMap<>();
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
 
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(receiptsArguments);
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
 
 		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
 
@@ -180,10 +179,10 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		Map<String, Object>[] receiptsArguments = new Map[1];
-		receiptsArguments[0] = new HashMap<>();
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
 
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(receiptsArguments);
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
 
 		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
 
@@ -197,7 +196,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
 
-		when(mapperHelper.buildIsrcContractParticipants(anyObject(), anyMap(), anyString())).thenReturn(Collections.singletonList(new IsrcContractParticipantDAO()));
+		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
 
 		when(pisdR012.executeSaveParticipants(any())).thenReturn(null);
 
@@ -217,10 +216,10 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		Map<String, Object>[] receiptsArguments = new Map[1];
-		receiptsArguments[0] = new HashMap<>();
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
 
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(receiptsArguments);
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
 
 		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
 
@@ -234,7 +233,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
 
-		when(mapperHelper.buildIsrcContractParticipants(anyObject(), anyMap(), anyString())).thenReturn(Collections.singletonList(new IsrcContractParticipantDAO()));
+		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
 
 		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
 
