@@ -128,7 +128,7 @@ public class MapperHelperTest {
     @Test
     public void buildRequestBodyRimac_OK() {
         PolicyInspectionDTO inspection = apxRequest.getInspection();
-        EmisionBO validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue","channelCode", "dataId");
+        EmisionBO validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode", "dataId");
 
         assertNotNull(validation.getPayload().getContactoInspeccion());
         assertNotNull(validation.getPayload().getContactoInspeccion().getNombre());
@@ -511,11 +511,11 @@ public class MapperHelperTest {
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()), validation.get(0).getFixingExchangeRateAmount());
         assertEquals(BigDecimal.valueOf(asoResponse.getData()
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.get(0).getPremiumCurrencyExchAmount());
-        assertEquals(format.format( asoResponse.getData().getFirstInstallment().getOperationDate()),
+        assertEquals(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()),
                 validation.get(0).getReceiptIssueDate());
-        assertEquals(format.format( asoResponse.getData().getFirstInstallment().getOperationDate()),
+        assertEquals(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()),
                 validation.get(0).getReceiptCollectionDate());
-        assertEquals(format.format( asoResponse.getData().getFirstInstallment().getOperationDate()),
+        assertEquals(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()),
                 validation.get(0).getReceiptsTransmissionDate());
     }
 
@@ -772,7 +772,7 @@ public class MapperHelperTest {
     }
 
     @Test
-    public void createSaveParticipantArguments_OK () {
+    public void createSaveParticipantArguments_OK() {
         when(participantDao.getEntityId()).thenReturn("entityId");
         when(participantDao.getBranchId()).thenReturn("branchId");
         when(participantDao.getIntAccountId()).thenReturn("intAccountId");
@@ -813,6 +813,61 @@ public class MapperHelperTest {
         assertEquals(participantDao.getRegistrySituationType(), validation[0].get(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue()));
         assertEquals(participantDao.getCreationUserId(), validation[0].get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
         assertEquals(participantDao.getUserAuditId(), validation[0].get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
+    }
+
+    @Test
+    public void mappingOutputFields_OK() {
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, "rimacQuotation");
+
+        assertNotNull(apxRequest.getId());
+        assertNotNull(apxRequest.getProductDescription());
+        assertNotNull(apxRequest.getProductPlan().getDescription());
+        assertNotNull(apxRequest.getOperationDate());
+        assertNotNull(apxRequest.getValidityPeriod().getEndDate());
+        assertNotNull(apxRequest.getTotalAmount().getExchangeRate());
+        assertNotNull(apxRequest.getInstallmentPlan().getPeriod().getName());
+        assertNotNull(apxRequest.getInstallmentPlan().getExchangeRate());
+        apxRequest.getInspection().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
+        assertNotNull(apxRequest.getFirstInstallment().getFirstPaymentDate());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationNumber());
+        assertNotNull(apxRequest.getFirstInstallment().getTransactionNumber());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationDate());
+        assertNotNull(apxRequest.getFirstInstallment().getExchangeRate());
+        apxRequest.getParticipants().forEach(participant -> assertTrue(Objects.nonNull(participant.getId()) && Objects.nonNull(participant.getCustomerId())));
+        assertNotNull(apxRequest.getInsuranceCompany().getName());
+        assertNotNull(apxRequest.getInsuranceCompany().getProductId());
+        assertNotNull(apxRequest.getExternalQuotationId());
+        assertNotNull(apxRequest.getExternalPolicyNumber());
+        assertNotNull(apxRequest.getStatus().getId());
+        assertNotNull(apxRequest.getStatus().getDescription());
+        assertNotNull(apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+
+        assertEquals(asoResponse.getData().getId(), apxRequest.getId());
+        assertEquals(asoResponse.getData().getProductDescription(), apxRequest.getProductDescription());
+        assertEquals(asoResponse.getData().getProductPlan().getDescription(), apxRequest.getProductPlan().getDescription());
+        assertEquals(asoResponse.getData().getOperationDate(), apxRequest.getOperationDate());
+        assertEquals(asoResponse.getData().getValidityPeriod().getEndDate(), apxRequest.getValidityPeriod().getEndDate());
+        assertEquals(asoResponse.getData().getInstallmentPlan().getPeriod().getName(),
+                apxRequest.getInstallmentPlan().getPeriod().getName());
+        assertEquals(asoResponse.getData().getFirstInstallment().getFirstPaymentDate(),
+                apxRequest.getFirstInstallment().getFirstPaymentDate());
+        assertEquals(asoResponse.getData().getFirstInstallment().getOperationNumber(),
+                apxRequest.getFirstInstallment().getOperationNumber());
+        assertEquals(asoResponse.getData().getFirstInstallment().getTransactionNumber(),
+                apxRequest.getFirstInstallment().getTransactionNumber());
+        assertEquals(asoResponse.getData().getFirstInstallment().getOperationDate(),
+                apxRequest.getFirstInstallment().getOperationDate());
+        assertEquals(asoResponse.getData().getInsuranceCompany().getName(), apxRequest.getInsuranceCompany().getName());
+        assertEquals(rimacResponse.getPayload().getCodProducto(), apxRequest.getInsuranceCompany().getProductId());
+        assertEquals("rimacQuotation", apxRequest.getExternalQuotationId());
+        assertEquals(rimacResponse.getPayload().getNumeroPoliza(), apxRequest.getExternalPolicyNumber());
+        assertEquals("FOR", apxRequest.getStatus().getId());
+        assertEquals(asoResponse.getData().getStatus().getDescription(), apxRequest.getStatus().getDescription());
+        assertEquals("04040005", apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
     }
 
 }

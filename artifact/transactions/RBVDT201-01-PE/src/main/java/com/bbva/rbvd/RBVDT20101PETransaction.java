@@ -8,7 +8,9 @@ import com.bbva.rbvd.lib.r211.RBVDR211;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Calendar;
 import java.util.Objects;
+import java.util.TimeZone;
 
 public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 
@@ -58,6 +60,38 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 
 		if(Objects.nonNull(responseBody)) {
 			this.setId(responseBody.getId());
+			this.setPolicynumber(responseBody.getPolicyNumber());
+			this.setQuotationid(responseBody.getQuotationId());
+			this.setProductid(responseBody.getProductId());
+			this.setProductdescription(responseBody.getProductDescription());
+			this.setProductplan(responseBody.getProductPlan());
+			this.setPaymentmethod(responseBody.getPaymentMethod());
+
+			Calendar operationDate = Calendar.getInstance();
+			operationDate.setTimeZone(TimeZone.getTimeZone("America/Lima"));
+			operationDate.setTime(responseBody.getOperationDate());
+
+			this.setOperationdate(operationDate);
+			this.setValidityperiod(responseBody.getValidityPeriod());
+			this.setLinks(responseBody.getLinks());
+			this.setTotalamount(responseBody.getTotalAmount());
+			this.setInsuredamount(responseBody.getInsuredAmount());
+			this.setIsdatatreatment(responseBody.getIsDataTreatment());
+			this.setHolder(responseBody.getHolder());
+			this.setRelatedcontracts(responseBody.getRelatedContracts());
+			this.setInstallmentplan(responseBody.getInstallmentPlan());
+			this.setHasacceptedcontract(responseBody.getHasAcceptedContract());
+			this.setInspection(responseBody.getInspection());
+			this.setFirstinstallment(responseBody.getFirstInstallment());
+			this.setParticipants(responseBody.getParticipants());
+			this.setBusinessagent(responseBody.getBusinessAgent());
+			this.setPromoter(responseBody.getPromoter());
+			this.setInsurancecompany(responseBody.getInsuranceCompany());
+			this.setExternalquotationid(responseBody.getExternalQuotationId());
+			this.setExternalpolicynumber(responseBody.getExternalPolicyNumber());
+			this.setStatus(responseBody.getStatus());
+			this.setBank(responseBody.getBank());
+			this.setIdentityverificationcode(responseBody.getIdentityVerificationCode());
 
 			this.setHttpResponseCode(HttpResponseCode.HTTP_CODE_200, Severity.OK);
 		} else {

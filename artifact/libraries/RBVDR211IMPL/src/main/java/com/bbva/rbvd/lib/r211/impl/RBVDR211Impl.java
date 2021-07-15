@@ -6,7 +6,10 @@ import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
-import com.bbva.rbvd.dto.insrncsale.dao.*;
+import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 
@@ -93,14 +96,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				validateMultipleInsertion(this.pisdR012.executeSaveParticipants(arguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
 			}
 
-			responseBody = new PolicyDTO();
-			responseBody.setId(asoResponse.getData().getId());
+			responseBody = requestBody;
+			this.mapperHelper.mappingOutputFields(responseBody, asoResponse, rimacResponse, emissionDao.getInsuranceCompanyQuotaId());
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Response: {}", responseBody);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy END *****");
 
 			return responseBody;
 		} catch (BusinessException ex) {
-			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Business exception message: {} *****", ex.getMessage());
+			LOGGER.error("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Business exception message: {} *****", ex.getMessage());
 			this.addAdvice(ex.getAdviceCode());
 			return null;
 		}

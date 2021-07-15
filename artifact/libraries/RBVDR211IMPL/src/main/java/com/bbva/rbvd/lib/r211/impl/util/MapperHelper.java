@@ -9,6 +9,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
 import com.bbva.rbvd.dto.insrncsale.aso.IdentityDocumentASO;
 import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
 import com.bbva.rbvd.dto.insrncsale.aso.PaymentAmountASO;
+import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
@@ -36,17 +37,21 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
 
-import com.bbva.rbvd.dto.insrncsale.dao.*;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -81,11 +86,10 @@ public class MapperHelper {
     private static final String FIRST_RECEIPT_STATUS_TYPE_VALUE = "COB";
     private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
     private static final String NEXT_RECEIPTS_START_DATE_VALUE = "01/01/2021";
+    private static final String PRICE_TYPE_VALUE = "SALE";
 
     private final SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
     private final String currentDate = format.format(new Date());
-
-    private final DateTimeFormatter dtFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     private ApplicationConfigurationService applicationConfigurationService;
 
@@ -624,6 +628,76 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), participantDao.getCreationUserId());
         arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), participantDao.getUserAuditId());
         return arguments;
+    }
+
+    public void mappingOutputFields(PolicyDTO responseBody, PolicyASO asoResponse, EmisionBO rimacResponse, String rimacQuotation) {
+        DataASO data = asoResponse.getData();
+
+        responseBody.setId(data.getId());
+        responseBody.setProductDescription(data.getProductDescription());
+        responseBody.getProductPlan().setDescription(data.getProductPlan().getDescription());
+        responseBody.setOperationDate(data.getOperationDate());
+        responseBody.getValidityPeriod().setEndDate(data.getValidityPeriod().getEndDate());
+        responseBody.getInstallmentPlan().getPeriod().setName(data.getInstallmentPlan().getPeriod().getName());
+        responseBody.getInspection().getContactDetails().forEach(contactDetail -> contactDetail.setId("01"));
+        responseBody.getFirstInstallment().setFirstPaymentDate(data.getFirstInstallment().getFirstPaymentDate());
+
+        if(responseBody.getFirstInstallment().getIsPaymentRequired()) {
+            responseBody.getFirstInstallment().setOperationNumber(data.getFirstInstallment().getOperationNumber());
+            responseBody.getFirstInstallment().setTransactionNumber(data.getFirstInstallment().getTransactionNumber());
+            responseBody.getFirstInstallment().setOperationDate(data.getFirstInstallment().getOperationDate());
+            responseBody.getFirstInstallment().setExchangeRate(validateExchangeRate(data.getFirstInstallment().getExchangeRate()));
+            responseBody.getTotalAmount().setExchangeRate(validateExchangeRate(data.getTotalAmount().getExchangeRate()));
+            responseBody.getInstallmentPlan().setExchangeRate(validateExchangeRate(data.getInstallmentPlan().getExchangeRate()));
+        }
+
+        for(int i = 0; i < responseBody.getParticipants().size(); i++) {
+            for(ParticipantASO participant : data.getParticipants()) {
+                if(responseBody.getParticipants().get(i).getIdentityDocument().getNumber()
+                        .equals(participant.getIdentityDocument().getNumber())) {
+                    responseBody.getParticipants().get(i).setId(participant.getId());
+                    responseBody.getParticipants().get(i).setCustomerId(participant.getCustomerId());
+                }
+            }
+        }
+
+        responseBody.getInsuranceCompany().setName(data.getInsuranceCompany().getName());
+        responseBody.getInsuranceCompany().setProductId(rimacResponse.getPayload().getCodProducto());
+
+        responseBody.setExternalQuotationId(rimacQuotation);
+
+        responseBody.setExternalPolicyNumber(rimacResponse.getPayload().getNumeroPoliza());
+
+        QuotationStatusDTO status = new QuotationStatusDTO();
+        status.setId(this.applicationConfigurationService.getProperty(data.getStatus().getDescription()));
+        status.setDescription(data.getStatus().getDescription());
+
+        responseBody.setStatus(status);
+
+        responseBody.getHolder().getIdentityDocument().setDocumentNumber(responseBody.getHolder().getIdentityDocument().getNumber());
+        responseBody.getHolder().getIdentityDocument().setNumber(null);
+    }
+
+    private ExchangeRateDTO validateExchangeRate(ExchangeRateASO exchangeRateASO) {
+        ExchangeRateDTO exchangeRate = null;
+        if(Objects.nonNull(exchangeRateASO)) {
+            exchangeRate = new ExchangeRateDTO();
+            exchangeRate.setDate(exchangeRateASO.getDate());
+            exchangeRate.setBaseCurrency(exchangeRateASO.getBaseCurrency());
+            exchangeRate.setTargetCurrency(exchangeRateASO.getTargetCurrency());
+
+            DetailDTO detail = new DetailDTO();
+
+            FactorDTO factor = new FactorDTO();
+            factor.setValue(exchangeRateASO.getDetail().getFactor().getValue());
+            factor.setRatio(exchangeRateASO.getDetail().getFactor().getRatio());
+
+            detail.setFactor(factor);
+            detail.setPriceType(PRICE_TYPE_VALUE);
+
+            exchangeRate.setDetail(detail);
+        }
+        return exchangeRate;
     }
 
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {

@@ -3,7 +3,9 @@ package com.bbva.rbvd;
 import com.bbva.elara.transaction.AbstractTransaction;
 import com.bbva.rbvd.dto.insrncsale.commons.BankDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.LinkDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ValidityPeriodDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FirstInstallmentDTO;
@@ -16,6 +18,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.PolicyProductPlan;
 import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.TotalAmountDTO;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -172,5 +175,194 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	 */
 	protected void setId(final String field){
 		this.addParameter("id", field);
+	}
+
+	/**
+	 * Set value for String output parameter policyNumber
+	 */
+	protected void setPolicynumber(final String field){
+		this.addParameter("policyNumber", field);
+	}
+
+	/**
+	 * Set value for String output parameter quotationId
+	 */
+	protected void setQuotationid(final String field){
+		this.addParameter("quotationId", field);
+	}
+
+	/**
+	 * Set value for String output parameter productId
+	 */
+	protected void setProductid(final String field){
+		this.addParameter("productId", field);
+	}
+
+	/**
+	 * Set value for String output parameter productDescription
+	 */
+	protected void setProductdescription(final String field){
+		this.addParameter("productDescription", field);
+	}
+
+	/**
+	 * Set value for PolicyProductPlan output parameter productPlan
+	 */
+	protected void setProductplan(final PolicyProductPlan field){
+		this.addParameter("productPlan", field);
+	}
+
+	/**
+	 * Set value for PolicyPaymentMethodDTO output parameter paymentMethod
+	 */
+	protected void setPaymentmethod(final PolicyPaymentMethodDTO field){
+		this.addParameter("paymentMethod", field);
+	}
+
+	/**
+	 * Set value for Calendar output parameter operationDate
+	 */
+	protected void setOperationdate(final Calendar field){
+		this.addParameter("operationDate", field);
+	}
+
+	/**
+	 * Set value for ValidityPeriodDTO output parameter validityPeriod
+	 */
+	protected void setValidityperiod(final ValidityPeriodDTO field){
+		this.addParameter("validityPeriod", field);
+	}
+
+	/**
+	 * Set value for List<LinkDTO> output parameter links
+	 */
+	protected void setLinks(final List<LinkDTO> field){
+		this.addParameter("links", field);
+	}
+
+	/**
+	 * Set value for TotalAmountDTO output parameter totalAmount
+	 */
+	protected void setTotalamount(final TotalAmountDTO field){
+		this.addParameter("totalAmount", field);
+	}
+
+	/**
+	 * Set value for InsuredAmountDTO output parameter insuredAmount
+	 */
+	protected void setInsuredamount(final InsuredAmountDTO field){
+		this.addParameter("insuredAmount", field);
+	}
+
+	/**
+	 * Set value for Boolean output parameter isDataTreatment
+	 */
+	protected void setIsdatatreatment(final Boolean field){
+		this.addParameter("isDataTreatment", field);
+	}
+
+	/**
+	 * Set value for HolderDTO output parameter holder
+	 */
+	protected void setHolder(final HolderDTO field){
+		this.addParameter("holder", field);
+	}
+
+	/**
+	 * Set value for List<RelatedContractDTO> output parameter relatedContracts
+	 */
+	protected void setRelatedcontracts(final List<RelatedContractDTO> field){
+		this.addParameter("relatedContracts", field);
+	}
+
+	/**
+	 * Set value for PolicyInstallmentPlanDTO output parameter installmentPlan
+	 */
+	protected void setInstallmentplan(final PolicyInstallmentPlanDTO field){
+		this.addParameter("installmentPlan", field);
+	}
+
+	/**
+	 * Set value for Boolean output parameter hasAcceptedContract
+	 */
+	protected void setHasacceptedcontract(final Boolean field){
+		this.addParameter("hasAcceptedContract", field);
+	}
+
+	/**
+	 * Set value for PolicyInspectionDTO output parameter inspection
+	 */
+	protected void setInspection(final PolicyInspectionDTO field){
+		this.addParameter("inspection", field);
+	}
+
+	/**
+	 * Set value for FirstInstallmentDTO output parameter firstInstallment
+	 */
+	protected void setFirstinstallment(final FirstInstallmentDTO field){
+		this.addParameter("firstInstallment", field);
+	}
+
+	/**
+	 * Set value for List<ParticipantDTO> output parameter participants
+	 */
+	protected void setParticipants(final List<ParticipantDTO> field){
+		this.addParameter("participants", field);
+	}
+
+	/**
+	 * Set value for BusinessAgentDTO output parameter businessAgent
+	 */
+	protected void setBusinessagent(final BusinessAgentDTO field){
+		this.addParameter("businessAgent", field);
+	}
+
+	/**
+	 * Set value for PromoterDTO output parameter promoter
+	 */
+	protected void setPromoter(final PromoterDTO field){
+		this.addParameter("promoter", field);
+	}
+
+	/**
+	 * Set value for InsuranceCompanyDTO output parameter insuranceCompany
+	 */
+	protected void setInsurancecompany(final InsuranceCompanyDTO field){
+		this.addParameter("insuranceCompany", field);
+	}
+
+	/**
+	 * Set value for String output parameter externalQuotationId
+	 */
+	protected void setExternalquotationid(final String field){
+		this.addParameter("externalQuotationId", field);
+	}
+
+	/**
+	 * Set value for String output parameter externalPolicyNumber
+	 */
+	protected void setExternalpolicynumber(final String field){
+		this.addParameter("externalPolicyNumber", field);
+	}
+
+	/**
+	 * Set value for QuotationStatusDTO output parameter status
+	 */
+	protected void setStatus(final QuotationStatusDTO field){
+		this.addParameter("status", field);
+	}
+
+	/**
+	 * Set value for BankDTO output parameter bank
+	 */
+	protected void setBank(final BankDTO field){
+		this.addParameter("bank", field);
+	}
+
+	/**
+	 * Set value for String output parameter identityVerificationCode
+	 */
+	protected void setIdentityverificationcode(final String field){
+		this.addParameter("identityVerificationCode", field);
 	}
 }
