@@ -97,7 +97,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			responseBody = requestBody;
-			this.mapperHelper.mappingOutputFields(responseBody, asoResponse, rimacResponse, emissionDao.getInsuranceCompanyQuotaId());
+			this.mapperHelper.mappingOutputFields(responseBody, asoResponse, rimacResponse, emissionDao);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Response: {}", responseBody);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy END *****");
 
@@ -119,6 +119,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		emissionDao.setContractDurationNumber((BigDecimal) responseQueryGetRequiredFields.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue()));
 		emissionDao.setPaymentFrequencyId((BigDecimal) responseQueryGetRequiredFields.get(RBVDProperties.FIELD_PAYMENT_FREQUENCY_ID.getValue()));
 		emissionDao.setInsuranceCompanyQuotaId((String) responseQueryGetRequiredFields.get(RBVDProperties.FIELD_INSURANCE_COMPANY_QUOTA_ID.getValue()));
+		emissionDao.setInsuranceProductDesc((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_PRODUCT_DESC.getValue()));
+		emissionDao.setInsuranceModalityName((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_MODALITY_NAME.getValue()));
+		emissionDao.setPaymentFrequencyName((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_PAYMENT_FREQUENCY_NAME.getValue()));
 		return emissionDao;
 	}
 

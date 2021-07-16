@@ -52,6 +52,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import org.joda.time.LocalDate;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -280,7 +281,7 @@ public class MapperHelper {
         if(Objects.nonNull(rimacResponse)) {
             contractDao.setPolicyId(rimacResponse.getPayload().getNumeroPoliza());
 
-            contractDao.setInsuranceContractEndDate(format.format(rimacResponse.getPayload().getFechaFinal()));
+            contractDao.setInsuranceContractEndDate(generateCorrectDateFormat(rimacResponse.getPayload().getFechaFinal()));
 
             int numeroCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().size();
             CuotaFinancimientoBO ultimaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
@@ -288,7 +289,7 @@ public class MapperHelper {
 
             if(Objects.nonNull(ultimaCuota)) {
 
-                String lastInstDate = format.format(ultimaCuota.getFechaVencimiento());
+                String lastInstDate = generateCorrectDateFormat(ultimaCuota.getFechaVencimiento());
 
                 contractDao.setLastInstallmentDate(lastInstDate);
                 contractDao.setPeriodNextPaymentDate((numeroCuotas == 1) ?
@@ -343,7 +344,7 @@ public class MapperHelper {
         CuotaFinancimientoBO segundaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
                 stream().filter(cuota -> cuota.getCuota() == 2).findFirst().orElse(null);
         if(Objects.nonNull(segundaCuota)) {
-            nextPaymentDate = format.format(segundaCuota.getFechaVencimiento());
+            nextPaymentDate = generateCorrectDateFormat(segundaCuota.getFechaVencimiento());
         }
         return nextPaymentDate;
     }
@@ -454,7 +455,7 @@ public class MapperHelper {
         CuotaFinancimientoBO primeraCuota = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
                 filter(cuota -> cuota.getCuota() == 1).findFirst().orElse(null);
         if(Objects.nonNull(primeraCuota)) {
-            String expirationDate = format.format(primeraCuota.getFechaVencimiento());
+            String expirationDate = generateCorrectDateFormat(primeraCuota.getFechaVencimiento());
             firstReceipt.setPolicyReceiptId(BigDecimal.valueOf(primeraCuota.getCuota()));
             firstReceipt.setReceiptEndDate(expirationDate);
             firstReceipt.setReceiptExpirationDate(expirationDate);
@@ -475,7 +476,7 @@ public class MapperHelper {
     private InsuranceCtrReceiptsDAO createNextReceipt(InsuranceCtrReceiptsDAO firstReceipt, CuotaFinancimientoBO cuota) {
         InsuranceCtrReceiptsDAO nextReceipt = new InsuranceCtrReceiptsDAO();
 
-        String dueDate = format.format(cuota.getFechaVencimiento());
+        String dueDate = generateCorrectDateFormat(cuota.getFechaVencimiento());
 
         nextReceipt.setEntityId(firstReceipt.getEntityId());
         nextReceipt.setBranchId(firstReceipt.getBranchId());
@@ -630,16 +631,27 @@ public class MapperHelper {
         return arguments;
     }
 
-    public void mappingOutputFields(PolicyDTO responseBody, PolicyASO asoResponse, EmisionBO rimacResponse, String rimacQuotation) {
+    public void mappingOutputFields(PolicyDTO responseBody, PolicyASO asoResponse, EmisionBO rimacResponse, RequiredFieldsEmissionDAO requiredFields) {
         DataASO data = asoResponse.getData();
 
         responseBody.setId(data.getId());
-        responseBody.setProductDescription(data.getProductDescription());
-        responseBody.getProductPlan().setDescription(data.getProductPlan().getDescription());
+        responseBody.setProductDescription(requiredFields.getInsuranceProductDesc());
+        responseBody.getProductPlan().setDescription(requiredFields.getInsuranceModalityName());
         responseBody.setOperationDate(data.getOperationDate());
         responseBody.getValidityPeriod().setEndDate(data.getValidityPeriod().getEndDate());
-        responseBody.getInstallmentPlan().getPeriod().setName(data.getInstallmentPlan().getPeriod().getName());
-        responseBody.getInspection().getContactDetails().forEach(contactDetail -> contactDetail.setId("01"));
+        responseBody.getInstallmentPlan().getPeriod().setName(requiredFields.getPaymentFrequencyName());
+
+        int progressiveId = 0;
+
+        for(ContactDetailDTO contactDetail : responseBody.getHolder().getContactDetails()) {
+            contactDetail.setId(String.valueOf(++progressiveId));
+        }
+
+        progressiveId = 0;
+        for(ContactDetailDTO contactDetail : responseBody.getInspection().getContactDetails()) {
+            contactDetail.setId(String.valueOf(++progressiveId));
+        }
+
         responseBody.getFirstInstallment().setFirstPaymentDate(data.getFirstInstallment().getFirstPaymentDate());
 
         if(responseBody.getFirstInstallment().getIsPaymentRequired()) {
@@ -664,7 +676,7 @@ public class MapperHelper {
         responseBody.getInsuranceCompany().setName(data.getInsuranceCompany().getName());
         responseBody.getInsuranceCompany().setProductId(rimacResponse.getPayload().getCodProducto());
 
-        responseBody.setExternalQuotationId(rimacQuotation);
+        responseBody.setExternalQuotationId(requiredFields.getInsuranceCompanyQuotaId());
 
         responseBody.setExternalPolicyNumber(rimacResponse.getPayload().getNumeroPoliza());
 
@@ -698,6 +710,12 @@ public class MapperHelper {
             exchangeRate.setDetail(detail);
         }
         return exchangeRate;
+    }
+
+    private String generateCorrectDateFormat(LocalDate localDate) {
+        String day = (localDate.getDayOfMonth() < 10) ? "0" + localDate.getDayOfMonth() : String.valueOf(localDate.getDayOfMonth());
+        String month = (localDate.getMonthOfYear() < 10) ? "0" + localDate.getMonthOfYear() : String.valueOf(localDate.getMonthOfYear());
+        return day + "/" + month + "/" + localDate.getYear();
     }
 
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
