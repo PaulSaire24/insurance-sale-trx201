@@ -52,6 +52,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 
 import java.math.BigDecimal;
@@ -87,7 +88,7 @@ public class MapperHelper {
     private static final String FIRST_RECEIPT_STATUS_TYPE_VALUE = "COB";
     private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
     private static final String NEXT_RECEIPTS_START_DATE_VALUE = "01/01/2021";
-    private static final String PRICE_TYPE_VALUE = "SALE";
+    private static final String PRICE_TYPE_VALUE = "PURCHASE";
 
     private final SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
     private final String currentDate = format.format(new Date());
@@ -119,7 +120,7 @@ public class MapperHelper {
         requestAso.setPaymentMethod(paymentMethod);
 
         ValidityPeriodASO validityPeriod = new ValidityPeriodASO();
-        validityPeriod.setStartDate(apxRequest.getValidityPeriod().getStartDate());
+        validityPeriod.setStartDate(convertDateToLocalDate(apxRequest.getValidityPeriod().getStartDate()));
 
         requestAso.setValidityPeriod(validityPeriod);
 
@@ -149,8 +150,8 @@ public class MapperHelper {
         requestAso.setHolder(holder);
 
         InstallmentPlanASO installmentPlan = new InstallmentPlanASO();
-        installmentPlan.setStartDate(apxRequest.getInstallmentPlan().getStartDate());
-        installmentPlan.setMaturityDate(apxRequest.getInstallmentPlan().getMaturityDate());
+        installmentPlan.setStartDate(convertDateToLocalDate(apxRequest.getInstallmentPlan().getStartDate()));
+        installmentPlan.setMaturityDate(convertDateToLocalDate(apxRequest.getInstallmentPlan().getMaturityDate()));
         installmentPlan.setTotalNumberInstallments(apxRequest.getInstallmentPlan().getTotalNumberInstallments());
 
         PaymentPeriodASO period = new PaymentPeriodASO();
@@ -278,35 +279,33 @@ public class MapperHelper {
         contractDao.setInsuranceProductId(emissionDao.getInsuranceProductId());
         contractDao.setInsuranceModalityType(apxRequest.getProductPlan().getId());
         contractDao.setInsuranceCompanyId(new BigDecimal(apxRequest.getInsuranceCompany().getId()));
-        if(Objects.nonNull(rimacResponse)) {
-            contractDao.setPolicyId(rimacResponse.getPayload().getNumeroPoliza());
 
-            contractDao.setInsuranceContractEndDate(generateCorrectDateFormat(rimacResponse.getPayload().getFechaFinal()));
+        contractDao.setPolicyId(rimacResponse.getPayload().getNumeroPoliza());
 
-            int numeroCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().size();
-            CuotaFinancimientoBO ultimaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
-                    stream().filter(cuota -> cuota.getCuota() == numeroCuotas).findFirst().orElse(null);
+        contractDao.setInsuranceContractEndDate(generateCorrectDateFormat(rimacResponse.getPayload().getFechaFinal()));
 
-            if(Objects.nonNull(ultimaCuota)) {
+        int numeroCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().size();
+        CuotaFinancimientoBO ultimaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
+                stream().filter(cuota -> cuota.getCuota() == numeroCuotas).findFirst().orElse(null);
 
-                String lastInstDate = generateCorrectDateFormat(ultimaCuota.getFechaVencimiento());
+        if(Objects.nonNull(ultimaCuota)) {
 
-                contractDao.setLastInstallmentDate(lastInstDate);
-                contractDao.setPeriodNextPaymentDate((numeroCuotas == 1) ?
-                        lastInstDate : getNextPaymentDate(rimacResponse));
-            }
+            String lastInstDate = generateCorrectDateFormat(ultimaCuota.getFechaVencimiento());
 
-            contractDao.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
-        } else {
-            contractDao.setInsuranceContractEndDate(currentDate);
-            contractDao.setLastInstallmentDate(currentDate);
-            contractDao.setPeriodNextPaymentDate(currentDate);
+            contractDao.setLastInstallmentDate(lastInstDate);
+            contractDao.setPeriodNextPaymentDate((numeroCuotas == 1) ?
+                    lastInstDate : getNextPaymentDate(rimacResponse));
         }
+
+        contractDao.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
+
         contractDao.setInsuranceManagerId(apxRequest.getBusinessAgent().getId());
         contractDao.setInsurancePromoterId(apxRequest.getPromoter().getId());
         contractDao.setContractManagerBranchId(asoId.substring(4, 8));
         contractDao.setContractInceptionDate(currentDate);
-        contractDao.setInsuranceContractStartDate(format.format(apxRequest.getValidityPeriod().getStartDate()));
+
+        contractDao.setInsuranceContractStartDate(generateCorrectDateFormat(
+                        convertDateToLocalDate(apxRequest.getValidityPeriod().getStartDate())));
 
         contractDao.setValidityMonthsNumber(emissionDao.getContractDurationNumber());
 
@@ -425,12 +424,17 @@ public class MapperHelper {
             firstReceipt.setPremiumChargeOperationId(asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
         }
         firstReceipt.setCurrencyId(requestBody.getFirstInstallment().getPaymentAmount().getCurrency());
-        firstReceipt.setReceiptStartDate(format.format(requestBody.getValidityPeriod().getStartDate()));
+
+        firstReceipt.setReceiptStartDate(generateCorrectDateFormat(
+                convertDateToLocalDate(requestBody.getValidityPeriod().getStartDate())));
 
         if(Objects.nonNull(asoResponse.getData().getFirstInstallment().getOperationDate())) {
-            firstReceipt.setReceiptIssueDate(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()));
-            firstReceipt.setReceiptCollectionDate(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()));
-            firstReceipt.setReceiptsTransmissionDate(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()));
+            String correctFormatDate = generateCorrectDateFormat(
+                    convertDateToLocalDate(asoResponse.getData().getFirstInstallment().getOperationDate()));
+
+            firstReceipt.setReceiptIssueDate(correctFormatDate);
+            firstReceipt.setReceiptCollectionDate(correctFormatDate);
+            firstReceipt.setReceiptsTransmissionDate(correctFormatDate);
         } else {
             firstReceipt.setReceiptIssueDate(currentDate);
             firstReceipt.setReceiptCollectionDate(currentDate);
@@ -637,8 +641,11 @@ public class MapperHelper {
         responseBody.setId(data.getId());
         responseBody.setProductDescription(requiredFields.getInsuranceProductDesc());
         responseBody.getProductPlan().setDescription(requiredFields.getInsuranceModalityName());
+
         responseBody.setOperationDate(data.getOperationDate());
-        responseBody.getValidityPeriod().setEndDate(data.getValidityPeriod().getEndDate());
+
+        responseBody.getValidityPeriod().setEndDate(convertLocaldateToDate(data.getValidityPeriod().getEndDate()));
+
         responseBody.getInstallmentPlan().getPeriod().setName(requiredFields.getPaymentFrequencyName());
 
         int progressiveId = 0;
@@ -652,12 +659,14 @@ public class MapperHelper {
             contactDetail.setId(String.valueOf(++progressiveId));
         }
 
-        responseBody.getFirstInstallment().setFirstPaymentDate(data.getFirstInstallment().getFirstPaymentDate());
+        responseBody.getFirstInstallment().setFirstPaymentDate(convertLocaldateToDate(data.getFirstInstallment().getFirstPaymentDate()));
 
         if(responseBody.getFirstInstallment().getIsPaymentRequired()) {
             responseBody.getFirstInstallment().setOperationNumber(data.getFirstInstallment().getOperationNumber());
             responseBody.getFirstInstallment().setTransactionNumber(data.getFirstInstallment().getTransactionNumber());
+
             responseBody.getFirstInstallment().setOperationDate(data.getFirstInstallment().getOperationDate());
+
             responseBody.getFirstInstallment().setExchangeRate(validateExchangeRate(data.getFirstInstallment().getExchangeRate()));
             responseBody.getTotalAmount().setExchangeRate(validateExchangeRate(data.getTotalAmount().getExchangeRate()));
             responseBody.getInstallmentPlan().setExchangeRate(validateExchangeRate(data.getInstallmentPlan().getExchangeRate()));
@@ -694,7 +703,7 @@ public class MapperHelper {
         ExchangeRateDTO exchangeRate = null;
         if(Objects.nonNull(exchangeRateASO)) {
             exchangeRate = new ExchangeRateDTO();
-            exchangeRate.setDate(exchangeRateASO.getDate());
+            exchangeRate.setDate(convertLocaldateToDate(exchangeRateASO.getDate()));
             exchangeRate.setBaseCurrency(exchangeRateASO.getBaseCurrency());
             exchangeRate.setTargetCurrency(exchangeRateASO.getTargetCurrency());
 
@@ -710,6 +719,14 @@ public class MapperHelper {
             exchangeRate.setDetail(detail);
         }
         return exchangeRate;
+    }
+
+    private Date convertLocaldateToDate(LocalDate localDate) {
+        return localDate.toDateTimeAtCurrentTime().toDate();
+    }
+
+    private LocalDate convertDateToLocalDate(Date date) {
+        return new LocalDate(date, DateTimeZone.forID("GMT"));
     }
 
     private String generateCorrectDateFormat(LocalDate localDate) {

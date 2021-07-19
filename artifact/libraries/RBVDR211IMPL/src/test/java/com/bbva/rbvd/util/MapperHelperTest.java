@@ -229,9 +229,10 @@ public class MapperHelperTest {
         assertEquals(apxRequest.getBusinessAgent().getId(), validation.getInsuranceManagerId());
         assertEquals(apxRequest.getPromoter().getId(), validation.getInsurancePromoterId());
         assertEquals("0241", validation.getContractManagerBranchId());
-        assertEquals(format.format(apxRequest.getValidityPeriod().getStartDate()), validation.getInsuranceContractStartDate());
+        assertEquals("15/06/2021", validation.getInsuranceContractStartDate());
         assertEquals("02/06/2022", validation.getInsuranceContractEndDate());
         assertEquals("02/05/2022", validation.getLastInstallmentDate());
+        assertEquals("02/07/2021", validation.getPeriodNextPaymentDate());
         assertEquals(apxRequest.getHolder().getId(), validation.getCustomerId());
         assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId(), validation.getDomicileContractId());
         assertEquals(N_VALUE, validation.getCardIssuingMarkType());
@@ -267,23 +268,14 @@ public class MapperHelperTest {
 
         rimacResponse.getPayload().setCuotasFinanciamiento(Collections.singletonList(cuota));
 
-        validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
-
-        assertEquals("16/07/2021", validation.getLastInstallmentDate());
-        assertEquals("16/07/2021",
-                validation.getPeriodNextPaymentDate());
-
         apxRequest.getFirstInstallment().setIsPaymentRequired(true);
         apxRequest.getPaymentMethod().setPaymentType("somethingElse");
 
-        validation = mapperHelper.buildInsuranceContract(null, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
+        validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
 
         assertEquals(BigDecimal.valueOf(0), validation.getTotalDebtAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1), validation.getPrevPendBillRcptsNumber());
         assertEquals(N_VALUE, validation.getAutomaticDebitIndicatorType());
-        assertEquals(currentDate, validation.getInsuranceContractEndDate());
-        assertEquals(currentDate, validation.getLastInstallmentDate());
-        assertEquals(currentDate, validation.getPeriodNextPaymentDate());
     }
 
     @Test
@@ -480,7 +472,7 @@ public class MapperHelperTest {
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.get(0).getPremiumCurrencyExchAmount());
         assertEquals(apxRequest.getFirstInstallment().getPaymentAmount().getCurrency(), validation.get(0).getCurrencyId());
         assertEquals(currentDate, validation.get(0).getReceiptIssueDate());
-        assertEquals(format.format(apxRequest.getValidityPeriod().getStartDate()), validation.get(0).getReceiptStartDate());
+        assertEquals("15/06/2021", validation.get(0).getReceiptStartDate());
         assertEquals("02/06/2021", validation.get(0).getReceiptEndDate());
         assertEquals("02/06/2021", validation.get(0).getReceiptExpirationDate());
         assertEquals(currentDate, validation.get(0).getReceiptCollectionDate());
@@ -520,12 +512,6 @@ public class MapperHelperTest {
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()), validation.get(0).getFixingExchangeRateAmount());
         assertEquals(BigDecimal.valueOf(asoResponse.getData()
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.get(0).getPremiumCurrencyExchAmount());
-        assertEquals(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()),
-                validation.get(0).getReceiptIssueDate());
-        assertEquals(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()),
-                validation.get(0).getReceiptCollectionDate());
-        assertEquals(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()),
-                validation.get(0).getReceiptsTransmissionDate());
     }
 
     @Test
@@ -860,11 +846,8 @@ public class MapperHelperTest {
         assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
         assertEquals(requiredFieldsEmissionDao.getInsuranceModalityName(), apxRequest.getProductPlan().getDescription());
         assertEquals(asoResponse.getData().getOperationDate(), apxRequest.getOperationDate());
-        assertEquals(asoResponse.getData().getValidityPeriod().getEndDate(), apxRequest.getValidityPeriod().getEndDate());
         assertEquals(requiredFieldsEmissionDao.getPaymentFrequencyName(),
                 apxRequest.getInstallmentPlan().getPeriod().getName());
-        assertEquals(asoResponse.getData().getFirstInstallment().getFirstPaymentDate(),
-                apxRequest.getFirstInstallment().getFirstPaymentDate());
         assertEquals(asoResponse.getData().getFirstInstallment().getOperationNumber(),
                 apxRequest.getFirstInstallment().getOperationNumber());
         assertEquals(asoResponse.getData().getFirstInstallment().getTransactionNumber(),
