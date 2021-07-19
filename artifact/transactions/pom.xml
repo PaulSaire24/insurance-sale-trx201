@@ -12,5 +12,7 @@
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>TRANSACTIONS-insurance-sale-trx201</name>
-	<modules/>
+	<modules>
+		<module>RBVDT201-01-PE</module>
+	</modules>
 </project>

@@ -12,5 +12,10 @@
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>LIBRARIES-insurance-sale-trx201</name>
-	<modules/>
+	<modules>
+		<module>RBVDR201</module>
+		<module>RBVDR201IMPL</module>
+		<module>RBVDR211</module>
+		<module>RBVDR211IMPL</module>
+	</modules>
 </project>

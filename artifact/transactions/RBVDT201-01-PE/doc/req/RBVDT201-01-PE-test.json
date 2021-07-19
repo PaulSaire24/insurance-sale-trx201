@@ -1,0 +1,146 @@
+{
+	"headers": {
+		"logical-transaction-code": "RBVDT201",
+		"version-code": "01",
+		"country-code": "PE"
+	},
+	"body": {
+		"quotationId": "",
+		"productId": "",
+		"productPlan": {
+			"id": ""
+		},
+		"paymentMethod": {
+			"paymentType": "",
+			"relatedContracts": [
+				{
+					"contractId": "",
+					"number": "",
+					"product": {
+						"id": ""
+					}
+				}
+			],
+			"installmentFrequency": ""
+		},
+		"validityPeriod": {
+			"startDate": ""
+		},
+		"totalAmount": {
+			"amount": 0,
+			"currency": ""
+		},
+		"insuredAmount": {
+			"amount": 0,
+			"currency": ""
+		},
+		"isDataTreatment": "",
+		"holder": {
+			"id": "",
+			"identityDocument": {
+				"documentType": {
+					"id": ""
+				},
+				"number": ""
+			},
+			"contactDetails": [
+				{
+					"contact": {
+						"contactDetailType": "",
+						"address": "",
+						"phoneNumber": ""
+					}
+				}
+			]
+		},
+		"relatedContracts": [
+			{
+				"relationType": {
+					"id": ""
+				},
+				"contractDetails": {
+					"contractType": "",
+					"contractId": "",
+					"numberType": {
+						"id": ""
+					},
+					"number": ""
+				}
+			}
+		],
+		"installmentPlan": {
+			"startDate": "",
+			"maturityDate": "",
+			"period": {
+				"id": ""
+			},
+			"paymentAmount": {
+				"amount": 0,
+				"currency": ""
+			},
+			"totalNumberInstallments": 0
+		},
+		"hasAcceptedContract": "",
+		"inspection": {
+			"isRequired": "",
+			"contactDetails": [
+				{
+					"contact": {
+						"contactDetailType": "",
+						"address": "",
+						"phoneNumber": ""
+					}
+				}
+			],
+			"fullName": ""
+		},
+		"firstInstallment": {
+			"isPaymentRequired": "",
+			"paymentAmount": {
+				"amount": 0,
+				"currency": ""
+			}
+		},
+		"participants": [
+			{
+				"identityDocument": {
+					"documentType": {
+						"id": ""
+					},
+					"number": ""
+				},
+				"participantType": {
+					"id": ""
+				},
+				"customerId": "",
+				"startDate": "",
+				"endDate": "",
+				"relationship": {
+					"id": ""
+				},
+				"benefitPercentage": 0,
+				"benefitAmount": {
+					"amount": 0,
+					"currency": ""
+				},
+				"fullName": ""
+			}
+		],
+		"businessAgent": {
+			"id": ""
+		},
+		"promoter": {
+			"id": ""
+		},
+		"bank": {
+			"id": "",
+			"branch": {
+				"id": ""
+			}
+		},
+		"identityVerificationCode": "",
+		"insuranceCompany": {
+			"id": ""
+		}
+	}
+}
