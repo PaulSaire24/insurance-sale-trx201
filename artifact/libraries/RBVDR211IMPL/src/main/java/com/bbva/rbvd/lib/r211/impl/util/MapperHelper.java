@@ -87,7 +87,7 @@ public class MapperHelper {
     private static final String ACCOUNT_METHOD_TYPE = "C";
     private static final String FIRST_RECEIPT_STATUS_TYPE_VALUE = "COB";
     private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
-    private static final String NEXT_RECEIPTS_START_DATE_VALUE = "01/01/2021";
+    private static final String RECEIPT_START_AND_END_DATE_VALUE = "01/01/2021";
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
 
     private final SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
@@ -425,9 +425,6 @@ public class MapperHelper {
         }
         firstReceipt.setCurrencyId(requestBody.getFirstInstallment().getPaymentAmount().getCurrency());
 
-        firstReceipt.setReceiptStartDate(generateCorrectDateFormat(
-                convertDateToLocalDate(requestBody.getValidityPeriod().getStartDate())));
-
         if(Objects.nonNull(asoResponse.getData().getFirstInstallment().getOperationDate())) {
             String correctFormatDate = generateCorrectDateFormat(
                     convertDateToLocalDate(asoResponse.getData().getFirstInstallment().getOperationDate()));
@@ -441,6 +438,8 @@ public class MapperHelper {
             firstReceipt.setReceiptsTransmissionDate(currentDate);
         }
 
+        firstReceipt.setReceiptStartDate(RECEIPT_START_AND_END_DATE_VALUE);
+        firstReceipt.setReceiptEndDate(RECEIPT_START_AND_END_DATE_VALUE);
         firstReceipt.setReceiptCollectionStatusType(COLLECTION_STATUS_FIRST_RECEIPT_VALUE);
         firstReceipt.setInsuranceCollectionMoveId(asoResponse.getData().getFirstInstallment().getTransactionNumber());
         firstReceipt.setPaymentMethodType(requestBody.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId().
@@ -459,10 +458,8 @@ public class MapperHelper {
         CuotaFinancimientoBO primeraCuota = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
                 filter(cuota -> cuota.getCuota() == 1).findFirst().orElse(null);
         if(Objects.nonNull(primeraCuota)) {
-            String expirationDate = generateCorrectDateFormat(primeraCuota.getFechaVencimiento());
             firstReceipt.setPolicyReceiptId(BigDecimal.valueOf(primeraCuota.getCuota()));
-            firstReceipt.setReceiptEndDate(expirationDate);
-            firstReceipt.setReceiptExpirationDate(expirationDate);
+            firstReceipt.setReceiptExpirationDate(generateCorrectDateFormat(primeraCuota.getFechaVencimiento()));
         }
 
         receiptList.add(firstReceipt);
@@ -480,8 +477,6 @@ public class MapperHelper {
     private InsuranceCtrReceiptsDAO createNextReceipt(InsuranceCtrReceiptsDAO firstReceipt, CuotaFinancimientoBO cuota) {
         InsuranceCtrReceiptsDAO nextReceipt = new InsuranceCtrReceiptsDAO();
 
-        String dueDate = generateCorrectDateFormat(cuota.getFechaVencimiento());
-
         nextReceipt.setEntityId(firstReceipt.getEntityId());
         nextReceipt.setBranchId(firstReceipt.getBranchId());
         nextReceipt.setIntAccountId(firstReceipt.getIntAccountId());
@@ -491,10 +486,10 @@ public class MapperHelper {
         nextReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(0));
         nextReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(0));
         nextReceipt.setReceiptIssueDate(currentDate);
-        nextReceipt.setReceiptStartDate(NEXT_RECEIPTS_START_DATE_VALUE);
-        nextReceipt.setReceiptEndDate(dueDate);
+        nextReceipt.setReceiptStartDate(firstReceipt.getReceiptStartDate());
+        nextReceipt.setReceiptEndDate(firstReceipt.getReceiptEndDate());
         nextReceipt.setReceiptCollectionDate(currentDate);
-        nextReceipt.setReceiptExpirationDate(dueDate);
+        nextReceipt.setReceiptExpirationDate(generateCorrectDateFormat(cuota.getFechaVencimiento()));
         nextReceipt.setReceiptsTransmissionDate(currentDate);
         nextReceipt.setReceiptCollectionStatusType(COLLECTION_STATUS_NEXT_VALUES);
         nextReceipt.setPaymentMethodType(firstReceipt.getPaymentMethodType());
@@ -665,8 +660,6 @@ public class MapperHelper {
             responseBody.getFirstInstallment().setOperationNumber(data.getFirstInstallment().getOperationNumber());
             responseBody.getFirstInstallment().setTransactionNumber(data.getFirstInstallment().getTransactionNumber());
 
-            responseBody.getFirstInstallment().setOperationDate(data.getFirstInstallment().getOperationDate());
-
             responseBody.getFirstInstallment().setExchangeRate(validateExchangeRate(data.getFirstInstallment().getExchangeRate()));
             responseBody.getTotalAmount().setExchangeRate(validateExchangeRate(data.getTotalAmount().getExchangeRate()));
             responseBody.getInstallmentPlan().setExchangeRate(validateExchangeRate(data.getInstallmentPlan().getExchangeRate()));
@@ -701,7 +694,7 @@ public class MapperHelper {
 
     private ExchangeRateDTO validateExchangeRate(ExchangeRateASO exchangeRateASO) {
         ExchangeRateDTO exchangeRate = null;
-        if(Objects.nonNull(exchangeRateASO)) {
+        if(exchangeRateASO.getDetail().getFactor().getRatio() != 0) {
             exchangeRate = new ExchangeRateDTO();
             exchangeRate.setDate(convertLocaldateToDate(exchangeRateASO.getDate()));
             exchangeRate.setBaseCurrency(exchangeRateASO.getBaseCurrency());
