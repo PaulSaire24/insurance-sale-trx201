@@ -56,7 +56,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -89,9 +88,6 @@ public class MapperHelper {
     private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
     private static final String RECEIPT_START_AND_END_DATE_VALUE = "01/01/2021";
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
-
-    private final SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-    private final String currentDate = format.format(new Date());
 
     private ApplicationConfigurationService applicationConfigurationService;
 
@@ -299,6 +295,8 @@ public class MapperHelper {
 
         contractDao.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
 
+        String currentDate = generateCorrectDateFormat(convertDateToLocalDate(new Date()));
+
         contractDao.setInsuranceManagerId(apxRequest.getBusinessAgent().getId());
         contractDao.setInsurancePromoterId(apxRequest.getPromoter().getId());
         contractDao.setContractManagerBranchId(asoId.substring(4, 8));
@@ -433,6 +431,7 @@ public class MapperHelper {
             firstReceipt.setReceiptCollectionDate(correctFormatDate);
             firstReceipt.setReceiptsTransmissionDate(correctFormatDate);
         } else {
+            String currentDate = generateCorrectDateFormat(convertDateToLocalDate(new Date()));
             firstReceipt.setReceiptIssueDate(currentDate);
             firstReceipt.setReceiptCollectionDate(currentDate);
             firstReceipt.setReceiptsTransmissionDate(currentDate);
@@ -477,6 +476,8 @@ public class MapperHelper {
     private InsuranceCtrReceiptsDAO createNextReceipt(InsuranceCtrReceiptsDAO firstReceipt, CuotaFinancimientoBO cuota) {
         InsuranceCtrReceiptsDAO nextReceipt = new InsuranceCtrReceiptsDAO();
 
+        String currentDate = generateCorrectDateFormat(convertDateToLocalDate(new Date()));
+
         nextReceipt.setEntityId(firstReceipt.getEntityId());
         nextReceipt.setBranchId(firstReceipt.getBranchId());
         nextReceipt.setIntAccountId(firstReceipt.getIntAccountId());
@@ -499,7 +500,7 @@ public class MapperHelper {
         nextReceipt.setUserAuditId(firstReceipt.getUserAuditId());
         nextReceipt.setManagementBranchId(firstReceipt.getManagementBranchId());
         nextReceipt.setFixPremiumAmount(firstReceipt.getFixPremiumAmount());
-        nextReceipt.setSettlementFixPremiumAmount(firstReceipt.getSettlementFixPremiumAmount());
+        nextReceipt.setSettlementFixPremiumAmount(BigDecimal.valueOf(0));
         nextReceipt.setGlBranchId(firstReceipt.getGlBranchId());
 
         return nextReceipt;
@@ -559,7 +560,7 @@ public class MapperHelper {
         isrcContractMovDao.setBranchId(asoResponse.getData().getId().substring(4, 8));
         isrcContractMovDao.setIntAccountId(asoResponse.getData().getId().substring(10));
         isrcContractMovDao.setPolicyMovementNumber(BigDecimal.valueOf(1));
-        isrcContractMovDao.setGlAccountDate(currentDate);
+        isrcContractMovDao.setGlAccountDate(generateCorrectDateFormat(convertDateToLocalDate(new Date())));
         isrcContractMovDao.setGlBranchId(asoResponse.getData().getId().substring(4, 8));
         isrcContractMovDao.setCreationUserId(creationUser);
         isrcContractMovDao.setUserAuditId(userAudit);
@@ -719,7 +720,7 @@ public class MapperHelper {
     }
 
     private LocalDate convertDateToLocalDate(Date date) {
-        return new LocalDate(date, DateTimeZone.forID("GMT"));
+        return new LocalDate(date, DateTimeZone.forID("America/Lima"));
     }
 
     private String generateCorrectDateFormat(LocalDate localDate) {

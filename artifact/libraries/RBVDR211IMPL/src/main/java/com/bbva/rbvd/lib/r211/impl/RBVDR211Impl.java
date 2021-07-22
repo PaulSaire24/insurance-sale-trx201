@@ -143,7 +143,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		String kindOfAccount = relatedContract.getProduct().getId().equals("CARD") ? "TARJETA" : "CUENTA";
 		int beginIndex = relatedContract.getNumber().length() - 4;
 		String accountNumber = "***".concat(relatedContract.getNumber().substring(beginIndex));
-		String accountCurrency = Objects.nonNull(asoResponse.getData().getFirstInstallment().getExchangeRate()) ? "PEN" : "USD";
+		String accountCurrency = asoResponse.getData().getTotalAmount().getExchangeRate().getTargetCurrency();
 		return kindOfAccount.concat("|").concat(accountNumber).concat("|").concat(accountCurrency);
 	}
 
