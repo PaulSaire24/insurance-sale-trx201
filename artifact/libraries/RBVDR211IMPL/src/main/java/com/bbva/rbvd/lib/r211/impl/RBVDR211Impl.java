@@ -49,8 +49,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
 
-			//TENGO QUE VALIDAR QUE ASO ME HAYA RESPONDIDO CORRECTAMENTE!
-
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building Rimac request *****");
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
 					requestBody.getSaleChannelId(), asoResponse.getData().getId());
@@ -103,8 +101,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			return responseBody;
 		} catch (BusinessException ex) {
-			LOGGER.error("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Business exception message: {} *****", ex.getMessage());
-			this.addAdvice(ex.getAdviceCode());
+			LOGGER.debug("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Business exception message: {} *****", ex.getMessage());
+			this.addAdviceWithDescription(ex.getAdviceCode(), ex.getMessage());
 			return null;
 		}
 

@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r201;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 
@@ -19,11 +20,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -70,15 +75,15 @@ public class RBVDR201Test {
 				.thenReturn(new SignatureAWS("", "", "", ""));
 	}
 
-	@Test
+	@Test(expected = BusinessException.class)
 	public void executePrePolicyEmissionASOWithRestClientException() {
 		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionASOWithRestClientException...");
 
-		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new RestClientException(MESSAGE_EXCEPTION));
+		String responseBody = "{\"messages\":[{\"code\":\"wrongParameters\",\"message\":\"LOS DATOS INGRESADOS SON INVALIDOS\",\"parameters\":[],\"type\":\"FATAL\"}]}";
 
-		PolicyASO validation = rbvdr201.executePrePolicyEmissionASO(new DataASO());
+		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
 
-		assertNull(validation);
+		rbvdr201.executePrePolicyEmissionASO(new DataASO());
 	}
 
 	@Test
@@ -128,14 +133,15 @@ public class RBVDR201Test {
 		assertNotNull(validation.getData().getInsuranceCompany().getName());
 	}
 
-	@Test
+	@Test(expected = BusinessException.class)
 	public void executePrePolicyEmissionServiceWithRestClientException() {
 		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionServiceWithRestClientException...");
 
-		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenThrow(new RestClientException(MESSAGE_EXCEPTION));
+		String responseBody = "{\"error\":{\"code\":\"VEHDAT005\",\"message\":\"Error al Validar Datos.\",\"details\":[\"\\\"contactoInspeccion.telefono\\\" debe contener caracteres\"],\"httpStatus\":400}}";
 
-		EmisionBO validation = rbvdr201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId");
-		assertNull(validation);
+		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
+
+		rbvdr201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId");
 	}
 
 	@Test

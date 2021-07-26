@@ -4,7 +4,9 @@ import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.lib.r201.impl.util.AsoExceptionHandler;
 import com.bbva.rbvd.lib.r201.impl.util.JsonHelper;
+import com.bbva.rbvd.lib.r201.impl.util.RimacExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -46,12 +48,12 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			responseBody = this.internalApiConnector.postForObject(ID_API_INSURANCES_CREATE_INSURANCE_ASO, entity, PolicyASO.class);
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Response: {}", getRequestBodyInStringFormat(responseBody));
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO END *****");
-			return responseBody;
 		} catch (RestClientException ex) {
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Exception: {}", ex.getMessage());
-			return null;
+			AsoExceptionHandler exceptionHandler = new AsoExceptionHandler();
+			exceptionHandler.handler(ex);
 		}
-
+		return responseBody;
 	}
 
 	@Override
@@ -79,11 +81,12 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 					EmisionBO.class, uriParam);
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Response: {}", getRequestBodyInStringFormat(responseBody));
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService END *****");
-			return responseBody;
 		} catch (RestClientException ex) {
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
-			return null;
+			RimacExceptionHandler exceptionHandler = new RimacExceptionHandler();
+			exceptionHandler.handler(ex);
 		}
+		return responseBody;
 	}
 
 	private HttpHeaders createHttpHeaders() {
