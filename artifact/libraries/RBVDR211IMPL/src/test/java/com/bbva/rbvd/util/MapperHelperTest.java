@@ -226,7 +226,6 @@ public class MapperHelperTest {
         assertEquals(apxRequest.getBusinessAgent().getId(), validation.getInsuranceManagerId());
         assertEquals(apxRequest.getPromoter().getId(), validation.getInsurancePromoterId());
         assertEquals("0241", validation.getContractManagerBranchId());
-//        assertEquals("15/06/2021", validation.getInsuranceContractStartDate());
         assertEquals("02/06/2022", validation.getInsuranceContractEndDate());
         assertEquals("02/05/2022", validation.getLastInstallmentDate());
         assertEquals("02/07/2021", validation.getPeriodNextPaymentDate());
@@ -863,6 +862,17 @@ public class MapperHelperTest {
         assertNull(apxRequest.getTotalAmount().getExchangeRate());
         assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
         assertNull(apxRequest.getFirstInstallment().getExchangeRate());
+
+        apxRequest.setBusinessAgent(null);
+        apxRequest.setPromoter(null);
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertEquals(asoResponse.getData().getBusinessAgent().getId(),
+                apxRequest.getBusinessAgent().getId());
+
+        assertEquals(asoResponse.getData().getPromoter().getId(),
+                apxRequest.getPromoter().getId());
     }
 
 }

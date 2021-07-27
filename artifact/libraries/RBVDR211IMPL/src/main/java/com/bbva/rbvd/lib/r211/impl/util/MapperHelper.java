@@ -45,11 +45,7 @@ import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.*;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import org.joda.time.DateTimeZone;
@@ -193,15 +189,17 @@ public class MapperHelper {
 
         requestAso.setParticipants(Collections.singletonList(participant));
 
-        BusinessAgentASO businessAgent = new BusinessAgentASO();
-        businessAgent.setId(apxRequest.getBusinessAgent().getId());
+        if(Objects.nonNull(apxRequest.getBusinessAgent())) {
+            BusinessAgentASO businessAgent = new BusinessAgentASO();
+            businessAgent.setId(apxRequest.getBusinessAgent().getId());
+            requestAso.setBusinessAgent(businessAgent);
+        }
 
-        requestAso.setBusinessAgent(businessAgent);
-
-        PromoterASO promoter = new PromoterASO();
-        promoter.setId(apxRequest.getPromoter().getId());
-
-        requestAso.setPromoter(promoter);
+        if(Objects.nonNull(apxRequest.getPromoter())) {
+            PromoterASO promoter = new PromoterASO();
+            promoter.setId(apxRequest.getPromoter().getId());
+            requestAso.setPromoter(promoter);
+        }
 
         BankASO bank = new BankASO();
 
@@ -301,8 +299,14 @@ public class MapperHelper {
 
         contractDao.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
 
-        contractDao.setInsuranceManagerId(apxRequest.getBusinessAgent().getId());
-        contractDao.setInsurancePromoterId(apxRequest.getPromoter().getId());
+        if(Objects.nonNull(apxRequest.getBusinessAgent())) {
+            contractDao.setInsuranceManagerId(apxRequest.getBusinessAgent().getId());
+        }
+
+        if(Objects.nonNull(apxRequest.getPromoter())) {
+            contractDao.setInsurancePromoterId(apxRequest.getPromoter().getId());
+        }
+
         contractDao.setContractManagerBranchId(asoId.substring(4, 8));
         contractDao.setContractInceptionDate(currentDate);
 
@@ -692,6 +696,18 @@ public class MapperHelper {
 
         responseBody.getHolder().getIdentityDocument().setDocumentNumber(responseBody.getHolder().getIdentityDocument().getNumber());
         responseBody.getHolder().getIdentityDocument().setNumber(null);
+
+        if(Objects.isNull(responseBody.getBusinessAgent())) {
+            BusinessAgentDTO businessAgent = new BusinessAgentDTO();
+            businessAgent.setId(data.getBusinessAgent().getId());
+            responseBody.setBusinessAgent(businessAgent);
+        }
+
+        if(Objects.isNull(responseBody.getPromoter())) {
+            PromoterDTO promoter = new PromoterDTO();
+            promoter.setId(data.getPromoter().getId());
+            responseBody.setPromoter(promoter);
+        }
     }
 
     private ExchangeRateDTO validateExchangeRate(ExchangeRateASO exchangeRateASO) {
