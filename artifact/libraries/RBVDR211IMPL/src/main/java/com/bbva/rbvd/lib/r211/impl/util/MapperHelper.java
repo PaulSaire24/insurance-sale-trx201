@@ -45,9 +45,16 @@ import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 
-import com.bbva.rbvd.dto.insrncsale.policy.*;
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 
@@ -491,6 +498,7 @@ public class MapperHelper {
         nextReceipt.setPremiumPaymentReceiptAmount(BigDecimal.valueOf(0));
         nextReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(0));
         nextReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(0));
+        nextReceipt.setCurrencyId(firstReceipt.getCurrencyId());
         nextReceipt.setReceiptIssueDate(currentDate);
         nextReceipt.setReceiptStartDate(firstReceipt.getReceiptStartDate());
         nextReceipt.setReceiptEndDate(firstReceipt.getReceiptEndDate());

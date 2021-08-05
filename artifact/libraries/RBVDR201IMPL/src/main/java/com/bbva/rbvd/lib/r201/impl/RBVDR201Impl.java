@@ -1,6 +1,9 @@
 package com.bbva.rbvd.lib.r201.impl;
 
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
+import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.utils.PISDErrors;
+import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
@@ -12,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 
 import javax.ws.rs.HttpMethod;
@@ -36,17 +40,17 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	public PolicyASO executePrePolicyEmissionASO(DataASO requestBody) {
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO START *****");
 
-		String jsonString = getRequestBodyInStringFormat(requestBody);
+		String jsonString = getRequestBodyAsJsonFormat(requestBody);
 
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO Request body: {}", jsonString);
 
 		PolicyASO responseBody = null;
 
-		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeaders());
+		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeaders(true));
 
 		try {
 			responseBody = this.internalApiConnector.postForObject(ID_API_INSURANCES_CREATE_INSURANCE_ASO, entity, PolicyASO.class);
-			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Response: {}", getRequestBodyInStringFormat(responseBody));
+			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Response: {}", getRequestBodyAsJsonFormat(responseBody));
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO END *****");
 		} catch (RestClientException ex) {
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Exception: {}", ex.getMessage());
@@ -60,7 +64,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	public EmisionBO executePrePolicyEmissionService(EmisionBO requestBody, String quotationId, String traceId) {
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService START *****");
 
-		String jsonString = getRequestBodyInStringFormat(requestBody);
+		String jsonString = getRequestBodyAsJsonFormat(requestBody);
 
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Param: {}", jsonString);
 
@@ -79,7 +83,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		try {
 			responseBody = this.externalApiConnector.postForObject(ID_API_PRE_POLICY_EMISSION_RIMAC, entity,
 					EmisionBO.class, uriParam);
-			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Response: {}", getRequestBodyInStringFormat(responseBody));
+			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Response: {}", getRequestBodyAsJsonFormat(responseBody));
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService END *****");
 		} catch (RestClientException ex) {
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
@@ -89,11 +93,39 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		return responseBody;
 	}
 
-	private HttpHeaders createHttpHeaders() {
+	@Override
+	public Integer executeCreateEmail(CreateEmailASO requestBody) {
+		LOGGER.info("***** RBVDR201Impl - executeCreateEmail START *****");
+
+		String jsonFormat = getRequestBodyAsJsonFormat(requestBody);
+
+		LOGGER.info("***** RBVDR201Impl - executeCreateEmail ***** Request body: {}", jsonFormat);
+
+		Integer httpStatus = null;
+
+		try {
+			HttpEntity<String> entity = new HttpEntity<>(jsonFormat, createHttpHeaders(false));
+			ResponseEntity<String> response = this.internalApiConnector.exchange(PISDProperties.ID_API_NOTIFICATIONS_GATEWAY_CREATE_EMAIL_SERVICE.getValue(),
+					org.springframework.http.HttpMethod.POST, entity, String.class);
+			httpStatus = response.getStatusCode().value();
+			LOGGER.info("***** RBVDR201Impl - executeCreateEmail ***** Http code response: {}", httpStatus);
+		} catch(RestClientException ex) {
+			LOGGER.debug("***** RBVDR201Impl - executeCreateEmail ***** Exception: {}", ex.getMessage());
+			LOGGER.debug("***** RBVDR201Impl - executeCreateEmail | No se envió el correo con el detalle de la poliza al cliente *****");
+		}
+
+		LOGGER.info("***** RBVDR201Impl - executeCreateEmail END *****");
+		return httpStatus;
+	}
+
+
+	private HttpHeaders createHttpHeaders(boolean isBcsHeaderRequired) {
 		HttpHeaders headers = new HttpHeaders();
 		MediaType mediaType = new MediaType("application","json", StandardCharsets.UTF_8);
 		headers.setContentType(mediaType);
-		headers.set("BCS-Operation-Tracer", "1");
+		if(isBcsHeaderRequired) {
+			headers.set("BCS-Operation-Tracer", "1");
+		}
 		return headers;
 	}
 
@@ -108,7 +140,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		return headers;
 	}
 
-	private String getRequestBodyInStringFormat(Object requestBody) {
+	private String getRequestBodyAsJsonFormat(Object requestBody) {
 		return JsonHelper.getInstance().toJsonString(requestBody);
 	}
 
