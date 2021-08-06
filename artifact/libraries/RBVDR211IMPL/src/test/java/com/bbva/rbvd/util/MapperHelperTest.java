@@ -1,6 +1,7 @@
 package com.bbva.rbvd.util;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
@@ -21,7 +22,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -63,6 +63,13 @@ public class MapperHelperTest {
         when(requiredFieldsEmissionDao.getInsuranceModalityName()).thenReturn("insuranceModalityName");
         when(requiredFieldsEmissionDao.getInsuranceCompanyQuotaId()).thenReturn("quotaId");
         when(requiredFieldsEmissionDao.getPaymentFrequencyName()).thenReturn("frequencyName");
+        when(requiredFieldsEmissionDao.getVehicleBrandName()).thenReturn("brandName");
+        when(requiredFieldsEmissionDao.getVehicleModelName()).thenReturn("modelName");
+        when(requiredFieldsEmissionDao.getVehicleYearId()).thenReturn("2016");
+        when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn("LOT464");
+        when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("S");
+        when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("L");
+        when(requiredFieldsEmissionDao.getCommercialVehicleAmount()).thenReturn(BigDecimal.valueOf(23.000));
 
         apxRequest = mockData.getCreateInsuranceRequestBody();
         apxRequest.setCreationUser("creationUser");
@@ -875,4 +882,24 @@ public class MapperHelperTest {
                 apxRequest.getPromoter().getId());
     }
 
+    @Test
+    public void buildCreateEmailRequest_OK() {
+        apxRequest.setId("00110057794000023694");
+        apxRequest.getProductPlan().setDescription("PLAN BASICO");
+
+        CreateEmailASO email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+
+        assertNotNull(email.getApplicationId());
+        assertNotNull(email.getRecipient());
+        assertNotNull(email.getSubject());
+        assertNotNull(email.getBody());
+        assertNotNull(email.getSender());
+
+        when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
+        when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
+
+        email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+
+        assertNotNull(email.getBody());
+    }
 }

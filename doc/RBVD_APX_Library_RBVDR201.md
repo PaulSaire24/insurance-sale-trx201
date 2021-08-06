@@ -10,7 +10,7 @@
 #### 1.1 Caso de Uso:
 
 > El uso de la Librería RBVDR201 está orientado a consumir el servicio createInsurance del API insurances,
->  y el servicio de emisión de poliza de Rimac.
+> el servicio createEmail del API notifications-gateway y el servicio de emisión de poliza de Rimac.
 
 ### 2. Capacidades:
 > Esta **librería** brinda la capacidad de poder consumir los servicios mencionados de forma segura y fácil mediante los siguientes métodos:
@@ -302,6 +302,31 @@ PolicyASO output = rbvdR201.executePrePolicyEmissionASO(DataASO input);
 ##### 2.2.3 Ejemplo
 ```java
 EmisionBO output = rbvdR201.executePrePolicyEmissionService(EmisionBO requestBody, String quotationId, String traceId);
+```
+
+#### 2.3. Método 3: executeCreateEmail(CreateEmailASO createEmailASO)
+> Método para realizar una petición al servicio createEmail del API notifications-gateway
+
+##### 2.3.1 Datos de Entrada
+
+|#|Nombre del Atributo|Tipo de Dato| Descripción|
+| :----|:---------- |:--------------| :-----|
+|1| CreateEmailASO | Object | Objeto que envuelve todos los datos necesarios para el cuerpo de solicitud |
+|1.1| applicationId | String | Código de la aplicación |
+|1.2| recipient | String | Correo o correos de las personas a envíar el mensaje |
+|1.3| subject | String | Asunto del mensaje |
+|1.4| body | String | Datos para completar el cuerpo del mensaje |
+|1.5| sender | String | Valor "procesos@bbva.com.pe" por defecto |
+
+##### 2.3.2 Datos de Salida
+
+|#|Nombre del Atributo|Tipo de Dato| Descripción|
+| :----|:---------- |:--------------| :-----|
+|1| httpStatus | Integer | Código de estado http retornado |
+
+##### 2.3.3 Ejemplo
+```java
+Integer httpStatusEmail = rbvdR201.executeCreateEmail(CreateEmailASO requestBody);
 ```
 
 ### 3.  Mensajes: No hay mensajes, solo se capturan excepciones para procesarlas en la librería de lógica de negocio.

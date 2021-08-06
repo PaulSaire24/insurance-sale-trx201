@@ -6,6 +6,7 @@ import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
@@ -205,12 +206,16 @@ public class RBVDR211Test {
 	}
 
 	@Test
-	public void executeBusinessLogicEmissionPrePolicyOK() {
+	public void executeBusinessLogicEmissionPrePolicyOK() throws IOException {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyOK...");
 
 		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
+
+		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
+
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString())).thenReturn(rimacResponse);
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
@@ -235,7 +240,15 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
 
+		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
+
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNotNull(validation);
+
+		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
+
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
 	}

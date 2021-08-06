@@ -1,6 +1,7 @@
 package com.bbva.rbvd.lib.r211.impl.util;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
@@ -60,6 +61,7 @@ import org.joda.time.LocalDate;
 
 import java.math.BigDecimal;
 
+import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -91,6 +93,12 @@ public class MapperHelper {
     private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
     private static final String RECEIPT_START_AND_END_DATE_VALUE = "01/01/2021";
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
+
+    private static final String TEMPLATE_EMAIL_CODE = "PLT00945";
+    private static final String SUBJECT_EMAIL = "!Genial! Acabas de comprar tu seguro vehicular con éxito";
+    private static final String MAIL_SENDER = "procesos@bbva.com.pe";
+
+    private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
     private ApplicationConfigurationService applicationConfigurationService;
 
@@ -718,6 +726,17 @@ public class MapperHelper {
         }
     }
 
+    public CreateEmailASO buildCreateEmailRequest(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber) {
+        CreateEmailASO email = new CreateEmailASO();
+        email.setApplicationId(TEMPLATE_EMAIL_CODE.concat(format.format(new Date())));
+        email.setRecipient("0,".concat(responseBody.getInspection().getContactDetails().get(0).getContact().getAddress()));
+        email.setSubject(SUBJECT_EMAIL);
+        String data[] = getMailBodyData(emissionDao, responseBody, policyNumber);
+        email.setBody(getEmailBody(data));
+        email.setSender(MAIL_SENDER);
+        return email;
+    }
+
     private ExchangeRateDTO validateExchangeRate(ExchangeRateASO exchangeRateASO) {
         ExchangeRateDTO exchangeRate = null;
         if(exchangeRateASO.getDetail().getFactor().getRatio() != 0) {
@@ -738,6 +757,52 @@ public class MapperHelper {
             exchangeRate.setDetail(detail);
         }
         return exchangeRate;
+    }
+
+    private String[] getMailBodyData(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber) {
+        String[] bodyData = new String[13];
+        bodyData[0] = "";
+        bodyData[1] = emissionDao.getVehicleLicenseId();
+        bodyData[2] = emissionDao.getVehicleBrandName();
+        bodyData[3] = emissionDao.getVehicleModelName();
+        bodyData[4] = emissionDao.getVehicleYearId();
+        bodyData[5] = emissionDao.getGasConversionType().equals("S") ? "Sí" : "No";
+        bodyData[6] = emissionDao.getVehicleCirculationType().equals("L") ? "Lima" : "Provincia";
+        bodyData[7] = emissionDao.getCommercialVehicleAmount().toString();
+        bodyData[8] = getContractNumber(responseBody.getId());
+        bodyData[9] = policyNumber;
+        bodyData[10] = responseBody.getProductPlan().getDescription();
+        bodyData[11] = responseBody.getInstallmentPlan().getPaymentAmount().getAmount().toString();
+        bodyData[12] = emissionDao.getPaymentFrequencyName();
+        return bodyData;
+    }
+
+    private String getEmailBody(String[] data) {
+        StringBuilder body = new StringBuilder();
+        int hundredCode = 100;
+        for(int i = 0; i < data.length; i++) {
+            if(i > 7) {
+                body.append(hundredCode).append(data[i]).append("|");
+                hundredCode++;
+                continue;
+            }
+            body.append(generateCode(i+1)).append(data[i]).append("|");
+        }
+        body.append(TEMPLATE_EMAIL_CODE);
+        return body.toString();
+    }
+
+    private String generateCode(Integer index) {
+        return "00".concat(index.toString());
+    }
+
+    private String getContractNumber(String id) {
+        String contractWithoutFirstFourCharacters = id.substring(4);
+        StringBuilder contract = new StringBuilder();
+        contract.append(contractWithoutFirstFourCharacters, 0, 4).append("-")
+                .append(contractWithoutFirstFourCharacters, 4, 6).append("-")
+                .append(contractWithoutFirstFourCharacters.substring(6));
+        return contract.toString();
     }
 
     private Date convertLocaldateToDate(LocalDate localDate) {
