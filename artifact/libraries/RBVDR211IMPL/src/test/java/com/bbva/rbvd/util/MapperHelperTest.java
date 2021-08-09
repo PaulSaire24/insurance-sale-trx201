@@ -1,6 +1,7 @@
 package com.bbva.rbvd.util;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
@@ -21,7 +22,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -32,10 +32,7 @@ public class MapperHelperTest {
     private final MapperHelper mapperHelper = new MapperHelper();
     private ApplicationConfigurationService applicationConfigurationService;
     private final MockData mockData = MockData.getInstance();
-
-    private final SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-    private final String currentDate = format.format(new Date());
-
+    
     private static final String N_VALUE = "N";
     private static final String S_VALUE = "S";
 
@@ -66,6 +63,13 @@ public class MapperHelperTest {
         when(requiredFieldsEmissionDao.getInsuranceModalityName()).thenReturn("insuranceModalityName");
         when(requiredFieldsEmissionDao.getInsuranceCompanyQuotaId()).thenReturn("quotaId");
         when(requiredFieldsEmissionDao.getPaymentFrequencyName()).thenReturn("frequencyName");
+        when(requiredFieldsEmissionDao.getVehicleBrandName()).thenReturn("brandName");
+        when(requiredFieldsEmissionDao.getVehicleModelName()).thenReturn("modelName");
+        when(requiredFieldsEmissionDao.getVehicleYearId()).thenReturn("2016");
+        when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn("LOT464");
+        when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("S");
+        when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("L");
+        when(requiredFieldsEmissionDao.getCommercialVehicleAmount()).thenReturn(BigDecimal.valueOf(23.000));
 
         apxRequest = mockData.getCreateInsuranceRequestBody();
         apxRequest.setCreationUser("creationUser");
@@ -229,9 +233,9 @@ public class MapperHelperTest {
         assertEquals(apxRequest.getBusinessAgent().getId(), validation.getInsuranceManagerId());
         assertEquals(apxRequest.getPromoter().getId(), validation.getInsurancePromoterId());
         assertEquals("0241", validation.getContractManagerBranchId());
-        assertEquals(format.format(apxRequest.getValidityPeriod().getStartDate()), validation.getInsuranceContractStartDate());
         assertEquals("02/06/2022", validation.getInsuranceContractEndDate());
         assertEquals("02/05/2022", validation.getLastInstallmentDate());
+        assertEquals("02/07/2021", validation.getPeriodNextPaymentDate());
         assertEquals(apxRequest.getHolder().getId(), validation.getCustomerId());
         assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId(), validation.getDomicileContractId());
         assertEquals(N_VALUE, validation.getCardIssuingMarkType());
@@ -267,23 +271,14 @@ public class MapperHelperTest {
 
         rimacResponse.getPayload().setCuotasFinanciamiento(Collections.singletonList(cuota));
 
-        validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
-
-        assertEquals("16/07/2021", validation.getLastInstallmentDate());
-        assertEquals("16/07/2021",
-                validation.getPeriodNextPaymentDate());
-
         apxRequest.getFirstInstallment().setIsPaymentRequired(true);
         apxRequest.getPaymentMethod().setPaymentType("somethingElse");
 
-        validation = mapperHelper.buildInsuranceContract(null, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
+        validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
 
         assertEquals(BigDecimal.valueOf(0), validation.getTotalDebtAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1), validation.getPrevPendBillRcptsNumber());
         assertEquals(N_VALUE, validation.getAutomaticDebitIndicatorType());
-        assertEquals(currentDate, validation.getInsuranceContractEndDate());
-        assertEquals(currentDate, validation.getLastInstallmentDate());
-        assertEquals(currentDate, validation.getPeriodNextPaymentDate());
     }
 
     @Test
@@ -479,19 +474,16 @@ public class MapperHelperTest {
         assertEquals(BigDecimal.valueOf(asoResponse.getData()
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.get(0).getPremiumCurrencyExchAmount());
         assertEquals(apxRequest.getFirstInstallment().getPaymentAmount().getCurrency(), validation.get(0).getCurrencyId());
-        assertEquals(currentDate, validation.get(0).getReceiptIssueDate());
-        assertEquals(format.format(apxRequest.getValidityPeriod().getStartDate()), validation.get(0).getReceiptStartDate());
-        assertEquals("02/06/2021", validation.get(0).getReceiptEndDate());
+        assertEquals("01/01/2021", validation.get(0).getReceiptStartDate());
+        assertEquals("01/01/2021", validation.get(0).getReceiptEndDate());
         assertEquals("02/06/2021", validation.get(0).getReceiptExpirationDate());
-        assertEquals(currentDate, validation.get(0).getReceiptCollectionDate());
-        assertEquals(currentDate, validation.get(0).getReceiptsTransmissionDate());
         assertEquals("00", validation.get(0).getReceiptCollectionStatusType());
         assertEquals("T", validation.get(0).getPaymentMethodType());
         assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId(), validation.get(0).getDebitAccountId());
         assertEquals(apxRequest.getSaleChannelId(), validation.get(0).getDebitChannelType());
         assertEquals(BigDecimal.valueOf(0), validation.get(0).getChargeAttemptsNumber());
         assertEquals("INC", validation.get(0).getInsrncCoReceiptStatusType());
-        assertEquals("COB", validation.get(0).getReceiptStatusType());
+        assertEquals("INC", validation.get(0).getReceiptStatusType());
         assertEquals(apxRequest.getCreationUser(), validation.get(0).getCreationUserId());
         assertEquals(apxRequest.getUserAudit(), validation.get(0).getUserAuditId());
         assertEquals("0241", validation.get(0).getManagementBranchId());
@@ -513,6 +505,7 @@ public class MapperHelperTest {
         asoResponse.getData().getFirstInstallment().setExchangeRate(exchangeRate);
         asoResponse.getData().getFirstInstallment().setOperationDate(new Date());
         apxRequest.getPaymentMethod().getRelatedContracts().get(0).getProduct().setId("ACCOUNT");
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
 
         validation = mapperHelper.buildInsuranceCtrReceipt(asoResponse, rimacResponse, apxRequest);
 
@@ -520,12 +513,7 @@ public class MapperHelperTest {
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()), validation.get(0).getFixingExchangeRateAmount());
         assertEquals(BigDecimal.valueOf(asoResponse.getData()
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.get(0).getPremiumCurrencyExchAmount());
-        assertEquals(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()),
-                validation.get(0).getReceiptIssueDate());
-        assertEquals(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()),
-                validation.get(0).getReceiptCollectionDate());
-        assertEquals(format.format(asoResponse.getData().getFirstInstallment().getOperationDate()),
-                validation.get(0).getReceiptsTransmissionDate());
+        assertEquals("COB", validation.get(0).getReceiptStatusType());
     }
 
     @Test
@@ -845,7 +833,6 @@ public class MapperHelperTest {
         assertNotNull(apxRequest.getFirstInstallment().getFirstPaymentDate());
         assertNotNull(apxRequest.getFirstInstallment().getOperationNumber());
         assertNotNull(apxRequest.getFirstInstallment().getTransactionNumber());
-        assertNotNull(apxRequest.getFirstInstallment().getOperationDate());
         assertNotNull(apxRequest.getFirstInstallment().getExchangeRate());
         apxRequest.getParticipants().forEach(participant -> assertTrue(Objects.nonNull(participant.getId()) && Objects.nonNull(participant.getCustomerId())));
         assertNotNull(apxRequest.getInsuranceCompany().getName());
@@ -860,17 +847,12 @@ public class MapperHelperTest {
         assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
         assertEquals(requiredFieldsEmissionDao.getInsuranceModalityName(), apxRequest.getProductPlan().getDescription());
         assertEquals(asoResponse.getData().getOperationDate(), apxRequest.getOperationDate());
-        assertEquals(asoResponse.getData().getValidityPeriod().getEndDate(), apxRequest.getValidityPeriod().getEndDate());
         assertEquals(requiredFieldsEmissionDao.getPaymentFrequencyName(),
                 apxRequest.getInstallmentPlan().getPeriod().getName());
-        assertEquals(asoResponse.getData().getFirstInstallment().getFirstPaymentDate(),
-                apxRequest.getFirstInstallment().getFirstPaymentDate());
         assertEquals(asoResponse.getData().getFirstInstallment().getOperationNumber(),
                 apxRequest.getFirstInstallment().getOperationNumber());
         assertEquals(asoResponse.getData().getFirstInstallment().getTransactionNumber(),
                 apxRequest.getFirstInstallment().getTransactionNumber());
-        assertEquals(asoResponse.getData().getFirstInstallment().getOperationDate(),
-                apxRequest.getFirstInstallment().getOperationDate());
         assertEquals(asoResponse.getData().getInsuranceCompany().getName(), apxRequest.getInsuranceCompany().getName());
         assertEquals(rimacResponse.getPayload().getCodProducto(), apxRequest.getInsuranceCompany().getProductId());
         assertEquals(requiredFieldsEmissionDao.getInsuranceCompanyQuotaId(), apxRequest.getExternalQuotationId());
@@ -878,6 +860,49 @@ public class MapperHelperTest {
         assertEquals("FOR", apxRequest.getStatus().getId());
         assertEquals(asoResponse.getData().getStatus().getDescription(), apxRequest.getStatus().getDescription());
         assertEquals("04040005", apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+
+
+        asoResponse.getData().getTotalAmount().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+        asoResponse.getData().getInstallmentPlan().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+        asoResponse.getData().getFirstInstallment().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNull(apxRequest.getTotalAmount().getExchangeRate());
+        assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
+        assertNull(apxRequest.getFirstInstallment().getExchangeRate());
+
+        apxRequest.setBusinessAgent(null);
+        apxRequest.setPromoter(null);
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertEquals(asoResponse.getData().getBusinessAgent().getId(),
+                apxRequest.getBusinessAgent().getId());
+
+        assertEquals(asoResponse.getData().getPromoter().getId(),
+                apxRequest.getPromoter().getId());
     }
 
+    @Test
+    public void buildCreateEmailRequest_OK() {
+        apxRequest.setId("00110057794000023694");
+        apxRequest.getProductPlan().setDescription("PLAN BASICO");
+
+        CreateEmailASO email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+
+        assertNotNull(email.getApplicationId());
+        assertNotNull(email.getRecipient());
+        assertNotNull(email.getSubject());
+        assertNotNull(email.getBody());
+        assertNotNull(email.getSender());
+
+        when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn(null);
+        when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
+        when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
+
+        email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+
+        assertNotNull(email.getBody());
+    }
 }

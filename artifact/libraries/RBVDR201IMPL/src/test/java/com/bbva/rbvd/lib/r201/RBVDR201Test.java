@@ -1,10 +1,12 @@
 package com.bbva.rbvd.lib.r201;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 
 import com.bbva.elara.utility.api.connector.APIConnector;
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
+import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.lib.r014.PISDR014;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -19,11 +21,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -70,15 +78,15 @@ public class RBVDR201Test {
 				.thenReturn(new SignatureAWS("", "", "", ""));
 	}
 
-	@Test
+	@Test(expected = BusinessException.class)
 	public void executePrePolicyEmissionASOWithRestClientException() {
 		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionASOWithRestClientException...");
 
-		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new RestClientException(MESSAGE_EXCEPTION));
+		String responseBody = "{\"messages\":[{\"code\":\"wrongParameters\",\"message\":\"LOS DATOS INGRESADOS SON INVALIDOS\",\"parameters\":[],\"type\":\"FATAL\"}]}";
 
-		PolicyASO validation = rbvdr201.executePrePolicyEmissionASO(new DataASO());
+		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
 
-		assertNull(validation);
+		rbvdr201.executePrePolicyEmissionASO(new DataASO());
 	}
 
 	@Test
@@ -128,14 +136,15 @@ public class RBVDR201Test {
 		assertNotNull(validation.getData().getInsuranceCompany().getName());
 	}
 
-	@Test
+	@Test(expected = BusinessException.class)
 	public void executePrePolicyEmissionServiceWithRestClientException() {
 		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionServiceWithRestClientException...");
 
-		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenThrow(new RestClientException(MESSAGE_EXCEPTION));
+		String responseBody = "{\"error\":{\"code\":\"VEHDAT005\",\"message\":\"Error al Validar Datos.\",\"details\":[\"\\\"contactoInspeccion.telefono\\\" debe contener caracteres\"],\"httpStatus\":400}}";
 
-		EmisionBO validation = rbvdr201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId");
-		assertNull(validation);
+		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
+
+		rbvdr201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId");
 	}
 
 	@Test
@@ -184,6 +193,29 @@ public class RBVDR201Test {
 		assertNotNull(validation.getPayload().getResponsablePago());
 		assertNotNull(validation.getPayload().getAsegurado());
 
+	}
+
+	@Test
+	public void executeCreateEmailWithRestClientException() {
+		LOGGER.info("RBVDR201Test - Executing executeCreateEmailWithRestClientException...");
+		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<String>) any()))
+				.thenThrow(new RestClientException(MESSAGE_EXCEPTION));
+
+		Integer validation = rbvdr201.executeCreateEmail(new CreateEmailASO());
+
+		assertNull(validation);
+	}
+
+	@Test
+	public void executeCreateEmailOK() {
+		LOGGER.info("RBVDR201Test - Executing executeCreateEmailOK...");
+		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<String>) any()))
+				.thenReturn(new ResponseEntity<>("", HttpStatus.OK));
+
+		Integer validation = rbvdr201.executeCreateEmail(new CreateEmailASO());
+
+		assertNotNull(validation);
+		assertEquals(new Integer(HttpStatus.OK.value()), validation);
 	}
 	
 }
