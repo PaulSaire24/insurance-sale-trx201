@@ -467,7 +467,7 @@ public class MapperHelper {
                 equals(CARD_PRODUCT_ID) ? CARD_METHOD_TYPE : ACCOUNT_METHOD_TYPE);
         firstReceipt.setDebitAccountId(requestBody.getPaymentMethod().getRelatedContracts().get(0).getContractId());
         firstReceipt.setDebitChannelType(requestBody.getSaleChannelId());
-        firstReceipt.setReceiptStatusType(FIRST_RECEIPT_STATUS_TYPE_VALUE);
+        firstReceipt.setReceiptStatusType((requestBody.getFirstInstallment().getIsPaymentRequired()) ? FIRST_RECEIPT_STATUS_TYPE_VALUE : NEXT_RECEIPTS_STATUS_TYPE_VALUE);
         firstReceipt.setCreationUserId(requestBody.getCreationUser());
         firstReceipt.setUserAuditId(requestBody.getUserAudit());
         firstReceipt.setManagementBranchId(asoResponse.getData().getId().substring(4, 8));
@@ -731,7 +731,7 @@ public class MapperHelper {
         email.setApplicationId(TEMPLATE_EMAIL_CODE.concat(format.format(new Date())));
         email.setRecipient("0,".concat(responseBody.getInspection().getContactDetails().get(0).getContact().getAddress()));
         email.setSubject(SUBJECT_EMAIL);
-        String data[] = getMailBodyData(emissionDao, responseBody, policyNumber);
+        String[] data = getMailBodyData(emissionDao, responseBody, policyNumber);
         email.setBody(getEmailBody(data));
         email.setSender(MAIL_SENDER);
         return email;
@@ -762,7 +762,7 @@ public class MapperHelper {
     private String[] getMailBodyData(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber) {
         String[] bodyData = new String[13];
         bodyData[0] = "";
-        bodyData[1] = emissionDao.getVehicleLicenseId();
+        bodyData[1] = Objects.nonNull(emissionDao.getVehicleLicenseId()) ? emissionDao.getVehicleLicenseId() : "EN TRAMITE";
         bodyData[2] = emissionDao.getVehicleBrandName();
         bodyData[3] = emissionDao.getVehicleModelName();
         bodyData[4] = emissionDao.getVehicleYearId();

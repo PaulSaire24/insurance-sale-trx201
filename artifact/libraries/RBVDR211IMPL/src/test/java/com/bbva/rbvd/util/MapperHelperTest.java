@@ -483,7 +483,7 @@ public class MapperHelperTest {
         assertEquals(apxRequest.getSaleChannelId(), validation.get(0).getDebitChannelType());
         assertEquals(BigDecimal.valueOf(0), validation.get(0).getChargeAttemptsNumber());
         assertEquals("INC", validation.get(0).getInsrncCoReceiptStatusType());
-        assertEquals("COB", validation.get(0).getReceiptStatusType());
+        assertEquals("INC", validation.get(0).getReceiptStatusType());
         assertEquals(apxRequest.getCreationUser(), validation.get(0).getCreationUserId());
         assertEquals(apxRequest.getUserAudit(), validation.get(0).getUserAuditId());
         assertEquals("0241", validation.get(0).getManagementBranchId());
@@ -505,6 +505,7 @@ public class MapperHelperTest {
         asoResponse.getData().getFirstInstallment().setExchangeRate(exchangeRate);
         asoResponse.getData().getFirstInstallment().setOperationDate(new Date());
         apxRequest.getPaymentMethod().getRelatedContracts().get(0).getProduct().setId("ACCOUNT");
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
 
         validation = mapperHelper.buildInsuranceCtrReceipt(asoResponse, rimacResponse, apxRequest);
 
@@ -512,6 +513,7 @@ public class MapperHelperTest {
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()), validation.get(0).getFixingExchangeRateAmount());
         assertEquals(BigDecimal.valueOf(asoResponse.getData()
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.get(0).getPremiumCurrencyExchAmount());
+        assertEquals("COB", validation.get(0).getReceiptStatusType());
     }
 
     @Test
@@ -895,6 +897,7 @@ public class MapperHelperTest {
         assertNotNull(email.getBody());
         assertNotNull(email.getSender());
 
+        when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn(null);
         when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
         when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
 

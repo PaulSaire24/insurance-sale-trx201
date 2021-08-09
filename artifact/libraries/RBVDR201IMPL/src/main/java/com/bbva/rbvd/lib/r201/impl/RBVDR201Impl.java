@@ -2,7 +2,6 @@ package com.bbva.rbvd.lib.r201.impl;
 
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
