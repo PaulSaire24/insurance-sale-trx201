@@ -117,6 +117,9 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		return httpStatus;
 	}
 
+	private String getRequestBodyAsJsonFormat(Object requestBody) {
+		return JsonHelper.getInstance().toJsonString(requestBody);
+	}
 
 	private HttpHeaders createHttpHeaders(boolean isBcsHeaderRequired) {
 		HttpHeaders headers = new HttpHeaders();
@@ -137,10 +140,6 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		headers.set(X_API_KEY_HEADER, signature.getxApiKey());
 		headers.set(TRACE_ID_HEADER, signature.getTraceId());
 		return headers;
-	}
-
-	private String getRequestBodyAsJsonFormat(Object requestBody) {
-		return JsonHelper.getInstance().toJsonString(requestBody);
 	}
 
 }
