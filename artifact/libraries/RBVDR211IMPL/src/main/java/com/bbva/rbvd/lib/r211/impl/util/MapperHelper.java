@@ -729,7 +729,7 @@ public class MapperHelper {
     public CreateEmailASO buildCreateEmailRequest(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber) {
         CreateEmailASO email = new CreateEmailASO();
         email.setApplicationId(TEMPLATE_EMAIL_CODE.concat(format.format(new Date())));
-        email.setRecipient("0,".concat(responseBody.getInspection().getContactDetails().get(0).getContact().getAddress()));
+        email.setRecipient("0,".concat(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()));
         email.setSubject(SUBJECT_EMAIL);
         String[] data = getMailBodyData(emissionDao, responseBody, policyNumber);
         email.setBody(getEmailBody(data));
