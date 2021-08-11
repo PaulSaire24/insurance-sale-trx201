@@ -311,6 +311,7 @@ public class MapperHelperTest {
         when(contractDao.getCardIssuingMarkType()).thenReturn(N_VALUE);
         when(contractDao.getIssuedReceiptNumber()).thenReturn(BigDecimal.valueOf(12));
         when(contractDao.getValidityMonthsNumber()).thenReturn(BigDecimal.valueOf(12));
+        when(contractDao.getInsurancePolicyEndDate()).thenReturn("02/06/2022");
         when(contractDao.getPaymentFrequencyId()).thenReturn(BigDecimal.valueOf(1));
         when(contractDao.getPremiumAmount()).thenReturn(BigDecimal.valueOf(124.0));
         when(contractDao.getSettlePendingPremiumAmount()).thenReturn(BigDecimal.valueOf(124.0));
@@ -357,6 +358,7 @@ public class MapperHelperTest {
         assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_START_DATE.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_INSRNC_VALIDITY_MONTHS_NUMBER.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_POLICY_END_DATE.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_CUSTOMER_ID.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_DOMICILE_CONTRACT_ID.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_CARD_ISSUING_MARK_TYPE.getValue()));
