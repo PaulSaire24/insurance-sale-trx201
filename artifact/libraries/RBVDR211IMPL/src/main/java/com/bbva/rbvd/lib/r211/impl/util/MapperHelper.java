@@ -297,7 +297,9 @@ public class MapperHelper {
 
         contractDao.setPolicyId(rimacResponse.getPayload().getNumeroPoliza());
 
-        contractDao.setInsuranceContractEndDate(generateCorrectDateFormat(rimacResponse.getPayload().getFechaFinal()));
+        String policyExpiration = generateCorrectDateFormat(rimacResponse.getPayload().getFechaFinal());
+
+        contractDao.setInsuranceContractEndDate(policyExpiration);
 
         int numeroCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().size();
         CuotaFinancimientoBO ultimaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
@@ -305,11 +307,9 @@ public class MapperHelper {
 
         if(Objects.nonNull(ultimaCuota)) {
 
-            String lastInstDate = generateCorrectDateFormat(ultimaCuota.getFechaVencimiento());
-
-            contractDao.setLastInstallmentDate(lastInstDate);
+            contractDao.setLastInstallmentDate(generateCorrectDateFormat(ultimaCuota.getFechaVencimiento()));
             contractDao.setPeriodNextPaymentDate((numeroCuotas == 1) ?
-                    lastInstDate : getNextPaymentDate(rimacResponse));
+                    policyExpiration : getNextPaymentDate(rimacResponse));
         }
 
         contractDao.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
@@ -322,13 +322,15 @@ public class MapperHelper {
             contractDao.setInsurancePromoterId(apxRequest.getPromoter().getId());
         }
 
-        contractDao.setContractManagerBranchId(asoId.substring(4, 8));
+        contractDao.setContractManagerBranchId(apxRequest.getBank().getBranch().getId());
         contractDao.setContractInceptionDate(currentDate);
 
         contractDao.setInsuranceContractStartDate(generateCorrectDateFormat(
                         convertDateToLocalDate(apxRequest.getValidityPeriod().getStartDate())));
 
         contractDao.setValidityMonthsNumber(emissionDao.getContractDurationNumber());
+
+        contractDao.setInsurancePolicyEndDate(policyExpiration);
 
         contractDao.setCustomerId(apxRequest.getHolder().getId());
         contractDao.setDomicileContractId(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId());
@@ -341,9 +343,10 @@ public class MapperHelper {
         contractDao.setCurrencyId(apxRequest.getInstallmentPlan().getPaymentAmount().getCurrency());
         contractDao.setInstallmentPeriodFinalDate(currentDate);
         contractDao.setInsuredAmount(BigDecimal.valueOf(apxRequest.getInsuredAmount().getAmount()));
-        contractDao.setContractPreviousBranchId(asoId.substring(4, 8));
+        contractDao.setCtrctDisputeStatusType(apxRequest.getSaleChannelId());
         contractDao.setCreationUserId(apxRequest.getCreationUser());
         contractDao.setUserAuditId(apxRequest.getUserAudit());
+        contractDao.setInsurPendingDebtIndType((apxRequest.getFirstInstallment().getIsPaymentRequired()) ? N_VALUE : S_VALUE);
 
         contractDao.setTotalDebtAmount((apxRequest.getFirstInstallment().getIsPaymentRequired())
                 ? BigDecimal.valueOf(0) : BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()));
@@ -402,7 +405,6 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_BENEFICIARY_TYPE.getValue(), contractDao.getBeneficiaryType());
         arguments.put(RBVDProperties.FIELD_RENEWAL_NUMBER.getValue(), contractDao.getRenewalNumber());
         arguments.put(RBVDProperties.FIELD_CTRCT_DISPUTE_STATUS_TYPE.getValue(), contractDao.getCtrctDisputeStatusType());
-        arguments.put(RBVDProperties.FIELD_CONTRACT_PREVIOUS_BRANCH_ID.getValue(), contractDao.getContractPreviousBranchId());
         arguments.put(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue(), contractDao.getPeriodNextPaymentDate());
         arguments.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_IND_TYPE.getValue(), contractDao.getEndorsementPolicyIndType());
         arguments.put(RBVDProperties.FIELD_INSRNC_CO_CONTRACT_STATUS_TYPE.getValue(), contractDao.getInsrncCoContractStatusType());
@@ -772,7 +774,7 @@ public class MapperHelper {
         bodyData[8] = getContractNumber(responseBody.getId());
         bodyData[9] = policyNumber;
         bodyData[10] = responseBody.getProductPlan().getDescription();
-        bodyData[11] = responseBody.getInstallmentPlan().getPaymentAmount().getAmount().toString();
+        bodyData[11] = responseBody.getFirstInstallment().getPaymentAmount().getAmount().toString();
         bodyData[12] = emissionDao.getPaymentFrequencyName();
         return bodyData;
     }
