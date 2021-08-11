@@ -195,7 +195,12 @@ public class MapperHelperTest {
         assertNotNull(validation.getInsuranceManagerId());
         assertNotNull(validation.getInsurancePromoterId());
         assertNotNull(validation.getContractManagerBranchId());
+
         assertNotNull(validation.getInsuranceContractStartDate());
+        assertNotNull(validation.getInsuranceContractEndDate());
+        assertNotNull(validation.getValidityMonthsNumber());
+        assertNotNull(validation.getInsurancePolicyEndDate());
+
         assertNull(validation.getCustomerId());
         assertNotNull(validation.getDomicileContractId());
         assertNotNull(validation.getCardIssuingMarkType());
@@ -208,7 +213,6 @@ public class MapperHelperTest {
         assertNotNull(validation.getRenewalNumber());
         assertNotNull(validation.getPolicyPymtPendDueDebtType());
         assertNotNull(validation.getCtrctDisputeStatusType());
-        assertNotNull(validation.getContractPreviousBranchId());
         assertNotNull(validation.getContractStatusId());
         assertNotNull(validation.getCreationUserId());
         assertNotNull(validation.getUserAuditId());
@@ -232,8 +236,10 @@ public class MapperHelperTest {
         assertEquals(rimacResponse.getPayload().getNumeroPoliza(), validation.getPolicyId());
         assertEquals(apxRequest.getBusinessAgent().getId(), validation.getInsuranceManagerId());
         assertEquals(apxRequest.getPromoter().getId(), validation.getInsurancePromoterId());
-        assertEquals("0241", validation.getContractManagerBranchId());
+        assertEquals(apxRequest.getBank().getBranch().getId(), validation.getContractManagerBranchId());
         assertEquals("02/06/2022", validation.getInsuranceContractEndDate());
+        assertEquals(requiredFieldsEmissionDao.getContractDurationNumber(), validation.getValidityMonthsNumber());
+        assertEquals("02/06/2022", validation.getInsurancePolicyEndDate());
         assertEquals("02/05/2022", validation.getLastInstallmentDate());
         assertEquals("02/07/2021", validation.getPeriodNextPaymentDate());
         assertEquals(apxRequest.getHolder().getId(), validation.getCustomerId());
@@ -247,14 +253,13 @@ public class MapperHelperTest {
         assertEquals("08", validation.getBeneficiaryType());
         assertEquals(BigDecimal.valueOf(0), validation.getRenewalNumber());
         assertEquals(N_VALUE, validation.getPolicyPymtPendDueDebtType());
-        assertEquals(N_VALUE, validation.getCtrctDisputeStatusType());
-        assertEquals("0241", validation.getContractPreviousBranchId());
+        assertEquals("BI", validation.getCtrctDisputeStatusType());
         assertEquals(N_VALUE, validation.getEndorsementPolicyIndType());
         assertEquals("PEN", validation.getInsrncCoContractStatusType());
         assertEquals("FOR", validation.getContractStatusId());
         assertEquals(apxRequest.getCreationUser(), validation.getCreationUserId());
         assertEquals(apxRequest.getUserAudit(), validation.getUserAuditId());
-        assertEquals(N_VALUE, validation.getInsurPendingDebtIndType());
+        assertEquals(S_VALUE, validation.getInsurPendingDebtIndType());
         assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.getTotalDebtAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()), validation.getPrevPendBillRcptsNumber());
         assertEquals(BigDecimal.valueOf(0), validation.getSettlementVarPremiumAmount());
@@ -278,6 +283,8 @@ public class MapperHelperTest {
 
         assertEquals(BigDecimal.valueOf(0), validation.getTotalDebtAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1), validation.getPrevPendBillRcptsNumber());
+        assertEquals("02/06/2022", validation.getPeriodNextPaymentDate());
+        assertEquals(N_VALUE, validation.getInsurPendingDebtIndType());
         assertEquals(N_VALUE, validation.getAutomaticDebitIndicatorType());
     }
 
@@ -315,7 +322,6 @@ public class MapperHelperTest {
         when(contractDao.getRenewalNumber()).thenReturn(BigDecimal.valueOf(0));
         when(contractDao.getPolicyPymtPendDueDebtType()).thenReturn(N_VALUE);
         when(contractDao.getCtrctDisputeStatusType()).thenReturn(N_VALUE);
-        when(contractDao.getContractPreviousBranchId()).thenReturn("0814");
         when(contractDao.getPeriodNextPaymentDate()).thenReturn("17/07/2021");
         when(contractDao.getEndorsementPolicyIndType()).thenReturn(S_VALUE);
         when(contractDao.getInsrncCoContractStatusType()).thenReturn("PEN");
@@ -365,7 +371,6 @@ public class MapperHelperTest {
         assertNotNull(validation.get(RBVDProperties.FIELD_BENEFICIARY_TYPE.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_RENEWAL_NUMBER.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_CTRCT_DISPUTE_STATUS_TYPE.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_CONTRACT_PREVIOUS_BRANCH_ID.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_ENDORSEMENT_POLICY_IND_TYPE.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_INSRNC_CO_CONTRACT_STATUS_TYPE.getValue()));
@@ -413,7 +418,6 @@ public class MapperHelperTest {
         assertEquals(contractDao.getBeneficiaryType(), validation.get(RBVDProperties.FIELD_BENEFICIARY_TYPE.getValue()));
         assertEquals(contractDao.getRenewalNumber(), validation.get(RBVDProperties.FIELD_RENEWAL_NUMBER.getValue()));
         assertEquals(contractDao.getCtrctDisputeStatusType(), validation.get(RBVDProperties.FIELD_CTRCT_DISPUTE_STATUS_TYPE.getValue()));
-        assertEquals(contractDao.getContractPreviousBranchId(), validation.get(RBVDProperties.FIELD_CONTRACT_PREVIOUS_BRANCH_ID.getValue()));
         assertEquals(contractDao.getPeriodNextPaymentDate(), validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
         assertEquals(contractDao.getEndorsementPolicyIndType(), validation.get(RBVDProperties.FIELD_ENDORSEMENT_POLICY_IND_TYPE.getValue()));
         assertEquals(contractDao.getInsrncCoContractStatusType(), validation.get(RBVDProperties.FIELD_INSRNC_CO_CONTRACT_STATUS_TYPE.getValue()));
