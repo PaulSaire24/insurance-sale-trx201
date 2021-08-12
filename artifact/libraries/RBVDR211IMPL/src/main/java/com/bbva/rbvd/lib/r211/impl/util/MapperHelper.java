@@ -91,7 +91,7 @@ public class MapperHelper {
     private static final String ACCOUNT_METHOD_TYPE = "C";
     private static final String FIRST_RECEIPT_STATUS_TYPE_VALUE = "COB";
     private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
-    private static final String RECEIPT_START_AND_END_DATE_VALUE = "01/01/2021";
+    private static final String RECEIPT_DEFAULT_DATE_VALUE = "01/01/0001";
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
 
     private static final String TEMPLATE_EMAIL_CODE = "PLT00945";
@@ -105,7 +105,7 @@ public class MapperHelper {
     private String currentDate;
 
     public MapperHelper() {
-        this.currentDate = generateCorrectDateFormat(convertDateToLocalDate(new Date()));
+        this.currentDate = generateCorrectDateFormat(new LocalDate());
     }
 
     public DataASO buildAsoRequest(PolicyDTO apxRequest) {
@@ -328,7 +328,9 @@ public class MapperHelper {
         contractDao.setInsuranceContractStartDate(generateCorrectDateFormat(
                         convertDateToLocalDate(apxRequest.getValidityPeriod().getStartDate())));
 
-        contractDao.setValidityMonthsNumber(emissionDao.getContractDurationNumber());
+        contractDao.setValidityMonthsNumber(emissionDao.getContractDurationType().equals("A")
+                ? emissionDao.getContractDurationNumber().multiply(BigDecimal.valueOf(12))
+                : emissionDao.getContractDurationNumber());
 
         contractDao.setInsurancePolicyEndDate(policyExpiration);
 
@@ -449,31 +451,34 @@ public class MapperHelper {
         }
         firstReceipt.setCurrencyId(requestBody.getFirstInstallment().getPaymentAmount().getCurrency());
 
-        if(Objects.nonNull(asoResponse.getData().getFirstInstallment().getOperationDate())) {
+        if(requestBody.getFirstInstallment().getIsPaymentRequired()) {
             String correctFormatDate = generateCorrectDateFormat(
                     convertDateToLocalDate(asoResponse.getData().getFirstInstallment().getOperationDate()));
 
             firstReceipt.setReceiptIssueDate(correctFormatDate);
             firstReceipt.setReceiptCollectionDate(correctFormatDate);
             firstReceipt.setReceiptsTransmissionDate(correctFormatDate);
+
+            firstReceipt.setReceiptStatusType(FIRST_RECEIPT_STATUS_TYPE_VALUE);
         } else {
-            firstReceipt.setReceiptIssueDate(currentDate);
-            firstReceipt.setReceiptCollectionDate(currentDate);
-            firstReceipt.setReceiptsTransmissionDate(currentDate);
+            firstReceipt.setReceiptIssueDate(RECEIPT_DEFAULT_DATE_VALUE);
+            firstReceipt.setReceiptCollectionDate(RECEIPT_DEFAULT_DATE_VALUE);
+            firstReceipt.setReceiptsTransmissionDate(RECEIPT_DEFAULT_DATE_VALUE);
+
+            firstReceipt.setReceiptStatusType(NEXT_RECEIPTS_STATUS_TYPE_VALUE);
         }
 
-        firstReceipt.setReceiptStartDate(RECEIPT_START_AND_END_DATE_VALUE);
-        firstReceipt.setReceiptEndDate(RECEIPT_START_AND_END_DATE_VALUE);
+        firstReceipt.setReceiptStartDate(RECEIPT_DEFAULT_DATE_VALUE);
+        firstReceipt.setReceiptEndDate(RECEIPT_DEFAULT_DATE_VALUE);
         firstReceipt.setReceiptCollectionStatusType(COLLECTION_STATUS_FIRST_RECEIPT_VALUE);
         firstReceipt.setInsuranceCollectionMoveId(asoResponse.getData().getFirstInstallment().getTransactionNumber());
         firstReceipt.setPaymentMethodType(requestBody.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId().
                 equals(CARD_PRODUCT_ID) ? CARD_METHOD_TYPE : ACCOUNT_METHOD_TYPE);
         firstReceipt.setDebitAccountId(requestBody.getPaymentMethod().getRelatedContracts().get(0).getContractId());
         firstReceipt.setDebitChannelType(requestBody.getSaleChannelId());
-        firstReceipt.setReceiptStatusType((requestBody.getFirstInstallment().getIsPaymentRequired()) ? FIRST_RECEIPT_STATUS_TYPE_VALUE : NEXT_RECEIPTS_STATUS_TYPE_VALUE);
         firstReceipt.setCreationUserId(requestBody.getCreationUser());
         firstReceipt.setUserAuditId(requestBody.getUserAudit());
-        firstReceipt.setManagementBranchId(asoResponse.getData().getId().substring(4, 8));
+        firstReceipt.setManagementBranchId(requestBody.getBank().getBranch().getId());
         firstReceipt.setFixPremiumAmount(BigDecimal.valueOf(requestBody.getFirstInstallment().getPaymentAmount().getAmount()));
         firstReceipt.setSettlementFixPremiumAmount(BigDecimal.valueOf(requestBody.getInstallmentPlan().getPaymentAmount().getAmount()));
         firstReceipt.setLastChangeBranchId(requestBody.getBank().getBranch().getId());
@@ -510,12 +515,12 @@ public class MapperHelper {
         nextReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(0));
         nextReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(0));
         nextReceipt.setCurrencyId(firstReceipt.getCurrencyId());
-        nextReceipt.setReceiptIssueDate(currentDate);
+        nextReceipt.setReceiptIssueDate(RECEIPT_DEFAULT_DATE_VALUE);
         nextReceipt.setReceiptStartDate(firstReceipt.getReceiptStartDate());
         nextReceipt.setReceiptEndDate(firstReceipt.getReceiptEndDate());
-        nextReceipt.setReceiptCollectionDate(currentDate);
+        nextReceipt.setReceiptCollectionDate(RECEIPT_DEFAULT_DATE_VALUE);
         nextReceipt.setReceiptExpirationDate(generateCorrectDateFormat(cuota.getFechaVencimiento()));
-        nextReceipt.setReceiptsTransmissionDate(currentDate);
+        nextReceipt.setReceiptsTransmissionDate(RECEIPT_DEFAULT_DATE_VALUE);
         nextReceipt.setReceiptCollectionStatusType(COLLECTION_STATUS_NEXT_VALUES);
         nextReceipt.setPaymentMethodType(firstReceipt.getPaymentMethodType());
         nextReceipt.setDebitAccountId(firstReceipt.getDebitAccountId());
@@ -664,7 +669,7 @@ public class MapperHelper {
 
         responseBody.setOperationDate(data.getOperationDate());
 
-        responseBody.getValidityPeriod().setEndDate(convertLocaldateToDate(data.getValidityPeriod().getEndDate()));
+        responseBody.getValidityPeriod().setEndDate(convertLocaldateToDate(rimacResponse.getPayload().getFechaFinal()));
 
         responseBody.getInstallmentPlan().getPeriod().setName(requiredFields.getPaymentFrequencyName());
 
@@ -682,6 +687,8 @@ public class MapperHelper {
         responseBody.getFirstInstallment().setFirstPaymentDate(convertLocaldateToDate(data.getFirstInstallment().getFirstPaymentDate()));
 
         if(responseBody.getFirstInstallment().getIsPaymentRequired()) {
+            responseBody.getFirstInstallment().setOperationDate(
+                convertLocaldateToDate(convertDateToLocalDate(data.getFirstInstallment().getOperationDate())));
             responseBody.getFirstInstallment().setOperationNumber(data.getFirstInstallment().getOperationNumber());
             responseBody.getFirstInstallment().setTransactionNumber(data.getFirstInstallment().getTransactionNumber());
 
@@ -809,7 +816,7 @@ public class MapperHelper {
     }
 
     private Date convertLocaldateToDate(LocalDate localDate) {
-        return localDate.toDateTimeAtCurrentTime().toDate();
+        return localDate.toDateTimeAtStartOfDay().toDate();
     }
 
     private LocalDate convertDateToLocalDate(Date date) {

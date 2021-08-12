@@ -57,6 +57,7 @@ public class MapperHelperTest {
 
         requiredFieldsEmissionDao = mock(RequiredFieldsEmissionDAO.class);
         when(requiredFieldsEmissionDao.getInsuranceProductId()).thenReturn(BigDecimal.valueOf(1));
+        when(requiredFieldsEmissionDao.getContractDurationType()).thenReturn("M");
         when(requiredFieldsEmissionDao.getContractDurationNumber()).thenReturn(BigDecimal.valueOf(12));
         when(requiredFieldsEmissionDao.getPaymentFrequencyId()).thenReturn(BigDecimal.valueOf(1));
         when(requiredFieldsEmissionDao.getInsuranceProductDesc()).thenReturn("productDescription");
@@ -279,10 +280,14 @@ public class MapperHelperTest {
         apxRequest.getFirstInstallment().setIsPaymentRequired(true);
         apxRequest.getPaymentMethod().setPaymentType("somethingElse");
 
+        when(requiredFieldsEmissionDao.getContractDurationType()).thenReturn("A");
+        when(requiredFieldsEmissionDao.getContractDurationNumber()).thenReturn(BigDecimal.ONE);
+
         validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
 
         assertEquals(BigDecimal.valueOf(0), validation.getTotalDebtAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1), validation.getPrevPendBillRcptsNumber());
+        assertEquals(BigDecimal.valueOf(12), validation.getValidityMonthsNumber());
         assertEquals("02/06/2022", validation.getPeriodNextPaymentDate());
         assertEquals(N_VALUE, validation.getInsurPendingDebtIndType());
         assertEquals(N_VALUE, validation.getAutomaticDebitIndicatorType());
@@ -480,8 +485,11 @@ public class MapperHelperTest {
         assertEquals(BigDecimal.valueOf(asoResponse.getData()
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.get(0).getPremiumCurrencyExchAmount());
         assertEquals(apxRequest.getFirstInstallment().getPaymentAmount().getCurrency(), validation.get(0).getCurrencyId());
-        assertEquals("01/01/2021", validation.get(0).getReceiptStartDate());
-        assertEquals("01/01/2021", validation.get(0).getReceiptEndDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptStartDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptEndDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptIssueDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptCollectionDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptsTransmissionDate());
         assertEquals("02/06/2021", validation.get(0).getReceiptExpirationDate());
         assertEquals("00", validation.get(0).getReceiptCollectionStatusType());
         assertEquals("T", validation.get(0).getPaymentMethodType());
@@ -492,7 +500,7 @@ public class MapperHelperTest {
         assertEquals("INC", validation.get(0).getReceiptStatusType());
         assertEquals(apxRequest.getCreationUser(), validation.get(0).getCreationUserId());
         assertEquals(apxRequest.getUserAudit(), validation.get(0).getUserAuditId());
-        assertEquals("0241", validation.get(0).getManagementBranchId());
+        assertEquals(apxRequest.getBank().getBranch().getId(), validation.get(0).getManagementBranchId());
         assertEquals(BigDecimal.valueOf(0), validation.get(0).getVariablePremiumAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.get(0).getFixPremiumAmount());
         assertEquals(BigDecimal.valueOf(0), validation.get(0).getSettlementVarPremiumAmount());
@@ -837,6 +845,7 @@ public class MapperHelperTest {
         apxRequest.getHolder().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
         apxRequest.getInspection().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
         assertNotNull(apxRequest.getFirstInstallment().getFirstPaymentDate());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationDate());
         assertNotNull(apxRequest.getFirstInstallment().getOperationNumber());
         assertNotNull(apxRequest.getFirstInstallment().getTransactionNumber());
         assertNotNull(apxRequest.getFirstInstallment().getExchangeRate());
