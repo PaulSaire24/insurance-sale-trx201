@@ -123,10 +123,10 @@
 			</dto>
 		</list>
 		<dto order="16" name="businessAgent" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO" artifactId="RBVDC201">
-			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+			<parameter order="1" name="id" mandatory="1" type="String" size="10"/>
 		</dto>
 		<dto order="17" name="promoter" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO" artifactId="RBVDC201">
-			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+			<parameter order="1" name="id" mandatory="1" type="String" size="10"/>
 		</dto>
 		<dto order="18" name="bank" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.commons.BankDTO" artifactId="RBVDC201">
 			<parameter order="1" name="id" mandatory="1" type="String" size="8"/>
