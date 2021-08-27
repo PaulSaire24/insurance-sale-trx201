@@ -689,6 +689,7 @@ public class MapperHelper {
         if(responseBody.getFirstInstallment().getIsPaymentRequired()) {
             responseBody.getFirstInstallment().setOperationDate(
                 convertLocaldateToDate(convertDateToLocalDate(data.getFirstInstallment().getOperationDate())));
+            responseBody.getFirstInstallment().setAccountingDate(convertLocaldateToDate(convertDateToLocalDate(data.getFirstInstallment().getAccountingDate())));
             responseBody.getFirstInstallment().setOperationNumber(data.getFirstInstallment().getOperationNumber());
             responseBody.getFirstInstallment().setTransactionNumber(data.getFirstInstallment().getTransactionNumber());
 
