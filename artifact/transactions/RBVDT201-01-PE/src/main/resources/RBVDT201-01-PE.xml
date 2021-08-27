@@ -301,6 +301,7 @@
 			</dto>
 			<parameter order="6" name="operationNumber" mandatory="0" type="String" size="20"/>
 			<parameter order="7" name="transactionNumber" mandatory="0" type="String" size="20"/>
+			<parameter order="8" name="accountingDate" mandatory="0" type="Date (YYYY-MM-DD)" size="0"/>
 		</dto>
 		<list order="20" name="participants" mandatory="0">
 			<dto order="1" name="Type" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO" artifactId="RBVDC201">
