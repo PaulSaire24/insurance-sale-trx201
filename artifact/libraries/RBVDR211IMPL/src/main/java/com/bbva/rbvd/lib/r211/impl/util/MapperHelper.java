@@ -589,7 +589,7 @@ public class MapperHelper {
         isrcContractMovDao.setBranchId(asoResponse.getData().getId().substring(4, 8));
         isrcContractMovDao.setIntAccountId(asoResponse.getData().getId().substring(10));
         isrcContractMovDao.setPolicyMovementNumber(BigDecimal.valueOf(1));
-        isrcContractMovDao.setGlAccountDate(currentDate);
+        isrcContractMovDao.setGlAccountDate(generateCorrectDateFormat(asoResponse.getData().getFirstInstallment().getAccountingDate()));
         isrcContractMovDao.setGlBranchId(asoResponse.getData().getId().substring(4, 8));
         isrcContractMovDao.setCreationUserId(creationUser);
         isrcContractMovDao.setUserAuditId(userAudit);
@@ -689,7 +689,7 @@ public class MapperHelper {
         if(responseBody.getFirstInstallment().getIsPaymentRequired()) {
             responseBody.getFirstInstallment().setOperationDate(
                 convertLocaldateToDate(convertDateToLocalDate(data.getFirstInstallment().getOperationDate())));
-            responseBody.getFirstInstallment().setAccountingDate(convertLocaldateToDate(convertDateToLocalDate(data.getFirstInstallment().getAccountingDate())));
+            responseBody.getFirstInstallment().setAccountingDate(convertLocaldateToDate(data.getFirstInstallment().getAccountingDate()));
             responseBody.getFirstInstallment().setOperationNumber(data.getFirstInstallment().getOperationNumber());
             responseBody.getFirstInstallment().setTransactionNumber(data.getFirstInstallment().getTransactionNumber());
 

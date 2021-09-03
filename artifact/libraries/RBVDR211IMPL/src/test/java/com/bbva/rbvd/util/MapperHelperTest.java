@@ -845,6 +845,7 @@ public class MapperHelperTest {
         apxRequest.getHolder().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
         apxRequest.getInspection().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
         assertNotNull(apxRequest.getFirstInstallment().getFirstPaymentDate());
+        assertNotNull(apxRequest.getFirstInstallment().getAccountingDate());
         assertNotNull(apxRequest.getFirstInstallment().getOperationDate());
         assertNotNull(apxRequest.getFirstInstallment().getOperationNumber());
         assertNotNull(apxRequest.getFirstInstallment().getTransactionNumber());
