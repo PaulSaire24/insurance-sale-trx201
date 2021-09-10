@@ -209,6 +209,8 @@ public class RBVDR211Test {
 	public void executeBusinessLogicEmissionPrePolicyOK() throws IOException {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyOK...");
 
+		this.requestBody.getBank().getBranch().setId("7794");
+
 		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
