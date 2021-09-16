@@ -34,6 +34,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211Impl.class);
+	private static final String TLMKT_VALUE = "7794";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -53,6 +54,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields, responseQueryGetPaymentPeriod);
 
 			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
+
+			if(requestBody.getBank().getBranch().getId().equals(TLMKT_VALUE)) {
+				LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | TLMKT Channel *****");
+				requestBody.setSaleChannelId("TM");
+			}
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building Rimac request *****");
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
