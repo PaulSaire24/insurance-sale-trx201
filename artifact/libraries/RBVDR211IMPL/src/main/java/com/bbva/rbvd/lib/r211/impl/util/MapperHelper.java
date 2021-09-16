@@ -37,6 +37,7 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
 
@@ -783,7 +784,10 @@ public class MapperHelper {
         bodyData[8] = getContractNumber(responseBody.getId());
         bodyData[9] = policyNumber;
         bodyData[10] = responseBody.getProductPlan().getDescription();
-        bodyData[11] = responseBody.getFirstInstallment().getPaymentAmount().getAmount().toString();
+
+        PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
+
+        bodyData[11] = paymentAmount.getCurrency().concat(" ").concat(paymentAmount.getAmount().toString());
         bodyData[12] = emissionDao.getPaymentFrequencyName();
         return bodyData;
     }
