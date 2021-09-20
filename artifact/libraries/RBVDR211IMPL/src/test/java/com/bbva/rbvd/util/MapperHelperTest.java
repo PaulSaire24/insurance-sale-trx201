@@ -144,10 +144,7 @@ public class MapperHelperTest {
         PolicyInspectionDTO inspection = apxRequest.getInspection();
         EmisionBO validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode", "dataId");
 
-        assertNotNull(validation.getPayload().getContactoInspeccion());
-        assertNotNull(validation.getPayload().getContactoInspeccion().getNombre());
-        assertNotNull(validation.getPayload().getContactoInspeccion().getCorreo());
-        assertNotNull(validation.getPayload().getContactoInspeccion().getTelefono());
+        assertNull(validation.getPayload().getContactoInspeccion());
 
         assertFalse(validation.getPayload().getDatosParticulares().isEmpty());
         assertNotNull(validation.getPayload().getDatosParticulares().get(0).getEtiqueta());
@@ -162,9 +159,7 @@ public class MapperHelperTest {
         assertNotNull(validation.getPayload().getIndInspeccion());
         assertNotNull(validation.getPayload().getIndValidaciones());
 
-        assertEquals(inspection.getFullName(), validation.getPayload().getContactoInspeccion().getNombre());
-        assertEquals(inspection.getContactDetails().get(0).getContact().getAddress(), validation.getPayload().getContactoInspeccion().getCorreo());
-        assertEquals(inspection.getContactDetails().get(1).getContact().getPhoneNumber(), validation.getPayload().getContactoInspeccion().getTelefono());
+
         assertEquals("CANAL_TERCERO", validation.getPayload().getDatosParticulares().get(0).getEtiqueta());
         assertEquals("channelCode", validation.getPayload().getDatosParticulares().get(0).getValor());
         assertEquals("DATOS_DE_CUENTA", validation.getPayload().getDatosParticulares().get(1).getEtiqueta());
@@ -173,8 +168,22 @@ public class MapperHelperTest {
         assertEquals("dataId", validation.getPayload().getDatosParticulares().get(2).getValor());
         assertEquals(S_VALUE, validation.getPayload().getEnvioElectronico());
         assertEquals(N_VALUE, validation.getPayload().getIndCobro());
-        assertEquals(Optional.of(1L).get(), validation.getPayload().getIndInspeccion());
+        assertEquals(Optional.of(0L).get(), validation.getPayload().getIndInspeccion());
         assertEquals(N_VALUE, validation.getPayload().getIndValidaciones());
+
+        apxRequest.getInspection().setIsRequired(true);
+
+        validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode", "dataId");
+
+        assertNotNull(validation.getPayload().getContactoInspeccion());
+        assertNotNull(validation.getPayload().getContactoInspeccion().getNombre());
+        assertNotNull(validation.getPayload().getContactoInspeccion().getCorreo());
+        assertNotNull(validation.getPayload().getContactoInspeccion().getTelefono());
+        assertEquals(inspection.getFullName(), validation.getPayload().getContactoInspeccion().getNombre());
+        assertEquals(inspection.getContactDetails().get(0).getContact().getAddress(), validation.getPayload().getContactoInspeccion().getCorreo());
+        assertEquals(inspection.getContactDetails().get(1).getContact().getPhoneNumber(), validation.getPayload().getContactoInspeccion().getTelefono());
+        assertEquals(Optional.of(1L).get(), validation.getPayload().getIndInspeccion());
+
     }
 
     @Test
