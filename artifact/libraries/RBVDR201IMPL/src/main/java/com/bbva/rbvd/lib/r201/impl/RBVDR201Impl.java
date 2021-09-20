@@ -52,7 +52,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Response: {}", getRequestBodyAsJsonFormat(responseBody));
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO END *****");
 		} catch (RestClientException ex) {
-			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Exception: {}", ex.getMessage());
+			LOGGER.debug("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Exception: {}", ex.getMessage());
 			AsoExceptionHandler exceptionHandler = new AsoExceptionHandler();
 			exceptionHandler.handler(ex);
 		}
@@ -85,7 +85,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Response: {}", getRequestBodyAsJsonFormat(responseBody));
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService END *****");
 		} catch (RestClientException ex) {
-			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
+			LOGGER.debug("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
 			RimacExceptionHandler exceptionHandler = new RimacExceptionHandler();
 			exceptionHandler.handler(ex);
 		}

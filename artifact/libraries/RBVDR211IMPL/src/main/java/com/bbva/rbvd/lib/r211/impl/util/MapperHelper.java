@@ -83,7 +83,8 @@ public class MapperHelper {
     private static final String PARTICULAR_DATA_CERT_BANCO = "NRO_CERT_BANCO";
     private static final String S_VALUE = "S";
     private static final String N_VALUE = "N";
-    private static final Long INDICATOR_INSPECTION_VALUE = 1L;
+    private static final Long INDICATOR_INSPECTION_NOT_REQUIRED_VALUE = 0L;
+    private static final Long INDICATOR_INSPECTION_REQUIRED_VALUE = 1L;
     private static final String PAYMENT_METHOD_VALUE = "DIRECT_DEBIT";
     private static final String COLLECTION_STATUS_FIRST_RECEIPT_VALUE = "00";
     private static final String COLLECTION_STATUS_NEXT_VALUES = "02";
@@ -239,20 +240,6 @@ public class MapperHelper {
 
         PayloadEmisionBO payload = new PayloadEmisionBO();
 
-        ContactoInspeccionBO contactoInspeccion = new ContactoInspeccionBO();
-        contactoInspeccion.setNombre(inspection.getFullName());
-
-        ContactDetailDTO contactEmail = inspection.getContactDetails().stream().
-                filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(EMAIL_VALUE)).findFirst().orElse(null);
-
-        ContactDetailDTO contactPhone = inspection.getContactDetails().stream().
-                filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(PHONE_NUMBER_VALUE)).findFirst().orElse(null);
-
-        contactoInspeccion.setCorreo( Objects.nonNull(contactEmail) ? contactEmail.getContact().getAddress() : null);
-        contactoInspeccion.setTelefono( Objects.nonNull(contactPhone) ? contactPhone.getContact().getPhoneNumber() : null);
-
-        payload.setContactoInspeccion(contactoInspeccion);
-
         List<DatoParticularBO> datosParticulares = new ArrayList<>();
 
         DatoParticularBO primerDatoParticular = new DatoParticularBO();
@@ -276,8 +263,26 @@ public class MapperHelper {
         payload.setDatosParticulares(datosParticulares);
         payload.setEnvioElectronico(S_VALUE);
         payload.setIndCobro(N_VALUE);
-        payload.setIndInspeccion(INDICATOR_INSPECTION_VALUE);
         payload.setIndValidaciones(N_VALUE);
+
+        if(inspection.getIsRequired()) {
+            ContactoInspeccionBO contactoInspeccion = new ContactoInspeccionBO();
+            contactoInspeccion.setNombre(inspection.getFullName());
+
+            ContactDetailDTO contactEmail = inspection.getContactDetails().stream().
+                    filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(EMAIL_VALUE)).findFirst().orElse(null);
+
+            ContactDetailDTO contactPhone = inspection.getContactDetails().stream().
+                    filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(PHONE_NUMBER_VALUE)).findFirst().orElse(null);
+
+            contactoInspeccion.setCorreo( Objects.nonNull(contactEmail) ? contactEmail.getContact().getAddress() : null);
+            contactoInspeccion.setTelefono( Objects.nonNull(contactPhone) ? contactPhone.getContact().getPhoneNumber() : null);
+
+            payload.setContactoInspeccion(contactoInspeccion);
+            payload.setIndInspeccion(INDICATOR_INSPECTION_REQUIRED_VALUE);
+        } else {
+            payload.setIndInspeccion(INDICATOR_INSPECTION_NOT_REQUIRED_VALUE);
+        }
 
         rimacRequest.setPayload(payload);
         return rimacRequest;
