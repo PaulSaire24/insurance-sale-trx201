@@ -176,7 +176,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		int beginIndex = relatedContract.getNumber().length() - 4;
 		String accountNumber = "***".concat(relatedContract.getNumber().substring(beginIndex));
 		String accountCurrency = asoResponse.getData().getTotalAmount().getExchangeRate().getTargetCurrency();
-		return kindOfAccount.concat("|").concat(accountNumber).concat("|").concat(accountCurrency);
+		return kindOfAccount.concat("||").concat(accountNumber).concat("||").concat(accountCurrency);
 	}
 
 
