@@ -96,10 +96,10 @@
 ### 3.2. Librerias Externas
 > En este apartado se detallan las librebrias externas que hace uso esta aplicacion para acceder a fuentes de terceros.
 
-- **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse/doc/PISD_APX_Library_PISDR012.md?at=refs%2Fheads%2Ffeature%2Fxp61540)
+- **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse/doc/PISD_APX_Library_PISDR012.md?at=refs%2Fheads%2Frelease%2F0.19)
     - Metodos reutilizados: executeGetRequiredFieldsForEmissionService(), executeGetPaymentPeriod(), executeSaveContract(), executeSaveReceipts(), executeSaveContractMove(), 
       executeGetRolesByProductAndModality(), executeSaveParticipants().
-- **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD_APX_Library_PISDR014.md?at=refs%2Fheads%2Ffeature%2Fxp61540)
+- **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md?at=refs%2Fheads%2Frelease%2F0.10)
     -  Metodos reutilizados: executeSignatureConstruction().
 
 ## 4. Mensajes de Error y Avisos:
@@ -120,4 +120,4 @@
 ## 6. Versiones del Componente:
 > En este apartado se detalla un historial de cambios o *changelog* por cada version implementada del recurso.
 
-- **Versión 0.4.2**: Esta versión le permite al cliente realizar el alta de poliza de su seguro vehicular.
+- **Versión 0.4.3**: Esta versión le permite al cliente realizar el alta de poliza de su seguro vehicular.
