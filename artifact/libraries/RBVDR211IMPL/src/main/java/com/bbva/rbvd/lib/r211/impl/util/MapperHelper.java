@@ -730,17 +730,6 @@ public class MapperHelper {
         responseBody.getHolder().getIdentityDocument().setDocumentNumber(responseBody.getHolder().getIdentityDocument().getNumber());
         responseBody.getHolder().getIdentityDocument().setNumber(null);
 
-        if(Objects.isNull(responseBody.getBusinessAgent())) {
-            BusinessAgentDTO businessAgent = new BusinessAgentDTO();
-            businessAgent.setId(data.getBusinessAgent().getId());
-            responseBody.setBusinessAgent(businessAgent);
-        }
-
-        if(Objects.isNull(responseBody.getPromoter())) {
-            PromoterDTO promoter = new PromoterDTO();
-            promoter.setId(data.getPromoter().getId());
-            responseBody.setPromoter(promoter);
-        }
     }
 
     public CreateEmailASO buildCreateEmailRequest(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber) {
