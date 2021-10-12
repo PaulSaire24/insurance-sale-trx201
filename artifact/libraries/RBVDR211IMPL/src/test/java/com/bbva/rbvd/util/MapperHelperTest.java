@@ -896,17 +896,7 @@ public class MapperHelperTest {
         assertNull(apxRequest.getTotalAmount().getExchangeRate());
         assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
         assertNull(apxRequest.getFirstInstallment().getExchangeRate());
-
-        apxRequest.setBusinessAgent(null);
-        apxRequest.setPromoter(null);
-
-        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
-
-        assertEquals(asoResponse.getData().getBusinessAgent().getId(),
-                apxRequest.getBusinessAgent().getId());
-
-        assertEquals(asoResponse.getData().getPromoter().getId(),
-                apxRequest.getPromoter().getId());
+        
     }
 
     @Test
