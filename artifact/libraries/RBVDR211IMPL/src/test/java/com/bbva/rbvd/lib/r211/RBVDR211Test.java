@@ -24,6 +24,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -250,9 +251,12 @@ public class RBVDR211Test {
 
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
 
+		requestBody.getValidityPeriod().setStartDate(new Date());
+
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
+		assertTrue(validation.getFirstInstallment().getIsPaymentRequired()); //Now, APX sets isPaymentRequired value
 	}
 	
 }
