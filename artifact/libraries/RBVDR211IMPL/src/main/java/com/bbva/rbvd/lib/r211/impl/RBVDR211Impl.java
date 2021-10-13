@@ -143,11 +143,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		DateTimeZone dateTimeZone = DateTimeZone.forID("GMT");
 
 		LocalDate currentLocalDate = new LocalDate(new Date(), dateTimeZone);
-		Date currentDate = currentLocalDate.toDate();
+		Date currentDate = currentLocalDate.toDateTimeAtStartOfDay().toDate();
 		LOGGER.info("***** Current date: {} *****", currentLocalDate);
 
 		LocalDate startLocalDate = new LocalDate(requestBody.getValidityPeriod().getStartDate(), dateTimeZone);
-		Date startDate = startLocalDate.toDate();
+		Date startDate = startLocalDate.toDateTimeAtStartOfDay().toDate();
 		LOGGER.info("***** Policy start date: {} *****", startLocalDate);
 
 		if(startDate.before(currentDate)) {
