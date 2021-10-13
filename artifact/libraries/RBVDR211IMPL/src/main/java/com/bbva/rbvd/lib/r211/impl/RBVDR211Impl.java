@@ -18,6 +18,8 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,9 +27,10 @@ import org.springframework.http.HttpStatus;
 import java.math.BigDecimal;
 
 import java.util.Map;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.Date;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -52,6 +55,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					executeGetPaymentPeriod(this.applicationConfigurationService.getProperty(requestBody.getInstallmentPlan().getPeriod().getId()));
 
 			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields, responseQueryGetPaymentPeriod);
+
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Required payment evaluation *****");
+			evaluateRequiredPayment(requestBody);
 
 			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
 
@@ -129,6 +135,27 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.debug("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Business exception message: {} *****", ex.getMessage());
 			this.addAdviceWithDescription(ex.getAdviceCode(), ex.getMessage());
 			return null;
+		}
+
+	}
+
+	private void evaluateRequiredPayment(PolicyDTO requestBody) {
+		DateTimeZone dateTimeZone = DateTimeZone.forID("GMT");
+
+		LocalDate currentLocalDate = new LocalDate(new Date(), dateTimeZone);
+		Date currentDate = currentLocalDate.toDate();
+		LOGGER.info("***** Current date: {} *****", currentLocalDate);
+
+		LocalDate startLocalDate = new LocalDate(requestBody.getValidityPeriod().getStartDate(), dateTimeZone);
+		Date startDate = startLocalDate.toDate();
+		LOGGER.info("***** Policy start date: {} *****", startLocalDate);
+
+		if(startDate.before(currentDate)) {
+			LOGGER.info("***** Deferred policy *****");
+			requestBody.getFirstInstallment().setIsPaymentRequired(false);
+		} else {
+			LOGGER.info("***** Not deferred policy *****");
+			requestBody.getFirstInstallment().setIsPaymentRequired(true);
 		}
 
 	}
