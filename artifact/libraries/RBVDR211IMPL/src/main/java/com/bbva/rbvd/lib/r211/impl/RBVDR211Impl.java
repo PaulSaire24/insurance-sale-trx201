@@ -18,6 +18,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -38,6 +39,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211Impl.class);
 	private static final String TLMKT_VALUE = "7794";
+	private static final String LIMA_TIME_ZONE = "America/Lima";
+	private static final String GMT_TIME_ZONE = "GMT";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -140,15 +143,16 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	}
 
 	private void evaluateRequiredPayment(PolicyDTO requestBody) {
-		DateTimeZone dateTimeZone = DateTimeZone.forID("GMT");
+		DateTimeZone dateTimeZone = DateTimeZone.forID(LIMA_TIME_ZONE);
 
-		LocalDate currentLocalDate = new LocalDate(new Date(), dateTimeZone);
-		Date currentDate = currentLocalDate.toDateTimeAtStartOfDay().toDate();
-		LOGGER.info("***** Current date: {} *****", currentLocalDate);
+		DateTime currentLocalDate = new DateTime(new Date(), dateTimeZone);
+		Date currentDate = currentLocalDate.toDate();
+		LOGGER.info("***** Current date: {} *****", currentDate);
 
+		dateTimeZone = DateTimeZone.forID(GMT_TIME_ZONE);
 		LocalDate startLocalDate = new LocalDate(requestBody.getValidityPeriod().getStartDate(), dateTimeZone);
 		Date startDate = startLocalDate.toDateTimeAtStartOfDay().toDate();
-		LOGGER.info("***** Policy start date: {} *****", startLocalDate);
+		LOGGER.info("***** Policy start date: {} *****", startDate);
 
 		if(startDate.after(currentDate)) {
 			LOGGER.info("***** Deferred policy *****");

@@ -252,9 +252,7 @@ public class RBVDR211Test {
 
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
-		calendar.add(Calendar.DAY_OF_MONTH, 2);
-
-		System.out.println(calendar.getTime());
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
 
 		requestBody.getValidityPeriod().setStartDate(calendar.getTime());
 
