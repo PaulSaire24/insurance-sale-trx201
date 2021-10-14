@@ -120,4 +120,4 @@
 ## 6. Versiones del Componente:
 > En este apartado se detalla un historial de cambios o *changelog* por cada version implementada del recurso.
 
-- **Versión 0.4.4**: Esta versión le permite al cliente realizar el alta de poliza de su seguro vehicular.
+- **Versión 0.4.10**: Se agrega una validación para determinar si se genera una alta diferida o no.
