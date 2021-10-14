@@ -52,8 +52,6 @@ import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
@@ -99,6 +97,8 @@ public class MapperHelper {
     private static final String TEMPLATE_EMAIL_CODE = "PLT00945";
     private static final String SUBJECT_EMAIL = "!Genial! Acabas de comprar tu seguro vehicular con éxito";
     private static final String MAIL_SENDER = "procesos@bbva.com.pe";
+
+    private static final String GMT_TIME_ZONE = "GMT";
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -819,7 +819,7 @@ public class MapperHelper {
     }
 
     private LocalDate convertDateToLocalDate(Date date) {
-        return new LocalDate(date, DateTimeZone.forID("GMT"));
+        return new LocalDate(date, DateTimeZone.forID(GMT_TIME_ZONE));
     }
 
     private String generateCorrectDateFormat(LocalDate localDate) {
