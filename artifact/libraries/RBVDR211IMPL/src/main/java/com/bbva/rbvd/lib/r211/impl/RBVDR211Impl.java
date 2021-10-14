@@ -150,7 +150,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		Date startDate = startLocalDate.toDateTimeAtStartOfDay().toDate();
 		LOGGER.info("***** Policy start date: {} *****", startLocalDate);
 
-		if(startDate.before(currentDate)) {
+		if(startDate.after(currentDate)) {
 			LOGGER.info("***** Deferred policy *****");
 			requestBody.getFirstInstallment().setIsPaymentRequired(false);
 		} else {

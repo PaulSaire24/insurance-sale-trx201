@@ -24,10 +24,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.joda.time.LocalDate;
+
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -251,12 +250,18 @@ public class RBVDR211Test {
 
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
 
-		requestBody.getValidityPeriod().setStartDate(new Date());
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DAY_OF_MONTH, 2);
+
+		System.out.println(calendar.getTime());
+
+		requestBody.getValidityPeriod().setStartDate(calendar.getTime());
 
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
-		assertTrue(validation.getFirstInstallment().getIsPaymentRequired()); //Now, APX sets isPaymentRequired value
+		assertFalse(validation.getFirstInstallment().getIsPaymentRequired()); //Now, APX sets isPaymentRequired value
 	}
 	
 }
