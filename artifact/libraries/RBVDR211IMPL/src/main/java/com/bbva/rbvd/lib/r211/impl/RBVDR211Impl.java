@@ -12,8 +12,10 @@ import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 
+import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 
+import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
@@ -38,7 +40,9 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211Impl.class);
-	private static final String TLMKT_VALUE = "7794";
+	private static final String KEY_PIC_CODE = "pic.code";
+	private static final String KEY_AGENT_PROMOTER_CODE = "agent.and.promoter.code";
+	private static final String KEY_TLMKT_CODE = "telemarketing.code";
 	private static final String LIMA_TIME_ZONE = "America/Lima";
 	private static final String GMT_TIME_ZONE = "GMT";
 
@@ -64,16 +68,17 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
 
-			if(requestBody.getBank().getBranch().getId().equals(TLMKT_VALUE)) {
-				LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | TLMKT Channel *****");
-				requestBody.setSaleChannelId("TM");
-			}
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Is it coming from TLMKT? *****");
+			evaluateBranchIdValue(requestBody);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building Rimac request *****");
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
 					requestBody.getSaleChannelId(), asoResponse.getData().getId());
 
 			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId());
+
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | isDigitalSale validation *****");
+			validateDigitalSale(requestBody);
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody, emissionDao, asoResponse.getData().getId());
 
@@ -162,6 +167,33 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			requestBody.getFirstInstallment().setIsPaymentRequired(true);
 		}
 
+	}
+
+	private void validateDigitalSale(PolicyDTO requestBody) {
+		String picCodeValue = this.applicationConfigurationService.getProperty(KEY_PIC_CODE);
+		if( !(picCodeValue.equals(requestBody.getSaleChannelId()) || "TM".equals(requestBody.getSaleChannelId())) ) {
+
+			LOGGER.info("***** It's digital sale!! *****");
+
+			String defaultCode = this.applicationConfigurationService.getProperty(KEY_AGENT_PROMOTER_CODE);
+
+			BusinessAgentDTO businessAgent = new BusinessAgentDTO();
+			businessAgent.setId(defaultCode);
+			PromoterDTO promoter = new PromoterDTO();
+			promoter.setId(defaultCode);
+
+			requestBody.setBusinessAgent(businessAgent);
+			requestBody.setPromoter(promoter);
+		}
+	}
+
+	private void evaluateBranchIdValue(PolicyDTO requestBody) {
+		String tlmktValue = this.applicationConfigurationService.getProperty(KEY_TLMKT_CODE);
+		String branchId = requestBody.getBank().getBranch().getId();
+		if(tlmktValue.equals(branchId)) {
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | It's TLMKT Channel *****");
+			requestBody.setSaleChannelId("TM");
+		}
 	}
 
 	private RequiredFieldsEmissionDAO validateResponseQueryGetRequiredFields(Map<String, Object> responseQueryGetRequiredFields, Map<String, Object> responseQueryGetPaymentPeriod) {
