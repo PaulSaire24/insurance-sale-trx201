@@ -24,7 +24,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import org.joda.time.LocalDate;
 
 import java.util.*;
 
@@ -40,6 +39,7 @@ import static org.mockito.Mockito.*;
 public class RBVDR211Test {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211Test.class);
+	private static final String AGENT_AND_PROMOTER_DEFAULT_CODE = "UCQGSPPP";
 
 	private RBVDR211Impl rbvdr211 = new RBVDR211Impl();
 
@@ -88,6 +88,10 @@ public class RBVDR211Test {
 		responseQueryRoles = mock(Map.class);
 		roles = mock(List.class);
 		firstRole = mock(Map.class);
+
+		when(this.applicationConfigurationService.getProperty("telemarketing.code")).thenReturn("7794");
+		when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
+		when(this.applicationConfigurationService.getProperty("agent.and.promoter.code")).thenReturn(AGENT_AND_PROMOTER_DEFAULT_CODE);
 
 		asoResponse = mockData.getEmisionASOResponse();
 	}
@@ -247,6 +251,9 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
+		// If it's a digital sale, apx must set default code value to the agent and promoter objects.
+		assertEquals("026312", validation.getBusinessAgent().getId());
+		assertEquals("026364", validation.getPromoter().getId());
 
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
 
@@ -254,12 +261,17 @@ public class RBVDR211Test {
 		calendar.setTime(new Date());
 		calendar.add(Calendar.DAY_OF_MONTH, 1);
 
-		requestBody.getValidityPeriod().setStartDate(calendar.getTime());
+		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
+		this.requestBody.getBank().getBranch().setId("0057");
+		this.requestBody.setSaleChannelId("BI");
 
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
-		assertFalse(validation.getFirstInstallment().getIsPaymentRequired()); //Now, APX sets isPaymentRequired value
+		//Now, APX sets isPaymentRequired value
+		assertFalse(validation.getFirstInstallment().getIsPaymentRequired());
+		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
+		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getPromoter().getId());
 	}
 	
 }
