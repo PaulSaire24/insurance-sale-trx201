@@ -142,7 +142,8 @@ public class MapperHelperTest {
     @Test
     public void buildRequestBodyRimac_OK() {
         PolicyInspectionDTO inspection = apxRequest.getInspection();
-        EmisionBO validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode", "dataId");
+        EmisionBO validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode",
+                "dataId", "saleOffice");
 
         assertNull(validation.getPayload().getContactoInspeccion());
 
@@ -153,6 +154,13 @@ public class MapperHelperTest {
         assertNotNull(validation.getPayload().getDatosParticulares().get(1).getEtiqueta());
         assertNotNull(validation.getPayload().getDatosParticulares().get(1).getCodigo());
         assertNotNull(validation.getPayload().getDatosParticulares().get(1).getValor());
+        assertNotNull(validation.getPayload().getDatosParticulares().get(2).getEtiqueta());
+        assertNotNull(validation.getPayload().getDatosParticulares().get(2).getCodigo());
+        assertNotNull(validation.getPayload().getDatosParticulares().get(2).getValor());
+        assertNotNull(validation.getPayload().getDatosParticulares().get(3).getEtiqueta());
+        assertNotNull(validation.getPayload().getDatosParticulares().get(3).getCodigo());
+        assertNotNull(validation.getPayload().getDatosParticulares().get(3).getValor());
+
 
         assertNotNull(validation.getPayload().getEnvioElectronico());
         assertNotNull(validation.getPayload().getIndCobro());
@@ -166,14 +174,17 @@ public class MapperHelperTest {
         assertEquals("secondValue", validation.getPayload().getDatosParticulares().get(1).getValor());
         assertEquals("NRO_CERT_BANCO", validation.getPayload().getDatosParticulares().get(2).getEtiqueta());
         assertEquals("dataId", validation.getPayload().getDatosParticulares().get(2).getValor());
-        assertEquals(S_VALUE, validation.getPayload().getEnvioElectronico());
+        assertEquals("OFICINA_VENTA", validation.getPayload().getDatosParticulares().get(3).getEtiqueta());
+        assertEquals("saleOffice", validation.getPayload().getDatosParticulares().get(3).getValor());
+        assertEquals(N_VALUE, validation.getPayload().getEnvioElectronico());
         assertEquals(N_VALUE, validation.getPayload().getIndCobro());
         assertEquals(Optional.of(0L).get(), validation.getPayload().getIndInspeccion());
         assertEquals(N_VALUE, validation.getPayload().getIndValidaciones());
 
         apxRequest.getInspection().setIsRequired(true);
 
-        validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode", "dataId");
+        validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode",
+                "dataId", "saleOffice");
 
         assertNotNull(validation.getPayload().getContactoInspeccion());
         assertNotNull(validation.getPayload().getContactoInspeccion().getNombre());
