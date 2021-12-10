@@ -79,6 +79,7 @@ public class MapperHelper {
     private static final String PARTICULAR_DATA_THIRD_CHANNEL = "CANAL_TERCERO";
     private static final String PARTICULAR_DATA_ACCOUNT_DATA = "DATOS_DE_CUENTA";
     private static final String PARTICULAR_DATA_CERT_BANCO = "NRO_CERT_BANCO";
+    private static final String PARTICULAR_DATA_SALE_OFFICE = "OFICINA_VENTA";
     private static final String S_VALUE = "S";
     private static final String N_VALUE = "N";
     private static final Long INDICATOR_INSPECTION_NOT_REQUIRED_VALUE = 0L;
@@ -235,7 +236,8 @@ public class MapperHelper {
         return requestAso;
     }
 
-    public EmisionBO buildRequestBodyRimac(PolicyInspectionDTO inspection, String secondParticularDataValue, String channelCode, String dataId) {
+    public EmisionBO buildRequestBodyRimac(PolicyInspectionDTO inspection, String secondParticularDataValue, String channelCode,
+                                           String dataId, String saleOffice) {
         EmisionBO rimacRequest = new EmisionBO();
 
         PayloadEmisionBO payload = new PayloadEmisionBO();
@@ -260,8 +262,14 @@ public class MapperHelper {
         tercerDatoParticular.setValor(dataId);
         datosParticulares.add(tercerDatoParticular);
 
+        DatoParticularBO cuartoDatoParticular = new DatoParticularBO();
+        cuartoDatoParticular.setEtiqueta(PARTICULAR_DATA_SALE_OFFICE);
+        cuartoDatoParticular.setCodigo("");
+        cuartoDatoParticular.setValor(saleOffice);
+        datosParticulares.add(cuartoDatoParticular);
+
         payload.setDatosParticulares(datosParticulares);
-        payload.setEnvioElectronico(S_VALUE);
+        payload.setEnvioElectronico(N_VALUE);
         payload.setIndCobro(N_VALUE);
         payload.setIndValidaciones(N_VALUE);
 
