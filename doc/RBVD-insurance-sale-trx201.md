@@ -122,3 +122,4 @@
 
 - **Versión 0.4.10**: Se agrega una validación para determinar si se genera una alta diferida o no.
 - **Versión 0.4.11**: Enviando y guardando código de usuario como agente y promotor para canales auto-asistidos.
+- **Versión 0.4.12**: Se añade un dato particular al request del servicio de emisión de Rimac.
