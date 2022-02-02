@@ -123,7 +123,7 @@ public class RBVDT20101PETransactionTest {
 		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
 		simulateResponse.setOperationDate(new Date());
 
-		when(rbvdr211.executeBusinessLogicEmissionPrePolicy(anyObject())).thenReturn(simulateResponse);
+		when(rbvdr211.executeBusinessLogicEmissionPrePolicy(anyObject(), anyBoolean())).thenReturn(simulateResponse);
 		this.transaction.execute();
 
 		assertTrue(this.transaction.getAdviceList().isEmpty());
@@ -139,7 +139,7 @@ public class RBVDT20101PETransactionTest {
 
 	@Test
 	public void testNull() {
-		when(rbvdr211.executeBusinessLogicEmissionPrePolicy(anyObject())).thenReturn(null);
+		when(rbvdr211.executeBusinessLogicEmissionPrePolicy(anyObject(), anyBoolean())).thenReturn(null);
 		this.transaction.execute();
 		assertEquals(Severity.ENR.getValue(), this.transaction.getSeverity().getValue());
 	}

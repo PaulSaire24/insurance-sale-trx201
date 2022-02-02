@@ -4,6 +4,6 @@ import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 
 public interface RBVDR211 {
 
-	PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody);
+	PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody, Boolean isEndorsable);
 
 }

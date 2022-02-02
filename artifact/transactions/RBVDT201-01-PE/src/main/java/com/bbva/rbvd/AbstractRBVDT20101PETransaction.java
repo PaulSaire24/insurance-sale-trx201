@@ -21,9 +21,6 @@ import com.bbva.rbvd.dto.insrncsale.policy.TotalAmountDTO;
 import java.util.Calendar;
 import java.util.List;
 
-/**
- * In this class, the input and output data is defined automatically through the setters and getters.
- */
 public abstract class AbstractRBVDT20101PETransaction extends AbstractTransaction {
 
 	public AbstractRBVDT20101PETransaction(){
@@ -168,6 +165,13 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	 */
 	protected InsuranceCompanyDTO getInsurancecompany(){
 		return (InsuranceCompanyDTO)this.getParameter("insuranceCompany");
+	}
+
+	/**
+	 * Return value for input parameter isEndorsable
+	 */
+	protected Boolean getIsendorsable(){
+		return (Boolean)this.getParameter("isEndorsable");
 	}
 
 	/**
@@ -364,5 +368,12 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	 */
 	protected void setIdentityverificationcode(final String field){
 		this.addParameter("identityVerificationCode", field);
+	}
+
+	/**
+	 * Set value for Boolean output parameter isEndorsable
+	 */
+	protected void setIsendorsable(final Boolean field){
+		this.addParameter("isEndorsable", field);
 	}
 }

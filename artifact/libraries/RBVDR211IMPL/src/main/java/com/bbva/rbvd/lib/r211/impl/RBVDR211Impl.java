@@ -6,7 +6,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
@@ -20,6 +20,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -45,9 +46,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String KEY_TLMKT_CODE = "telemarketing.code";
 	private static final String LIMA_TIME_ZONE = "America/Lima";
 	private static final String GMT_TIME_ZONE = "GMT";
+	private static final String RUC = "ENDOSATARIO_RUC";
+	private static final String PORCENTAJE = "ENDOSATARIO_PORCENTAJE";
 
 	@Override
-	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
+	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody, Boolean isEndorsable) {
 
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy START *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Param: {}", requestBody);
@@ -74,7 +77,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building Rimac request *****");
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
 					requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
-
+			
+			if (isEndorsable) {
+				String endosararioRuc = this.applicationConfigurationService.getProperty(RUC); 
+				Double endosararioPorcentaje = NumberUtils.toDouble(this.applicationConfigurationService.getProperty(PORCENTAJE), 0.0d); 
+				rimacRequest.getPayload().setEndosatario(new EndosatarioBO(endosararioRuc, endosararioPorcentaje));
+			}
 			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId());
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | isDigitalSale validation *****");

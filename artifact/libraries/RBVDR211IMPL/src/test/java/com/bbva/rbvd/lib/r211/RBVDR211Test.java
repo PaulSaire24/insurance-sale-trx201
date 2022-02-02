@@ -7,6 +7,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
@@ -92,8 +93,14 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getProperty("telemarketing.code")).thenReturn("7794");
 		when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
 		when(this.applicationConfigurationService.getProperty("agent.and.promoter.code")).thenReturn(AGENT_AND_PROMOTER_DEFAULT_CODE);
-
+		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_RUC")).thenReturn("00000000000");
+		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_PORCENTAJE")).thenReturn("40");
+		
 		asoResponse = mockData.getEmisionASOResponse();
+
+		EmisionBO emision = new EmisionBO();
+		emision.setPayload(new PayloadEmisionBO());
+		when(this.mapperHelper.buildRequestBodyRimac(anyObject(), anyString(), anyString(), anyString(), anyString())).thenReturn(emision);
 	}
 
 	@Test
@@ -102,7 +109,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(null);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody, true);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
@@ -118,7 +125,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(-1);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody, true);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
@@ -141,7 +148,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveReceipts(any())).thenReturn(null);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody, true);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
@@ -166,7 +173,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(-1);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody, true);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_MOV_TABLE.getAdviceCode());
@@ -203,7 +210,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveParticipants(any())).thenReturn(null);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody, true);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE.getAdviceCode());
@@ -248,7 +255,7 @@ public class RBVDR211Test {
 
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody, true);
 
 		assertNotNull(validation);
 		// If it's a digital sale, apx must set default code value to the agent and promoter objects.
@@ -265,7 +272,7 @@ public class RBVDR211Test {
 		this.requestBody.getBank().getBranch().setId("0057");
 		this.requestBody.setSaleChannelId("BI");
 
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody, true);
 
 		assertNotNull(validation);
 		//Now, APX sets isPaymentRequired value
