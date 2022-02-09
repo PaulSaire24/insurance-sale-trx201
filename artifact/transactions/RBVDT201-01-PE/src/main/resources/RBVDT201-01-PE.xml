@@ -138,7 +138,6 @@
 		<dto order="20" name="insuranceCompany" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.InsuranceCompanyDTO" artifactId="RBVDC201">
 			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
 		</dto>
-		<parameter order="21" name="isEndorsable" mandatory="1" type="Boolean" size="0"/>
 	</paramsIn>
 	<paramsOut>
 		<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
@@ -359,7 +358,6 @@
 			</dto>
 		</dto>
 		<parameter order="28" name="identityVerificationCode" mandatory="0" type="String" size="15"/>
-		<parameter order="29" name="isEndorsable" mandatory="1" type="Boolean" size="0"/>
 	</paramsOut>
 	<description>Trx to create a policy</description>
 </transaction>

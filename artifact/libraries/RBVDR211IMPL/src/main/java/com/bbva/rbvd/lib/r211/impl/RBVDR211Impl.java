@@ -1,26 +1,14 @@
 package com.bbva.rbvd.lib.r211.impl;
 
-import com.bbva.apx.exception.business.BusinessException;
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-import com.bbva.pisd.dto.insurance.utils.PISDProperties;
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
-import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
-import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
-
-import org.apache.commons.lang3.math.NumberUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -28,15 +16,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
-import java.math.BigDecimal;
-
-import java.util.Map;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Date;
-
-import static org.springframework.util.CollectionUtils.isEmpty;
+import com.bbva.apx.exception.business.BusinessException;
+import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
+import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
@@ -46,11 +42,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String KEY_TLMKT_CODE = "telemarketing.code";
 	private static final String LIMA_TIME_ZONE = "America/Lima";
 	private static final String GMT_TIME_ZONE = "GMT";
-	private static final String RUC = "ENDOSATARIO_RUC";
-	private static final String PORCENTAJE = "ENDOSATARIO_PORCENTAJE";
+	private static final String TAG_ENDORSEE = "ENDORSEE";
+	private static final String TAG_RUC = "RUC";
 
 	@Override
-	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody, Boolean isEndorsable) {
+	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
 
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy START *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Param: {}", requestBody);
@@ -78,10 +74,15 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
 					requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
 			
-			if (isEndorsable) {
-				String endosararioRuc = this.applicationConfigurationService.getProperty(RUC); 
-				Double endosararioPorcentaje = NumberUtils.toDouble(this.applicationConfigurationService.getProperty(PORCENTAJE), 0.0d); 
-				rimacRequest.getPayload().setEndosatario(new EndosatarioBO(endosararioRuc, endosararioPorcentaje));
+			if (requestBody.getParticipants() != null && !requestBody.getParticipants().isEmpty()
+					&& requestBody.getParticipants().get(0).getIdentityDocument() != null
+					&& TAG_ENDORSEE.equals(requestBody.getParticipants().get(0).getParticipantType().getId())
+					&& TAG_RUC.equals(requestBody.getParticipants().get(0).getIdentityDocument().getDocumentType().getId())
+					&& requestBody.getParticipants().get(0).getBenefitPercentage() != null) {
+				String endosatarioRuc = requestBody.getParticipants().get(0).getIdentityDocument().getNumber(); 
+				Double endosatarioPorcentaje = requestBody.getParticipants().get(0).getBenefitPercentage();
+				LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | endosatarioRuc: {}, endosatarioPorcentaje: {} *****", endosatarioRuc, endosatarioPorcentaje);
+				rimacRequest.getPayload().setEndosatario(new EndosatarioBO(endosatarioRuc, endosatarioPorcentaje));
 			}
 			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId());
 

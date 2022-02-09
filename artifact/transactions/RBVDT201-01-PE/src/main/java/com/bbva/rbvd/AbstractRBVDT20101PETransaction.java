@@ -168,13 +168,6 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	}
 
 	/**
-	 * Return value for input parameter isEndorsable
-	 */
-	protected Boolean getIsendorsable(){
-		return (Boolean)this.getParameter("isEndorsable");
-	}
-
-	/**
 	 * Set value for String output parameter id
 	 */
 	protected void setId(final String field){
@@ -368,12 +361,5 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	 */
 	protected void setIdentityverificationcode(final String field){
 		this.addParameter("identityVerificationCode", field);
-	}
-
-	/**
-	 * Set value for Boolean output parameter isEndorsable
-	 */
-	protected void setIsendorsable(final Boolean field){
-		this.addParameter("isEndorsable", field);
 	}
 }

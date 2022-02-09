@@ -56,7 +56,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		requestBody.setCreationUser(user);
 		requestBody.setUserAudit(user);
 
-		PolicyDTO responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicy(requestBody, this.getIsendorsable());
+		PolicyDTO responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		if(Objects.nonNull(responseBody)) {
 			this.setId(responseBody.getId());
@@ -92,7 +92,6 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 			this.setStatus(responseBody.getStatus());
 			this.setBank(responseBody.getBank());
 			this.setIdentityverificationcode(responseBody.getIdentityVerificationCode());
-			this.setIsendorsable(this.getIsendorsable());
 
 			this.setHttpResponseCode(HttpResponseCode.HTTP_CODE_200, Severity.OK);
 		} else {
