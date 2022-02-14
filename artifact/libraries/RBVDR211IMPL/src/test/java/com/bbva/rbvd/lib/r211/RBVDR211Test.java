@@ -294,7 +294,9 @@ public class RBVDR211Test {
 		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString())).thenReturn(rimacResponse);
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
-		
+		when(pisdR012.executeSaveContractEndoserment(anyMap())).thenReturn(1);
+
+
 		Map<String, Object>[] arguments = new Map[1];
 		arguments[0] = new HashMap<>();
 		
@@ -328,24 +330,17 @@ public class RBVDR211Test {
 		IdentityDocumentDTO document = new IdentityDocumentDTO();
 		ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
 		DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+		tipoDocumento.setId("RUC");
+		tipoParticipante.setId("ENDORSEE");
+		participante.setBenefitPercentage(0.0d);
+
 		document.setDocumentType(tipoDocumento);
 		participante.setParticipantType(tipoParticipante);
 		participante.setIdentityDocument(document);
+		participantes.add(participante);
 		this.requestBody.setParticipants(participantes);
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNotNull(validation);
-		
-		tipoParticipante.setId("ENDORSEE");
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNotNull(validation);
-		
-		tipoDocumento.setId("RUC");
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNotNull(validation);
-		
-		participante.setBenefitPercentage(0.0d);
+
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertNotNull(validation);
 	}
-	
 }

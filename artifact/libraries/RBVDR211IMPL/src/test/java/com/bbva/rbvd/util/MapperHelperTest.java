@@ -200,7 +200,7 @@ public class MapperHelperTest {
     @Test
     public void buildInsuranceContract_OK() {
 
-        InsuranceContractDAO validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
+        InsuranceContractDAO validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102", false);
 
         assertNotNull(validation.getEntityId());
         assertNotNull(validation.getBranchId());
@@ -303,7 +303,7 @@ public class MapperHelperTest {
         when(requiredFieldsEmissionDao.getContractDurationType()).thenReturn("A");
         when(requiredFieldsEmissionDao.getContractDurationNumber()).thenReturn(BigDecimal.ONE);
 
-        validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
+        validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102", false);
 
         assertEquals(BigDecimal.valueOf(0), validation.getTotalDebtAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1), validation.getPrevPendBillRcptsNumber());

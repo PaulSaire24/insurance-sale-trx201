@@ -52,6 +52,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Param: {}", requestBody);
 
 		PolicyDTO responseBody = null;
+		Boolean isEndorsement = false;
+		String endosatarioRuc = "";
+		Double endosatarioPorcentaje = 0.0;
 
 		try {
 
@@ -73,23 +76,25 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building Rimac request *****");
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
 					requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
-			
-			if (requestBody.getParticipants() != null && !requestBody.getParticipants().isEmpty()
-					&& requestBody.getParticipants().get(0).getIdentityDocument() != null
-					&& TAG_ENDORSEE.equals(requestBody.getParticipants().get(0).getParticipantType().getId())
-					&& TAG_RUC.equals(requestBody.getParticipants().get(0).getIdentityDocument().getDocumentType().getId())
-					&& requestBody.getParticipants().get(0).getBenefitPercentage() != null) {
-				String endosatarioRuc = requestBody.getParticipants().get(0).getIdentityDocument().getNumber(); 
-				Double endosatarioPorcentaje = requestBody.getParticipants().get(0).getBenefitPercentage();
-				LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | endosatarioRuc: {}, endosatarioPorcentaje: {} *****", endosatarioRuc, endosatarioPorcentaje);
-				rimacRequest.getPayload().setEndosatario(new EndosatarioBO(endosatarioRuc, endosatarioPorcentaje));
+
+			if(requestBody.getParticipants() != null && requestBody.getParticipants().size() > 1) {
+				if (requestBody.getParticipants().get(1).getIdentityDocument() != null
+						&& TAG_ENDORSEE.equals(requestBody.getParticipants().get(1).getParticipantType().getId())
+						&& TAG_RUC.equals(requestBody.getParticipants().get(1).getIdentityDocument().getDocumentType().getId())
+						&& requestBody.getParticipants().get(1).getBenefitPercentage() != null) {
+					endosatarioRuc = requestBody.getParticipants().get(1).getIdentityDocument().getNumber();
+					endosatarioPorcentaje = requestBody.getParticipants().get(1).getBenefitPercentage();
+					LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | endosatarioRuc: {}, endosatarioPorcentaje: {} *****", endosatarioRuc, endosatarioPorcentaje);
+					rimacRequest.getPayload().setEndosatario(new EndosatarioBO(endosatarioRuc, endosatarioPorcentaje.intValue()));
+					isEndorsement = true;
+				}
 			}
 			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId());
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | isDigitalSale validation *****");
 			validateDigitalSale(requestBody);
 
-			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody, emissionDao, asoResponse.getData().getId());
+			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody, emissionDao, asoResponse.getData().getId(), isEndorsement);
 
 			Map<String, Object> argumentsForSaveContract = this.mapperHelper.createSaveContractArguments(contractDao);
 			argumentsForSaveContract.forEach(
@@ -126,6 +131,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 								(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy | SaveParticipants parameter {} with value: {} *****", key, value)));
 
 				validateMultipleInsertion(this.pisdR012.executeSaveParticipants(arguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
+			}
+
+			if(isEndorsement){
+				Map<String, Object> argumentsForSaveEndorsement = this.mapperHelper.createSaveEndorsementArguments(contractDao, endosatarioRuc, endosatarioPorcentaje);
+				argumentsForSaveContract.forEach(
+						(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveContract parameter {} with value: {} *****", key, value));
+
+				validateInsertion(this.pisdR012.executeSaveContractEndoserment(argumentsForSaveEndorsement), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
 			}
 
 			responseBody = requestBody;

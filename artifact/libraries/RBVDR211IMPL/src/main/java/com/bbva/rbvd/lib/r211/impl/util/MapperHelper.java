@@ -296,7 +296,7 @@ public class MapperHelper {
         return rimacRequest;
     }
 
-    public InsuranceContractDAO buildInsuranceContract(EmisionBO rimacResponse, PolicyDTO apxRequest, RequiredFieldsEmissionDAO emissionDao, String asoId) {
+    public InsuranceContractDAO buildInsuranceContract(EmisionBO rimacResponse, PolicyDTO apxRequest, RequiredFieldsEmissionDAO emissionDao, String asoId, Boolean isEndorsement) {
         InsuranceContractDAO contractDao = new InsuranceContractDAO();
 
         contractDao.setEntityId(asoId.substring(0, 4));
@@ -375,6 +375,9 @@ public class MapperHelper {
         contractDao.setAutomaticDebitIndicatorType((apxRequest.getPaymentMethod().getPaymentType().equals(PAYMENT_METHOD_VALUE))
                 ? S_VALUE : N_VALUE);
         contractDao.setBiometryTransactionId(apxRequest.getIdentityVerificationCode());
+        if(isEndorsement)
+            contractDao.setEndorsementPolicyIndType("S");
+
         return contractDao;
     }
 
@@ -437,6 +440,25 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_AUTOMATIC_DEBIT_INDICATOR_TYPE.getValue(), contractDao.getAutomaticDebitIndicatorType());
         arguments.put(RBVDProperties.FIELD_BIOMETRY_TRANSACTION_ID.getValue(), contractDao.getBiometryTransactionId());
         arguments.put(RBVDProperties.FIELD_TELEMARKETING_TRANSACTION_ID.getValue(), contractDao.getTelemarketingTransactionId());
+        return arguments;
+    }
+
+    public Map<String, Object> createSaveEndorsementArguments(InsuranceContractDAO contractDao, String endosatarioRuc, Double endosatarioPorcentaje) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), contractDao.getEntityId());
+        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), contractDao.getBranchId());
+        arguments.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), contractDao.getIntAccountId());
+        arguments.put(RBVDProperties.FIELD_DOCUMENT_TYPE_ID.getValue(), "R");
+        arguments.put(RBVDProperties.FIELD_DOCUMENT_ID.getValue(), endosatarioRuc);
+        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_SEQUENCE_NUMBER.getValue(), 1);
+        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), contractDao.getPolicyId());
+        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_EFF_START_DATE.getValue(), contractDao.getInsuranceContractStartDate());
+        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_EFF_END_DATE.getValue(), contractDao.getInsuranceContractEndDate());
+        arguments.put(RBVDProperties.FIELD_POLICY_ENDORSEMENT_PER.getValue(), endosatarioPorcentaje);
+        arguments.put(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue(), "01");
+        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), "SYSTEM");
+        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), "SYSTEM");
+
         return arguments;
     }
 
