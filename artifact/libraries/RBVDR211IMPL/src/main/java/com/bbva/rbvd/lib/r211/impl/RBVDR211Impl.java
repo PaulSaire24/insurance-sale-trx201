@@ -135,8 +135,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			if(isEndorsement){
 				Map<String, Object> argumentsForSaveEndorsement = this.mapperHelper.createSaveEndorsementArguments(contractDao, endosatarioRuc, endosatarioPorcentaje);
-				argumentsForSaveContract.forEach(
-						(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveContract parameter {} with value: {} *****", key, value));
+				argumentsForSaveEndorsement.forEach(
+						(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveContractEndorsement parameter {} with value: {} *****", key, value));
 
 				validateInsertion(this.pisdR012.executeSaveContractEndoserment(argumentsForSaveEndorsement), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
 			}
