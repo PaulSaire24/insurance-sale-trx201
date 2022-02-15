@@ -342,5 +342,19 @@ public class RBVDR211Test {
 
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertNotNull(validation);
+
+		participantes.get(1).getParticipantType().setId("OTHER");
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+
+		participantes.get(1).getIdentityDocument().setId("OTHER");
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+
+		participantes.get(1).setBenefitPercentage(null);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+
+
 	}
 }
