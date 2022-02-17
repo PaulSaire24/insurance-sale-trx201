@@ -10,6 +10,8 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.FactorASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.*;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
@@ -908,6 +910,88 @@ public class MapperHelperTest {
         assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
         assertNull(apxRequest.getFirstInstallment().getExchangeRate());
         
+    }
+
+    @Test
+    public void mappingOutputFieldsEndorsee_OK() {
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+        ParticipantDTO participanteEndorsee = new ParticipantDTO();
+        ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
+        tipoParticipante.setId("ENDORSEE");
+        participanteEndorsee.setBenefitPercentage(0.0d);
+        participanteEndorsee.setParticipantType(tipoParticipante);
+
+        IdentityDocumentDTO document = new IdentityDocumentDTO();
+        DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+        tipoDocumento.setId("RUC");
+        document.setDocumentType(tipoDocumento);
+        document.setNumber("12345678");
+        participanteEndorsee.setIdentityDocument(document);
+
+        apxRequest.getParticipants().add(participanteEndorsee);
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getId());
+        assertNotNull(apxRequest.getProductDescription());
+        assertNotNull(apxRequest.getProductPlan().getDescription());
+        assertNotNull(apxRequest.getOperationDate());
+        assertNotNull(apxRequest.getValidityPeriod().getEndDate());
+        assertNotNull(apxRequest.getTotalAmount().getExchangeRate());
+        assertNotNull(apxRequest.getInstallmentPlan().getPeriod().getName());
+        assertNotNull(apxRequest.getInstallmentPlan().getExchangeRate());
+        apxRequest.getHolder().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
+        apxRequest.getInspection().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
+        assertNotNull(apxRequest.getFirstInstallment().getFirstPaymentDate());
+        assertNotNull(apxRequest.getFirstInstallment().getAccountingDate());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationDate());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationNumber());
+        assertNotNull(apxRequest.getFirstInstallment().getTransactionNumber());
+        assertNotNull(apxRequest.getFirstInstallment().getExchangeRate());
+        apxRequest.getParticipants().forEach(participant -> assertTrue(Objects.nonNull(participant.getId()) && Objects.nonNull(participant.getCustomerId())));
+        assertNotNull(apxRequest.getInsuranceCompany().getName());
+        assertNotNull(apxRequest.getInsuranceCompany().getProductId());
+        assertNotNull(apxRequest.getExternalQuotationId());
+        assertNotNull(apxRequest.getExternalPolicyNumber());
+        assertNotNull(apxRequest.getStatus().getId());
+        assertNotNull(apxRequest.getStatus().getDescription());
+        assertNotNull(apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+
+        assertEquals(asoResponse.getData().getId(), apxRequest.getId());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceModalityName(), apxRequest.getProductPlan().getDescription());
+        assertEquals(asoResponse.getData().getOperationDate(), apxRequest.getOperationDate());
+        assertEquals(requiredFieldsEmissionDao.getPaymentFrequencyName(),
+                apxRequest.getInstallmentPlan().getPeriod().getName());
+        assertEquals(asoResponse.getData().getFirstInstallment().getOperationNumber(),
+                apxRequest.getFirstInstallment().getOperationNumber());
+        assertEquals(asoResponse.getData().getFirstInstallment().getTransactionNumber(),
+                apxRequest.getFirstInstallment().getTransactionNumber());
+        assertEquals(asoResponse.getData().getInsuranceCompany().getName(), apxRequest.getInsuranceCompany().getName());
+        assertEquals(rimacResponse.getPayload().getCodProducto(), apxRequest.getInsuranceCompany().getProductId());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceCompanyQuotaId(), apxRequest.getExternalQuotationId());
+        assertEquals(rimacResponse.getPayload().getNumeroPoliza(), apxRequest.getExternalPolicyNumber());
+        assertEquals("FOR", apxRequest.getStatus().getId());
+        assertEquals(asoResponse.getData().getStatus().getDescription(), apxRequest.getStatus().getDescription());
+        assertEquals("04040005", apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+
+
+        asoResponse.getData().getTotalAmount().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+        asoResponse.getData().getInstallmentPlan().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+        asoResponse.getData().getFirstInstallment().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNull(apxRequest.getTotalAmount().getExchangeRate());
+        assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
+        assertNull(apxRequest.getFirstInstallment().getExchangeRate());
+        assertEquals("", apxRequest.getParticipants().get(1).getId());
+        assertEquals("", apxRequest.getParticipants().get(1).getCustomerId());
+
+
+
     }
 
     @Test

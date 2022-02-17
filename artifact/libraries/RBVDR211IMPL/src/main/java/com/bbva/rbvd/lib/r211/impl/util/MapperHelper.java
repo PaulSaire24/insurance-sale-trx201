@@ -94,6 +94,8 @@ public class MapperHelper {
     private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
     private static final String RECEIPT_DEFAULT_DATE_VALUE = "01/01/0001";
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
+    private static final String TAG_ENDORSEE = "ENDORSEE";
+
 
     private static final String TEMPLATE_EMAIL_CODE = "PLT00945";
     private static final String SUBJECT_EMAIL = "!Genial! Acabas de comprar tu seguro vehicular con éxito";
@@ -742,6 +744,9 @@ public class MapperHelper {
                     responseBody.getParticipants().get(i).setCustomerId(participant.getCustomerId());
                 }
             }
+            if(responseBody.getParticipants().get(i).getParticipantType().getId().equals(TAG_ENDORSEE))
+                responseBody.getParticipants().get(i).setId("");
+                responseBody.getParticipants().get(i).setCustomerId("");
         }
 
         responseBody.getInsuranceCompany().setName(data.getInsuranceCompany().getName());
