@@ -10,6 +10,8 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.FactorASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.*;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
@@ -200,7 +202,7 @@ public class MapperHelperTest {
     @Test
     public void buildInsuranceContract_OK() {
 
-        InsuranceContractDAO validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
+        InsuranceContractDAO validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102", false);
 
         assertNotNull(validation.getEntityId());
         assertNotNull(validation.getBranchId());
@@ -303,7 +305,7 @@ public class MapperHelperTest {
         when(requiredFieldsEmissionDao.getContractDurationType()).thenReturn("A");
         when(requiredFieldsEmissionDao.getContractDurationNumber()).thenReturn(BigDecimal.ONE);
 
-        validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102");
+        validation = mapperHelper.buildInsuranceContract(rimacResponse, apxRequest, requiredFieldsEmissionDao, "00110241400000001102", false);
 
         assertEquals(BigDecimal.valueOf(0), validation.getTotalDebtAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1), validation.getPrevPendBillRcptsNumber());
@@ -911,6 +913,88 @@ public class MapperHelperTest {
     }
 
     @Test
+    public void mappingOutputFieldsEndorsee_OK() {
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+        ParticipantDTO participanteEndorsee = new ParticipantDTO();
+        ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
+        tipoParticipante.setId("ENDORSEE");
+        participanteEndorsee.setBenefitPercentage(0.0d);
+        participanteEndorsee.setParticipantType(tipoParticipante);
+
+        IdentityDocumentDTO document = new IdentityDocumentDTO();
+        DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+        tipoDocumento.setId("RUC");
+        document.setDocumentType(tipoDocumento);
+        document.setNumber("12345678");
+        participanteEndorsee.setIdentityDocument(document);
+
+        apxRequest.getParticipants().add(participanteEndorsee);
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getId());
+        assertNotNull(apxRequest.getProductDescription());
+        assertNotNull(apxRequest.getProductPlan().getDescription());
+        assertNotNull(apxRequest.getOperationDate());
+        assertNotNull(apxRequest.getValidityPeriod().getEndDate());
+        assertNotNull(apxRequest.getTotalAmount().getExchangeRate());
+        assertNotNull(apxRequest.getInstallmentPlan().getPeriod().getName());
+        assertNotNull(apxRequest.getInstallmentPlan().getExchangeRate());
+        apxRequest.getHolder().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
+        apxRequest.getInspection().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
+        assertNotNull(apxRequest.getFirstInstallment().getFirstPaymentDate());
+        assertNotNull(apxRequest.getFirstInstallment().getAccountingDate());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationDate());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationNumber());
+        assertNotNull(apxRequest.getFirstInstallment().getTransactionNumber());
+        assertNotNull(apxRequest.getFirstInstallment().getExchangeRate());
+        apxRequest.getParticipants().forEach(participant -> assertTrue(Objects.nonNull(participant.getId()) && Objects.nonNull(participant.getCustomerId())));
+        assertNotNull(apxRequest.getInsuranceCompany().getName());
+        assertNotNull(apxRequest.getInsuranceCompany().getProductId());
+        assertNotNull(apxRequest.getExternalQuotationId());
+        assertNotNull(apxRequest.getExternalPolicyNumber());
+        assertNotNull(apxRequest.getStatus().getId());
+        assertNotNull(apxRequest.getStatus().getDescription());
+        assertNotNull(apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+
+        assertEquals(asoResponse.getData().getId(), apxRequest.getId());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceModalityName(), apxRequest.getProductPlan().getDescription());
+        assertEquals(asoResponse.getData().getOperationDate(), apxRequest.getOperationDate());
+        assertEquals(requiredFieldsEmissionDao.getPaymentFrequencyName(),
+                apxRequest.getInstallmentPlan().getPeriod().getName());
+        assertEquals(asoResponse.getData().getFirstInstallment().getOperationNumber(),
+                apxRequest.getFirstInstallment().getOperationNumber());
+        assertEquals(asoResponse.getData().getFirstInstallment().getTransactionNumber(),
+                apxRequest.getFirstInstallment().getTransactionNumber());
+        assertEquals(asoResponse.getData().getInsuranceCompany().getName(), apxRequest.getInsuranceCompany().getName());
+        assertEquals(rimacResponse.getPayload().getCodProducto(), apxRequest.getInsuranceCompany().getProductId());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceCompanyQuotaId(), apxRequest.getExternalQuotationId());
+        assertEquals(rimacResponse.getPayload().getNumeroPoliza(), apxRequest.getExternalPolicyNumber());
+        assertEquals("FOR", apxRequest.getStatus().getId());
+        assertEquals(asoResponse.getData().getStatus().getDescription(), apxRequest.getStatus().getDescription());
+        assertEquals("04040005", apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+
+
+        asoResponse.getData().getTotalAmount().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+        asoResponse.getData().getInstallmentPlan().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+        asoResponse.getData().getFirstInstallment().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNull(apxRequest.getTotalAmount().getExchangeRate());
+        assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
+        assertNull(apxRequest.getFirstInstallment().getExchangeRate());
+        assertEquals("", apxRequest.getParticipants().get(1).getId());
+        assertEquals("", apxRequest.getParticipants().get(1).getCustomerId());
+
+
+
+    }
+
+    @Test
     public void buildCreateEmailRequest_OK() {
         apxRequest.setId("00110057794000023694");
         apxRequest.getProductPlan().setDescription("PLAN BASICO");
@@ -930,5 +1014,87 @@ public class MapperHelperTest {
         email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
 
         assertNotNull(email.getBody());
+    }
+
+    @Test
+    public void createSaveEndorsementArguments_OK() {
+        when(contractDao.getEntityId()).thenReturn("entityId");
+        when(contractDao.getBranchId()).thenReturn("branchId");
+        when(contractDao.getIntAccountId()).thenReturn("intAccountId");
+        when(contractDao.getFirstVerfnDigitId()).thenReturn("firstVerfnDigit");
+        when(contractDao.getSecondVerfnDigitId()).thenReturn("secondVerfnDigit");
+        when(contractDao.getPolicyQuotaInternalId()).thenReturn("policyQuotaInternal");
+        when(contractDao.getInsuranceProductId()).thenReturn(BigDecimal.valueOf(1));
+        when(contractDao.getInsuranceModalityType()).thenReturn("modalityType");
+        when(contractDao.getInsuranceCompanyId()).thenReturn(BigDecimal.valueOf(1));
+        when(contractDao.getPolicyId()).thenReturn("policyId");
+        when(contractDao.getInsuranceManagerId()).thenReturn("managerId");
+        when(contractDao.getInsurancePromoterId()).thenReturn("promoterId");
+        when(contractDao.getContractManagerBranchId()).thenReturn("managerBranchId");
+        when(contractDao.getContractInceptionDate()).thenReturn("28/06/2021");
+        when(contractDao.getInsuranceContractStartDate()).thenReturn("28/06/2021");
+        when(contractDao.getInsuranceContractEndDate()).thenReturn("28/06/2021");
+        when(contractDao.getCustomerId()).thenReturn("customerId");
+        when(contractDao.getDomicileContractId()).thenReturn("domicileContract");
+        when(contractDao.getCardIssuingMarkType()).thenReturn(N_VALUE);
+        when(contractDao.getIssuedReceiptNumber()).thenReturn(BigDecimal.valueOf(12));
+        when(contractDao.getValidityMonthsNumber()).thenReturn(BigDecimal.valueOf(12));
+        when(contractDao.getInsurancePolicyEndDate()).thenReturn("02/06/2022");
+        when(contractDao.getPaymentFrequencyId()).thenReturn(BigDecimal.valueOf(1));
+        when(contractDao.getPremiumAmount()).thenReturn(BigDecimal.valueOf(124.0));
+        when(contractDao.getSettlePendingPremiumAmount()).thenReturn(BigDecimal.valueOf(124.0));
+        when(contractDao.getCurrencyId()).thenReturn("currencyId");
+        when(contractDao.getLastInstallmentDate()).thenReturn("28/06/2021");
+        when(contractDao.getInstallmentPeriodFinalDate()).thenReturn("28/06/2021");
+        when(contractDao.getInsuredAmount()).thenReturn(BigDecimal.valueOf(1024.0));
+        when(contractDao.getBeneficiaryType()).thenReturn("08");
+        when(contractDao.getRenewalNumber()).thenReturn(BigDecimal.valueOf(0));
+        when(contractDao.getPolicyPymtPendDueDebtType()).thenReturn(N_VALUE);
+        when(contractDao.getCtrctDisputeStatusType()).thenReturn(N_VALUE);
+        when(contractDao.getPeriodNextPaymentDate()).thenReturn("17/07/2021");
+        when(contractDao.getEndorsementPolicyIndType()).thenReturn(S_VALUE);
+        when(contractDao.getInsrncCoContractStatusType()).thenReturn("PEN");
+        when(contractDao.getContractStatusId()).thenReturn("FOR");
+        when(contractDao.getCreationUserId()).thenReturn("creationUser");
+        when(contractDao.getUserAuditId()).thenReturn("userAudit");
+        when(contractDao.getInsurPendingDebtIndType()).thenReturn(N_VALUE);
+        when(contractDao.getTotalDebtAmount()).thenReturn(BigDecimal.valueOf(124.0));
+        when(contractDao.getPrevPendBillRcptsNumber()).thenReturn(BigDecimal.valueOf(11));
+        when(contractDao.getSettlementVarPremiumAmount()).thenReturn(BigDecimal.valueOf(0));
+        when(contractDao.getSettlementFixPremiumAmount()).thenReturn(BigDecimal.valueOf(124.0));
+        when(contractDao.getInsuranceCompanyProductId()).thenReturn("830");
+        when(contractDao.getAutomaticDebitIndicatorType()).thenReturn(S_VALUE);
+        when(contractDao.getBiometryTransactionId()).thenReturn("transactionId");
+        when(contractDao.getTelemarketingTransactionId()).thenReturn("transactionId");
+
+        Map<String, Object> validation = mapperHelper.createSaveEndorsementArguments(contractDao, "1245", 100.00);
+
+        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_DOCUMENT_TYPE_ID.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_DOCUMENT_ID.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_ENDORSEMENT_SEQUENCE_NUMBER.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_ENDORSEMENT_EFF_START_DATE.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_ENDORSEMENT_EFF_END_DATE.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_POLICY_ENDORSEMENT_PER.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
+
+        assertEquals(contractDao.getEntityId(), validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
+        assertEquals(contractDao.getBranchId(), validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
+        assertEquals(contractDao.getIntAccountId(), validation.get(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue()));
+        assertEquals("R", validation.get(RBVDProperties.FIELD_DOCUMENT_TYPE_ID.getValue()));
+        assertEquals("1245", validation.get(RBVDProperties.FIELD_DOCUMENT_ID.getValue()));
+        assertEquals(1, validation.get(RBVDProperties.FIELD_ENDORSEMENT_SEQUENCE_NUMBER.getValue()));
+        assertEquals(contractDao.getPolicyId(), validation.get(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue()));
+        assertEquals(contractDao.getInsuranceContractStartDate(), validation.get(RBVDProperties.FIELD_ENDORSEMENT_EFF_START_DATE.getValue()));
+        assertEquals(contractDao.getInsuranceContractEndDate(), validation.get(RBVDProperties.FIELD_ENDORSEMENT_EFF_END_DATE.getValue()));
+        assertEquals(100.00, validation.get(RBVDProperties.FIELD_POLICY_ENDORSEMENT_PER.getValue()));
+        assertEquals("01", validation.get(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue()));
+        assertEquals("SYSTEM", validation.get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
+        assertEquals("SYSTEM", validation.get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
     }
 }

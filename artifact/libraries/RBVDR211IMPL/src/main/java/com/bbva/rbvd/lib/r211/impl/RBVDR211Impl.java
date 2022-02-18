@@ -1,24 +1,13 @@
 package com.bbva.rbvd.lib.r211.impl;
 
-import com.bbva.apx.exception.business.BusinessException;
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-import com.bbva.pisd.dto.insurance.utils.PISDProperties;
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
-import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
-
-import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-
-import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -27,15 +16,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
-import java.math.BigDecimal;
-
-import java.util.Map;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Date;
-
-import static org.springframework.util.CollectionUtils.isEmpty;
+import com.bbva.apx.exception.business.BusinessException;
+import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
+import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
@@ -45,6 +42,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String KEY_TLMKT_CODE = "telemarketing.code";
 	private static final String LIMA_TIME_ZONE = "America/Lima";
 	private static final String GMT_TIME_ZONE = "GMT";
+	private static final String TAG_ENDORSEE = "ENDORSEE";
+	private static final String TAG_RUC = "RUC";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -53,6 +52,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Param: {}", requestBody);
 
 		PolicyDTO responseBody = null;
+		Boolean isEndorsement = false;
+		String endosatarioRuc = "";
+		Double endosatarioPorcentaje = 0.0;
 
 		try {
 
@@ -75,12 +77,24 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
 					requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
 
+			if(requestBody.getParticipants() != null && requestBody.getParticipants().size() > 1) {
+				if (requestBody.getParticipants().get(1).getIdentityDocument() != null
+						&& TAG_ENDORSEE.equals(requestBody.getParticipants().get(1).getParticipantType().getId())
+						&& TAG_RUC.equals(requestBody.getParticipants().get(1).getIdentityDocument().getDocumentType().getId())
+						&& requestBody.getParticipants().get(1).getBenefitPercentage() != null) {
+					endosatarioRuc = requestBody.getParticipants().get(1).getIdentityDocument().getNumber();
+					endosatarioPorcentaje = requestBody.getParticipants().get(1).getBenefitPercentage();
+					LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | endosatarioRuc: {}, endosatarioPorcentaje: {} *****", endosatarioRuc, endosatarioPorcentaje);
+					rimacRequest.getPayload().setEndosatario(new EndosatarioBO(endosatarioRuc, endosatarioPorcentaje.intValue()));
+					isEndorsement = true;
+				}
+			}
 			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId());
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | isDigitalSale validation *****");
 			validateDigitalSale(requestBody);
 
-			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody, emissionDao, asoResponse.getData().getId());
+			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(rimacResponse, requestBody, emissionDao, asoResponse.getData().getId(), isEndorsement);
 
 			Map<String, Object> argumentsForSaveContract = this.mapperHelper.createSaveContractArguments(contractDao);
 			argumentsForSaveContract.forEach(
@@ -117,6 +131,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 								(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy | SaveParticipants parameter {} with value: {} *****", key, value)));
 
 				validateMultipleInsertion(this.pisdR012.executeSaveParticipants(arguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
+			}
+
+			if(isEndorsement){
+				Map<String, Object> argumentsForSaveEndorsement = this.mapperHelper.createSaveEndorsementArguments(contractDao, endosatarioRuc, endosatarioPorcentaje);
+				argumentsForSaveEndorsement.forEach(
+						(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveContractEndorsement parameter {} with value: {} *****", key, value));
+
+				validateInsertion(this.pisdR012.executeSaveContractEndoserment(argumentsForSaveEndorsement), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
 			}
 
 			responseBody = requestBody;
