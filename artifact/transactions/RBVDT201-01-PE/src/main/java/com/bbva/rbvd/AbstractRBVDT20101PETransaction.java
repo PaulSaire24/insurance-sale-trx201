@@ -21,9 +21,6 @@ import com.bbva.rbvd.dto.insrncsale.policy.TotalAmountDTO;
 import java.util.Calendar;
 import java.util.List;
 
-/**
- * In this class, the input and output data is defined automatically through the setters and getters.
- */
 public abstract class AbstractRBVDT20101PETransaction extends AbstractTransaction {
 
 	public AbstractRBVDT20101PETransaction(){

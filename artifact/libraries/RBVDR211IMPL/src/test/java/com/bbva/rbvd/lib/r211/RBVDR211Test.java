@@ -7,7 +7,12 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
+import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
+import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.ParticipantTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
@@ -92,8 +97,14 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getProperty("telemarketing.code")).thenReturn("7794");
 		when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
 		when(this.applicationConfigurationService.getProperty("agent.and.promoter.code")).thenReturn(AGENT_AND_PROMOTER_DEFAULT_CODE);
-
+		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_RUC")).thenReturn("00000000000");
+		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_PORCENTAJE")).thenReturn("40");
+		
 		asoResponse = mockData.getEmisionASOResponse();
+
+		EmisionBO emision = new EmisionBO();
+		emision.setPayload(new PayloadEmisionBO());
+		when(this.mapperHelper.buildRequestBodyRimac(anyObject(), anyString(), anyString(), anyString(), anyString())).thenReturn(emision);
 	}
 
 	@Test
@@ -274,4 +285,76 @@ public class RBVDR211Test {
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getPromoter().getId());
 	}
 	
+	@Test
+	public void executeBusinessLogicEmissionEndosatarioOK() throws IOException {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionEndosatarioOK...");
+		
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
+		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
+		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString())).thenReturn(rimacResponse);
+		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
+		when(pisdR012.executeSaveContractEndoserment(anyMap())).thenReturn(1);
+
+
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
+		
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
+		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
+		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
+		when(firstRole.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
+		when(roles.get(0)).thenReturn(firstRole);
+		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
+		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
+		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
+		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
+		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		
+		this.requestBody.setParticipants(null);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+		
+		List<ParticipantDTO> participantes = new ArrayList<>();
+		this.requestBody.setParticipants(participantes);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+		
+		ParticipantDTO participante = new ParticipantDTO();
+		participantes.add(participante);
+		this.requestBody.setParticipants(participantes);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+		
+		IdentityDocumentDTO document = new IdentityDocumentDTO();
+		ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
+		DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+		tipoDocumento.setId("RUC");
+		tipoParticipante.setId("ENDORSEE");
+		participante.setBenefitPercentage(0.0d);
+
+		document.setDocumentType(tipoDocumento);
+		participante.setParticipantType(tipoParticipante);
+		participante.setIdentityDocument(document);
+		participantes.add(participante);
+		this.requestBody.setParticipants(participantes);
+
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+
+		participantes.get(1).getParticipantType().setId("OTHER");
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+
+		participantes.get(1).getIdentityDocument().setId("OTHER");
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+
+		participantes.get(1).setBenefitPercentage(null);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+
+
+	}
 }
