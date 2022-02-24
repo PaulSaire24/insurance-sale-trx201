@@ -46,6 +46,7 @@
             - **ContactoInspeccionBO**: Entidad contacto inspección
             - **DatoParticularBO**: Entidad dato particular
             - **CuotaFinancimientoBO**: Entidad cuota financiamiento
+            - **EndosatarioBO**: Entidad endosatario
     - policy:
         - **PolicyDTO**: Entidad poliza para APX
         - **PolicyProductPlan**: Entidad plan de producto para APX
@@ -97,7 +98,7 @@
 > En este apartado se detallan las librebrias externas que hace uso esta aplicacion para acceder a fuentes de terceros.
 
 - **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse/doc/PISD_APX_Library_PISDR012.md?at=refs%2Fheads%2Frelease%2F0.19)
-    - Metodos reutilizados: executeGetRequiredFieldsForEmissionService(), executeGetPaymentPeriod(), executeSaveContract(), executeSaveReceipts(), executeSaveContractMove(), 
+    - Metodos reutilizados: executeGetRequiredFieldsForEmissionService(), executeGetPaymentPeriod(), executeSaveContract(), executeSaveContractEndoserment(), executeSaveReceipts(), executeSaveContractMove(), 
       executeGetRolesByProductAndModality(), executeSaveParticipants().
 - **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md?at=refs%2Fheads%2Frelease%2F0.10)
     -  Metodos reutilizados: executeSignatureConstruction().
@@ -109,6 +110,7 @@
 - **Advise RBVD00000122**: NO SE INSERTÓ DATA EN LA TABLA CTR RECEIPTS
 - **Advise RBVD00000123**: NO SE INSERTÓ DATA EN LA TABLA CONTRACT MOV
 - **Advise RBVD00000124**: NO SE INSERTÓ DATA EN LA TABLA CTR PARTICIPANT
+- **Advise RBVD00120008**: NO SE INSERTÓ DATA EN LA TABLA ENDORSEMENT
 - **Advise RBVD00000129**: LA COTIZACIÓN ENVIADA NO EXISTE EN LA BASE DE DATOS
 - **Advise RBVD00000136**: SE ENVIARON DATOS INVÁLIDOS AL SERVICIO CREATEINSURANCE
 - **Advise RBVD00000137**: ERROR AL VALIDAR DATOS EN EMISION RIMAC
@@ -123,3 +125,4 @@
 - **Versión 0.4.10**: Se agrega una validación para determinar si se genera una alta diferida o no.
 - **Versión 0.4.11**: Enviando y guardando código de usuario como agente y promotor para canales auto-asistidos.
 - **Versión 0.4.12**: Se añade un dato particular al request del servicio de emisión de Rimac.
+- **Versión 0.5.1**: Se realiza el alta de un seguro con endoso de cesión de derechos.
