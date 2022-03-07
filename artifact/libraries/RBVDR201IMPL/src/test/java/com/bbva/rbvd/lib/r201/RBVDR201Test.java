@@ -6,7 +6,9 @@ import com.bbva.elara.domain.transaction.ThreadContext;
 
 import com.bbva.elara.utility.api.connector.APIConnector;
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
+import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.lib.r014.PISDR014;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -15,6 +17,7 @@ import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.lib.r201.factory.ApiConnectorFactoryMock;
 import com.bbva.rbvd.lib.r201.impl.RBVDR201Impl;
+import com.bbva.rbvd.lib.r201.impl.util.RimacUrlForker;
 import com.bbva.rbvd.mock.MockBundleContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,16 +51,19 @@ public class RBVDR201Test {
 
 	private static final String MESSAGE_EXCEPTION = "CONNECTION ERROR";
 
-	private RBVDR201Impl rbvdr201 = new RBVDR201Impl();
+	private RBVDR201Impl rbvdR201 = new RBVDR201Impl();
 
 	private PISDR014 pisdr014;
 
 	private MockData mockData;
 	private APIConnector internalApiConnector;
 	private APIConnector externalApiConnector;
-
+	private RimacUrlForker rimacUrlForker;
+	private CustomerListASO customerList;
+	private MockDTO mockDTO;
+	
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception{
 		ThreadContext.set(new Context());
 
 		mockData = MockData.getInstance();
@@ -66,16 +72,19 @@ public class RBVDR201Test {
 
 		ApiConnectorFactoryMock apiConnectorFactoryMock = new ApiConnectorFactoryMock();
 		internalApiConnector = apiConnectorFactoryMock.getAPIConnector(mockBundleContext);
-		rbvdr201.setInternalApiConnector(internalApiConnector);
+		rbvdR201.setInternalApiConnector(internalApiConnector);
 
 		externalApiConnector = apiConnectorFactoryMock.getAPIConnector(mockBundleContext, false);
-		rbvdr201.setExternalApiConnector(externalApiConnector);
+		rbvdR201.setExternalApiConnector(externalApiConnector);
 
 		pisdr014 = mock(PISDR014.class);
-		rbvdr201.setPisdR014(pisdr014);
-
+		rbvdR201.setPisdR014(pisdr014);
+		rimacUrlForker = mock(RimacUrlForker.class);
+		rbvdR201.setRimacUrlForker(rimacUrlForker);
 		when(pisdr014.executeSignatureConstruction(anyString(), anyString(), anyString(), anyString(), anyString()))
 				.thenReturn(new SignatureAWS("", "", "", ""));
+		mockDTO = MockDTO.getInstance();
+		customerList = mockDTO.getCustomerDataResponse();
 	}
 
 	@Test(expected = BusinessException.class)
@@ -86,7 +95,7 @@ public class RBVDR201Test {
 
 		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
 
-		rbvdr201.executePrePolicyEmissionASO(new DataASO());
+		rbvdR201.executePrePolicyEmissionASO(new DataASO());
 	}
 
 	@Test
@@ -97,7 +106,7 @@ public class RBVDR201Test {
 
 		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenReturn(responseBody);
 
-		PolicyASO validation = rbvdr201.executePrePolicyEmissionASO(new DataASO());
+		PolicyASO validation = rbvdR201.executePrePolicyEmissionASO(new DataASO());
 
 		assertNotNull(validation);
 		assertNotNull(validation.getData());
@@ -141,10 +150,11 @@ public class RBVDR201Test {
 		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionServiceWithRestClientException...");
 
 		String responseBody = "{\"error\":{\"code\":\"VEHDAT005\",\"message\":\"Error al Validar Datos.\",\"details\":[\"\\\"contactoInspeccion.telefono\\\" debe contener caracteres\"],\"httpStatus\":400}}";
-
+		when(rimacUrlForker.generatePropertyKeyName(anyString())).thenReturn("value");
+		when(rimacUrlForker.generateUriForSignatureAWS(anyString(), anyString())).thenReturn("value");
 		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
 
-		rbvdr201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId");
+		rbvdR201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId", "830");
 	}
 
 	@Test
@@ -152,10 +162,11 @@ public class RBVDR201Test {
 		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionServiceOK...");
 
 		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
-
+		when(rimacUrlForker.generatePropertyKeyName(anyString())).thenReturn("value");
+		when(rimacUrlForker.generateUriForSignatureAWS(anyString(), anyString())).thenReturn("value");
 		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenReturn(rimacResponse);
 
-		EmisionBO validation = rbvdr201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId");
+		EmisionBO validation = rbvdR201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId", "830");
 
 		assertNotNull(validation);
 		assertNotNull(validation.getPayload());
@@ -201,7 +212,7 @@ public class RBVDR201Test {
 		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<String>) any()))
 				.thenThrow(new RestClientException(MESSAGE_EXCEPTION));
 
-		Integer validation = rbvdr201.executeCreateEmail(new CreateEmailASO());
+		Integer validation = rbvdR201.executeCreateEmail(new CreateEmailASO());
 
 		assertNull(validation);
 	}
@@ -212,10 +223,32 @@ public class RBVDR201Test {
 		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<String>) any()))
 				.thenReturn(new ResponseEntity<>("", HttpStatus.OK));
 
-		Integer validation = rbvdr201.executeCreateEmail(new CreateEmailASO());
+		Integer validation = rbvdR201.executeCreateEmail(new CreateEmailASO());
 
 		assertNotNull(validation);
 		assertEquals(new Integer(HttpStatus.OK.value()), validation);
+	}
+
+	@Test
+	public void executeGetCustomerInformationServiceOK() {
+		LOGGER.info("RBVDR201Test - Executing executeGetCustomerInformationServiceOK...");
+
+		when(internalApiConnector.getForObject(anyString(), any(), anyMap()))
+				.thenReturn(customerList);
+
+		CustomerListASO validation = rbvdR201.executeGetCustomerInformation("90008603");
+		assertNotNull(validation);
+		assertNotNull(validation.getData().get(0).getFirstName());
+	}
+
+	@Test
+	public void executeRegisterAdditionalCustomerResponseWithRestClientException() {
+		LOGGER.info("RBVDR201Test - Executing executeGetCustomerInformationServiceOK...");
+		when(internalApiConnector.getForObject(anyString(), any(), anyMap()))
+				.thenThrow(new RestClientException(MESSAGE_EXCEPTION));
+
+		CustomerListASO validation = rbvdR201.executeGetCustomerInformation("90008603");
+		assertNull(validation);
 	}
 	
 }

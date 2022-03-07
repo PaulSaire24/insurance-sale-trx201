@@ -1,7 +1,10 @@
 package com.bbva.rbvd.lib.r201.impl;
 
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
+import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
+import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -60,7 +63,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	}
 
 	@Override
-	public EmisionBO executePrePolicyEmissionService(EmisionBO requestBody, String quotationId, String traceId) {
+	public EmisionBO executePrePolicyEmissionService(EmisionBO requestBody, String quotationId, String traceId, String productId) {
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService START *****");
 
 		String jsonString = getRequestBodyAsJsonFormat(requestBody);
@@ -69,10 +72,8 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 		EmisionBO responseBody = null;
 
-		String uri = URI_EMISSION.replace("-", quotationId);
-
 		SignatureAWS signature = this.pisdR014.executeSignatureConstruction(jsonString, HttpMethod.POST,
-				uri, null, traceId);
+		 	this.rimacUrlForker.generateUriForSignatureAWS(productId, quotationId), null, traceId);
 
 		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeadersAWS(signature));
 
@@ -80,7 +81,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		uriParam.put("ideCotizacion", quotationId);
 
 		try {
-			responseBody = this.externalApiConnector.postForObject(ID_API_PRE_POLICY_EMISSION_RIMAC, entity,
+			responseBody = this.externalApiConnector.postForObject(this.rimacUrlForker.generatePropertyKeyName(productId), entity,
 					EmisionBO.class, uriParam);
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Response: {}", getRequestBodyAsJsonFormat(responseBody));
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService END *****");
@@ -116,6 +117,38 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		LOGGER.info("***** RBVDR201Impl - executeCreateEmail END *****");
 		return httpStatus;
 	}
+
+	@Override
+	public CustomerListASO executeGetCustomerInformation(String customerId) {
+		LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation START customerId ***** " + customerId);
+
+		Map<String, Object> pathParams = new HashMap<>();
+		pathParams.put("customerId", customerId);
+		CustomerListASO responseList= null;
+		CustomerBO output = null;
+		String responJsons = "";
+		try {
+
+			responseList = this.internalApiConnector.getForObject(PISDProperties.ID_API_CUSTOMER_INFORMATION.getValue(),CustomerListASO.class,pathParams);
+
+			if (responseList != null && responseList.getData() != null && !responseList.getData().isEmpty()) {
+
+				output = responseList.getData().get(0);
+				LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ENTRA***** " +output.getFirstName()
+						+" - "+ output.getLastName()+" - "+ output.getBirthData().getBirthDate()+" - "
+						+ output.getIdentityDocuments().get(0).getDocumentType());
+				responJsons = getRequestBodyAsJsonFormat(responseList.getData().get(0));
+			}
+
+		} catch(RestClientException e) {
+			LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ***** Exception: {}", e.getMessage());
+			this.addAdvice(PISDErrors.ERROR_CALL_TO_THIRD_PARTY.getAdviceCode());
+		}
+			LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation output ***** Response: {}", responJsons);
+			LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation END getSuccess ***** ");
+			return responseList;
+		}
+
 
 	private String getRequestBodyAsJsonFormat(Object requestBody) {
 		return JsonHelper.getInstance().toJsonString(requestBody);

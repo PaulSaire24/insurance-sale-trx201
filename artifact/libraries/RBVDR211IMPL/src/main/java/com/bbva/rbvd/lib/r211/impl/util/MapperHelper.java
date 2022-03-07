@@ -1,7 +1,9 @@
 package com.bbva.rbvd.lib.r211.impl.util;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
@@ -31,8 +33,12 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuranceCompanyASO;
 
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.FinanciamientoBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarPersonaBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.CrearCronogramaBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 
@@ -54,9 +60,12 @@ import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.google.gson.Gson;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 
@@ -73,6 +82,8 @@ import java.util.stream.Collectors;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class MapperHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MapperHelper.class);
 
     private static final String EMAIL_VALUE = "EMAIL";
     private static final String PHONE_NUMBER_VALUE = "PHONE";
@@ -862,6 +873,185 @@ public class MapperHelper {
         String month = (localDate.getMonthOfYear() < 10) ? "0" + localDate.getMonthOfYear() : String.valueOf(localDate.getMonthOfYear());
         return day + "/" + month + "/" + localDate.getYear();
     }
+
+    public EmisionBO mapRimacEmisionRequest(EmisionBO rimacRequest,PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields, CustomerListASO customerList){
+
+        EmisionBO generalEmisionRimacRequest = new EmisionBO();
+        PayloadEmisionBO emisionBO = new PayloadEmisionBO();
+        emisionBO.setEmision(rimacRequest.getPayload());
+        generalEmisionRimacRequest.setPayload(emisionBO);
+
+        FinanciamientoBO financiamiento = new FinanciamientoBO();
+        financiamiento.setFrecuencia(this.applicationConfigurationService.getProperty(requestBody.getInstallmentPlan().getPeriod().getId()));
+        financiamiento.setFechaInicio(generateCorrectDateFormat(convertDateToLocalDate(requestBody.getValidityPeriod().getStartDate())).replace("/", "-"));
+        financiamiento.setNumeroCuotas(requestBody.getInstallmentPlan().getTotalNumberInstallments());
+        List<FinanciamientoBO> financiamientoBOs = new ArrayList<>();
+        financiamientoBOs.add(financiamiento);
+        CrearCronogramaBO crearCronogramaBO = new CrearCronogramaBO();
+        crearCronogramaBO.setFinanciamiento(financiamientoBOs);
+
+        generalEmisionRimacRequest.setCrearCronograma(crearCronogramaBO);
+
+        CustomerBO customer = customerList.getData().get(0);
+		PersonaBO persona = new PersonaBO();
+        List<PersonaBO> personasList = new ArrayList<>();
+	    persona.setTipoDocumento(this.applicationConfigurationService.getProperty(customer.getIdentityDocuments().get(0).getDocumentType().getId()));
+		persona.setNroDocumento(customer.getIdentityDocuments().get(0).getDocumentNumber());
+		persona.setApePaterno(customer.getLastName());
+		persona.setApeMaterno(customer.getSecondLastName());
+		persona.setNombres(customer.getFirstName());
+		persona.setFechaNacimiento(customer.getBirthData().getBirthDate());
+		persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
+		persona.setCorreoElectronico((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()));
+		persona.setCelular((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()));
+
+        fillAddress(customerList, persona);
+        
+        int[] intArray = new int[]{ 8,9,23 };
+        for(int i=0; i<intArray.length; i++){
+            PersonaBO personas =  this.getFillFieldsPerson(persona);
+            personas.setRol(intArray[i]);
+            personasList.add(personas);
+        }
+        AgregarPersonaBO agregarPersonaBO = new AgregarPersonaBO();
+        agregarPersonaBO.setPersona(personasList);
+
+        generalEmisionRimacRequest.setAgregarPersona(agregarPersonaBO);
+        Gson log = new Gson();
+        LOGGER.info("generalEmisionRimacRequest output {}", log.toJson(generalEmisionRimacRequest));
+        return generalEmisionRimacRequest;
+    }
+
+    private PersonaBO getFillFieldsPerson(PersonaBO persona) {
+        PersonaBO persons = new PersonaBO();
+        persons.setTipoDocumento(persona.getTipoDocumento());
+        persons.setNroDocumento(persona.getNroDocumento());
+        persons.setApePaterno(persona.getApePaterno());
+        persons.setApeMaterno(persona.getApeMaterno());
+        persons.setNombres(persona.getNombres());
+        persons.setFechaNacimiento(persona.getFechaNacimiento());
+        persons.setSexo(persona.getSexo());
+        persons.setCorreoElectronico(persona.getCorreoElectronico());
+        persons.setDireccion(persona.getDireccion());
+        persons.setDistrito(persona.getDistrito());
+        persons.setProvincia(persona.getProvincia());
+        persons.setDepartamento(persona.getDepartamento());
+        persons.setTipoVia(persona.getTipoVia());
+        persons.setNombreVia(persona.getNombreVia());
+        persons.setNumeroVia(persona.getNumeroVia());
+        persons.setCelular(persona.getCelular());
+        return persons;
+    }
+
+    private String fillAddress(CustomerListASO customerList, PersonaBO persona){
+        boolean viaFull = false;
+        String viaTipoNombre=null;
+        CustomerBO customer = customerList.getData().get(0);
+            for (int j = 0; j < customer.getAddresses().get(0).getLocation().getGeographicGroups().size(); j++) {
+                String id = customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                        .getGeographicGroupType().getId();
+                if ("DISTRICT".equals(id)) {
+                    persona.setDistrito(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getName());
+                }
+                if ("PROVINCE".equals(id)) {
+                    persona.setProvincia(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getName());
+                }
+                if ("DEPARTMENT".equals(id)) {
+                    persona.setDepartamento(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getName());
+                }
+                Map<String, String> map = tipeViaList();
+                for (String clave:map.keySet()) {
+                    String valor = map.get(clave);
+                    if (clave.equals(id)&&!viaFull){
+                        viaFull = true;
+                        persona.setTipoVia(valor);
+                        persona.setNombreVia(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getName());
+                    }
+                }
+                viaTipoNombre = fillAddress2(persona,customer,j,viaFull,id,viaTipoNombre);
+            }
+            persona.setDireccion(Objects.nonNull(persona.getNumeroVia())?viaTipoNombre.concat(" ").concat(persona.getNumeroVia()): viaTipoNombre);
+            return viaTipoNombre;
+    }
+
+    private String fillAddress2(PersonaBO persona, CustomerBO customer,int j,boolean viaFull,String id, String viaTipoNombre){
+        if(Objects.nonNull(persona.getTipoVia())&&viaFull&&viaTipoNombre==null){
+            Map<String, String> map = tipeViaList();
+            for (String clave:map.keySet()) {
+                String valor = map.get(clave);
+                if (clave.equals(id)&&viaFull&&!valor.equals(persona.getTipoVia())){
+                    viaTipoNombre = valor+" "+customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                            .getName();
+                }
+            }
+            if(viaTipoNombre==null){
+                viaTipoNombre = fillAddress3(persona,customer,j,viaFull,id,viaTipoNombre);
+            }
+        }
+        if ("EXTERIOR_NUMBER".equals(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                .getGeographicGroupType().getId())) {
+            persona.setNumeroVia(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                    .getName());
+        }
+        return viaTipoNombre;
+}
+
+private String fillAddress3(PersonaBO persona, CustomerBO customer,int j,boolean viaFull,String id, String viaTipoNombre){
+    Map<String, String> maps = tipeViaList2();
+    for (String clave:maps.keySet()) {
+        String valor = maps.get(clave);
+        if (clave.equals(id)&&viaFull&&!valor.equals(persona.getTipoVia())){
+            viaTipoNombre = valor+" "+customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                    .getName();
+        }
+    }
+    return viaTipoNombre;
+}
+
+private Map<String, String> tipeViaList(){
+    Map<String, String> map = new HashMap<>();
+    map.put("ALAMEDA", "ALM");
+    map.put("AVENUE", "AV.");
+    map.put("STREET", "CAL");
+    map.put("MALL", "CC.");
+    map.put("ROAD", "CRT");
+    map.put("SHOPPING_ARCADE", "GAL");
+    map.put("JIRON", "JR.");
+    map.put("JETTY", "MAL");
+    map.put("OVAL", "OVA");
+    map.put("PEDESTRIAN_WALK", "PAS");
+    map.put("SQUARE", "PLZ");
+    map.put("PARK", "PQE");
+    map.put("PROLONGATION", "PRL");
+    map.put("PASSAGE", "PSJ");
+    map.put("BRIDGE", "PTE");
+    map.put("DESCENT", "BAJ");
+    map.put("PORTAL", "POR");
+    map.put("GROUP", "AGR");
+    map.put("AAHH", "AHH");
+    map.put("HOUSING_COMPLEX", "CHB");
+    map.put("HOUSING_COOPERATIVE", "COV");
+    map.put("STAGE", "ETP");
+    map.put("SHANTYTOWN", "PJJ");
+    map.put("NEIGHBORHOOD", "SEC");
+    map.put("URBANIZATION", "URB");
+    map.put("NEIGHBORHOOD_UNIT", "UV.");
+    map.put("ZONE", "ZNA");
+    map.put("ASSOCIATION", "ASC");
+    map.put("INDIGENOUS_COMMUNITY", "COM");
+    map.put("PEASANT_COMMUNITY", "CAM");
+    map.put("FUNDO", "FUN");
+    map.put("MINING_CAMP", "MIN");
+    map.put("RESIDENTIAL", "RES");
+    return map;
+}
+
+private Map<String, String> tipeViaList2() {
+    Map<String, String> map = new HashMap<>();
+    map.put("UNCATEGORIZED", "NA");
+    map.put("NOT_PROVIDED", "NP");
+    return map;
+}
 
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;

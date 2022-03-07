@@ -2,6 +2,10 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 	<bean id="rbvdR201" class="com.bbva.rbvd.lib.r201.impl.RBVDR201Impl" parent="rbvdR201Abstract">
+		<property name="rimacUrlForker" ref="rimacUrlForker"/>
 		<property name="pisdR014" ref="pisdR014"/>
+	</bean>
+	<bean id="rimacUrlForker" class="com.bbva.rbvd.lib.r201.impl.util.RimacUrlForker">
+		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 	</bean>
 </beans>

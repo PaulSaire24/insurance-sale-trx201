@@ -3,6 +3,8 @@ package com.bbva.rbvd.lib.r211.impl;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -17,12 +19,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import com.bbva.apx.exception.business.BusinessException;
+import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
+import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.pisd.dto.insurance.utils.PISDValidation;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.FinanciamientoBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
@@ -50,6 +58,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy START *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Param: {}", requestBody);
+
+		EmisionBO rimacResponse = null;
 
 		PolicyDTO responseBody = null;
 		Boolean isEndorsement = false;
@@ -89,8 +99,26 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					isEndorsement = true;
 				}
 			}
-			EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId());
 
+			if (!requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VEH.getValue())) {
+
+				CustomerListASO customerList = this.rbvdR201.executeGetCustomerInformation(requestBody.getHolder().getId());
+
+				try {
+					validateQueryCustomerResponse(customerList);
+				} catch (BusinessException ex) {
+					LOGGER.info("***** PISDR0019Impl - executeListCustomerResponse {} *****", ex.getMessage());
+					return null;
+				}
+
+				this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
+
+				rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
+			}else{
+
+			rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
+			
+			}
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | isDigitalSale validation *****");
 			validateDigitalSale(requestBody);
 
@@ -264,5 +292,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		return kindOfAccount.concat("||").concat(accountNumber).concat("||").concat(accountCurrency);
 	}
 
-
+	private void validateQueryCustomerResponse(CustomerListASO customerList) {
+		if (isEmpty(customerList.getData())) {
+			throw PISDValidation.build(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE);
+		}
+	}
 }
