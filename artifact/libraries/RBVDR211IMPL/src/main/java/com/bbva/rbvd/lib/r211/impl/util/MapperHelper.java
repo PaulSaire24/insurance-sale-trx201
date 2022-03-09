@@ -945,7 +945,7 @@ public class MapperHelper {
 
     private String fillAddress(CustomerListASO customerList, PersonaBO persona){
         boolean viaFull = false;
-        String viaTipoNombre=null;
+        String viaTipoNombre="UNCATEGORIZED OR NOT_PROVIDED";
         CustomerBO customer = customerList.getData().get(0);
             for (int j = 0; j < customer.getAddresses().get(0).getLocation().getGeographicGroups().size(); j++) {
                 String id = customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
