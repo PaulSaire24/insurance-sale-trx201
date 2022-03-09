@@ -3,7 +3,10 @@ package com.bbva.rbvd.util;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.ContactASO;
+import com.bbva.pisd.dto.insurance.bo.CountryBO;
+import com.bbva.pisd.dto.insurance.bo.GeographicGroupTypeBO;
+import com.bbva.pisd.dto.insurance.bo.GeographicGroupsBO;
+import com.bbva.pisd.dto.insurance.bo.LocationBO;
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
@@ -1139,7 +1142,7 @@ public class MapperHelperTest {
         contactoInspeccion.setTelefono("telefono");
         payload.setContactoInspeccion(contactoInspeccion);
         emisionInput.setPayload(payload);
-        emisionInput.getPayload().setDatosParticulares(datosParticulares);;
+        emisionInput.getPayload().setDatosParticulares(datosParticulares);
 
         EmisionBO validation = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
 

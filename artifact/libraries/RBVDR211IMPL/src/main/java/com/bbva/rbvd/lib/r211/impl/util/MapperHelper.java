@@ -945,7 +945,7 @@ public class MapperHelper {
 
     private String fillAddress(CustomerListASO customerList, PersonaBO persona){
         boolean viaFull = false;
-        String viaTipoNombre="UNCATEGORIZED OR NOT_PROVIDED";
+        String viaTipoNombre=null;
         CustomerBO customer = customerList.getData().get(0);
             for (int j = 0; j < customer.getAddresses().get(0).getLocation().getGeographicGroups().size(); j++) {
                 String id = customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
@@ -970,7 +970,7 @@ public class MapperHelper {
                 }
                 viaTipoNombre = fillAddress2(persona,customer,j,viaFull,id,viaTipoNombre);
             }
-            persona.setDireccion(Objects.nonNull(persona.getNumeroVia())?viaTipoNombre.concat(" ").concat(persona.getNumeroVia()): viaTipoNombre);
+            persona.setDireccion(Objects.nonNull(persona.getNumeroVia())&&Objects.nonNull(viaTipoNombre)?viaTipoNombre.concat(" ").concat(persona.getNumeroVia()): viaTipoNombre);
             return viaTipoNombre;
     }
 

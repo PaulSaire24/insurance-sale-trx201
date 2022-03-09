@@ -31,8 +31,6 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	private static final String ID_API_INSURANCES_CREATE_INSURANCE_ASO = "emission.aso";
 
-	private static final String ID_API_PRE_POLICY_EMISSION_RIMAC = "emission.rimac";
-	private static final String URI_EMISSION = "/vehicular/V1/cotizacion/-/emitir";
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 	private static final String X_AMZ_DATE_HEADER = "X-Amz-Date";
 	private static final String X_API_KEY_HEADER = "x-api-key";
@@ -120,7 +118,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	@Override
 	public CustomerListASO executeGetCustomerInformation(String customerId) {
-		LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation START customerId ***** " + customerId);
+		LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation START customerId ***** ", customerId);
 
 		Map<String, Object> pathParams = new HashMap<>();
 		pathParams.put("customerId", customerId);
@@ -134,7 +132,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			if (responseList != null && responseList.getData() != null && !responseList.getData().isEmpty()) {
 
 				output = responseList.getData().get(0);
-				LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ENTRA***** " +output.getFirstName()
+				LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ENTRA***** " ,output.getFirstName()
 						+" - "+ output.getLastName()+" - "+ output.getBirthData().getBirthDate()+" - "
 						+ output.getIdentityDocuments().get(0).getDocumentType());
 				responJsons = getRequestBodyAsJsonFormat(responseList.getData().get(0));
