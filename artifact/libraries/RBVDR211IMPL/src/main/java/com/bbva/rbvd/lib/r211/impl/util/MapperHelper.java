@@ -890,7 +890,7 @@ public class MapperHelper {
         CrearCronogramaBO crearCronogramaBO = new CrearCronogramaBO();
         crearCronogramaBO.setFinanciamiento(financiamientoBOs);
 
-        generalEmisionRimacRequest.setCrearCronograma(crearCronogramaBO);
+        generalEmisionRimacRequest.getPayload().setCrearCronograma(crearCronogramaBO);
 
         CustomerBO customer = customerList.getData().get(0);
 		PersonaBO persona = new PersonaBO();
@@ -916,7 +916,7 @@ public class MapperHelper {
         AgregarPersonaBO agregarPersonaBO = new AgregarPersonaBO();
         agregarPersonaBO.setPersona(personasList);
 
-        generalEmisionRimacRequest.setAgregarPersona(agregarPersonaBO);
+        generalEmisionRimacRequest.getPayload().setAgregarPersona(agregarPersonaBO);
         Gson log = new Gson();
         LOGGER.info("generalEmisionRimacRequest output {}", log.toJson(generalEmisionRimacRequest));
         return generalEmisionRimacRequest;

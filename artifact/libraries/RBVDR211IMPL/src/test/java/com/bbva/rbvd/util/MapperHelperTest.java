@@ -1107,6 +1107,7 @@ public class MapperHelperTest {
 
     @Test
     public void mapRimacEmisionRequest_OK() {
+        when(applicationConfigurationService.getProperty("MONTHLY")).thenReturn("M");
         Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "ejemplo@bbva.com");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "999666999");
