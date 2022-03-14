@@ -883,7 +883,9 @@ public class MapperHelper {
 
         FinanciamientoBO financiamiento = new FinanciamientoBO();
         financiamiento.setFrecuencia(this.applicationConfigurationService.getProperty(requestBody.getInstallmentPlan().getPeriod().getId()));
-        financiamiento.setFechaInicio(generateCorrectDateFormat(convertDateToLocalDate(requestBody.getValidityPeriod().getStartDate())).replace("/", "-"));
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");  
+        String strDate = formatter.format(requestBody.getValidityPeriod().getStartDate());  
+        financiamiento.setFechaInicio(strDate.replace("/", "-"));
         financiamiento.setNumeroCuotas(requestBody.getInstallmentPlan().getTotalNumberInstallments());
         List<FinanciamientoBO> financiamientoBOs = new ArrayList<>();
         financiamientoBOs.add(financiamiento);
