@@ -70,6 +70,8 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 
 import java.text.SimpleDateFormat;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -883,9 +885,10 @@ public class MapperHelper {
 
         FinanciamientoBO financiamiento = new FinanciamientoBO();
         financiamiento.setFrecuencia(this.applicationConfigurationService.getProperty(requestBody.getInstallmentPlan().getPeriod().getId()));
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");  
-        String strDate = formatter.format(requestBody.getValidityPeriod().getStartDate());  
-        financiamiento.setFechaInicio(strDate.replace("/", "-"));
+        String strDate = requestBody.getValidityPeriod().getStartDate().toInstant()
+				.atOffset(ZoneOffset.UTC)
+				.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        financiamiento.setFechaInicio(strDate);
         financiamiento.setNumeroCuotas(requestBody.getInstallmentPlan().getTotalNumberInstallments());
         List<FinanciamientoBO> financiamientoBOs = new ArrayList<>();
         financiamientoBOs.add(financiamiento);
