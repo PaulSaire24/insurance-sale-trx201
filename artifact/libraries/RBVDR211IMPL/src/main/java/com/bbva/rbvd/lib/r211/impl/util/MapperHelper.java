@@ -931,21 +931,30 @@ public class MapperHelper {
         PersonaBO persons = new PersonaBO();
         persons.setTipoDocumento(persona.getTipoDocumento());
         persons.setNroDocumento(persona.getNroDocumento());
-        persons.setApePaterno(persona.getApePaterno());
-        persons.setApeMaterno(persona.getApeMaterno());
-        persons.setNombres(persona.getNombres());
+        persons.setApePaterno(validateSN(persona.getApePaterno()));
+        persons.setApeMaterno(validateSN(persona.getApeMaterno()));
+        persons.setNombres(validateSN(persona.getNombres()));
         persons.setFechaNacimiento(persona.getFechaNacimiento());
         persons.setSexo(persona.getSexo());
         persons.setCorreoElectronico(persona.getCorreoElectronico());
-        persons.setDireccion(persona.getDireccion());
-        persons.setDistrito(persona.getDistrito());
-        persons.setProvincia(persona.getProvincia());
-        persons.setDepartamento(persona.getDepartamento());
-        persons.setTipoVia(persona.getTipoVia());
-        persons.setNombreVia(persona.getNombreVia());
-        persons.setNumeroVia(persona.getNumeroVia());
+        persons.setDireccion(validateSN(persona.getDireccion()));
+        persons.setDistrito(validateSN(persona.getDistrito()));
+        persons.setProvincia(validateSN(persona.getProvincia()));
+        persons.setDepartamento(validateSN(persona.getDepartamento()));
+        persons.setTipoVia(validateSN(persona.getTipoVia()));
+        persons.setNombreVia(validateSN(persona.getNombreVia()));
+        persons.setNumeroVia(validateSN(persona.getNumeroVia()));
         persons.setCelular(persona.getCelular());
         return persons;
+    }
+
+    private String validateSN(String name) {
+        if(Objects.isNull(name) || "null".equals(name) || " ".equals(name)){
+            return "N/A";
+        }else{
+            name = name.replace("#","Ñ");
+            return name;
+        }
     }
 
     private String fillAddress(CustomerListASO customerList, PersonaBO persona){
