@@ -827,19 +827,24 @@ public class MapperHelper {
             bodyData[8] = getContractNumber(responseBody.getId());
             bodyData[9] = policyNumber;
             bodyData[10] = responseBody.getProductPlan().getDescription();
+
+            PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
+
+            bodyData[11] = paymentAmount.getCurrency().concat(" ").concat(paymentAmount.getAmount().toString());
+            bodyData[12] = emissionDao.getPaymentFrequencyName();
         }else{
             bodyData[0] = "";
             bodyData[1] = Objects.nonNull(emissionDao.getVehicleLicenseId()) ? emissionDao.getVehicleLicenseId() : "EN TRAMITE";
             bodyData[3] = getContractNumber(responseBody.getId());
             bodyData[4] = policyNumber;
             bodyData[5] = responseBody.getProductPlan().getDescription();
+            
+            PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
+
+            bodyData[6] = paymentAmount.getCurrency().concat(" ").concat(paymentAmount.getAmount().toString());
+            bodyData[7] = emissionDao.getPaymentFrequencyName();
         }
 
-
-        PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
-
-        bodyData[11] = paymentAmount.getCurrency().concat(" ").concat(paymentAmount.getAmount().toString());
-        bodyData[12] = emissionDao.getPaymentFrequencyName();
         return bodyData;
     }
 
