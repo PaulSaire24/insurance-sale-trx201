@@ -780,12 +780,12 @@ public class MapperHelper {
 
     }
 
-    public CreateEmailASO buildCreateEmailRequest(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber) {
+    public CreateEmailASO buildCreateEmailRequest(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, String productId) {
         CreateEmailASO email = new CreateEmailASO();
         email.setApplicationId(TEMPLATE_EMAIL_CODE.concat(format.format(new Date())));
         email.setRecipient("0,".concat(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()));
         email.setSubject(SUBJECT_EMAIL);
-        String[] data = getMailBodyData(emissionDao, responseBody, policyNumber);
+        String[] data = getMailBodyData(emissionDao, responseBody, policyNumber, productId);
         email.setBody(getEmailBody(data));
         email.setSender(MAIL_SENDER);
         return email;
@@ -813,19 +813,28 @@ public class MapperHelper {
         return exchangeRate;
     }
 
-    private String[] getMailBodyData(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber) {
+    private String[] getMailBodyData(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, String productId) {
         String[] bodyData = new String[13];
-        bodyData[0] = "";
-        bodyData[1] = Objects.nonNull(emissionDao.getVehicleLicenseId()) ? emissionDao.getVehicleLicenseId() : "EN TRAMITE";
-        bodyData[2] = emissionDao.getVehicleBrandName();
-        bodyData[3] = emissionDao.getVehicleModelName();
-        bodyData[4] = emissionDao.getVehicleYearId();
-        bodyData[5] = emissionDao.getGasConversionType().equals("S") ? "Sí" : "No";
-        bodyData[6] = emissionDao.getVehicleCirculationType().equals("L") ? "Lima" : "Provincia";
-        bodyData[7] = emissionDao.getCommercialVehicleAmount().toString();
-        bodyData[8] = getContractNumber(responseBody.getId());
-        bodyData[9] = policyNumber;
-        bodyData[10] = responseBody.getProductPlan().getDescription();
+        if(productId.equals("830")){
+            bodyData[0] = "";
+            bodyData[1] = Objects.nonNull(emissionDao.getVehicleLicenseId()) ? emissionDao.getVehicleLicenseId() : "EN TRAMITE";
+            bodyData[2] = emissionDao.getVehicleBrandName();
+            bodyData[3] = emissionDao.getVehicleModelName();
+            bodyData[4] = emissionDao.getVehicleYearId();
+            bodyData[5] = emissionDao.getGasConversionType().equals("S") ? "Sí" : "No";
+            bodyData[6] = emissionDao.getVehicleCirculationType().equals("L") ? "Lima" : "Provincia";
+            bodyData[7] = emissionDao.getCommercialVehicleAmount().toString();
+            bodyData[8] = getContractNumber(responseBody.getId());
+            bodyData[9] = policyNumber;
+            bodyData[10] = responseBody.getProductPlan().getDescription();
+        }else{
+            bodyData[0] = "";
+            bodyData[1] = Objects.nonNull(emissionDao.getVehicleLicenseId()) ? emissionDao.getVehicleLicenseId() : "EN TRAMITE";
+            bodyData[3] = getContractNumber(responseBody.getId());
+            bodyData[4] = policyNumber;
+            bodyData[5] = responseBody.getProductPlan().getDescription();
+        }
+
 
         PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
 

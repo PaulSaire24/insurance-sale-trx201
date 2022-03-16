@@ -169,7 +169,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			this.mapperHelper.mappingOutputFields(responseBody, asoResponse, rimacResponse, emissionDao);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building email object to send *****");
-			CreateEmailASO email = this.mapperHelper.buildCreateEmailRequest(emissionDao, responseBody, rimacResponse.getPayload().getNumeroPoliza());
+			CreateEmailASO email = this.mapperHelper.buildCreateEmailRequest(emissionDao, responseBody, rimacResponse.getPayload().getNumeroPoliza(), requestBody.getProductId());
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Send Email *****");
 			Integer httpStatusEmail = this.rbvdR201.executeCreateEmail(email);

@@ -1005,7 +1005,7 @@ public class MapperHelperTest {
         apxRequest.setId("00110057794000023694");
         apxRequest.getProductPlan().setDescription("PLAN BASICO");
 
-        CreateEmailASO email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+        CreateEmailASO email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), "830");
 
         assertNotNull(email.getApplicationId());
         assertNotNull(email.getRecipient());
@@ -1013,11 +1013,19 @@ public class MapperHelperTest {
         assertNotNull(email.getBody());
         assertNotNull(email.getSender());
 
+        email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), "832");
+
+        assertNotNull(email.getBody());
+        
         when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn(null);
         when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
         when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
 
-        email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+        email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), "830");
+
+        assertNotNull(email.getBody());
+
+        email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), "832");
 
         assertNotNull(email.getBody());
     }
