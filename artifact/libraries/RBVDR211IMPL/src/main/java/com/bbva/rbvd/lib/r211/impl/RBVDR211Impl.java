@@ -177,19 +177,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building email object to send *****");
 
-			CreateEmailASO email = null;
-
-			switch (requestBody.getProductId()) {
-				case INSURANCE_PRODUCT_TYPE_VEH:
-					email = this.mapperHelper.buildCreateEmailRequestVeh(emissionDao, responseBody, rimacResponse.getPayload().getNumeroPoliza());
-					break;
-				case INSURANCE_PRODUCT_TYPE_HOME:
-					Map<String, Object> responseQueryGetHomeInfo = pisdR021.executeGetHomeInfoForEmissionService(requestBody.getQuotationId());
-					email = this.mapperHelper.buildCreateEmailRequestHome(emissionDao, responseBody, rimacResponse.getPayload().getNumeroPoliza(),customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetHomeInfo));
-					break;
-				default:
-					break;
-			}
+			CreateEmailASO email = generateEmailWithForker(responseBody.getProductId(), emissionDao, responseBody,
+					rimacResponse.getPayload().getNumeroPoliza(), customerList);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Send Email *****");
 			Integer httpStatusEmail = this.rbvdR201.executeCreateEmail(email);
@@ -329,5 +318,21 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		if (isEmpty(customerList.getData())) {
 			throw PISDValidation.build(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE);
 		}
+	}
+
+	private CreateEmailASO generateEmailWithForker(String productId, RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerList){
+		CreateEmailASO email = null;
+		switch (productId) {
+			case INSURANCE_PRODUCT_TYPE_VEH:
+				email = this.mapperHelper.buildCreateEmailRequestVeh(emissionDao, responseBody, policyNumber);
+				break;
+			case INSURANCE_PRODUCT_TYPE_HOME:
+				Map<String, Object> responseQueryGetHomeInfo = pisdR021.executeGetHomeInfoForEmissionService(responseBody.getQuotationId());
+				email = this.mapperHelper.buildCreateEmailRequestHome(emissionDao, responseBody, policyNumber, customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetHomeInfo));
+				break;
+			default:
+				break;
+		}
+		return email;
 	}
 }
