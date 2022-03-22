@@ -22,6 +22,9 @@ import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.dto.insurance.utils.PISDValidation;
+import com.bbva.rbvd.dto.homeinsrc.dao.EmissionHsngDAO;
+import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
+import com.bbva.rbvd.dto.homeinsrc.utils.HomeInsuranceProperty;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
@@ -48,6 +51,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String TAG_ENDORSEE = "ENDORSEE";
 	private static final String TAG_RUC = "RUC";
 
+	private static final String INSURANCE_PRODUCT_TYPE_VEH = "830";
+    private static final String INSURANCE_PRODUCT_TYPE_HOME = "832";
+
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
 
@@ -60,6 +66,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		Boolean isEndorsement = false;
 		String endosatarioRuc = "";
 		Double endosatarioPorcentaje = 0.0;
+
+		CustomerListASO customerList = new CustomerListASO();
 
 		try {
 
@@ -97,7 +105,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			if (!requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VEH.getValue())) {
 
-				CustomerListASO customerList = this.rbvdR201.executeGetCustomerInformation(requestBody.getHolder().getId());
+				customerList = this.rbvdR201.executeGetCustomerInformation(requestBody.getHolder().getId());
 
 				try {
 					validateQueryCustomerResponse(customerList);
@@ -169,7 +177,20 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			this.mapperHelper.mappingOutputFields(responseBody, asoResponse, rimacResponse, emissionDao);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building email object to send *****");
-			CreateEmailASO email = this.mapperHelper.buildCreateEmailRequest(emissionDao, responseBody, rimacResponse.getPayload().getNumeroPoliza(), requestBody.getProductId());
+
+			CreateEmailASO email = null;
+
+			switch (requestBody.getProductId()) {
+				case INSURANCE_PRODUCT_TYPE_VEH:
+					email = this.mapperHelper.buildCreateEmailRequestVeh(emissionDao, responseBody, rimacResponse.getPayload().getNumeroPoliza());
+					break;
+				case INSURANCE_PRODUCT_TYPE_HOME:
+					Map<String, Object> responseQueryGetHomeInfo = pisdR021.executeGetHomeInfoForEmissionService(requestBody.getQuotationId());
+					email = this.mapperHelper.buildCreateEmailRequestHome(emissionDao, responseBody, rimacResponse.getPayload().getNumeroPoliza(),customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetHomeInfo));
+					break;
+				default:
+					break;
+			}
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Send Email *****");
 			Integer httpStatusEmail = this.rbvdR201.executeCreateEmail(email);
@@ -261,6 +282,24 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		emissionDao.setGasConversionType((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_VEHICLE_GAS_CONVERSION_TYPE.getValue()));
 		emissionDao.setVehicleCirculationType((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_VEHICLE_CIRCULATION_SCOPE_TYPE.getValue()));
 		emissionDao.setCommercialVehicleAmount((BigDecimal) responseQueryGetRequiredFields.get(PISDProperties.FIELD_COMMERCIAL_VEHICLE_AMOUNT.getValue()));
+
+		return emissionDao;
+	}
+
+	private SimltInsuredHousingDAO validateResponseQueryGetHomeRequiredFields(Map<String, Object> responseQueryGetHomeRequiredFields) {
+		if(isEmpty(responseQueryGetHomeRequiredFields)) {
+			throw RBVDValidation.build(RBVDErrors.NON_EXISTENT_QUOTATION);
+		}
+		SimltInsuredHousingDAO emissionDao = new SimltInsuredHousingDAO();
+		emissionDao.setDepartmentName((String) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_DEPARTMENT_NAME.getValue()));
+		emissionDao.setProvinceName((String) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_PROVINCE_NAME.getValue()));
+		emissionDao.setDistrictName((String) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_DISTRICT_NAME.getValue()));
+		emissionDao.setHousingType((String) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_HOUSING_TYPE.getValue()));
+		emissionDao.setAreaPropertyNumber((BigDecimal) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_AREA_PROPERTY_1_NUMBER.getValue()));
+		emissionDao.setPropSeniorityYearsNumber((BigDecimal) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_PROP_SENIORITY_YEARS_NUMBER.getValue()));
+		emissionDao.setFloorNumber((BigDecimal) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_FLOOR_NUMBER.getValue()));
+		emissionDao.setEdificationLoanAmount((BigDecimal) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_EDIFICATION_LOAN_AMOUNT.getValue()));
+		emissionDao.setHousingAssetsLoanAmount((BigDecimal) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_HOUSING_ASSETS_LOAN_AMOUNT.getValue()));
 
 		return emissionDao;
 	}

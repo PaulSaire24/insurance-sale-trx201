@@ -5,6 +5,7 @@ import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
 import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DetailASO;
@@ -1005,7 +1006,7 @@ public class MapperHelperTest {
         apxRequest.setId("00110057794000023694");
         apxRequest.getProductPlan().setDescription("PLAN BASICO");
 
-        CreateEmailASO email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), "830");
+        CreateEmailASO email = mapperHelper.buildCreateEmailRequestVeh(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
 
         assertNotNull(email.getApplicationId());
         assertNotNull(email.getRecipient());
@@ -1013,20 +1014,38 @@ public class MapperHelperTest {
         assertNotNull(email.getBody());
         assertNotNull(email.getSender());
 
-        email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), "832");
-
-        assertNotNull(email.getBody());
-        
         when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn(null);
         when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
         when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
-
-        email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), "830");
-
+        email = mapperHelper.buildCreateEmailRequestVeh(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
         assertNotNull(email.getBody());
 
-        email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), "832");
+        SimltInsuredHousingDAO emissionDAO = new SimltInsuredHousingDAO();
+        emissionDAO.setDepartmentName("LIMA");
+        emissionDAO.setProvinceName("LIMA");
+        emissionDAO.setDistrictName("LINCE");
+        emissionDAO.setHousingType("P");
+        emissionDAO.setAreaPropertyNumber(new BigDecimal(100));
+        emissionDAO.setPropSeniorityYearsNumber(new BigDecimal(10));
+        emissionDAO.setFloorNumber(new BigDecimal(2));
+        emissionDAO.setEdificationLoanAmount(new BigDecimal(1000));
+        emissionDAO.setHousingAssetsLoanAmount(new BigDecimal(800));
+        apxRequest.getFirstInstallment().getPaymentAmount().setCurrency("PEN");
+        apxRequest.getProductPlan().setDescription("PLAN CONTENIDO");
+        apxRequest.getProductPlan().setId("04");
+        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), customerList, emissionDAO);
+        assertNotNull(email.getBody());
 
+        emissionDAO.setHousingType("A");
+        apxRequest.getProductPlan().setDescription("PLAN EDIFICACION");
+        apxRequest.getProductPlan().setId("05");
+        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), customerList, emissionDAO);
+        assertNotNull(email.getBody());
+
+        emissionDAO.setHousingType("A");
+        apxRequest.getProductPlan().setDescription("PLAN EDIFICACION + CONTENIDO");
+        apxRequest.getProductPlan().setId("06");
+        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), null, emissionDAO);
         assertNotNull(email.getBody());
     }
 

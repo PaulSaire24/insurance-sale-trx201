@@ -10,6 +10,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
 import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
 import com.bbva.rbvd.dto.insrncsale.aso.IdentityDocumentASO;
+import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
 import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
 import com.bbva.rbvd.dto.insrncsale.aso.PaymentAmountASO;
 import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
@@ -110,11 +111,15 @@ public class MapperHelper {
     private static final String TAG_ENDORSEE = "ENDORSEE";
 
 
-    private static final String TEMPLATE_EMAIL_CODE = "PLT00945";
-    private static final String SUBJECT_EMAIL = "!Genial! Acabas de comprar tu seguro vehicular con éxito";
+    private static final String TEMPLATE_EMAIL_CODE_VEH = "PLT00945";
+    private static final String SUBJECT_EMAIL_VEH = "!Genial! Acabas de comprar tu seguro vehicular con éxito";
     private static final String MAIL_SENDER = "procesos@bbva.com.pe";
 
     private static final String GMT_TIME_ZONE = "GMT";
+
+    private static final String TEMPLATE_EMAIL_CODE_HOME = "PLT00968";
+    private static final String SUBJECT_EMAIL_HOME = "!Genial! Acabas de comprar tu Seguro Hogar Total con éxito";
+    private static final String NONE = "none";
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -780,14 +785,29 @@ public class MapperHelper {
 
     }
 
-    public CreateEmailASO buildCreateEmailRequest(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, String productId) {
+    public CreateEmailASO buildCreateEmailRequestVeh(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber){
         CreateEmailASO email = new CreateEmailASO();
-        email.setApplicationId(TEMPLATE_EMAIL_CODE.concat(format.format(new Date())));
+        email.setApplicationId(TEMPLATE_EMAIL_CODE_VEH.concat(format.format(new Date())));
         email.setRecipient("0,".concat(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()));
-        email.setSubject(SUBJECT_EMAIL);
-        String[] data = getMailBodyData(emissionDao, responseBody, policyNumber, productId);
-        email.setBody(getEmailBody(data));
+        email.setSubject(SUBJECT_EMAIL_VEH);
+        String[] data = getMailBodyDataVeh(emissionDao, responseBody, policyNumber);
+        email.setBody(getEmailBodySructure1(data,TEMPLATE_EMAIL_CODE_VEH));
         email.setSender(MAIL_SENDER);
+        Gson log = new Gson();
+        LOGGER.info("arguments email Veh {}", log.toJson(email));
+        return email;
+    }
+
+    public CreateEmailASO buildCreateEmailRequestHome(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo){
+        CreateEmailASO email = new CreateEmailASO();
+        email.setApplicationId(TEMPLATE_EMAIL_CODE_HOME.concat(format.format(new Date())));
+        email.setRecipient("0,".concat(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()));
+        email.setSubject(SUBJECT_EMAIL_HOME);
+        String[] data = getMailBodyDataHome(emissionDao, responseBody, policyNumber, customerInfo, homeInfo);
+        email.setBody(getEmailBodySructure2(data,TEMPLATE_EMAIL_CODE_HOME));
+        email.setSender(MAIL_SENDER);
+        Gson log = new Gson();
+        LOGGER.info("arguments email Home {}", log.toJson(email));
         return email;
     }
 
@@ -813,42 +833,81 @@ public class MapperHelper {
         return exchangeRate;
     }
 
-    private String[] getMailBodyData(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, String productId) {
+    private String[] getMailBodyDataVeh(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber) {
         String[] bodyData = new String[13];
-        if(productId.equals("830")){
-            bodyData[0] = "";
-            bodyData[1] = Objects.nonNull(emissionDao.getVehicleLicenseId()) ? emissionDao.getVehicleLicenseId() : "EN TRAMITE";
-            bodyData[2] = emissionDao.getVehicleBrandName();
-            bodyData[3] = emissionDao.getVehicleModelName();
-            bodyData[4] = emissionDao.getVehicleYearId();
-            bodyData[5] = emissionDao.getGasConversionType().equals("S") ? "Sí" : "No";
-            bodyData[6] = emissionDao.getVehicleCirculationType().equals("L") ? "Lima" : "Provincia";
-            bodyData[7] = emissionDao.getCommercialVehicleAmount().toString();
-            bodyData[8] = getContractNumber(responseBody.getId());
-            bodyData[9] = policyNumber;
-            bodyData[10] = responseBody.getProductPlan().getDescription();
+        bodyData[0] = "";
+        bodyData[1] = Objects.nonNull(emissionDao.getVehicleLicenseId()) ? emissionDao.getVehicleLicenseId() : "EN TRAMITE";
+        bodyData[2] = emissionDao.getVehicleBrandName();
+        bodyData[3] = emissionDao.getVehicleModelName();
+        bodyData[4] = emissionDao.getVehicleYearId();
+        bodyData[5] = emissionDao.getGasConversionType().equals("S") ? "Sí" : "No";
+        bodyData[6] = emissionDao.getVehicleCirculationType().equals("L") ? "Lima" : "Provincia";
+        bodyData[7] = emissionDao.getCommercialVehicleAmount().toString();
+        bodyData[8] = getContractNumber(responseBody.getId());
+        bodyData[9] = policyNumber;
+        bodyData[10] = responseBody.getProductPlan().getDescription();
 
-            PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
+        PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
 
-            bodyData[11] = paymentAmount.getCurrency().concat(" ").concat(paymentAmount.getAmount().toString());
-            bodyData[12] = emissionDao.getPaymentFrequencyName();
+        bodyData[11] = paymentAmount.getCurrency().concat(" ").concat(paymentAmount.getAmount().toString());
+        bodyData[12] = emissionDao.getPaymentFrequencyName();
+        return bodyData;
+    }
+
+    private String[] getMailBodyDataHome(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo) {
+        String[] bodyData = new String[17];
+
+        if("P".equals(homeInfo.getHousingType())) {
+            bodyData[0] = setName(customerInfo).concat(" Propietario");
+            bodyData[1] = " de tu inmueble";
+            bodyData[3] = "";
         }else{
-            bodyData[0] = "";
-            bodyData[1] = Objects.nonNull(emissionDao.getVehicleLicenseId()) ? emissionDao.getVehicleLicenseId() : "EN TRAMITE";
-            bodyData[3] = getContractNumber(responseBody.getId());
-            bodyData[4] = policyNumber;
-            bodyData[5] = responseBody.getProductPlan().getDescription();
-            
-            PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
-
-            bodyData[6] = paymentAmount.getCurrency().concat(" ").concat(paymentAmount.getAmount().toString());
-            bodyData[7] = emissionDao.getPaymentFrequencyName();
+            bodyData[0] = setName(customerInfo).concat(" inquilino");
+            bodyData[1] = " del inmueble que alquilas";
+            bodyData[3] = NONE;
         }
+        bodyData[2] = homeInfo.getDepartmentName().concat("/").concat(homeInfo.getProvinceName()).concat("/").concat(homeInfo.getDistrictName());
+        bodyData[4] = homeInfo.getAreaPropertyNumber().toString();
+        bodyData[5] = homeInfo.getPropSeniorityYearsNumber().toString();
+        bodyData[6] = homeInfo.getFloorNumber().toString();
+
+        if("05".equals(responseBody.getProductPlan().getId())) {
+            bodyData[7] = "";
+            bodyData[10] = NONE;
+        }else if ("04".equals(responseBody.getProductPlan().getId())){
+            bodyData[7] = NONE;
+            bodyData[10] = "";
+        }else{
+            bodyData[7] = NONE;
+            bodyData[10] = NONE;
+        }
+
+        PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
+
+        bodyData[8] = paymentAmount.getCurrency().concat("S/");
+        bodyData[9] = homeInfo.getEdificationLoanAmount().toString();
+        bodyData[11] = homeInfo.getHousingAssetsLoanAmount().toString();
+        bodyData[12] = getContractNumber(responseBody.getId());
+        bodyData[13] = policyNumber;
+        bodyData[14] = responseBody.getFirstInstallment().getPaymentAmount().getAmount().toString();
+        bodyData[15] = emissionDao.getPaymentFrequencyName();
+        bodyData[16] = responseBody.getProductPlan().getDescription();
 
         return bodyData;
     }
 
-    private String getEmailBody(String[] data) {
+    private String setName(CustomerListASO responseListCustomers){
+        StringBuilder name = new StringBuilder();
+        if(Objects.nonNull(responseListCustomers)) {
+            name.append(responseListCustomers.getData().get(0).getFirstName()).append(" ").append(responseListCustomers.getData().get(0).getLastName()).append(" ")
+                    .append(responseListCustomers.getData().get(0).getSecondLastName()).toString();
+            return name.toString();
+        }
+        return "";
+    }
+
+
+    private String getEmailBodySructure1(String[] data, String emailCode) {
         StringBuilder body = new StringBuilder();
         int hundredCode = 100;
         for(int i = 0; i < data.length; i++) {
@@ -859,8 +918,27 @@ public class MapperHelper {
             }
             body.append(generateCode(i+1)).append(data[i]).append("|");
         }
-        body.append(TEMPLATE_EMAIL_CODE);
+        body.append(emailCode);
         return body.toString();
+    }
+
+    private String getEmailBodySructure2(String[] data, String emailCode) {
+        StringBuilder body = new StringBuilder();
+        for(int i = 0; i < data.length; i++) {
+            body.append(generateCode(String.valueOf(i+1))).append(data[i]).append("|");
+        }
+        body.append(emailCode);
+        return body.toString();
+    }
+
+    private String generateCode(String index) {
+        StringBuilder code = new StringBuilder();
+        int length = 3 - index.length();
+        for (int i = 0; i < length; i++) {
+            code.append("0");
+        }
+        code.append(index);
+        return code.toString();
     }
 
     private String generateCode(Integer index) {

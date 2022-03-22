@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jdbc="http://www.springframework.org/schema/jdbc" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 	http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
-	<bean id="rbvdR211Abstract" abstract="true" class="com.bbva.rbvd.lib.r211.impl.RBVDR211Abstract" />
+	<bean id="rbvdR211Abstract" abstract="true" class="com.bbva.rbvd.lib.r211.impl.RBVDR211Abstract"/>
 	<bean id="rbvdR211" class="com.bbva.rbvd.lib.r211.impl.RBVDR211Impl" parent="rbvdR211Abstract">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 		<property name="mapperHelper" ref="mapperHelper"/>
-		<property name="pisdR012" ref="pisdR012" />
-		<property name="rbvdR201" ref="rbvdR201" />
+		<property name="pisdR012" ref="pisdR012"/>
+		<property name="rbvdR201" ref="rbvdR201"/>
 	</bean>
 	<bean id="applicationConfigurationService" factory-bean="applicationConfigurationServiceFactory" factory-method="getApplicationConfigurationService">
 		<constructor-arg type="org.osgi.framework.BundleContext" ref="bundleContext"/>
@@ -19,5 +19,8 @@
 	</bean>
 	<bean id="mapperHelper" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.rbvd.lib.r211.impl.util.MapperHelper"/>
+	</bean>
+	<bean id="pisdR021" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.pisd.lib.r021.PISDR021"/>
 	</bean>
 </beans>
