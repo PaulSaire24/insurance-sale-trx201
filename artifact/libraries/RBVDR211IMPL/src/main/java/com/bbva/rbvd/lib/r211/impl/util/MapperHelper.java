@@ -121,6 +121,8 @@ public class MapperHelper {
     private static final String SUBJECT_EMAIL_HOME = "!Genial! Acabas de comprar tu Seguro Hogar Total con éxito";
     private static final String NONE = "none";
 
+    private static final String RUC_ID = "RUC";
+
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
     private ApplicationConfigurationService applicationConfigurationService;
@@ -993,7 +995,7 @@ public class MapperHelper {
 		PersonaBO persona = new PersonaBO();
         List<PersonaBO> personasList = new ArrayList<>();
 	    persona.setTipoDocumento(this.applicationConfigurationService.getProperty(customer.getIdentityDocuments().get(0).getDocumentType().getId()));
-		persona.setNroDocumento(customer.getIdentityDocuments().get(0).getDocumentNumber());
+		persona.setNroDocumento(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())?(String)responseQueryGetRequiredFields.get(PISDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue()):customer.getIdentityDocuments().get(0).getDocumentNumber());
 		persona.setApePaterno(customer.getLastName());
 		persona.setApeMaterno(customer.getSecondLastName());
 		persona.setNombres(customer.getFirstName());
