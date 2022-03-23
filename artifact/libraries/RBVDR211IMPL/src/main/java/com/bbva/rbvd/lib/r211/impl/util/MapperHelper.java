@@ -901,7 +901,7 @@ public class MapperHelper {
         if(Objects.nonNull(responseListCustomers)) {
             name.append(responseListCustomers.getData().get(0).getFirstName()).append(" ").append(responseListCustomers.getData().get(0).getLastName()).append(" ")
                     .append(responseListCustomers.getData().get(0).getSecondLastName()).toString();
-            return name.toString();
+            return validateSN(name.toString());
         }
         return "";
     }
