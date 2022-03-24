@@ -1,15 +1,21 @@
 package com.bbva.rbvd.util;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
 import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DetailASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.FactorASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
@@ -34,7 +40,7 @@ public class MapperHelperTest {
     private final MapperHelper mapperHelper = new MapperHelper();
     private ApplicationConfigurationService applicationConfigurationService;
     private final MockData mockData = MockData.getInstance();
-    
+    private final MockDTO mockDTO = MockDTO.getInstance();
     private static final String N_VALUE = "N";
     private static final String S_VALUE = "S";
 
@@ -46,7 +52,7 @@ public class MapperHelperTest {
     private PolicyDTO apxRequest;
     private PolicyASO asoResponse;
     private EmisionBO rimacResponse;
-
+    private CustomerListASO customerList;
     @Before
     public void setUp() throws IOException {
         applicationConfigurationService = mock(ApplicationConfigurationService.class);
@@ -80,6 +86,7 @@ public class MapperHelperTest {
         apxRequest.setSaleChannelId("BI");
         asoResponse = mockData.getEmisionASOResponse();
         rimacResponse = mockData.getEmisionRimacResponse();
+        customerList = mockDTO.getCustomerDataResponse();
     }
 
     @Test
@@ -999,7 +1006,7 @@ public class MapperHelperTest {
         apxRequest.setId("00110057794000023694");
         apxRequest.getProductPlan().setDescription("PLAN BASICO");
 
-        CreateEmailASO email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+        CreateEmailASO email = mapperHelper.buildCreateEmailRequestVeh(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
 
         assertNotNull(email.getApplicationId());
         assertNotNull(email.getRecipient());
@@ -1010,9 +1017,35 @@ public class MapperHelperTest {
         when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn(null);
         when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
         when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
+        email = mapperHelper.buildCreateEmailRequestVeh(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+        assertNotNull(email.getBody());
 
-        email = mapperHelper.buildCreateEmailRequest(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+        SimltInsuredHousingDAO emissionDAO = new SimltInsuredHousingDAO();
+        emissionDAO.setDepartmentName("LIMA");
+        emissionDAO.setProvinceName("LIMA");
+        emissionDAO.setDistrictName("LINCE");
+        emissionDAO.setHousingType("P");
+        emissionDAO.setAreaPropertyNumber(new BigDecimal(100));
+        emissionDAO.setPropSeniorityYearsNumber(new BigDecimal(10));
+        emissionDAO.setFloorNumber(new BigDecimal(2));
+        emissionDAO.setEdificationLoanAmount(new BigDecimal(1000));
+        emissionDAO.setHousingAssetsLoanAmount(new BigDecimal(800));
+        apxRequest.getFirstInstallment().getPaymentAmount().setCurrency("PEN");
+        apxRequest.getProductPlan().setDescription("PLAN CONTENIDO");
+        apxRequest.getProductPlan().setId("04");
+        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), customerList, emissionDAO);
+        assertNotNull(email.getBody());
 
+        emissionDAO.setHousingType("A");
+        apxRequest.getProductPlan().setDescription("PLAN EDIFICACION");
+        apxRequest.getProductPlan().setId("05");
+        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), customerList, emissionDAO);
+        assertNotNull(email.getBody());
+
+        emissionDAO.setHousingType("A");
+        apxRequest.getProductPlan().setDescription("PLAN EDIFICACION + CONTENIDO");
+        apxRequest.getProductPlan().setId("06");
+        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), null, emissionDAO);
         assertNotNull(email.getBody());
     }
 
@@ -1097,4 +1130,46 @@ public class MapperHelperTest {
         assertEquals("SYSTEM", validation.get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
         assertEquals("SYSTEM", validation.get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
     }
+
+    @Test
+    public void mapRimacEmisionRequest_OK() {
+        when(applicationConfigurationService.getProperty("MONTHLY")).thenReturn("M");
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "ejemplo@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "999666999");
+        EmisionBO emisionInput = new EmisionBO();
+        DatoParticularBO datoParticular1 = new DatoParticularBO();
+        datoParticular1.setCodigo("codigo");
+        datoParticular1.setEtiqueta("CANAL_TERCERO");
+        datoParticular1.setValor("PC"); 
+        DatoParticularBO datoParticular2 = new DatoParticularBO();
+        datoParticular2.setCodigo("codigo");
+        datoParticular2.setEtiqueta("DATOS_DE_CUENTA");
+        datoParticular2.setValor("CUENTA||***8744||PEN"); 
+        DatoParticularBO datoParticular3 = new DatoParticularBO();
+        datoParticular3.setCodigo("codigo");
+        datoParticular3.setEtiqueta("NRO_CERT_BANCO");
+        datoParticular3.setValor("00110486834001440127");
+        List<DatoParticularBO> datosParticulares = new ArrayList<>();
+        datosParticulares.add(datoParticular1);
+        datosParticulares.add(datoParticular2);
+        datosParticulares.add(datoParticular3);
+        PayloadEmisionBO payload = new PayloadEmisionBO();
+        payload.setEnvioElectronico("N");
+        payload.setIndCobro("N");
+        payload.setIndInspeccion(Long.valueOf(1));
+        payload.setIndValidaciones("N");
+        ContactoInspeccionBO contactoInspeccion = new ContactoInspeccionBO();
+        contactoInspeccion.setNombre("nombre");
+        contactoInspeccion.setCorreo("correo");
+        contactoInspeccion.setTelefono("telefono");
+        payload.setContactoInspeccion(contactoInspeccion);
+        emisionInput.setPayload(payload);
+        emisionInput.getPayload().setDatosParticulares(datosParticulares);
+
+        EmisionBO validation = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+
+        assertNotNull(validation);
+    }
+
 }
