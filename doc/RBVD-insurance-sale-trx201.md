@@ -20,7 +20,9 @@
 ## 2. DTOs:
 
 > En este apartado se detallan todas las clases DTOs utilizadas en este recurso.
-
+- **RBVDC201**:
+    - dao:
+        - **SimltInsuredHousingDAO**: Entidad para DAO para obtener información de hogar.
 - **RBVDC201**:
     - aso:
         - emision:
@@ -100,6 +102,9 @@
 - **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse?at=refs%2Fheads%2Fdevelop)
     - Metodos reutilizados: executeGetRequiredFieldsForEmissionService(), executeGetPaymentPeriod(), executeSaveContract(), executeSaveContractEndoserment(), executeSaveReceipts(), executeSaveContractMove(), 
       executeGetRolesByProductAndModality(), executeSaveParticipants().
+- **Libreria PISDR021**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib21/browse?at=refs%2Fheads%2Frelease%2F0.1)
+    - Metodos reutilizados: executeGetHomeInfoForEmissionService().
+
 - **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md?at=refs%2Fheads%2Frelease%2F0.10)
     -  Metodos reutilizados: executeSignatureConstruction().
 
