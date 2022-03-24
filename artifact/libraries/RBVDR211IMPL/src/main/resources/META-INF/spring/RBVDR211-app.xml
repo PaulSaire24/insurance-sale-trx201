@@ -5,8 +5,9 @@
 		<property name="rbvdR201" ref="rbvdR201"/>
 		<property name="mapperHelper" ref="mapperHelper"/>
 		<property name="pisdR012" ref="pisdR012"/>
+		<property name="pisdR021" ref="pisdR021"/>
 	</bean>
 	<bean id="mapperHelper" class="com.bbva.rbvd.lib.r211.impl.util.MapperHelper">
-		<property name="applicationConfigurationService" ref="applicationConfigurationService" />
+		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 	</bean>
 </beans>

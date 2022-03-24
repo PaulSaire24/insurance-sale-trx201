@@ -59,12 +59,12 @@
 		<dependency>
 			<groupId>com.bbva.rbvd.dto.insrncsale</groupId>
 			<artifactId>RBVDC201</artifactId>
-			<version>0.8.0</version>
+			<version>0.9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.pisd.dto.insurance</groupId>
 			<artifactId>PISDC011</artifactId>
-			<version>0.10.0-SNAPSHOT</version>
+			<version>0.15.1</version>
 		</dependency>
 	</dependencies>
 	<build>
