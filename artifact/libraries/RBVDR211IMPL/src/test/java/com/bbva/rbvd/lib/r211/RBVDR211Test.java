@@ -3,8 +3,12 @@ package com.bbva.rbvd.lib.r211;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
+import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
+import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.lib.r012.PISDR012;
+import com.bbva.pisd.lib.r021.PISDR021;
+import com.bbva.rbvd.dto.homeinsrc.utils.HomeInsuranceProperty;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
@@ -49,10 +53,11 @@ public class RBVDR211Test {
 	private RBVDR211Impl rbvdr211 = new RBVDR211Impl();
 
 	private MockData mockData;
-
+	private MockDTO mockDTO;
 	private ApplicationConfigurationService applicationConfigurationService;
 	private RBVDR201 rbvdr201;
 	private PISDR012 pisdR012;
+	private PISDR021 pisdR021;
 	private MapperHelper mapperHelper;
 
 	private PolicyDTO requestBody;
@@ -65,6 +70,8 @@ public class RBVDR211Test {
 
 	private PolicyASO asoResponse;
 
+	private CustomerListASO customerList;
+
 	@Before
 	public void setUp() throws IOException {
 		ThreadContext.set(new Context());
@@ -74,14 +81,19 @@ public class RBVDR211Test {
 		applicationConfigurationService = mock(ApplicationConfigurationService.class);
 		rbvdr201 = mock(RBVDR201.class);
 		pisdR012 = mock(PISDR012.class);
+		pisdR021 = mock(PISDR021.class);
 		mapperHelper = mock(MapperHelper.class);
 
 		rbvdr211.setApplicationConfigurationService(applicationConfigurationService);
 		rbvdr211.setRbvdR201(rbvdr201);
 		rbvdr211.setPisdR012(pisdR012);
+		rbvdr211.setPisdR021(pisdR021);
 		rbvdr211.setMapperHelper(mapperHelper);
 
 		requestBody = mockData.getCreateInsuranceRequestBody();
+
+		mockDTO = MockDTO.getInstance();
+		customerList = mockDTO.getCustomerDataResponse();
 
 		responseQueryGetRequiredFields = mock(Map.class);
 
@@ -232,7 +244,7 @@ public class RBVDR211Test {
 
 		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
 
-		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString())).thenReturn(rimacResponse);
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
@@ -283,6 +295,110 @@ public class RBVDR211Test {
 		assertFalse(validation.getFirstInstallment().getIsPaymentRequired());
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getPromoter().getId());
+
+		requestBody.setProductId("832");
+		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
+		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("DISTRICT_NAME", "LINCE");
+		responseGetHomeInfoForEmissionService.put("HOUSING_TYPE", "A");
+		responseGetHomeInfoForEmissionService.put("AREA_PROPERTY_1_NUMBER", new BigDecimal(2));
+		responseGetHomeInfoForEmissionService.put("PROP_SENIORITY_YEARS_NUMBER", new BigDecimal(10));
+		responseGetHomeInfoForEmissionService.put("FLOOR_NUMBER", new BigDecimal(3));
+		responseGetHomeInfoForEmissionService.put("EDIFICATION_LOAN_AMOUNT", new BigDecimal(111.1));
+		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		//Rimac new Products fork
+		assertNotNull(validation);
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(new CustomerListASO());
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionHomeWithNonExistentQuotation() throws IOException{
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionHomeWithNonExistentQuotation...");
+
+		this.requestBody.getBank().getBranch().setId("7794");
+
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
+
+		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
+
+		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
+
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
+
+		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
+
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
+
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
+
+		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
+
+		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
+
+		when(firstRole.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
+
+		when(roles.get(0)).thenReturn(firstRole);
+
+		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
+
+		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
+
+		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
+
+		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
+
+		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNotNull(validation);
+		// If it's a digital sale, apx must set default code value to the agent and promoter objects.
+		assertEquals("026312", validation.getBusinessAgent().getId());
+		assertEquals("026364", validation.getPromoter().getId());
+
+		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+
+		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
+		this.requestBody.getBank().getBranch().setId("0057");
+		this.requestBody.setSaleChannelId("BI");
+
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNotNull(validation);
+		//Now, APX sets isPaymentRequired value
+		assertFalse(validation.getFirstInstallment().getIsPaymentRequired());
+		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
+		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getPromoter().getId());
+
+		requestBody.setProductId("832");
+		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
+		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("DISTRICT_NAME", "LINCE");
+		responseGetHomeInfoForEmissionService.put("HOUSING_TYPE", "A");
+		responseGetHomeInfoForEmissionService.put("AREA_PROPERTY_1_NUMBER", new BigDecimal(2));
+		responseGetHomeInfoForEmissionService.put("PROP_SENIORITY_YEARS_NUMBER", new BigDecimal(10));
+		responseGetHomeInfoForEmissionService.put("FLOOR_NUMBER", new BigDecimal(3));
+		responseGetHomeInfoForEmissionService.put("EDIFICATION_LOAN_AMOUNT", new BigDecimal(111.1));
+		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(null);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
 	}
 	
 	@Test
@@ -292,7 +408,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
 		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
-		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString())).thenReturn(rimacResponse);
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 		when(pisdR012.executeSaveContractEndoserment(anyMap())).thenReturn(1);
 

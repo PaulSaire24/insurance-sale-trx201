@@ -20,7 +20,9 @@
 ## 2. DTOs:
 
 > En este apartado se detallan todas las clases DTOs utilizadas en este recurso.
-
+- **RBVDC201**:
+    - dao:
+        - **SimltInsuredHousingDAO**: Entidad para DAO para obtener información de hogar.
 - **RBVDC201**:
     - aso:
         - emision:
@@ -97,9 +99,12 @@
 ### 3.2. Librerias Externas
 > En este apartado se detallan las librebrias externas que hace uso esta aplicacion para acceder a fuentes de terceros.
 
-- **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse/doc/PISD_APX_Library_PISDR012.md?at=refs%2Fheads%2Frelease%2F0.19)
+- **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse?at=refs%2Fheads%2Fdevelop)
     - Metodos reutilizados: executeGetRequiredFieldsForEmissionService(), executeGetPaymentPeriod(), executeSaveContract(), executeSaveContractEndoserment(), executeSaveReceipts(), executeSaveContractMove(), 
       executeGetRolesByProductAndModality(), executeSaveParticipants().
+- **Libreria PISDR021**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib21/browse?at=refs%2Fheads%2Frelease%2F0.1)
+    - Metodos reutilizados: executeGetHomeInfoForEmissionService().
+
 - **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md?at=refs%2Fheads%2Frelease%2F0.10)
     -  Metodos reutilizados: executeSignatureConstruction().
 
@@ -126,3 +131,4 @@
 - **Versión 0.4.11**: Enviando y guardando código de usuario como agente y promotor para canales auto-asistidos.
 - **Versión 0.4.12**: Se añade un dato particular al request del servicio de emisión de Rimac.
 - **Versión 0.5.1**: Se realiza el alta de un seguro con endoso de cesión de derechos.
+- **Versión 0.5.2**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado.

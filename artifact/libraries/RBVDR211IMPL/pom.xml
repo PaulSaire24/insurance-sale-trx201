@@ -96,7 +96,12 @@
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR012</artifactId>
-			<version>0.21.6</version>
+			<version>0.23.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.bbva.pisd</groupId>
+			<artifactId>PISDR021</artifactId>
+			<version>0.1.1</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -111,6 +116,7 @@
 						<Bundle-SymbolicName>${project.artifactId}-${project.version}</Bundle-SymbolicName>
 						<Bundle-Category>library</Bundle-Category>
 						<Import-Package>
+							com.bbva.pisd.lib.r021.*;version="${osgi.version.manifest}",
 							com.bbva.pisd.lib.r012.*;version="${osgi.version.manifest}",
 							com.bbva.rbvd.lib.r201.*;version="${osgi.version.manifest}",
 							com.bbva.rbvd.lib.r211.*;version="${osgi.version.manifest}",
