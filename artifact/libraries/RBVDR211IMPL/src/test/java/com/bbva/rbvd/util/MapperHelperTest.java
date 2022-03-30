@@ -1028,8 +1028,6 @@ public class MapperHelperTest {
         emissionDAO.setAreaPropertyNumber(new BigDecimal(100));
         emissionDAO.setPropSeniorityYearsNumber(new BigDecimal(10));
         emissionDAO.setFloorNumber(new BigDecimal(2));
-        emissionDAO.setEdificationLoanAmount(new BigDecimal(1000));
-        emissionDAO.setHousingAssetsLoanAmount(new BigDecimal(800));
         apxRequest.getFirstInstallment().getPaymentAmount().setCurrency("PEN");
         apxRequest.getProductPlan().setDescription("PLAN CONTENIDO");
         apxRequest.getProductPlan().setId("04");
@@ -1039,12 +1037,14 @@ public class MapperHelperTest {
         emissionDAO.setHousingType("A");
         apxRequest.getProductPlan().setDescription("PLAN EDIFICACION");
         apxRequest.getProductPlan().setId("05");
+        emissionDAO.setHousingAssetsLoanAmount(new BigDecimal(800));
         email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), customerList, emissionDAO);
         assertNotNull(email.getBody());
 
         emissionDAO.setHousingType("A");
         apxRequest.getProductPlan().setDescription("PLAN EDIFICACION + CONTENIDO");
         apxRequest.getProductPlan().setId("06");
+        emissionDAO.setEdificationLoanAmount(new BigDecimal(1000));
         email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), null, emissionDAO);
         assertNotNull(email.getBody());
     }
