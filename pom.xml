@@ -8,7 +8,7 @@
 	</parent>
 	<artifactId>insurance-sale-trx201</artifactId>
 	<groupId>com.bbva.rbvd</groupId>
-	<version>0.5.2</version>
+	<version>0.5.3</version>
 	<packaging>pom</packaging>
 	<name>insurance-sale-trx201</name>
 	<description>Deployment unit insurance-sale-trx201 of uuaa rbvd</description>
