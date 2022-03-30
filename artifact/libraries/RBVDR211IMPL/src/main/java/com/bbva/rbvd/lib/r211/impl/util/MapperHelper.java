@@ -887,8 +887,8 @@ public class MapperHelper {
         PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
 
         bodyData[8] = paymentAmount.getCurrency().concat("S/");
-        bodyData[9] = homeInfo.getEdificationLoanAmount().toString();
-        bodyData[11] = homeInfo.getHousingAssetsLoanAmount().toString();
+        bodyData[9] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? homeInfo.getEdificationLoanAmount().toString() : "";
+        bodyData[11] = Objects.nonNull(homeInfo.getHousingAssetsLoanAmount()) ? homeInfo.getHousingAssetsLoanAmount().toString() : "";
         bodyData[12] = getContractNumber(responseBody.getId());
         bodyData[13] = policyNumber;
         bodyData[14] = responseBody.getFirstInstallment().getPaymentAmount().getAmount().toString();
