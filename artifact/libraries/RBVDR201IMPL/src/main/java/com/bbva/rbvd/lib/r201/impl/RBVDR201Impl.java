@@ -140,7 +140,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 		} catch(RestClientException e) {
 			LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ***** Exception: {}", e.getMessage());
-			this.addAdvice(PISDErrors.ERROR_CALL_TO_THIRD_PARTY.getAdviceCode());
+			this.addAdvice(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getAdviceCode());
 		}
 			LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation output ***** Response: {}", responJsons);
 			LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation END getSuccess ***** ");

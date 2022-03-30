@@ -23,6 +23,20 @@
 - **RBVDC201**:
     - dao:
         - **SimltInsuredHousingDAO**: Entidad para DAO para obtener información de hogar.
+- **PISDC011**:
+    - aso:
+        - customerList:
+            - **CustomerListASO**: Entidad CustomerListASO
+        - bo:
+            - customer:
+                - **AddPersonBO**: Entidad RegisterAdditionalVehBO
+                - **CustomerBO**: Entidad CustomerBO
+                - **DataPersona**: Entidad DataPersona
+                - **Persona**: Entidad Persona
+    - utils:
+        - **PISDConstants**: Entidad Constantes
+        - **PISDErrors**: Entidad Errores
+        - **PISDProperties**: Entidad Propiedades
 - **RBVDC201**:
     - aso:
         - emision:
@@ -89,6 +103,8 @@
     - Avisos a retornar: RBVD00000137 y RBVD00000138.
 - **Método executeCreateEmail(CreateEmailASO createEmailASO)**: Método para realizar una petición al servicio createEmail del API notifications-gateway
     - Avisos a retornar: -
+- **Método executeGetCustomerInformation(String customerId)**: Método para obtener información del cliente a través del servicio ASO listCustomers
+    - Avisos a retornar: PISD00120034
 
 #### 3.1.2. Libreria RBVDR211
 > Orientada a realizar la lógica de negocio de la transacción RBVDT201.
@@ -99,10 +115,11 @@
 ### 3.2. Librerias Externas
 > En este apartado se detallan las librebrias externas que hace uso esta aplicacion para acceder a fuentes de terceros.
 
-- **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse?at=refs%2Fheads%2Fdevelop)
+- **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse/doc?at=refs%2Fheads%2Frelease%2F0.23)
     - Metodos reutilizados: executeGetRequiredFieldsForEmissionService(), executeGetPaymentPeriod(), executeSaveContract(), executeSaveContractEndoserment(), executeSaveReceipts(), executeSaveContractMove(), 
       executeGetRolesByProductAndModality(), executeSaveParticipants().
-- **Libreria PISDR021**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib21/browse?at=refs%2Fheads%2Frelease%2F0.1)
+
+- **Libreria PISDR021**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib21/browse/doc?at=release/0.1)
     - Metodos reutilizados: executeGetHomeInfoForEmissionService().
 
 - **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md?at=refs%2Fheads%2Frelease%2F0.10)
@@ -120,6 +137,7 @@
 - **Advise RBVD00000136**: SE ENVIARON DATOS INVÁLIDOS AL SERVICIO CREATEINSURANCE
 - **Advise RBVD00000137**: ERROR AL VALIDAR DATOS EN EMISION RIMAC
 - **Advise RBVD00000138**: COTIZACION INACTIVA O INEXISTENTE - EMISION RIMAC
+- **Advise PISD00120033**: ERROR CONNECTION VALIDATE CUSTOMER SERVICE
 
 ## 5. Diseño de componentes:
 ![createInsurance](images/diseno-componentes-apx-createInsurance.png)
@@ -131,4 +149,4 @@
 - **Versión 0.4.11**: Enviando y guardando código de usuario como agente y promotor para canales auto-asistidos.
 - **Versión 0.4.12**: Se añade un dato particular al request del servicio de emisión de Rimac.
 - **Versión 0.5.1**: Se realiza el alta de un seguro con endoso de cesión de derechos.
-- **Versión 0.5.2**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado.
+- **Versión 0.5.3**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
