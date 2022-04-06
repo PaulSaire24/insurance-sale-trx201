@@ -64,7 +64,7 @@
 		<dependency>
 			<groupId>com.bbva.rbvd.dto.homeinsrc</groupId>
 			<artifactId>RBVDC202</artifactId>
-			<version>0.2.0</version>
+			<version>0.2.4</version>
 		</dependency>
 	</dependencies>
 	<build>

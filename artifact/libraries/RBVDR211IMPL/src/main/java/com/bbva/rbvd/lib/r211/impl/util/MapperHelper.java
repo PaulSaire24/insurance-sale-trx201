@@ -377,7 +377,7 @@ public class MapperHelper {
         contractDao.setPaymentFrequencyId(emissionDao.getPaymentFrequencyId());
 
         contractDao.setPremiumAmount(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()));
-        contractDao.setSettlePendingPremiumAmount(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount()));
+        contractDao.setSettlePendingPremiumAmount(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()));
         contractDao.setCurrencyId(apxRequest.getInstallmentPlan().getPaymentAmount().getCurrency());
         contractDao.setInstallmentPeriodFinalDate(currentDate);
         contractDao.setInsuredAmount(BigDecimal.valueOf(apxRequest.getInsuredAmount().getAmount()));
@@ -393,7 +393,7 @@ public class MapperHelper {
                 ? BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1)
                 : BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()));
 
-        contractDao.setSettlementFixPremiumAmount(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount()));
+                contractDao.setSettlementFixPremiumAmount(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()));
         contractDao.setAutomaticDebitIndicatorType((apxRequest.getPaymentMethod().getPaymentType().equals(PAYMENT_METHOD_VALUE))
                 ? S_VALUE : N_VALUE);
         contractDao.setBiometryTransactionId(apxRequest.getIdentityVerificationCode());

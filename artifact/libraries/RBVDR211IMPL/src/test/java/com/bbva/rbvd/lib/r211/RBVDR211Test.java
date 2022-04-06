@@ -8,7 +8,6 @@ import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.pisd.lib.r021.PISDR021;
-import com.bbva.rbvd.dto.homeinsrc.utils.HomeInsuranceProperty;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;

@@ -277,7 +277,7 @@ public class MapperHelperTest {
         assertEquals(N_VALUE, validation.getCardIssuingMarkType());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()), validation.getIssuedReceiptNumber());
         assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.getPremiumAmount());
-        assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount()), validation.getSettlePendingPremiumAmount());
+        assertEquals(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()), validation.getSettlePendingPremiumAmount());
         assertEquals(apxRequest.getInstallmentPlan().getPaymentAmount().getCurrency(), validation.getCurrencyId());
         assertEquals(BigDecimal.valueOf(apxRequest.getInsuredAmount().getAmount()), validation.getInsuredAmount());
         assertEquals("08", validation.getBeneficiaryType());
@@ -293,7 +293,7 @@ public class MapperHelperTest {
         assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.getTotalDebtAmount());
         assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()), validation.getPrevPendBillRcptsNumber());
         assertEquals(BigDecimal.valueOf(0), validation.getSettlementVarPremiumAmount());
-        assertEquals(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount()), validation.getSettlementFixPremiumAmount());
+        assertEquals(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()), validation.getSettlementFixPremiumAmount());
         assertEquals(rimacResponse.getPayload().getCodProducto(), validation.getInsuranceCompanyProductId());
         assertEquals(S_VALUE, validation.getAutomaticDebitIndicatorType());
         assertEquals(apxRequest.getIdentityVerificationCode(), validation.getBiometryTransactionId());
