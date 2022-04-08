@@ -1085,7 +1085,7 @@ public class MapperHelper {
             }
 
             persona.setDireccion(getFullDirectionFromCustomer(viaTipoNombre, additionalAddress2,
-                    additionalAddress3, addressExtra, persona));
+                    additionalAddress3, addressExtra, persona).trim());
 
             return viaTipoNombre;
     }
