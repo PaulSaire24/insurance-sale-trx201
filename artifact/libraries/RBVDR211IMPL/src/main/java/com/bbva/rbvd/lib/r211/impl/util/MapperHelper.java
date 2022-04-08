@@ -1083,11 +1083,22 @@ public class MapperHelper {
                 fillAddress2(persona,customer,j,viaFull,id, additionalAddress2, additionalAddress3);
                 fillAddressExtra(addressExtra,customer,j);
             }
-            String fullDirection = (Objects.nonNull(viaTipoNombre)?viaTipoNombre.concat(" "):"").concat(Objects.nonNull(persona.getNumeroVia())?persona.getNumeroVia().concat(" "):"").
-            concat(additionalAddress2.length() != 0?additionalAddress2.toString().concat(" "):"").concat(additionalAddress3.length() != 0?additionalAddress3.toString().concat(" "):"").
-            concat(Objects.nonNull(addressExtra)?addressExtra.toString():"");
-            persona.setDireccion(fullDirection.trim());
+
+            persona.setDireccion(getFullDirectionFromCustomer(viaTipoNombre, additionalAddress2,
+                    additionalAddress3, addressExtra, persona));
+
             return viaTipoNombre;
+    }
+
+    private String getFullDirectionFromCustomer(String viaTipoNombre,
+            StringBuilder additionalAddress2, StringBuilder additionalAddress3, StringBuilder addressExtra,
+            PersonaBO persona) {
+        String fullDirection = (Objects.nonNull(viaTipoNombre) ? viaTipoNombre.concat(" ") : "")
+                .concat(Objects.nonNull(persona.getNumeroVia()) ? persona.getNumeroVia().concat(" ") : "")
+                .concat(additionalAddress2.length() != 0 ? additionalAddress2.toString().concat(" ") : "")
+                .concat(additionalAddress3.length() != 0 ? additionalAddress3.toString().concat(" ") : "")
+                .concat(Objects.nonNull(addressExtra) ? addressExtra.toString() : "");
+        return fullDirection;
     }
 
     private void fillAddress2(PersonaBO persona, CustomerBO customer,int j,boolean viaFull,String id, StringBuilder additionalAddress2, StringBuilder additionalAddress3){
