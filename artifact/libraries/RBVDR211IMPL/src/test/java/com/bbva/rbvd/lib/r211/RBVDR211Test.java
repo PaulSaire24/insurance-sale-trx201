@@ -307,8 +307,11 @@ public class RBVDR211Test {
 		responseGetHomeInfoForEmissionService.put("EDIFICATION_LOAN_AMOUNT", new BigDecimal(111.1));
 		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
 
+		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
+		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
 		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
+		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(responseGetHomeRiskDirectionService);
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		//Rimac new Products fork
 		assertNotNull(validation);
@@ -383,6 +386,14 @@ public class RBVDR211Test {
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getPromoter().getId());
 
 		requestBody.setProductId("832");
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(null);
+		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(null);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
+
+		requestBody.setProductId("832");
 		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
 		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
 		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
@@ -395,7 +406,8 @@ public class RBVDR211Test {
 		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
 
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
-		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(null);
+		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
+		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(null);
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
 	}
