@@ -16,12 +16,14 @@ import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DetailASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.FactorASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.FirstInstallmentASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
+import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
@@ -84,7 +86,7 @@ public class MapperHelperTest {
         when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn("LOT464");
         when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("S");
         when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("L");
-        when(requiredFieldsEmissionDao.getCommercialVehicleAmount()).thenReturn(BigDecimal.valueOf(23.000));
+        when(requiredFieldsEmissionDao.getCommercialVehicleAmount()).thenReturn(BigDecimal.valueOf(9843.234));
 
         apxRequest = mockData.getCreateInsuranceRequestBody();
         apxRequest.setCreationUser("creationUser");
@@ -210,6 +212,20 @@ public class MapperHelperTest {
         assertEquals(inspection.getContactDetails().get(1).getContact().getPhoneNumber(), validation.getPayload().getContactoInspeccion().getTelefono());
         assertEquals(Optional.of(1L).get(), validation.getPayload().getIndInspeccion());
 
+        PolicyInspectionDTO inspectionDTO = new PolicyInspectionDTO();
+        inspectionDTO.setIsRequired(true);
+        inspectionDTO.setFullName("Luis Estrada");
+        inspectionDTO.setContactDetails(new ArrayList<ContactDetailDTO>());
+        validation = mapperHelper.buildRequestBodyRimac(inspectionDTO, "secondValue", "channelCode",
+                "dataId", "saleOffice");
+        
+        assertNotNull(validation.getPayload().getContactoInspeccion());
+        assertNotNull(validation.getPayload().getContactoInspeccion().getNombre());
+        assertNull(validation.getPayload().getContactoInspeccion().getCorreo());
+        assertNull(validation.getPayload().getContactoInspeccion().getTelefono());
+        assertEquals(inspection.getFullName(), validation.getPayload().getContactoInspeccion().getNombre());
+        assertEquals(Optional.of(1L).get(), validation.getPayload().getIndInspeccion());
+
     }
 
     @Test
@@ -326,6 +342,15 @@ public class MapperHelperTest {
         assertEquals("02/06/2022", validation.getPeriodNextPaymentDate());
         assertEquals(N_VALUE, validation.getInsurPendingDebtIndType());
         assertEquals(N_VALUE, validation.getAutomaticDebitIndicatorType());
+        EmisionBO rimacResponseNull = new EmisionBO();
+        PayloadEmisionBO payloadEmisionBO = new PayloadEmisionBO();
+        payloadEmisionBO.setNumeroPoliza("854589");
+        payloadEmisionBO.setFechaFinal(LocalDate.now());
+        payloadEmisionBO.setCuotasFinanciamiento(new ArrayList<CuotaFinancimientoBO>());
+        rimacResponseNull.setPayload(payloadEmisionBO);
+        apxRequest.setBusinessAgent(null);
+        apxRequest.setPromoter(null);
+        validation = mapperHelper.buildInsuranceContract(rimacResponseNull, apxRequest, requiredFieldsEmissionDao, "00110241400000001102", false);
     }
 
     @Test
@@ -563,6 +588,10 @@ public class MapperHelperTest {
         assertEquals(BigDecimal.valueOf(asoResponse.getData()
                 .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.get(0).getPremiumCurrencyExchAmount());
         assertEquals("COB", validation.get(0).getReceiptStatusType());
+
+        asoResponse.getData().getFirstInstallment().setExchangeRate(null);
+        asoResponse.getData().getFirstInstallment().setOperationNumber("1234567891");
+        validation = mapperHelper.buildInsuranceCtrReceipt(asoResponse, rimacResponse, apxRequest);
     }
 
     @Test
@@ -1043,14 +1072,14 @@ public class MapperHelperTest {
         emissionDAO.setHousingType("A");
         apxRequest.getProductPlan().setDescription("PLAN EDIFICACION");
         apxRequest.getProductPlan().setId("05");
-        emissionDAO.setHousingAssetsLoanAmount(new BigDecimal(800));
+        emissionDAO.setHousingAssetsLoanAmount(new BigDecimal(20000));
         email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), customerList, emissionDAO, "riskDirection");
         assertNotNull(email.getBody());
 
         emissionDAO.setHousingType("A");
         apxRequest.getProductPlan().setDescription("PLAN EDIFICACION + CONTENIDO");
         apxRequest.getProductPlan().setId("06");
-        emissionDAO.setEdificationLoanAmount(new BigDecimal(1000));
+        emissionDAO.setEdificationLoanAmount(new BigDecimal(150000.00));
         email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), null, emissionDAO, "riskDirection");
         assertNotNull(email.getBody());
     }
@@ -1213,8 +1242,15 @@ public class MapperHelperTest {
         geographicGroupTypeBO.setId("UNCATEGORIZED");
         geographicGroupTypeBO.setName("NO APLICA");
         geographicGroupsBO.setGeographicGroupType(geographicGroupTypeBO);
+        GeographicGroupsBO geographicGroupsBO1 = new GeographicGroupsBO();
+        geographicGroupsBO1.setName("233");
+        GeographicGroupTypeBO geographicGroupTypeBO1 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO1.setId("EXTERIOR_NUMBER");
+        geographicGroupTypeBO1.setName("EXTERIOR_NUMBER");
+        geographicGroupsBO1.setGeographicGroupType(geographicGroupTypeBO1);
         List<GeographicGroupsBO> geographicGroupsBOs = new ArrayList<>();
         geographicGroupsBOs.add(geographicGroupsBO);
+        geographicGroupsBOs.add(geographicGroupsBO1);
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
         EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation2);

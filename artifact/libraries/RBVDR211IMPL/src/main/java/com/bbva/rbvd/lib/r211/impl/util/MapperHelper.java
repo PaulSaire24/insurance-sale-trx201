@@ -69,7 +69,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -78,6 +78,7 @@ import java.util.HashMap;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.List;
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.stream.Collectors;
@@ -845,14 +846,16 @@ public class MapperHelper {
         bodyData[4] = emissionDao.getVehicleYearId();
         bodyData[5] = emissionDao.getGasConversionType().equals("S") ? "Sí" : "No";
         bodyData[6] = emissionDao.getVehicleCirculationType().equals("L") ? "Lima" : "Provincia";
-        bodyData[7] = emissionDao.getCommercialVehicleAmount().toString();
+        Locale locale = new Locale ("en", "UK");
+        NumberFormat numberFormat = NumberFormat.getInstance (locale);
+        bodyData[7] = numberFormat.format(emissionDao.getCommercialVehicleAmount());
         bodyData[8] = getContractNumber(responseBody.getId());
         bodyData[9] = policyNumber;
         bodyData[10] = responseBody.getProductPlan().getDescription();
 
         PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
 
-        bodyData[11] = paymentAmount.getCurrency().concat(" ").concat(paymentAmount.getAmount().toString());
+        bodyData[11] = paymentAmount.getCurrency().concat(" ").concat(numberFormat.format(paymentAmount.getAmount()));
         bodyData[12] = emissionDao.getPaymentFrequencyName();
         return bodyData;
     }
@@ -886,11 +889,13 @@ public class MapperHelper {
         }
 
         bodyData[8] = PEN_CURRENCY;
-        bodyData[9] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? homeInfo.getEdificationLoanAmount().toString() : "";
-        bodyData[11] = Objects.nonNull(homeInfo.getHousingAssetsLoanAmount()) ? homeInfo.getHousingAssetsLoanAmount().toString() : "";
+        Locale locale = new Locale ("en", "UK");
+        NumberFormat numberFormat = NumberFormat.getInstance (locale);
+        bodyData[9] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
+        bodyData[11] = Objects.nonNull(homeInfo.getHousingAssetsLoanAmount()) ? numberFormat.format(homeInfo.getHousingAssetsLoanAmount()) : "";
         bodyData[12] = getContractNumber(responseBody.getId());
         bodyData[13] = policyNumber;
-        bodyData[14] = responseBody.getFirstInstallment().getPaymentAmount().getAmount().toString();
+        bodyData[14] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
         bodyData[15] = emissionDao.getPaymentFrequencyName();
         bodyData[16] = responseBody.getProductPlan().getDescription();
         bodyData[17] = riskDirection;
@@ -948,11 +953,11 @@ public class MapperHelper {
     }
 
     private String getContractNumber(String id) {
-        String contractWithoutFirstFourCharacters = id.substring(4);
         StringBuilder contract = new StringBuilder();
-        contract.append(contractWithoutFirstFourCharacters, 0, 4).append("-")
-                .append(contractWithoutFirstFourCharacters, 4, 6).append("-")
-                .append(contractWithoutFirstFourCharacters.substring(6));
+        contract.append(id, 0, 4).append("-")
+                .append(id, 4, 8).append("-")
+                .append(id, 8, 10).append("-")
+                .append(id.substring(10));
         return contract.toString();
     }
 
@@ -1038,7 +1043,7 @@ public class MapperHelper {
         persons.setDepartamento(validateSN(persona.getDepartamento()));
         persons.setTipoVia(validateSN(persona.getTipoVia()));
         persons.setNombreVia(validateSN(persona.getNombreVia()));
-        persons.setNumeroVia(persona.getNumeroVia());
+        persons.setNumeroVia(validateSN(persona.getNumeroVia()));
         persons.setCelular(persona.getCelular());
         return persons;
     }
@@ -1097,7 +1102,7 @@ public class MapperHelper {
                 .concat(Objects.nonNull(persona.getNumeroVia()) ? persona.getNumeroVia().concat(" ") : "")
                 .concat(additionalAddress2.length() != 0 ? additionalAddress2.toString().concat(" ") : "")
                 .concat(additionalAddress3.length() != 0 ? additionalAddress3.toString().concat(" ") : "")
-                .concat(Objects.nonNull(addressExtra) ? addressExtra.toString() : "");
+                .concat(addressExtra.length() != 0 ? addressExtra.toString() : "");
         return fullDirection;
     }
 
