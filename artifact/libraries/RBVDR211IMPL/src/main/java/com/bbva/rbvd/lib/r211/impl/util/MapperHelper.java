@@ -69,7 +69,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -78,6 +78,7 @@ import java.util.HashMap;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.List;
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.stream.Collectors;
@@ -120,6 +121,8 @@ public class MapperHelper {
     private static final String TEMPLATE_EMAIL_CODE_HOME = "PLT00968";
     private static final String SUBJECT_EMAIL_HOME = "!Genial! Acabas de comprar tu Seguro Hogar Total con éxito";
     private static final String NONE = "none";
+    private static final String PEN_CURRENCY = "S/";
+    private static final String USD_CURRENCY = "US$";
 
     private static final String RUC_ID = "RUC";
 
@@ -377,7 +380,7 @@ public class MapperHelper {
         contractDao.setPaymentFrequencyId(emissionDao.getPaymentFrequencyId());
 
         contractDao.setPremiumAmount(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()));
-        contractDao.setSettlePendingPremiumAmount(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount()));
+        contractDao.setSettlePendingPremiumAmount(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()));
         contractDao.setCurrencyId(apxRequest.getInstallmentPlan().getPaymentAmount().getCurrency());
         contractDao.setInstallmentPeriodFinalDate(currentDate);
         contractDao.setInsuredAmount(BigDecimal.valueOf(apxRequest.getInsuredAmount().getAmount()));
@@ -393,7 +396,7 @@ public class MapperHelper {
                 ? BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1)
                 : BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()));
 
-        contractDao.setSettlementFixPremiumAmount(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount()));
+                contractDao.setSettlementFixPremiumAmount(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()));
         contractDao.setAutomaticDebitIndicatorType((apxRequest.getPaymentMethod().getPaymentType().equals(PAYMENT_METHOD_VALUE))
                 ? S_VALUE : N_VALUE);
         contractDao.setBiometryTransactionId(apxRequest.getIdentityVerificationCode());
@@ -538,7 +541,7 @@ public class MapperHelper {
         firstReceipt.setUserAuditId(requestBody.getUserAudit());
         firstReceipt.setManagementBranchId(requestBody.getBank().getBranch().getId());
         firstReceipt.setFixPremiumAmount(BigDecimal.valueOf(requestBody.getFirstInstallment().getPaymentAmount().getAmount()));
-        firstReceipt.setSettlementFixPremiumAmount(BigDecimal.valueOf(requestBody.getInstallmentPlan().getPaymentAmount().getAmount()));
+        firstReceipt.setSettlementFixPremiumAmount(BigDecimal.valueOf(requestBody.getTotalAmount().getAmount()));
         firstReceipt.setLastChangeBranchId(requestBody.getBank().getBranch().getId());
         firstReceipt.setGlBranchId(asoResponse.getData().getId().substring(4, 8));
 
@@ -800,12 +803,12 @@ public class MapperHelper {
         return email;
     }
 
-    public CreateEmailASO buildCreateEmailRequestHome(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo){
+    public CreateEmailASO buildCreateEmailRequestHome(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection){
         CreateEmailASO email = new CreateEmailASO();
         email.setApplicationId(TEMPLATE_EMAIL_CODE_HOME.concat(format.format(new Date())));
         email.setRecipient("0,".concat(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()));
         email.setSubject(SUBJECT_EMAIL_HOME);
-        String[] data = getMailBodyDataHome(emissionDao, responseBody, policyNumber, customerInfo, homeInfo);
+        String[] data = getMailBodyDataHome(emissionDao, responseBody, policyNumber, customerInfo, homeInfo, riskDirection);
         email.setBody(getEmailBodySructure2(data,TEMPLATE_EMAIL_CODE_HOME));
         email.setSender(MAIL_SENDER);
         Gson log = new Gson();
@@ -844,27 +847,29 @@ public class MapperHelper {
         bodyData[4] = emissionDao.getVehicleYearId();
         bodyData[5] = emissionDao.getGasConversionType().equals("S") ? "Sí" : "No";
         bodyData[6] = emissionDao.getVehicleCirculationType().equals("L") ? "Lima" : "Provincia";
-        bodyData[7] = emissionDao.getCommercialVehicleAmount().toString();
+        Locale locale = new Locale ("en", "UK");
+        NumberFormat numberFormat = NumberFormat.getInstance (locale);
+        bodyData[7] = numberFormat.format(emissionDao.getCommercialVehicleAmount());
         bodyData[8] = getContractNumber(responseBody.getId());
         bodyData[9] = policyNumber;
         bodyData[10] = responseBody.getProductPlan().getDescription();
 
         PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
 
-        bodyData[11] = paymentAmount.getCurrency().concat(" ").concat(paymentAmount.getAmount().toString());
+        bodyData[11] = USD_CURRENCY.concat(" ").concat(numberFormat.format(paymentAmount.getAmount()));
         bodyData[12] = emissionDao.getPaymentFrequencyName();
         return bodyData;
     }
 
-    private String[] getMailBodyDataHome(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo) {
-        String[] bodyData = new String[17];
+    private String[] getMailBodyDataHome(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection) {
+        String[] bodyData = new String[18];
 
         if("P".equals(homeInfo.getHousingType())) {
-            bodyData[0] = setName(customerInfo).concat(" Propietario");
+            bodyData[0] = setName(customerInfo);
             bodyData[1] = " de tu inmueble";
             bodyData[3] = "";
         }else{
-            bodyData[0] = setName(customerInfo).concat(" inquilino");
+            bodyData[0] = setName(customerInfo);
             bodyData[1] = " del inmueble que alquilas";
             bodyData[3] = NONE;
         }
@@ -880,20 +885,21 @@ public class MapperHelper {
             bodyData[7] = NONE;
             bodyData[10] = "";
         }else{
-            bodyData[7] = NONE;
-            bodyData[10] = NONE;
+            bodyData[7] = "";
+            bodyData[10] = "";
         }
 
-        PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
-
-        bodyData[8] = paymentAmount.getCurrency().concat("S/");
-        bodyData[9] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? homeInfo.getEdificationLoanAmount().toString() : "";
-        bodyData[11] = Objects.nonNull(homeInfo.getHousingAssetsLoanAmount()) ? homeInfo.getHousingAssetsLoanAmount().toString() : "";
+        bodyData[8] = PEN_CURRENCY;
+        Locale locale = new Locale ("en", "UK");
+        NumberFormat numberFormat = NumberFormat.getInstance (locale);
+        bodyData[9] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
+        bodyData[11] = Objects.nonNull(homeInfo.getHousingAssetsLoanAmount()) ? numberFormat.format(homeInfo.getHousingAssetsLoanAmount()) : "";
         bodyData[12] = getContractNumber(responseBody.getId());
         bodyData[13] = policyNumber;
-        bodyData[14] = responseBody.getFirstInstallment().getPaymentAmount().getAmount().toString();
+        bodyData[14] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
         bodyData[15] = emissionDao.getPaymentFrequencyName();
         bodyData[16] = responseBody.getProductPlan().getDescription();
+        bodyData[17] = riskDirection;
 
         return bodyData;
     }
@@ -948,11 +954,11 @@ public class MapperHelper {
     }
 
     private String getContractNumber(String id) {
-        String contractWithoutFirstFourCharacters = id.substring(4);
         StringBuilder contract = new StringBuilder();
-        contract.append(contractWithoutFirstFourCharacters, 0, 4).append("-")
-                .append(contractWithoutFirstFourCharacters, 4, 6).append("-")
-                .append(contractWithoutFirstFourCharacters.substring(6));
+        contract.append(id, 0, 4).append("-")
+                .append(id, 4, 8).append("-")
+                .append(id, 8, 10).append("-")
+                .append(id.substring(10));
         return contract.toString();
     }
 
@@ -971,7 +977,6 @@ public class MapperHelper {
     }
 
     public EmisionBO mapRimacEmisionRequest(EmisionBO rimacRequest,PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields, CustomerListASO customerList){
-
         EmisionBO generalEmisionRimacRequest = new EmisionBO();
         PayloadEmisionBO emisionBO = new PayloadEmisionBO();
         emisionBO.setEmision(rimacRequest.getPayload());
@@ -1000,11 +1005,13 @@ public class MapperHelper {
 		persona.setApeMaterno(customer.getSecondLastName());
 		persona.setNombres(customer.getFirstName());
 		persona.setFechaNacimiento(customer.getBirthData().getBirthDate());
-		persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
+        if(Objects.nonNull(customer.getGender())) persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
 		persona.setCorreoElectronico((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()));
 		persona.setCelular((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()));
 
-        fillAddress(customerList, persona);
+        StringBuilder addressExtra  = new StringBuilder();
+
+        fillAddress(customerList, persona, addressExtra);
         
         int[] intArray = new int[]{ 8,9,23 };
         for(int i=0; i<intArray.length; i++){
@@ -1051,9 +1058,11 @@ public class MapperHelper {
         }
     }
 
-    private String fillAddress(CustomerListASO customerList, PersonaBO persona){
+    private String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder addressExtra){
         boolean viaFull = false;
-        String viaTipoNombre=null;
+        String viaTipoNombre = null;
+        StringBuilder additionalAddress2  = new StringBuilder();
+        StringBuilder additionalAddress3  = new StringBuilder();
         CustomerBO customer = customerList.getData().get(0);
             for (int j = 0; j < customer.getAddresses().get(0).getLocation().getGeographicGroups().size(); j++) {
                 String id = customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
@@ -1074,46 +1083,81 @@ public class MapperHelper {
                         viaFull = true;
                         persona.setTipoVia(valor);
                         persona.setNombreVia(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getName());
+                        viaTipoNombre = persona.getTipoVia().concat(" ").concat(persona.getNombreVia());
                     }
                 }
-                viaTipoNombre = fillAddress2(persona,customer,j,viaFull,id,viaTipoNombre);
+                fillAddress2(persona,customer,j,viaFull,id, additionalAddress2, additionalAddress3);
+                fillAddressExtra(addressExtra,customer,j);
             }
-            persona.setDireccion(Objects.nonNull(persona.getNumeroVia())&&Objects.nonNull(viaTipoNombre)?viaTipoNombre.concat(" ").concat(persona.getNumeroVia()): viaTipoNombre);
+
+            persona.setDireccion(getFullDirectionFromCustomer(viaTipoNombre, additionalAddress2,
+                    additionalAddress3, addressExtra, persona).trim());
+
             return viaTipoNombre;
     }
 
-    private String fillAddress2(PersonaBO persona, CustomerBO customer,int j,boolean viaFull,String id, String viaTipoNombre){
-        if(Objects.nonNull(persona.getTipoVia())&&viaFull&&viaTipoNombre==null){
+    private String getFullDirectionFromCustomer(String viaTipoNombre,
+            StringBuilder additionalAddress2, StringBuilder additionalAddress3, StringBuilder addressExtra,
+            PersonaBO persona) {
+        String fullDirection = (Objects.nonNull(viaTipoNombre) ? viaTipoNombre.concat(" ") : "")
+                .concat(Objects.nonNull(persona.getNumeroVia()) ? persona.getNumeroVia().concat(" ") : "")
+                .concat(additionalAddress2.length() != 0 ? additionalAddress2.toString().concat(" ") : "")
+                .concat(additionalAddress3.length() != 0 ? additionalAddress3.toString().concat(" ") : "")
+                .concat(addressExtra.length() != 0 ? addressExtra.toString() : "");
+        return fullDirection;
+    }
+
+    private void fillAddress2(PersonaBO persona, CustomerBO customer,int j,boolean viaFull,String id, StringBuilder additionalAddress2, StringBuilder additionalAddress3){
+        if(Objects.nonNull(persona.getTipoVia())&&viaFull){
             Map<String, String> map = tipeViaList();
             for (String clave:map.keySet()) {
                 String valor = map.get(clave);
                 if (clave.equals(id)&&viaFull&&!valor.equals(persona.getTipoVia())){
-                    viaTipoNombre = valor+" "+customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                    String direction2 = valor+" "+customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
                             .getName();
+                    additionalAddress2.append(direction2);
                 }
             }
-            if(viaTipoNombre==null){
-                viaTipoNombre = fillAddress3(persona,customer,j,viaFull,id,viaTipoNombre);
-            }
+
         }
+
+        String direction3 = fillAddress3(persona,customer,j,id);
+        if(Objects.nonNull(direction3)){
+                additionalAddress3.append(direction3);
+        }
+
         if ("EXTERIOR_NUMBER".equals(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
                 .getGeographicGroupType().getId())) {
             persona.setNumeroVia(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
                     .getName());
         }
-        return viaTipoNombre;
 }
 
-private String fillAddress3(PersonaBO persona, CustomerBO customer,int j,boolean viaFull,String id, String viaTipoNombre){
+private String fillAddress3(PersonaBO persona, CustomerBO customer,int j,String id){
+    String address3 = null;
     Map<String, String> maps = tipeViaList2();
     for (String clave:maps.keySet()) {
         String valor = maps.get(clave);
-        if (clave.equals(id)&&viaFull&&!valor.equals(persona.getTipoVia())){
-            viaTipoNombre = valor+" "+customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
-                    .getName();
+        if (clave.equals(id)&&!valor.equals(persona.getTipoVia())){
+            address3 = valor+" "+customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                    .getName().concat(" ");
         }
     }
-    return viaTipoNombre;
+    return address3;
+}
+
+private void fillAddressExtra(StringBuilder addressExtra, CustomerBO customer,int j){
+    if ("BLOCK".equals(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+            .getGeographicGroupType().getId())) {
+        addressExtra.append(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                .getName()).append(" ");
+
+    }
+    if ("LOT".equals(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+            .getGeographicGroupType().getId())) {
+        addressExtra.append(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                .getName());
+    }
 }
 
 private Map<String, String> tipeViaList(){
