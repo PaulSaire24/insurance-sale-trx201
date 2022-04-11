@@ -122,6 +122,7 @@ public class MapperHelper {
     private static final String SUBJECT_EMAIL_HOME = "!Genial! Acabas de comprar tu Seguro Hogar Total con éxito";
     private static final String NONE = "none";
     private static final String PEN_CURRENCY = "S/";
+    private static final String USD_CURRENCY = "US$";
 
     private static final String RUC_ID = "RUC";
 
@@ -855,7 +856,7 @@ public class MapperHelper {
 
         PaymentAmountDTO paymentAmount = responseBody.getFirstInstallment().getPaymentAmount();
 
-        bodyData[11] = paymentAmount.getCurrency().concat(" ").concat(numberFormat.format(paymentAmount.getAmount()));
+        bodyData[11] = USD_CURRENCY.concat(" ").concat(numberFormat.format(paymentAmount.getAmount()));
         bodyData[12] = emissionDao.getPaymentFrequencyName();
         return bodyData;
     }
