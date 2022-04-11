@@ -292,6 +292,13 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		return emissionDao;
 	}
 
+	private String validateResponseQueryHomeRiskDirectionFields(Map<String, Object> responseQueryGetHomeRiskDirection) {
+		if(isEmpty(responseQueryGetHomeRiskDirection)) {
+			throw RBVDValidation.build(RBVDErrors.NON_EXISTENT_QUOTATION);
+		}
+
+		return (String) responseQueryGetHomeRiskDirection.get(HomeInsuranceProperty.FIELD_LEGAL_ADDRESS_DESC.getValue());
+	}
 
 	private void validateInsertion(int insertedRows, RBVDErrors error) {
 		if(insertedRows != 1) {
@@ -328,7 +335,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				break;
 			case INSURANCE_PRODUCT_TYPE_HOME:
 				Map<String, Object> responseQueryGetHomeInfo = pisdR021.executeGetHomeInfoForEmissionService(responseBody.getQuotationId());
-				email = this.mapperHelper.buildCreateEmailRequestHome(emissionDao, responseBody, policyNumber, customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetHomeInfo));
+				Map<String, Object> responseQueryGetHomeRiskDirection= pisdR021.executeGetHomeRiskDirection(responseBody.getQuotationId());
+				email = this.mapperHelper.buildCreateEmailRequestHome(emissionDao, responseBody, policyNumber, customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetHomeInfo),
+				validateResponseQueryHomeRiskDirectionFields(responseQueryGetHomeRiskDirection));
 				break;
 			default:
 				break;
