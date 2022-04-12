@@ -68,6 +68,7 @@ public class RBVDR211Test {
 	private Map<String, Object> firstRole;
 
 	private PolicyASO asoResponse;
+	private EmisionBO rimacResponse;
 
 	private CustomerListASO customerList;
 
@@ -112,7 +113,7 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_PORCENTAJE")).thenReturn("40");
 		
 		asoResponse = mockData.getEmisionASOResponse();
-
+		rimacResponse = mockData.getEmisionRimacResponse();
 		EmisionBO emision = new EmisionBO();
 		emision.setPayload(new PayloadEmisionBO());
 		when(this.mapperHelper.buildRequestBodyRimac(anyObject(), anyString(), anyString(), anyString(), anyString())).thenReturn(emision);
@@ -241,8 +242,6 @@ public class RBVDR211Test {
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
 
-		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
-
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
@@ -324,25 +323,28 @@ public class RBVDR211Test {
 	@Test
 	public void executeBusinessLogicEmissionHomeWithNonExistentQuotation() throws IOException{
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionHomeWithNonExistentQuotation...");
-
-		this.requestBody.getBank().getBranch().setId("7794");
-
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+		requestBody.setProductId("832");
+		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
+		this.requestBody.getBank().getBranch().setId("0057");
+		this.requestBody.setSaleChannelId("TM");
 		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
-
-		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
 
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		Map<String, Object>[] arguments = new Map[1];
+		Map<String, Object>[] arguments = new Map[2];
 		arguments[0] = new HashMap<>();
+		arguments[1] = new HashMap<>();
 
 		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
 
-		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
+		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[2]);
 
 		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
 
@@ -356,44 +358,18 @@ public class RBVDR211Test {
 
 		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
 
-		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
-
-		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
-
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-
-		assertNotNull(validation);
-		// If it's a digital sale, apx must set default code value to the agent and promoter objects.
-		assertEquals("026312", validation.getBusinessAgent().getId());
-		assertEquals("026364", validation.getPromoter().getId());
-
-		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
-
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(new Date());
-		calendar.add(Calendar.DAY_OF_MONTH, 1);
-
-		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
-		this.requestBody.getBank().getBranch().setId("0057");
-		this.requestBody.setSaleChannelId("BI");
-
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-
-		assertNotNull(validation);
-		//Now, APX sets isPaymentRequired value
-		assertFalse(validation.getFirstInstallment().getIsPaymentRequired());
-		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
-		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getPromoter().getId());
-
-		requestBody.setProductId("832");
+		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[2]);
 
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+
 		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(null);
 		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(null);
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
 
-		requestBody.setProductId("832");
+		asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0).getProduct().setId("ACCOUNT");
 		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
 		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
 		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
@@ -404,11 +380,10 @@ public class RBVDR211Test {
 		responseGetHomeInfoForEmissionService.put("FLOOR_NUMBER", new BigDecimal(3));
 		responseGetHomeInfoForEmissionService.put("EDIFICATION_LOAN_AMOUNT", new BigDecimal(111.1));
 		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
-
-		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
 		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
 		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(null);
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		PolicyDTO validation2 = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation2);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
 	}
 	
