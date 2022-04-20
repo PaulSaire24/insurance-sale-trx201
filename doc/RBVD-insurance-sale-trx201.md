@@ -145,8 +145,6 @@
 ## 6. Versiones del Componente:
 > En este apartado se detalla un historial de cambios o *changelog* por cada version implementada del recurso.
 
-- **Versión 0.4.10**: Se agrega una validación para determinar si se genera una alta diferida o no.
-- **Versión 0.4.11**: Enviando y guardando código de usuario como agente y promotor para canales auto-asistidos.
 - **Versión 0.4.12**: Se añade un dato particular al request del servicio de emisión de Rimac.
 - **Versión 0.5.1**: Se realiza el alta de un seguro con endoso de cesión de derechos.
-- **Versión 0.5.5**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
+- **Versión 0.5.6**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
