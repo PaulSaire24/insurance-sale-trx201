@@ -1276,7 +1276,7 @@ private Map<String, String> tipeViaList2() {
         contactDetailASO1.setContact(contactASO1);
         ContactASO contactASO2 = new ContactASO();
         contactASO2.setContactType("EMAIL");
-        contactASO2.setPhoneNumber("luis.estrada.huaman@bbva.com");
+        contactASO2.setAddress("luis.estrada.huaman@bbva.com");
         contactDetailASO2.setContact(contactASO2);
         contactDetailASOs.add(contactDetailASO1);
         contactDetailASOs.add(contactDetailASO2);
