@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.dto.insurance.utils.PISDValidation;
@@ -38,6 +39,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
+import com.bbva.rbvd.lib.r201.RBVDR201;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
@@ -189,6 +191,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				LOGGER.debug("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email not sent, something went wrong *****");
 			}
 
+			LOGGER.info("***** RBVDR211Impl - Gifole Service START *****");
+			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(responseBody);
+			
+			Integer gifoleResponse = this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
+
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole create status -> 1: OK , 0: NOT_OK {}", gifoleResponse);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Response: {}", responseBody);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy END *****");
 

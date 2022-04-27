@@ -5,6 +5,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 
 public interface RBVDR201 {
 
@@ -12,5 +13,5 @@ public interface RBVDR201 {
 	EmisionBO executePrePolicyEmissionService(EmisionBO requestBody, String quotationId, String traceId, String productId);
 	Integer executeCreateEmail(CreateEmailASO requestBody);
 	CustomerListASO executeGetCustomerInformation(String customerId);
-	
+	Integer executeGifoleEmisionService(GifoleInsuranceRequestASO requestBody);
 }

@@ -3,6 +3,7 @@ package com.bbva.rbvd.util;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.bo.DocumentTypeBO;
 import com.bbva.pisd.dto.insurance.bo.GenderBO;
 import com.bbva.pisd.dto.insurance.bo.GeographicGroupTypeBO;
@@ -92,6 +93,7 @@ public class MapperHelperTest {
         apxRequest.setCreationUser("creationUser");
         apxRequest.setUserAudit("userAudit");
         apxRequest.setSaleChannelId("BI");
+        apxRequest.setAap("13000001");
         asoResponse = mockData.getEmisionASOResponse();
         rimacResponse = mockData.getEmisionRimacResponse();
         customerList = mockDTO.getCustomerDataResponse();
@@ -1287,6 +1289,22 @@ public class MapperHelperTest {
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
         EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation4);
+    }
+
+    @Test
+    public void createGifoleRequest_OK() {
+        apxRequest.getValidityPeriod().setEndDate(new Date(2012, 01, 02));
+        apxRequest.setExternalPolicyNumber("501481");
+        apxRequest.setId("00110115304000510603");
+        GifoleInsuranceRequestASO repsonse = this.mapperHelper.createGifoleRequest(apxRequest);
+        assertNotNull(repsonse.getQuotation());
+        assertEquals(repsonse.getQuotation().getId(), apxRequest.getQuotationId());
+        assertEquals(repsonse.getChannel(), "13000001");
+        assertEquals(repsonse.getOperationType(), "INSURANCE_CREATION");
+        assertNotNull(repsonse.getValidityPeriod());
+        assertNotNull(repsonse.getInsurance());
+        assertEquals(repsonse.getInsurance().getId(), "00110115304000510603");
+        assertEquals(repsonse.getPolicyNumber(), "501481");
     }
 
 }

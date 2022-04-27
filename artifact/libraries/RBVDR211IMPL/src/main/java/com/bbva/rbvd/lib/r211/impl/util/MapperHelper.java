@@ -3,6 +3,18 @@ package com.bbva.rbvd.lib.r211.impl.util;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.BrandASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.ContactASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.ContactDetailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GoodASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GoodDetailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.InsuranceASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.ModelASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.PlanASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.ProductASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.QuotationASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.VehicleCirculationASO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
@@ -63,10 +75,13 @@ import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.google.gson.Gson;
 
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import oracle.net.ns.BreakNetException;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -125,6 +140,10 @@ public class MapperHelper {
     private static final String USD_CURRENCY = "US$";
 
     private static final String RUC_ID = "RUC";
+
+    private static final String INSURANCE_GIFOLE_VAL = "INSURANCE_CREATION";
+    private static final DateTimeZone DATE_TIME_ZONE = DateTimeZone.forID("America/Lima");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -1204,6 +1223,89 @@ private Map<String, String> tipeViaList2() {
     map.put("NOT_PROVIDED", "NP");
     return map;
 }
+
+    public GifoleInsuranceRequestASO createGifoleRequest(PolicyDTO responseBody){
+        GifoleInsuranceRequestASO gifoleResponse = new GifoleInsuranceRequestASO();
+        QuotationASO quotationASO = new QuotationASO();
+        quotationASO.setId(responseBody.getQuotationId());
+        gifoleResponse.setQuotation(quotationASO);
+        gifoleResponse.setChannel(responseBody.getAap());
+        gifoleResponse.setOperationType(INSURANCE_GIFOLE_VAL);
+        String startDate = responseBody.getValidityPeriod().getStartDate().toInstant()
+        .atOffset(ZoneOffset.UTC)
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+        String endDate = responseBody.getValidityPeriod().getEndDate().toInstant()
+        .atOffset(ZoneOffset.UTC)
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+        com.bbva.pisd.dto.insurance.aso.gifole.ValidityPeriodASO validityPeriodASO = new com.bbva.pisd.dto.insurance.aso.gifole.ValidityPeriodASO(startDate, endDate);
+        gifoleResponse.setValidityPeriod(validityPeriodASO);
+        InsuranceASO insuranceASO = new InsuranceASO();
+        insuranceASO.setId(responseBody.getId());
+        gifoleResponse.setInsurance(insuranceASO);
+        gifoleResponse.setPolicyNumber(responseBody.getExternalPolicyNumber());
+
+        //Mock data for gifole veh
+        ProductASO productASO = new ProductASO();
+        PlanASO planASO = new PlanASO();
+        planASO.setId("03");
+        planASO.setName("PLAN FULL COBERTURAS");
+        productASO.setPlan(planASO);
+        productASO.setId("830");
+        productASO.setName("SEGURO VEHICULAR BBVA");
+        gifoleResponse.setProduct(productASO);
+
+        com.bbva.pisd.dto.insurance.aso.gifole.HolderASO holderASO = new com.bbva.pisd.dto.insurance.aso.gifole.HolderASO();
+        holderASO.setIsBankCustomer(true);
+        holderASO.setIsDataTreatment(true);
+        holderASO.setFirstName("PIERO");
+        holderASO.setLastName("GUZMAN ALVARADO");
+        holderASO.setHasBankAccount(false);
+        holderASO.setHasCreditCard(false);
+        com.bbva.pisd.dto.insurance.aso.gifole.DocumentTypeASO documentTypeASO = new com.bbva.pisd.dto.insurance.aso.gifole.DocumentTypeASO();
+        documentTypeASO.setId("DNI");
+        com.bbva.pisd.dto.insurance.aso.gifole.IdentityDocumentASO identityDocumentASO = new com.bbva.pisd.dto.insurance.aso.gifole.IdentityDocumentASO();
+        identityDocumentASO.setDocumentType(documentTypeASO);
+        identityDocumentASO.setDocumentNumber("04040005");
+        holderASO.setIdentityDocument(identityDocumentASO);
+        List<ContactDetailASO> contactDetailASOs = new ArrayList<>();
+        ContactDetailASO contactDetailASO1 = new ContactDetailASO();
+        ContactDetailASO contactDetailASO2 = new ContactDetailASO();
+        ContactASO contactASO1 = new ContactASO();
+        contactASO1.setContactType("PHONE");
+        contactASO1.setPhoneNumber("993766790");
+        contactDetailASO1.setContact(contactASO1);
+        ContactASO contactASO2 = new ContactASO();
+        contactASO2.setContactType("EMAIL");
+        contactASO2.setPhoneNumber("luis.estrada.huaman@bbva.com");
+        contactDetailASO2.setContact(contactASO2);
+        contactDetailASOs.add(contactDetailASO1);
+        contactDetailASOs.add(contactDetailASO2);
+        holderASO.setContactDetails(contactDetailASOs);
+        gifoleResponse.setHolder(holderASO);
+
+        GoodDetailASO goodDetailASO = new GoodDetailASO();
+        goodDetailASO.setInsuranceType("VEHICLE");
+        goodDetailASO.setLicensePlate("RXX458");
+        ModelASO modelASO = new ModelASO();
+        BrandASO brandASO = new BrandASO();
+        brandASO.setId("181");
+        brandASO.setName("HONDA");
+        modelASO.setBrand(brandASO);
+        modelASO.setYear(new Long(160));
+        modelASO.setId("181003");
+        modelASO.setName("CIVIC");
+        goodDetailASO.setHasPowerSupplyConvertion(false);
+        VehicleCirculationASO vehicleCirculationASO = new VehicleCirculationASO();
+        vehicleCirculationASO.setId("URBAN_AREA");
+        vehicleCirculationASO.setName("LIMA");
+        goodDetailASO.setVehicleCirculation(vehicleCirculationASO);
+        
+        GoodASO goodASO = new GoodASO();
+        goodASO.setGoodDetail(goodDetailASO);
+        gifoleResponse.setGood(goodASO);
+
+        return gifoleResponse;
+    }
 
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;
