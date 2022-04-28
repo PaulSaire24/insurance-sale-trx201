@@ -196,7 +196,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			
 			Integer gifoleResponse = this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
 
-			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole create status -> 1: OK , 0: NOT_OK {}", gifoleResponse);
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole create status {}", gifoleResponse);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Response: {}", responseBody);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy END *****");
 

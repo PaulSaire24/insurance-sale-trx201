@@ -78,6 +78,7 @@ import com.google.gson.Gson;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +144,6 @@ public class MapperHelper {
 
     private static final String INSURANCE_GIFOLE_VAL = "INSURANCE_CREATION";
     private static final DateTimeZone DATE_TIME_ZONE = DateTimeZone.forID("America/Lima");
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -1230,6 +1230,8 @@ private Map<String, String> tipeViaList2() {
         quotationASO.setId(responseBody.getQuotationId());
         gifoleResponse.setQuotation(quotationASO);
         gifoleResponse.setChannel(responseBody.getAap());
+        DateTime currentDate = new DateTime(new Date(), DATE_TIME_ZONE);
+        gifoleResponse.setOperationDate(currentDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")));
         gifoleResponse.setOperationType(INSURANCE_GIFOLE_VAL);
         String startDate = responseBody.getValidityPeriod().getStartDate().toInstant()
         .atOffset(ZoneOffset.UTC)
@@ -1303,6 +1305,9 @@ private Map<String, String> tipeViaList2() {
         GoodASO goodASO = new GoodASO();
         goodASO.setGoodDetail(goodDetailASO);
         gifoleResponse.setGood(goodASO);
+
+        Gson log = new Gson();
+        LOGGER.info("GifoleResponse output {}", log.toJson(gifoleResponse));
 
         return gifoleResponse;
     }
