@@ -1224,7 +1224,7 @@ private Map<String, String> tipeViaList2() {
     return map;
 }
 
-    public GifoleInsuranceRequestASO createGifoleRequest(PolicyDTO responseBody){
+    public GifoleInsuranceRequestASO createGifoleRequest(PolicyDTO responseBody, CustomerListASO responseListCustomers){
         GifoleInsuranceRequestASO gifoleResponse = new GifoleInsuranceRequestASO();
         QuotationASO quotationASO = new QuotationASO();
         quotationASO.setId(responseBody.getQuotationId());
@@ -1246,65 +1246,57 @@ private Map<String, String> tipeViaList2() {
         gifoleResponse.setInsurance(insuranceASO);
         gifoleResponse.setPolicyNumber(responseBody.getExternalPolicyNumber());
 
-        //Mock data for gifole veh
         ProductASO productASO = new ProductASO();
         PlanASO planASO = new PlanASO();
-        planASO.setId("03");
-        planASO.setName("PLAN FULL COBERTURAS");
+        planASO.setId(responseBody.getProductPlan().getId());
+        planASO.setName(responseBody.getProductPlan().getDescription());
         productASO.setPlan(planASO);
-        productASO.setId("830");
-        productASO.setName("SEGURO VEHICULAR BBVA");
+        productASO.setId(responseBody.getProductId());
+        productASO.setName(responseBody.getProductDescription());
         gifoleResponse.setProduct(productASO);
 
         com.bbva.pisd.dto.insurance.aso.gifole.HolderASO holderASO = new com.bbva.pisd.dto.insurance.aso.gifole.HolderASO();
+        if(Objects.nonNull(responseListCustomers)) {
+            CustomerBO customer = responseListCustomers.getData().get(0);
+            holderASO.setFirstName(customer.getFirstName());
+            holderASO.setLastName(customer.getLastName().concat(" ").concat(customer.getSecondLastName()));
+        }else{
+            holderASO.setFirstName("");
+            holderASO.setLastName("");
+        }
+
         holderASO.setIsBankCustomer(true);
         holderASO.setIsDataTreatment(true);
-        holderASO.setFirstName("PIERO");
-        holderASO.setLastName("GUZMAN ALVARADO");
-        holderASO.setHasBankAccount(false);
-        holderASO.setHasCreditCard(false);
+
+        if(responseBody.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId().equals(CARD_PRODUCT_ID)){
+            holderASO.setHasCreditCard(true);
+            holderASO.setHasBankAccount(false);
+        }else{
+            holderASO.setHasBankAccount(true);
+            holderASO.setHasCreditCard(false);
+        }
+        
         com.bbva.pisd.dto.insurance.aso.gifole.DocumentTypeASO documentTypeASO = new com.bbva.pisd.dto.insurance.aso.gifole.DocumentTypeASO();
-        documentTypeASO.setId("DNI");
+        documentTypeASO.setId(responseBody.getHolder().getIdentityDocument().getDocumentType().getId());
         com.bbva.pisd.dto.insurance.aso.gifole.IdentityDocumentASO identityDocumentASO = new com.bbva.pisd.dto.insurance.aso.gifole.IdentityDocumentASO();
         identityDocumentASO.setDocumentType(documentTypeASO);
-        identityDocumentASO.setDocumentNumber("04040005");
+        identityDocumentASO.setDocumentNumber(responseBody.getHolder().getIdentityDocument().getDocumentNumber());
         holderASO.setIdentityDocument(identityDocumentASO);
         List<ContactDetailASO> contactDetailASOs = new ArrayList<>();
         ContactDetailASO contactDetailASO1 = new ContactDetailASO();
         ContactDetailASO contactDetailASO2 = new ContactDetailASO();
         ContactASO contactASO1 = new ContactASO();
-        contactASO1.setContactType("PHONE");
-        contactASO1.setPhoneNumber("993766790");
+        contactASO1.setContactType(PHONE_NUMBER_VALUE);
+        contactASO1.setPhoneNumber(responseBody.getHolder().getContactDetails().get(1).getContact().getPhoneNumber());
         contactDetailASO1.setContact(contactASO1);
         ContactASO contactASO2 = new ContactASO();
-        contactASO2.setContactType("EMAIL");
-        contactASO2.setAddress("luis.estrada.huaman@bbva.com");
+        contactASO2.setContactType(EMAIL_VALUE);
+        contactASO2.setAddress(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress());
         contactDetailASO2.setContact(contactASO2);
         contactDetailASOs.add(contactDetailASO1);
         contactDetailASOs.add(contactDetailASO2);
         holderASO.setContactDetails(contactDetailASOs);
         gifoleResponse.setHolder(holderASO);
-
-        GoodDetailASO goodDetailASO = new GoodDetailASO();
-        goodDetailASO.setInsuranceType("VEHICLE");
-        goodDetailASO.setLicensePlate("RXX458");
-        ModelASO modelASO = new ModelASO();
-        BrandASO brandASO = new BrandASO();
-        brandASO.setId("181");
-        brandASO.setName("HONDA");
-        modelASO.setBrand(brandASO);
-        modelASO.setYear(new Long(160));
-        modelASO.setId("181003");
-        modelASO.setName("CIVIC");
-        goodDetailASO.setHasPowerSupplyConvertion(false);
-        VehicleCirculationASO vehicleCirculationASO = new VehicleCirculationASO();
-        vehicleCirculationASO.setId("URBAN_AREA");
-        vehicleCirculationASO.setName("LIMA");
-        goodDetailASO.setVehicleCirculation(vehicleCirculationASO);
-        
-        GoodASO goodASO = new GoodASO();
-        goodASO.setGoodDetail(goodDetailASO);
-        gifoleResponse.setGood(goodASO);
 
         Gson log = new Gson();
         LOGGER.info("GifoleResponse output {}", log.toJson(gifoleResponse));

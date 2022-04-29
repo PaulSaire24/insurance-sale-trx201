@@ -278,8 +278,8 @@ public class RBVDR211Test {
 		assertEquals("026364", validation.getPromoter().getId());
 
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
-		when(mapperHelper.createGifoleRequest(anyObject())).thenReturn(new GifoleInsuranceRequestASO());
-		when(rbvdr201.executeGifoleEmisionService(anyObject())).thenReturn(1);
+		when(mapperHelper.createGifoleRequest(anyObject(), anyObject())).thenReturn(new GifoleInsuranceRequestASO());
+		when(rbvdr201.executeGifoleEmisionService(anyObject())).thenReturn(201);
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
 		calendar.add(Calendar.DAY_OF_MONTH, 1);

@@ -68,7 +68,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		String endosatarioRuc = "";
 		Double endosatarioPorcentaje = 0.0;
 
-		CustomerListASO customerList = new CustomerListASO();
+		CustomerListASO customerList = null;
 
 		try {
 
@@ -192,7 +192,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			LOGGER.info("***** RBVDR211Impl - Gifole Service START *****");
-			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(responseBody);
+			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(responseBody, customerList);
 			
 			Integer gifoleResponse = this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
 

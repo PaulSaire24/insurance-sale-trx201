@@ -1296,15 +1296,30 @@ public class MapperHelperTest {
         apxRequest.getValidityPeriod().setEndDate(new Date(2012, 01, 02));
         apxRequest.setExternalPolicyNumber("501481");
         apxRequest.setId("00110115304000510603");
-        GifoleInsuranceRequestASO repsonse = this.mapperHelper.createGifoleRequest(apxRequest);
-        assertNotNull(repsonse.getQuotation());
-        assertEquals(repsonse.getQuotation().getId(), apxRequest.getQuotationId());
-        assertEquals(repsonse.getChannel(), "13000001");
-        assertEquals(repsonse.getOperationType(), "INSURANCE_CREATION");
-        assertNotNull(repsonse.getValidityPeriod());
-        assertNotNull(repsonse.getInsurance());
-        assertEquals(repsonse.getInsurance().getId(), "00110115304000510603");
-        assertEquals(repsonse.getPolicyNumber(), "501481");
+        GifoleInsuranceRequestASO response1 = this.mapperHelper.createGifoleRequest(apxRequest, customerList);
+        assertNotNull(response1.getQuotation());
+        assertEquals(response1.getQuotation().getId(), apxRequest.getQuotationId());
+        assertEquals(response1.getChannel(), "13000001");
+        assertEquals(response1.getOperationType(), "INSURANCE_CREATION");
+        assertNotNull(response1.getValidityPeriod());
+        assertNotNull(response1.getInsurance());
+        assertEquals(response1.getInsurance().getId(), "00110115304000510603");
+        assertEquals(response1.getPolicyNumber(), "501481");
+        assertNotNull(response1.getProduct());
+        assertNotNull(response1.getHolder());
+
+        apxRequest.getPaymentMethod().getRelatedContracts().get(0).getProduct().setId("ACCOUNT");
+        GifoleInsuranceRequestASO response2 = this.mapperHelper.createGifoleRequest(apxRequest, null);
+        assertNotNull(response2.getQuotation());
+        assertEquals(response2.getQuotation().getId(), apxRequest.getQuotationId());
+        assertEquals(response2.getChannel(), "13000001");
+        assertEquals(response2.getOperationType(), "INSURANCE_CREATION");
+        assertNotNull(response2.getValidityPeriod());
+        assertNotNull(response2.getInsurance());
+        assertEquals(response2.getInsurance().getId(), "00110115304000510603");
+        assertEquals(response2.getPolicyNumber(), "501481");
+        assertNotNull(response2.getProduct());
+        assertNotNull(response2.getHolder());
     }
 
 }
