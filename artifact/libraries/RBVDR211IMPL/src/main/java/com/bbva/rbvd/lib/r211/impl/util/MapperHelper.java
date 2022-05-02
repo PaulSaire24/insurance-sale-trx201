@@ -1,19 +1,20 @@
 package com.bbva.rbvd.lib.r211.impl.util;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
+
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
-import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
 import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
 import com.bbva.rbvd.dto.insrncsale.aso.IdentityDocumentASO;
-import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
 import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
 import com.bbva.rbvd.dto.insrncsale.aso.PaymentAmountASO;
 import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
+
+import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
@@ -32,6 +33,8 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PromoterASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuranceCompanyASO;
+
+import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.FinanciamientoBO;
@@ -60,30 +63,37 @@ import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
+import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+
 import com.google.gson.Gson;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.List;
 import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-import static org.springframework.util.CollectionUtils.isEmpty;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 
 public class MapperHelper {
 
@@ -232,13 +242,13 @@ public class MapperHelper {
 
         requestAso.setParticipants(Collections.singletonList(participant));
 
-        if(Objects.nonNull(apxRequest.getBusinessAgent())) {
+        if(nonNull(apxRequest.getBusinessAgent())) {
             BusinessAgentASO businessAgent = new BusinessAgentASO();
             businessAgent.setId(apxRequest.getBusinessAgent().getId());
             requestAso.setBusinessAgent(businessAgent);
         }
 
-        if(Objects.nonNull(apxRequest.getPromoter())) {
+        if(nonNull(apxRequest.getPromoter())) {
             PromoterASO promoter = new PromoterASO();
             promoter.setId(apxRequest.getPromoter().getId());
             requestAso.setPromoter(promoter);
@@ -308,8 +318,8 @@ public class MapperHelper {
             ContactDetailDTO contactPhone = inspection.getContactDetails().stream().
                     filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(PHONE_NUMBER_VALUE)).findFirst().orElse(null);
 
-            contactoInspeccion.setCorreo( Objects.nonNull(contactEmail) ? contactEmail.getContact().getAddress() : null);
-            contactoInspeccion.setTelefono( Objects.nonNull(contactPhone) ? contactPhone.getContact().getPhoneNumber() : null);
+            contactoInspeccion.setCorreo( nonNull(contactEmail) ? contactEmail.getContact().getAddress() : null);
+            contactoInspeccion.setTelefono( nonNull(contactPhone) ? contactPhone.getContact().getPhoneNumber() : null);
 
             payload.setContactoInspeccion(contactoInspeccion);
             payload.setIndInspeccion(INDICATOR_INSPECTION_REQUIRED_VALUE);
@@ -321,7 +331,7 @@ public class MapperHelper {
         return rimacRequest;
     }
 
-    public InsuranceContractDAO buildInsuranceContract(EmisionBO rimacResponse, PolicyDTO apxRequest, RequiredFieldsEmissionDAO emissionDao, String asoId, Boolean isEndorsement) {
+    public InsuranceContractDAO buildInsuranceContract(PolicyDTO apxRequest, RequiredFieldsEmissionDAO emissionDao, String asoId, Boolean isEndorsement) {
         InsuranceContractDAO contractDao = new InsuranceContractDAO();
 
         contractDao.setEntityId(asoId.substring(0, 4));
@@ -334,30 +344,11 @@ public class MapperHelper {
         contractDao.setInsuranceModalityType(apxRequest.getProductPlan().getId());
         contractDao.setInsuranceCompanyId(new BigDecimal(apxRequest.getInsuranceCompany().getId()));
 
-        contractDao.setPolicyId(rimacResponse.getPayload().getNumeroPoliza());
-
-        String policyExpiration = generateCorrectDateFormat(rimacResponse.getPayload().getFechaFinal());
-
-        contractDao.setInsuranceContractEndDate(policyExpiration);
-
-        int numeroCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().size();
-        CuotaFinancimientoBO ultimaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
-                stream().filter(cuota -> cuota.getCuota() == numeroCuotas).findFirst().orElse(null);
-
-        if(Objects.nonNull(ultimaCuota)) {
-
-            contractDao.setLastInstallmentDate(generateCorrectDateFormat(ultimaCuota.getFechaVencimiento()));
-            contractDao.setPeriodNextPaymentDate((numeroCuotas == 1) ?
-                    policyExpiration : getNextPaymentDate(rimacResponse));
-        }
-
-        contractDao.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
-
-        if(Objects.nonNull(apxRequest.getBusinessAgent())) {
+        if(nonNull(apxRequest.getBusinessAgent())) {
             contractDao.setInsuranceManagerId(apxRequest.getBusinessAgent().getId());
         }
 
-        if(Objects.nonNull(apxRequest.getPromoter())) {
+        if(nonNull(apxRequest.getPromoter())) {
             contractDao.setInsurancePromoterId(apxRequest.getPromoter().getId());
         }
 
@@ -371,8 +362,6 @@ public class MapperHelper {
                 ? emissionDao.getContractDurationNumber().multiply(BigDecimal.valueOf(12))
                 : emissionDao.getContractDurationNumber());
 
-        contractDao.setInsurancePolicyEndDate(policyExpiration);
-
         contractDao.setCustomerId(apxRequest.getHolder().getId());
         contractDao.setDomicileContractId(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId());
         contractDao.setIssuedReceiptNumber(BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()));
@@ -385,6 +374,10 @@ public class MapperHelper {
         contractDao.setInstallmentPeriodFinalDate(currentDate);
         contractDao.setInsuredAmount(BigDecimal.valueOf(apxRequest.getInsuredAmount().getAmount()));
         contractDao.setCtrctDisputeStatusType(apxRequest.getSaleChannelId());
+
+        contractDao.setEndorsementPolicyIndType((isEndorsement) ? S_VALUE : N_VALUE);
+
+        contractDao.setInsrncCoContractStatusType("ERR");
         contractDao.setCreationUserId(apxRequest.getCreationUser());
         contractDao.setUserAuditId(apxRequest.getUserAudit());
         contractDao.setInsurPendingDebtIndType((apxRequest.getFirstInstallment().getIsPaymentRequired()) ? N_VALUE : S_VALUE);
@@ -396,12 +389,10 @@ public class MapperHelper {
                 ? BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1)
                 : BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()));
 
-                contractDao.setSettlementFixPremiumAmount(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()));
+        contractDao.setSettlementFixPremiumAmount(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()));
         contractDao.setAutomaticDebitIndicatorType((apxRequest.getPaymentMethod().getPaymentType().equals(PAYMENT_METHOD_VALUE))
                 ? S_VALUE : N_VALUE);
         contractDao.setBiometryTransactionId(apxRequest.getIdentityVerificationCode());
-        if(isEndorsement)
-            contractDao.setEndorsementPolicyIndType("S");
 
         return contractDao;
     }
@@ -410,7 +401,7 @@ public class MapperHelper {
         String nextPaymentDate = null;
         CuotaFinancimientoBO segundaCuota = rimacResponse.getPayload().getCuotasFinanciamiento().
                 stream().filter(cuota -> cuota.getCuota() == 2).findFirst().orElse(null);
-        if(Objects.nonNull(segundaCuota)) {
+        if(nonNull(segundaCuota)) {
             nextPaymentDate = generateCorrectDateFormat(segundaCuota.getFechaVencimiento());
         }
         return nextPaymentDate;
@@ -468,48 +459,18 @@ public class MapperHelper {
         return arguments;
     }
 
-    public Map<String, Object> createSaveEndorsementArguments(InsuranceContractDAO contractDao, String endosatarioRuc, Double endosatarioPorcentaje) {
-        Map<String, Object> arguments = new HashMap<>();
-        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), contractDao.getEntityId());
-        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), contractDao.getBranchId());
-        arguments.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), contractDao.getIntAccountId());
-        arguments.put(RBVDProperties.FIELD_DOCUMENT_TYPE_ID.getValue(), "R");
-        arguments.put(RBVDProperties.FIELD_DOCUMENT_ID.getValue(), endosatarioRuc);
-        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_SEQUENCE_NUMBER.getValue(), 1);
-        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), contractDao.getPolicyId());
-        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_EFF_START_DATE.getValue(), contractDao.getInsuranceContractStartDate());
-        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_EFF_END_DATE.getValue(), contractDao.getInsuranceContractEndDate());
-        arguments.put(RBVDProperties.FIELD_POLICY_ENDORSEMENT_PER.getValue(), endosatarioPorcentaje);
-        arguments.put(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue(), "01");
-        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), "SYSTEM");
-        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), "SYSTEM");
-
-        return arguments;
-    }
-
-    public List<InsuranceCtrReceiptsDAO> buildInsuranceCtrReceipt(PolicyASO asoResponse, EmisionBO rimacResponse, PolicyDTO requestBody) {
-        List<InsuranceCtrReceiptsDAO> receiptList = new ArrayList<>();
-
+    public InsuranceCtrReceiptsDAO getFirstReceiptInformation(PolicyASO asoResponse, PolicyDTO requestBody) {
         InsuranceCtrReceiptsDAO firstReceipt = new InsuranceCtrReceiptsDAO();
         firstReceipt.setEntityId(asoResponse.getData().getId().substring(0, 4));
         firstReceipt.setBranchId(asoResponse.getData().getId().substring(4, 8));
         firstReceipt.setIntAccountId(asoResponse.getData().getId().substring(10));
-        firstReceipt.setInsuranceCompanyId(new BigDecimal(requestBody.getInsuranceCompany().getId()));
+        firstReceipt.setPolicyReceiptId(BigDecimal.ONE);
         firstReceipt.setPremiumPaymentReceiptAmount(BigDecimal.valueOf(requestBody.getFirstInstallment().getPaymentAmount().getAmount()));
-
-        if(Objects.nonNull(asoResponse.getData().getFirstInstallment().getExchangeRate())) {
-            firstReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(asoResponse.getData()
-                    .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()));
-            firstReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(asoResponse.getData()
-                    .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()));
-        } else {
-            firstReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(0));
-            firstReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(0));
-        }
-
-        if(asoResponse.getData().getFirstInstallment().getOperationNumber().length() >= 11) {
-            firstReceipt.setPremiumChargeOperationId(asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
-        }
+        firstReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(asoResponse.getData()
+                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()));
+        firstReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(asoResponse.getData()
+                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()));
+        firstReceipt.setPremiumChargeOperationId(asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
         firstReceipt.setCurrencyId(requestBody.getFirstInstallment().getPaymentAmount().getCurrency());
 
         if(requestBody.getFirstInstallment().getIsPaymentRequired()) {
@@ -531,6 +492,10 @@ public class MapperHelper {
 
         firstReceipt.setReceiptStartDate(RECEIPT_DEFAULT_DATE_VALUE);
         firstReceipt.setReceiptEndDate(RECEIPT_DEFAULT_DATE_VALUE);
+
+        LocalDate expirationDate = convertDateToLocalDate(requestBody.getValidityPeriod().getStartDate());
+        firstReceipt.setReceiptExpirationDate(generateCorrectDateFormat(expirationDate));
+
         firstReceipt.setReceiptCollectionStatusType(COLLECTION_STATUS_FIRST_RECEIPT_VALUE);
         firstReceipt.setInsuranceCollectionMoveId(asoResponse.getData().getFirstInstallment().getTransactionNumber());
         firstReceipt.setPaymentMethodType(requestBody.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId().
@@ -543,23 +508,73 @@ public class MapperHelper {
         firstReceipt.setFixPremiumAmount(BigDecimal.valueOf(requestBody.getFirstInstallment().getPaymentAmount().getAmount()));
         firstReceipt.setSettlementFixPremiumAmount(BigDecimal.valueOf(requestBody.getTotalAmount().getAmount()));
         firstReceipt.setLastChangeBranchId(requestBody.getBank().getBranch().getId());
+        firstReceipt.setInsuranceCompanyId(new BigDecimal(requestBody.getInsuranceCompany().getId()));
         firstReceipt.setGlBranchId(asoResponse.getData().getId().substring(4, 8));
+        return firstReceipt;
+    }
 
-        CuotaFinancimientoBO primeraCuota = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
-                filter(cuota -> cuota.getCuota() == 1).findFirst().orElse(null);
-        if(Objects.nonNull(primeraCuota)) {
-            firstReceipt.setPolicyReceiptId(BigDecimal.valueOf(primeraCuota.getCuota()));
-            firstReceipt.setReceiptExpirationDate(generateCorrectDateFormat(primeraCuota.getFechaVencimiento()));
+    public Map<String, Object> createSaveEndorsementArguments(InsuranceContractDAO contractDao, String endosatarioRuc, Double endosatarioPorcentaje) {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), contractDao.getEntityId());
+        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), contractDao.getBranchId());
+        arguments.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), contractDao.getIntAccountId());
+        arguments.put(RBVDProperties.FIELD_DOCUMENT_TYPE_ID.getValue(), "R");
+        arguments.put(RBVDProperties.FIELD_DOCUMENT_ID.getValue(), endosatarioRuc);
+        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_SEQUENCE_NUMBER.getValue(), 1);
+        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), contractDao.getPolicyId());
+        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_EFF_START_DATE.getValue(), contractDao.getInsuranceContractStartDate());
+        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_EFF_END_DATE.getValue(), contractDao.getInsuranceContractEndDate());
+        arguments.put(RBVDProperties.FIELD_POLICY_ENDORSEMENT_PER.getValue(), endosatarioPorcentaje);
+        arguments.put(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue(), "01");
+        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), "SYSTEM");
+        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), "SYSTEM");
+
+        return arguments;
+    }
+
+    public Map<String, Object> getRimacContractInformation(EmisionBO rimacResponse, String contractNumber) {
+        InsuranceContractDAO contractDAO = new InsuranceContractDAO();
+        contractDAO.setPolicyId(rimacResponse.getPayload().getNumeroPoliza());
+
+        String policyExpiration = generateCorrectDateFormat(rimacResponse.getPayload().getFechaFinal());
+
+        contractDAO.setInsuranceContractEndDate(policyExpiration);
+        contractDAO.setInsurancePolicyEndDate(policyExpiration);
+
+        int numberOfInstallments = rimacResponse.getPayload().getCuotasFinanciamiento().size();
+        CuotaFinancimientoBO lastInstallment = rimacResponse.getPayload().getCuotasFinanciamiento().
+                stream().filter(installment -> numberOfInstallments == installment.getCuota()).findFirst().orElse(null);
+
+        if(nonNull(lastInstallment)) {
+            contractDAO.setLastInstallmentDate(generateCorrectDateFormat(lastInstallment.getFechaVencimiento()));
         }
 
-        receiptList.add(firstReceipt);
+        contractDAO.setPeriodNextPaymentDate((numberOfInstallments == 1) ? policyExpiration : getNextPaymentDate(rimacResponse));
+        contractDAO.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
+
+        Map<String, Object> rimacContractInformation = new HashMap<>();
+        rimacContractInformation.put(RBVDProperties.FIELD_POLICY_ID.getValue(), contractDAO.getPolicyId());
+        rimacContractInformation.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue(), contractDAO.getInsuranceContractEndDate());
+        rimacContractInformation.put(RBVDProperties.FIELD_INSURANCE_POLICY_END_DATE.getValue(), contractDAO.getInsurancePolicyEndDate());
+        rimacContractInformation.put(RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue(), contractDAO.getLastInstallmentDate());
+        rimacContractInformation.put(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue(), contractDAO.getPeriodNextPaymentDate());
+        rimacContractInformation.put(RBVDProperties.FIELD_INSRNC_CO_CONTRACT_STATUS_TYPE.getValue(), contractDAO.getInsrncCoContractStatusType());
+        rimacContractInformation.put(RBVDProperties.FIELD_INSURANCE_COMPANY_PRODUCT_ID.getValue(), contractDAO.getInsuranceCompanyProductId());
+
+        rimacContractInformation.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), contractNumber.substring(0, 4));
+        rimacContractInformation.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(), contractNumber.substring(4, 8));
+        rimacContractInformation.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), contractNumber.substring(10));
+
+        return rimacContractInformation;
+    }
+
+    public List<InsuranceCtrReceiptsDAO> buildNextInsuranceCtrReceipt(InsuranceCtrReceiptsDAO firstReceiptInformation, EmisionBO rimacResponse) {
+        List<InsuranceCtrReceiptsDAO> receiptList = new ArrayList<>();
 
         List<CuotaFinancimientoBO> siguientesCuotas = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
                 filter(cuota -> cuota.getCuota() != 1).collect(Collectors.toList());
 
-        if(!isEmpty(siguientesCuotas)) {
-            siguientesCuotas.forEach(cuota -> receiptList.add(createNextReceipt(firstReceipt, cuota)));
-        }
+        siguientesCuotas.forEach(cuota -> receiptList.add(createNextReceipt(firstReceiptInformation, cuota)));
 
         return receiptList;
     }
@@ -591,6 +606,7 @@ public class MapperHelper {
         nextReceipt.setManagementBranchId(firstReceipt.getManagementBranchId());
         nextReceipt.setFixPremiumAmount(firstReceipt.getFixPremiumAmount());
         nextReceipt.setSettlementFixPremiumAmount(BigDecimal.valueOf(0));
+        nextReceipt.setLastChangeBranchId(firstReceipt.getLastChangeBranchId());
         nextReceipt.setGlBranchId(firstReceipt.getGlBranchId());
 
         return nextReceipt;
@@ -604,7 +620,7 @@ public class MapperHelper {
         return receiptsArguments;
     }
 
-    private Map<String, Object> createReceipt(InsuranceCtrReceiptsDAO receiptDao) {
+    public Map<String, Object> createReceipt(InsuranceCtrReceiptsDAO receiptDao) {
         Map<String, Object> receiptArguments = new HashMap<>();
 
         receiptArguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), receiptDao.getEntityId());
@@ -730,8 +746,6 @@ public class MapperHelper {
 
         responseBody.setOperationDate(data.getOperationDate());
 
-        responseBody.getValidityPeriod().setEndDate(convertLocaldateToDate(rimacResponse.getPayload().getFechaFinal()));
-
         responseBody.getInstallmentPlan().getPeriod().setName(requiredFields.getPaymentFrequencyName());
 
         int progressiveId = 0;
@@ -773,11 +787,8 @@ public class MapperHelper {
         }
 
         responseBody.getInsuranceCompany().setName(data.getInsuranceCompany().getName());
-        responseBody.getInsuranceCompany().setProductId(rimacResponse.getPayload().getCodProducto());
 
         responseBody.setExternalQuotationId(requiredFields.getInsuranceCompanyQuotaId());
-
-        responseBody.setExternalPolicyNumber(rimacResponse.getPayload().getNumeroPoliza());
 
         QuotationStatusDTO status = new QuotationStatusDTO();
         status.setId(this.applicationConfigurationService.getProperty(data.getStatus().getDescription()));
@@ -787,6 +798,15 @@ public class MapperHelper {
 
         responseBody.getHolder().getIdentityDocument().setDocumentNumber(responseBody.getHolder().getIdentityDocument().getNumber());
         responseBody.getHolder().getIdentityDocument().setNumber(null);
+
+        if(nonNull(rimacResponse)) {
+            responseBody.getValidityPeriod().setEndDate(convertLocaldateToDate(rimacResponse.getPayload().getFechaFinal()));
+            responseBody.getInsuranceCompany().setProductId(rimacResponse.getPayload().getCodProducto());
+            responseBody.setExternalPolicyNumber(rimacResponse.getPayload().getNumeroPoliza());
+        } else {
+            responseBody.getValidityPeriod().setEndDate(responseBody.getInstallmentPlan().getMaturityDate());
+            responseBody.getInsuranceCompany().setProductId("");
+        }
 
     }
 
@@ -841,7 +861,7 @@ public class MapperHelper {
     private String[] getMailBodyDataVeh(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber) {
         String[] bodyData = new String[13];
         bodyData[0] = "";
-        bodyData[1] = Objects.nonNull(emissionDao.getVehicleLicenseId()) ? emissionDao.getVehicleLicenseId() : "EN TRAMITE";
+        bodyData[1] = nonNull(emissionDao.getVehicleLicenseId()) ? emissionDao.getVehicleLicenseId() : "EN TRAMITE";
         bodyData[2] = emissionDao.getVehicleBrandName();
         bodyData[3] = emissionDao.getVehicleModelName();
         bodyData[4] = emissionDao.getVehicleYearId();
@@ -892,8 +912,8 @@ public class MapperHelper {
         bodyData[8] = PEN_CURRENCY;
         Locale locale = new Locale ("en", "UK");
         NumberFormat numberFormat = NumberFormat.getInstance (locale);
-        bodyData[9] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
-        bodyData[11] = Objects.nonNull(homeInfo.getHousingAssetsLoanAmount()) ? numberFormat.format(homeInfo.getHousingAssetsLoanAmount()) : "";
+        bodyData[9] = nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
+        bodyData[11] = nonNull(homeInfo.getHousingAssetsLoanAmount()) ? numberFormat.format(homeInfo.getHousingAssetsLoanAmount()) : "";
         bodyData[12] = getContractNumber(responseBody.getId());
         bodyData[13] = policyNumber;
         bodyData[14] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
@@ -906,7 +926,7 @@ public class MapperHelper {
 
     private String setName(CustomerListASO responseListCustomers){
         StringBuilder name = new StringBuilder();
-        if(Objects.nonNull(responseListCustomers)) {
+        if(nonNull(responseListCustomers)) {
             name.append(responseListCustomers.getData().get(0).getFirstName()).append(" ").append(responseListCustomers.getData().get(0).getLastName()).append(" ")
                     .append(responseListCustomers.getData().get(0).getSecondLastName()).toString();
             return validateSN(name.toString());
@@ -1005,7 +1025,7 @@ public class MapperHelper {
 		persona.setApeMaterno(customer.getSecondLastName());
 		persona.setNombres(customer.getFirstName());
 		persona.setFechaNacimiento(customer.getBirthData().getBirthDate());
-        if(Objects.nonNull(customer.getGender())) persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
+        if(nonNull(customer.getGender())) persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
 		persona.setCorreoElectronico((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()));
 		persona.setCelular((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()));
 
@@ -1050,7 +1070,7 @@ public class MapperHelper {
     }
 
     private String validateSN(String name) {
-        if(Objects.isNull(name) || "null".equals(name) || " ".equals(name)){
+        if(isNull(name) || "null".equals(name) || " ".equals(name)){
             return "N/A";
         }else{
             name = name.replace("#","Ñ");
@@ -1099,8 +1119,8 @@ public class MapperHelper {
     private String getFullDirectionFromCustomer(String viaTipoNombre,
             StringBuilder additionalAddress2, StringBuilder additionalAddress3, StringBuilder addressExtra,
             PersonaBO persona) {
-        String fullDirection = (Objects.nonNull(viaTipoNombre) ? viaTipoNombre.concat(" ") : "")
-                .concat(Objects.nonNull(persona.getNumeroVia()) ? persona.getNumeroVia().concat(" ") : "")
+        String fullDirection = (nonNull(viaTipoNombre) ? viaTipoNombre.concat(" ") : "")
+                .concat(nonNull(persona.getNumeroVia()) ? persona.getNumeroVia().concat(" ") : "")
                 .concat(additionalAddress2.length() != 0 ? additionalAddress2.toString().concat(" ") : "")
                 .concat(additionalAddress3.length() != 0 ? additionalAddress3.toString().concat(" ") : "")
                 .concat(addressExtra.length() != 0 ? addressExtra.toString() : "");
@@ -1108,7 +1128,7 @@ public class MapperHelper {
     }
 
     private void fillAddress2(PersonaBO persona, CustomerBO customer,int j,boolean viaFull,String id, StringBuilder additionalAddress2, StringBuilder additionalAddress3){
-        if(Objects.nonNull(persona.getTipoVia())&&viaFull){
+        if(nonNull(persona.getTipoVia())&&viaFull){
             Map<String, String> map = tipeViaList();
             for (String clave:map.keySet()) {
                 String valor = map.get(clave);
@@ -1122,7 +1142,7 @@ public class MapperHelper {
         }
 
         String direction3 = fillAddress3(persona,customer,j,id);
-        if(Objects.nonNull(direction3)){
+        if(nonNull(direction3)){
                 additionalAddress3.append(direction3);
         }
 
@@ -1131,79 +1151,79 @@ public class MapperHelper {
             persona.setNumeroVia(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
                     .getName());
         }
-}
+    }
 
-private String fillAddress3(PersonaBO persona, CustomerBO customer,int j,String id){
-    String address3 = null;
-    Map<String, String> maps = tipeViaList2();
-    for (String clave:maps.keySet()) {
-        String valor = maps.get(clave);
-        if (clave.equals(id)&&!valor.equals(persona.getTipoVia())){
-            address3 = valor+" "+customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
-                    .getName().concat(" ");
+    private String fillAddress3(PersonaBO persona, CustomerBO customer,int j,String id){
+        String address3 = null;
+        Map<String, String> maps = tipeViaList2();
+        for (String clave:maps.keySet()) {
+            String valor = maps.get(clave);
+            if (clave.equals(id)&&!valor.equals(persona.getTipoVia())){
+                address3 = valor+" "+customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                        .getName().concat(" ");
+            }
+        }
+        return address3;
+    }
+
+    private void fillAddressExtra(StringBuilder addressExtra, CustomerBO customer,int j){
+        if ("BLOCK".equals(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                .getGeographicGroupType().getId())) {
+            addressExtra.append(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                    .getName()).append(" ");
+
+        }
+        if ("LOT".equals(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                .getGeographicGroupType().getId())) {
+            addressExtra.append(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                    .getName());
         }
     }
-    return address3;
-}
 
-private void fillAddressExtra(StringBuilder addressExtra, CustomerBO customer,int j){
-    if ("BLOCK".equals(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
-            .getGeographicGroupType().getId())) {
-        addressExtra.append(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
-                .getName()).append(" ");
-
+    private Map<String, String> tipeViaList(){
+        Map<String, String> map = new HashMap<>();
+        map.put("ALAMEDA", "ALM");
+        map.put("AVENUE", "AV.");
+        map.put("STREET", "CAL");
+        map.put("MALL", "CC.");
+        map.put("ROAD", "CRT");
+        map.put("SHOPPING_ARCADE", "GAL");
+        map.put("JIRON", "JR.");
+        map.put("JETTY", "MAL");
+        map.put("OVAL", "OVA");
+        map.put("PEDESTRIAN_WALK", "PAS");
+        map.put("SQUARE", "PLZ");
+        map.put("PARK", "PQE");
+        map.put("PROLONGATION", "PRL");
+        map.put("PASSAGE", "PSJ");
+        map.put("BRIDGE", "PTE");
+        map.put("DESCENT", "BAJ");
+        map.put("PORTAL", "POR");
+        map.put("GROUP", "AGR");
+        map.put("AAHH", "AHH");
+        map.put("HOUSING_COMPLEX", "CHB");
+        map.put("HOUSING_COOPERATIVE", "COV");
+        map.put("STAGE", "ETP");
+        map.put("SHANTYTOWN", "PJJ");
+        map.put("NEIGHBORHOOD", "SEC");
+        map.put("URBANIZATION", "URB");
+        map.put("NEIGHBORHOOD_UNIT", "UV.");
+        map.put("ZONE", "ZNA");
+        map.put("ASSOCIATION", "ASC");
+        map.put("INDIGENOUS_COMMUNITY", "COM");
+        map.put("PEASANT_COMMUNITY", "CAM");
+        map.put("FUNDO", "FUN");
+        map.put("MINING_CAMP", "MIN");
+        map.put("RESIDENTIAL", "RES");
+        return map;
     }
-    if ("LOT".equals(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
-            .getGeographicGroupType().getId())) {
-        addressExtra.append(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
-                .getName());
+
+    private Map<String, String> tipeViaList2() {
+        Map<String, String> map = new HashMap<>();
+        map.put("UNCATEGORIZED", "NA");
+        map.put("NOT_PROVIDED", "NP");
+        return map;
     }
-}
-
-private Map<String, String> tipeViaList(){
-    Map<String, String> map = new HashMap<>();
-    map.put("ALAMEDA", "ALM");
-    map.put("AVENUE", "AV.");
-    map.put("STREET", "CAL");
-    map.put("MALL", "CC.");
-    map.put("ROAD", "CRT");
-    map.put("SHOPPING_ARCADE", "GAL");
-    map.put("JIRON", "JR.");
-    map.put("JETTY", "MAL");
-    map.put("OVAL", "OVA");
-    map.put("PEDESTRIAN_WALK", "PAS");
-    map.put("SQUARE", "PLZ");
-    map.put("PARK", "PQE");
-    map.put("PROLONGATION", "PRL");
-    map.put("PASSAGE", "PSJ");
-    map.put("BRIDGE", "PTE");
-    map.put("DESCENT", "BAJ");
-    map.put("PORTAL", "POR");
-    map.put("GROUP", "AGR");
-    map.put("AAHH", "AHH");
-    map.put("HOUSING_COMPLEX", "CHB");
-    map.put("HOUSING_COOPERATIVE", "COV");
-    map.put("STAGE", "ETP");
-    map.put("SHANTYTOWN", "PJJ");
-    map.put("NEIGHBORHOOD", "SEC");
-    map.put("URBANIZATION", "URB");
-    map.put("NEIGHBORHOOD_UNIT", "UV.");
-    map.put("ZONE", "ZNA");
-    map.put("ASSOCIATION", "ASC");
-    map.put("INDIGENOUS_COMMUNITY", "COM");
-    map.put("PEASANT_COMMUNITY", "CAM");
-    map.put("FUNDO", "FUN");
-    map.put("MINING_CAMP", "MIN");
-    map.put("RESIDENTIAL", "RES");
-    return map;
-}
-
-private Map<String, String> tipeViaList2() {
-    Map<String, String> map = new HashMap<>();
-    map.put("UNCATEGORIZED", "NA");
-    map.put("NOT_PROVIDED", "NP");
-    return map;
-}
 
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;

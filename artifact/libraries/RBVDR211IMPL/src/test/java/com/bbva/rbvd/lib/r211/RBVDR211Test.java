@@ -148,8 +148,8 @@ public class RBVDR211Test {
 	}
 
 	@Test
-	public void executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError() {
-		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError...");
+	public void executeBusinessLogicEmissionPrePolicyWithFirstReceiptInsertionError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithFirstReceiptInsertionError...");
 
 		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
@@ -157,12 +157,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
-
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
-
-		when(pisdR012.executeSaveReceipts(any())).thenReturn(null);
+		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(-1);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -180,12 +175,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
-
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
-
-		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
+		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(1);
 
 		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(-1);
 
@@ -205,12 +195,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
-
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
-
-		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
+		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(1);
 
 		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
 
@@ -221,6 +206,9 @@ public class RBVDR211Test {
 		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
 
 		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
+
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
 
 		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
 
@@ -233,25 +221,16 @@ public class RBVDR211Test {
 	}
 
 	@Test
-	public void executeBusinessLogicEmissionPrePolicyOK() throws IOException {
-		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyOK...");
-
-		this.requestBody.getBank().getBranch().setId("7794");
+	public void executeBusinessLogicEmissionPrePolicyWithEndorsementInsertionError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithEndorsementInsertionError...");
 
 		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
 
-		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
-
 		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
-
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
-
-		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
+		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(1);
 
 		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
 
@@ -263,38 +242,262 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
 
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
+
 		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
 
 		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
+
+		ParticipantDTO secondParticipant = new ParticipantDTO();
+
+		IdentityDocumentDTO document = new IdentityDocumentDTO();
+
+		DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+		tipoDocumento.setId("RUC");
+
+		document.setDocumentType(tipoDocumento);
+		secondParticipant.setIdentityDocument(document);
+
+		secondParticipant.setBenefitPercentage(0.0d);
+
+		ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
+		tipoParticipante.setId("ENDORSEE");
+
+		secondParticipant.setParticipantType(tipoParticipante);
+
+		requestBody.getParticipants().add(secondParticipant);
+
+		when(pisdR012.executeSaveContractEndoserment(anyMap())).thenReturn(-1);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithContractUpdateError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithContractUpdateError...");
+
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
+
+		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
+
+		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
+
+		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(1);
+
+		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
+
+		when(firstRole.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
+
+		when(roles.get(0)).thenReturn(firstRole);
+
+		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
+
+		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
+
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
+
+		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
+
+		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
+
+		ParticipantDTO secondParticipant = new ParticipantDTO();
+
+		IdentityDocumentDTO document = new IdentityDocumentDTO();
+
+		DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+		tipoDocumento.setId("RUC");
+
+		document.setDocumentType(tipoDocumento);
+		secondParticipant.setIdentityDocument(document);
+
+		secondParticipant.setBenefitPercentage(0.0d);
+
+		ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
+		tipoParticipante.setId("ENDORSEE");
+
+		secondParticipant.setParticipantType(tipoParticipante);
+
+		requestBody.getParticipants().add(secondParticipant);
+
+		when(pisdR012.executeSaveContractEndoserment(anyMap())).thenReturn(1);
+
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
+
+		when(pisdR012.executeUpdateContract(anyMap())).thenReturn(-1);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError...");
+
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
+
+		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
+
+		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
+
+		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(1);
+
+		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
+
+		when(firstRole.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
+
+		when(roles.get(0)).thenReturn(firstRole);
+
+		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
+
+		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
+
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
+
+		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
+
+		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
+
+		ParticipantDTO secondParticipant = new ParticipantDTO();
+
+		IdentityDocumentDTO document = new IdentityDocumentDTO();
+
+		DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+		tipoDocumento.setId("RUC");
+
+		document.setDocumentType(tipoDocumento);
+		secondParticipant.setIdentityDocument(document);
+
+		secondParticipant.setBenefitPercentage(0.0d);
+
+		ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
+		tipoParticipante.setId("ENDORSEE");
+
+		secondParticipant.setParticipantType(tipoParticipante);
+
+		requestBody.getParticipants().add(secondParticipant);
+
+		when(pisdR012.executeSaveContractEndoserment(anyMap())).thenReturn(1);
+
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
+
+		when(pisdR012.executeUpdateContract(anyMap())).thenReturn(1);
+
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
+
+		when(pisdR012.executeSaveReceipts(any())).thenReturn(null);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithVehicularProductOK() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithVehicularProductOK...");
+
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
+
+		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
+
+		ParticipantDTO secondParticipant = new ParticipantDTO();
+
+		IdentityDocumentDTO document = new IdentityDocumentDTO();
+
+		DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+		tipoDocumento.setId("RUC");
+
+		document.setDocumentType(tipoDocumento);
+		secondParticipant.setIdentityDocument(document);
+
+		secondParticipant.setBenefitPercentage(0.0d);
+
+		ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
+		tipoParticipante.setId("ENDORSEE");
+
+		secondParticipant.setParticipantType(tipoParticipante);
+
+		requestBody.getParticipants().add(secondParticipant);
+
+		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
+
+		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(1);
+
+		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
+
+		when(firstRole.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
+
+		when(roles.get(0)).thenReturn(firstRole);
+
+		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
+
+		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
+
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
+
+		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
+
+		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
+
+		when(pisdR012.executeSaveContractEndoserment(anyMap())).thenReturn(1);
+
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
+
+		when(pisdR012.executeUpdateContract(anyMap())).thenReturn(1);
+
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
+
+		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
 
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
-		// If it's a digital sale, apx must set default code value to the agent and promoter objects.
-		assertEquals("026312", validation.getBusinessAgent().getId());
-		assertEquals("026364", validation.getPromoter().getId());
+	}
 
-		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithHomeProductOK() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithHomeProductOK...");
 
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(new Date());
-		calendar.add(Calendar.DAY_OF_MONTH, 1);
+		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
 
-		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
-		this.requestBody.getBank().getBranch().setId("0057");
-		this.requestBody.setSaleChannelId("BI");
+		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
 
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
 
-		assertNotNull(validation);
-		//Now, APX sets isPaymentRequired value
-		assertFalse(validation.getFirstInstallment().getIsPaymentRequired());
-		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
-		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getPromoter().getId());
+		when(pisdR012.executeSaveFirstReceipt(anyMap())).thenReturn(1);
+
+		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
+
+		when(firstRole.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
+
+		when(roles.get(0)).thenReturn(firstRole);
+
+		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
+
+		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
+
+		Map<String, Object>[] arguments = new Map[1];
+		arguments[0] = new HashMap<>();
+
+		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
+
+		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
 
 		requestBody.setProductId("832");
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+
 		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
 		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
 		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
@@ -308,155 +511,15 @@ public class RBVDR211Test {
 
 		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
 		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
-		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+
 		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
+
 		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(responseGetHomeRiskDirectionService);
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		//Rimac new Products fork
-		assertNotNull(validation);
 
-		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(new CustomerListASO());
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNull(validation);
-	}
+		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(500);
 
-	@Test
-	public void executeBusinessLogicEmissionHomeWithNonExistentQuotation() throws IOException{
-		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionHomeWithNonExistentQuotation...");
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(new Date());
-		calendar.add(Calendar.DAY_OF_MONTH, 1);
-		requestBody.setProductId("832");
-		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
-		this.requestBody.getBank().getBranch().setId("0057");
-		this.requestBody.setSaleChannelId("TM");
-		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
-
-		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
-
-		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
-
-		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
-
-		Map<String, Object>[] arguments = new Map[2];
-		arguments[0] = new HashMap<>();
-		arguments[1] = new HashMap<>();
-
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
-
-		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[2]);
-
-		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
-
-		when(firstRole.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
-
-		when(roles.get(0)).thenReturn(firstRole);
-
-		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
-
-		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
-
-		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
-
-		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[2]);
-
-		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
-
-		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(null);
-		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(null);
-		
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
 
-		asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0).getProduct().setId("ACCOUNT");
-		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
-		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
-		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
-		responseGetHomeInfoForEmissionService.put("DISTRICT_NAME", "LINCE");
-		responseGetHomeInfoForEmissionService.put("HOUSING_TYPE", "A");
-		responseGetHomeInfoForEmissionService.put("AREA_PROPERTY_1_NUMBER", new BigDecimal(2));
-		responseGetHomeInfoForEmissionService.put("PROP_SENIORITY_YEARS_NUMBER", new BigDecimal(10));
-		responseGetHomeInfoForEmissionService.put("FLOOR_NUMBER", new BigDecimal(3));
-		responseGetHomeInfoForEmissionService.put("EDIFICATION_LOAN_AMOUNT", new BigDecimal(111.1));
-		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
-		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
-		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(null);
-		PolicyDTO validation2 = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNull(validation2);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
-	}
-	
-	@Test
-	public void executeBusinessLogicEmissionEndosatarioOK() throws IOException {
-		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionEndosatarioOK...");
-		
-		when(pisdR012.executeGetRequiredFieldsForEmissionService(anyString())).thenReturn(responseQueryGetRequiredFields);
-		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
-		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
-		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
-		when(pisdR012.executeSaveContract(anyMap())).thenReturn(1);
-		when(pisdR012.executeSaveContractEndoserment(anyMap())).thenReturn(1);
-
-
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
-		
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
-		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
-		when(pisdR012.executeSaveContractMove(anyMap())).thenReturn(1);
-		when(firstRole.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
-		when(roles.get(0)).thenReturn(firstRole);
-		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
-		when(pisdR012.executeGetRolesByProductAndModality(any(), anyString())).thenReturn(responseQueryRoles);
-		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
-		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
-		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		
-		this.requestBody.setParticipants(null);
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertNotNull(validation);
-		
-		List<ParticipantDTO> participantes = new ArrayList<>();
-		this.requestBody.setParticipants(participantes);
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNotNull(validation);
-		
-		ParticipantDTO participante = new ParticipantDTO();
-		participantes.add(participante);
-		this.requestBody.setParticipants(participantes);
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNotNull(validation);
-		
-		IdentityDocumentDTO document = new IdentityDocumentDTO();
-		ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
-		DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
-		tipoDocumento.setId("RUC");
-		tipoParticipante.setId("ENDORSEE");
-		participante.setBenefitPercentage(0.0d);
-
-		document.setDocumentType(tipoDocumento);
-		participante.setParticipantType(tipoParticipante);
-		participante.setIdentityDocument(document);
-		participantes.add(participante);
-		this.requestBody.setParticipants(participantes);
-
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNotNull(validation);
-
-		participantes.get(1).getParticipantType().setId("OTHER");
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNotNull(validation);
-
-		participantes.get(1).getIdentityDocument().setId("OTHER");
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNotNull(validation);
-
-		participantes.get(1).setBenefitPercentage(null);
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNotNull(validation);
-
-
 	}
 }

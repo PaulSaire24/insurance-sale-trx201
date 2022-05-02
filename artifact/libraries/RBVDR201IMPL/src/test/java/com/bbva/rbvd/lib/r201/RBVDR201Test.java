@@ -145,7 +145,7 @@ public class RBVDR201Test {
 		assertNotNull(validation.getData().getInsuranceCompany().getName());
 	}
 
-	@Test(expected = BusinessException.class)
+	@Test
 	public void executePrePolicyEmissionServiceWithRestClientException() {
 		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionServiceWithRestClientException...");
 
@@ -154,7 +154,8 @@ public class RBVDR201Test {
 		when(rimacUrlForker.generateUriForSignatureAWS(anyString(), anyString())).thenReturn("value");
 		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
 
-		rbvdR201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId", "830");
+		EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId", "830");
+		assertNull(rimacResponse);
 	}
 
 	@Test

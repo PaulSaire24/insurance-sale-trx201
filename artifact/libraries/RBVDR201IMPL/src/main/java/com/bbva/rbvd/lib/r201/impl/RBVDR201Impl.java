@@ -11,7 +11,6 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.lib.r201.impl.util.AsoExceptionHandler;
 import com.bbva.rbvd.lib.r201.impl.util.JsonHelper;
-import com.bbva.rbvd.lib.r201.impl.util.RimacExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -85,8 +84,6 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService END *****");
 		} catch (RestClientException ex) {
 			LOGGER.debug("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
-			RimacExceptionHandler exceptionHandler = new RimacExceptionHandler();
-			exceptionHandler.handler(ex);
 		}
 		return responseBody;
 	}
@@ -118,7 +115,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	@Override
 	public CustomerListASO executeGetCustomerInformation(String customerId) {
-		LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation START customerId ***** ", customerId);
+		LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation START customerId: {} ***** ", customerId);
 
 		Map<String, Object> pathParams = new HashMap<>();
 		pathParams.put("customerId", customerId);
@@ -132,7 +129,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			if (responseList != null && responseList.getData() != null && !responseList.getData().isEmpty()) {
 
 				output = responseList.getData().get(0);
-				LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ENTRA***** " ,output.getFirstName()
+				LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ENTRA: {} *****" ,output.getFirstName()
 						+" - "+ output.getLastName()+" - "+ output.getBirthData().getBirthDate()+" - "
 						+ output.getIdentityDocuments().get(0).getDocumentType());
 				responJsons = getRequestBodyAsJsonFormat(responseList.getData().get(0));
