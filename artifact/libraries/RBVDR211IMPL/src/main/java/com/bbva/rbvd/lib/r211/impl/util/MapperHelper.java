@@ -1285,14 +1285,14 @@ private Map<String, String> tipeViaList2() {
         List<ContactDetailASO> contactDetailASOs = new ArrayList<>();
         ContactDetailASO contactDetailASO1 = new ContactDetailASO();
         ContactDetailASO contactDetailASO2 = new ContactDetailASO();
-        ContactASO contactASO1 = new ContactASO();
-        contactASO1.setContactType(PHONE_NUMBER_VALUE);
-        contactASO1.setPhoneNumber(responseBody.getHolder().getContactDetails().get(1).getContact().getPhoneNumber());
-        contactDetailASO1.setContact(contactASO1);
         ContactASO contactASO2 = new ContactASO();
         contactASO2.setContactType(EMAIL_VALUE);
         contactASO2.setAddress(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress());
         contactDetailASO2.setContact(contactASO2);
+        ContactASO contactASO1 = new ContactASO();
+        contactASO1.setContactType(PHONE_NUMBER_VALUE);
+        contactASO1.setPhoneNumber(responseBody.getHolder().getContactDetails().get(1).getContact().getPhoneNumber());
+        contactDetailASO1.setContact(contactASO1);
         contactDetailASOs.add(contactDetailASO1);
         contactDetailASOs.add(contactDetailASO2);
         holderASO.setContactDetails(contactDetailASOs);
