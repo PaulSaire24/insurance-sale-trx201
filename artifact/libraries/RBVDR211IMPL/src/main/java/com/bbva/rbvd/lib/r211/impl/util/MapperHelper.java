@@ -67,6 +67,7 @@ import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
@@ -1243,6 +1244,18 @@ private Map<String, String> tipeViaList2() {
         gifoleResponse.setValidityPeriod(validityPeriodASO);
         InsuranceASO insuranceASO = new InsuranceASO();
         insuranceASO.setId(responseBody.getId());
+
+        List<com.bbva.pisd.dto.insurance.aso.gifole.RelatedContractASO> relatedContractASOs = new ArrayList<>();
+        for(RelatedContractDTO contract : responseBody.getPaymentMethod().getRelatedContracts()){
+            com.bbva.pisd.dto.insurance.aso.gifole.RelatedContractASO relatedContractASO = new com.bbva.pisd.dto.insurance.aso.gifole.RelatedContractASO();
+            relatedContractASO.setNumber(contract.getNumber());
+            relatedContractASOs.add(relatedContractASO);
+        }
+
+        com.bbva.pisd.dto.insurance.aso.gifole.PaymentMethodASO paymentMethodASO = new com.bbva.pisd.dto.insurance.aso.gifole.PaymentMethodASO();
+        paymentMethodASO.setId(responseBody.getPaymentMethod().getPaymentType());
+        paymentMethodASO.setRelatedContracts(relatedContractASOs);
+        insuranceASO.setPaymentMethod(paymentMethodASO);
         gifoleResponse.setInsurance(insuranceASO);
         gifoleResponse.setPolicyNumber(responseBody.getExternalPolicyNumber());
 
@@ -1275,7 +1288,7 @@ private Map<String, String> tipeViaList2() {
             holderASO.setHasBankAccount(true);
             holderASO.setHasCreditCard(false);
         }
-        
+
         com.bbva.pisd.dto.insurance.aso.gifole.DocumentTypeASO documentTypeASO = new com.bbva.pisd.dto.insurance.aso.gifole.DocumentTypeASO();
         documentTypeASO.setId(responseBody.getHolder().getIdentityDocument().getDocumentType().getId());
         com.bbva.pisd.dto.insurance.aso.gifole.IdentityDocumentASO identityDocumentASO = new com.bbva.pisd.dto.insurance.aso.gifole.IdentityDocumentASO();
