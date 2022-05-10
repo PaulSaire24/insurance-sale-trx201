@@ -68,7 +68,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		String endosatarioRuc = "";
 		Double endosatarioPorcentaje = 0.0;
 
-		CustomerListASO customerList = null;
+		CustomerListASO customerList = new CustomerListASO();
 
 		try {
 

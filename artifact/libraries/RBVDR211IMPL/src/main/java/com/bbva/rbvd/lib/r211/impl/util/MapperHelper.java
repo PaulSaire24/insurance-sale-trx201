@@ -3,18 +3,13 @@ package com.bbva.rbvd.lib.r211.impl.util;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.BrandASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.ContactASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.ContactDetailASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.GoodASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.GoodDetailASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.InsuranceASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.ModelASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.PlanASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.ProductASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.QuotationASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.VehicleCirculationASO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
@@ -82,8 +77,6 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import oracle.net.ns.BreakNetException;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
