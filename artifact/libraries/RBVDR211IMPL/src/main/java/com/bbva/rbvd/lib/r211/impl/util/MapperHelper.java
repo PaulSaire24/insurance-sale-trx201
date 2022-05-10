@@ -3,6 +3,13 @@ package com.bbva.rbvd.lib.r211.impl.util;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.ContactASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.ContactDetailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.InsuranceASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.PlanASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.ProductASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.QuotationASO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
@@ -55,6 +62,7 @@ import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
@@ -63,8 +71,10 @@ import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.google.gson.Gson;
 
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,6 +135,9 @@ public class MapperHelper {
     private static final String USD_CURRENCY = "US$";
 
     private static final String RUC_ID = "RUC";
+
+    private static final String INSURANCE_GIFOLE_VAL = "INSURANCE_CREATION";
+    private static final DateTimeZone DATE_TIME_ZONE = DateTimeZone.forID("America/Lima");
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -1204,6 +1217,98 @@ private Map<String, String> tipeViaList2() {
     map.put("NOT_PROVIDED", "NP");
     return map;
 }
+
+    public GifoleInsuranceRequestASO createGifoleRequest(PolicyDTO responseBody, CustomerListASO responseListCustomers){
+        GifoleInsuranceRequestASO gifoleResponse = new GifoleInsuranceRequestASO();
+        QuotationASO quotationASO = new QuotationASO();
+        quotationASO.setId(responseBody.getQuotationId());
+        gifoleResponse.setQuotation(quotationASO);
+        gifoleResponse.setChannel(responseBody.getAap());
+        DateTime currentDate = new DateTime(new Date(), DATE_TIME_ZONE);
+        gifoleResponse.setOperationDate(currentDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")));
+        gifoleResponse.setOperationType(INSURANCE_GIFOLE_VAL);
+        String startDate = responseBody.getValidityPeriod().getStartDate().toInstant()
+        .atOffset(ZoneOffset.UTC)
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+        String endDate = responseBody.getValidityPeriod().getEndDate().toInstant()
+        .atOffset(ZoneOffset.UTC)
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+        com.bbva.pisd.dto.insurance.aso.gifole.ValidityPeriodASO validityPeriodASO = new com.bbva.pisd.dto.insurance.aso.gifole.ValidityPeriodASO(startDate, endDate);
+        gifoleResponse.setValidityPeriod(validityPeriodASO);
+        InsuranceASO insuranceASO = new InsuranceASO();
+        insuranceASO.setId(responseBody.getId());
+
+        List<com.bbva.pisd.dto.insurance.aso.gifole.RelatedContractASO> relatedContractASOs = new ArrayList<>();
+        for(RelatedContractDTO contract : responseBody.getPaymentMethod().getRelatedContracts()){
+            com.bbva.pisd.dto.insurance.aso.gifole.RelatedContractASO relatedContractASO = new com.bbva.pisd.dto.insurance.aso.gifole.RelatedContractASO();
+            relatedContractASO.setNumber(contract.getNumber());
+            relatedContractASOs.add(relatedContractASO);
+        }
+
+        com.bbva.pisd.dto.insurance.aso.gifole.PaymentMethodASO paymentMethodASO = new com.bbva.pisd.dto.insurance.aso.gifole.PaymentMethodASO();
+        paymentMethodASO.setId(responseBody.getPaymentMethod().getPaymentType());
+        paymentMethodASO.setRelatedContracts(relatedContractASOs);
+        insuranceASO.setPaymentMethod(paymentMethodASO);
+        gifoleResponse.setInsurance(insuranceASO);
+        gifoleResponse.setPolicyNumber(responseBody.getExternalPolicyNumber());
+
+        ProductASO productASO = new ProductASO();
+        PlanASO planASO = new PlanASO();
+        planASO.setId(responseBody.getProductPlan().getId());
+        planASO.setName(responseBody.getProductPlan().getDescription());
+        productASO.setPlan(planASO);
+        productASO.setId(responseBody.getProductId());
+        productASO.setName(responseBody.getProductDescription());
+        gifoleResponse.setProduct(productASO);
+
+        com.bbva.pisd.dto.insurance.aso.gifole.HolderASO holderASO = new com.bbva.pisd.dto.insurance.aso.gifole.HolderASO();
+        if(Objects.nonNull(responseListCustomers)) {
+            CustomerBO customer = responseListCustomers.getData().get(0);
+            holderASO.setFirstName(customer.getFirstName());
+            holderASO.setLastName(customer.getLastName().concat(" ").concat(customer.getSecondLastName()));
+        }else{
+            holderASO.setFirstName("");
+            holderASO.setLastName("");
+        }
+
+        holderASO.setIsBankCustomer(true);
+        holderASO.setIsDataTreatment(true);
+
+        if(responseBody.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId().equals(CARD_PRODUCT_ID)){
+            holderASO.setHasCreditCard(true);
+            holderASO.setHasBankAccount(false);
+        }else{
+            holderASO.setHasBankAccount(true);
+            holderASO.setHasCreditCard(false);
+        }
+
+        com.bbva.pisd.dto.insurance.aso.gifole.DocumentTypeASO documentTypeASO = new com.bbva.pisd.dto.insurance.aso.gifole.DocumentTypeASO();
+        documentTypeASO.setId(responseBody.getHolder().getIdentityDocument().getDocumentType().getId());
+        com.bbva.pisd.dto.insurance.aso.gifole.IdentityDocumentASO identityDocumentASO = new com.bbva.pisd.dto.insurance.aso.gifole.IdentityDocumentASO();
+        identityDocumentASO.setDocumentType(documentTypeASO);
+        identityDocumentASO.setDocumentNumber(responseBody.getHolder().getIdentityDocument().getDocumentNumber());
+        holderASO.setIdentityDocument(identityDocumentASO);
+        List<ContactDetailASO> contactDetailASOs = new ArrayList<>();
+        ContactDetailASO contactDetailASO1 = new ContactDetailASO();
+        ContactDetailASO contactDetailASO2 = new ContactDetailASO();
+        ContactASO contactASO2 = new ContactASO();
+        contactASO2.setContactType(EMAIL_VALUE);
+        contactASO2.setAddress(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress());
+        contactDetailASO2.setContact(contactASO2);
+        ContactASO contactASO1 = new ContactASO();
+        contactASO1.setContactType(PHONE_NUMBER_VALUE);
+        contactASO1.setPhoneNumber(responseBody.getHolder().getContactDetails().get(1).getContact().getPhoneNumber());
+        contactDetailASO1.setContact(contactASO1);
+        contactDetailASOs.add(contactDetailASO1);
+        contactDetailASOs.add(contactDetailASO2);
+        holderASO.setContactDetails(contactDetailASOs);
+        gifoleResponse.setHolder(holderASO);
+
+        Gson log = new Gson();
+        LOGGER.info("GifoleResponse output {}", log.toJson(gifoleResponse));
+
+        return gifoleResponse;
+    }
 
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;

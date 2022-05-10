@@ -8,7 +8,9 @@ import com.bbva.elara.utility.api.connector.APIConnector;
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
+import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.lib.r014.PISDR014;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -250,5 +252,32 @@ public class RBVDR201Test {
 		CustomerListASO validation = rbvdR201.executeGetCustomerInformation("90008603");
 		assertNull(validation);
 	}
+
+	@Test
+	public void executeNewGifoleServiceOK() {
+		LOGGER.info("RBVDR201Test - Executing executeGifoleServiceOK...");
+
+		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<Void>) any()))
+				.thenReturn(new ResponseEntity<>(HttpStatus.CREATED));
+
+		Integer validation = rbvdR201.executeGifoleEmisionService(new GifoleInsuranceRequestASO());
+
+		assertNotNull(validation);
+		assertEquals(new Integer(201), validation);
+	}
+
+	@Test
+	public void executeNewGifoleServiceWithRestClientException() {
+		LOGGER.info("RBVDR201Test - Executing executeGifoleServiceWithRestClientException...");
+
+		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<Void>) any()))
+				.thenThrow(new RestClientException(MESSAGE_EXCEPTION));
+
+		Integer validation = rbvdR201.executeGifoleEmisionService(new GifoleInsuranceRequestASO());
+
+		assertNull(validation);
+		assertEquals(PISDErrors.ERROR_CONNECTION_GIFOLE_ROYAL_INSURANCE_REQUEST_ASO_SERVICE.getAdviceCode(), this.rbvdR201.getAdviceList().get(0).getCode());
+	}
+
 	
 }

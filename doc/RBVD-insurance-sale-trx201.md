@@ -33,6 +33,14 @@
                 - **CustomerBO**: Entidad CustomerBO
                 - **DataPersona**: Entidad DataPersona
                 - **Persona**: Entidad Persona
+        - gifole:
+            - **GifoleInsuranceRequestASO**: Entidad nueva para Gifole
+            - **ProductASO**: Entidad producto
+            - **InstallmentPlanASO**: Entidad plan aplicado
+            - **HolderASO**: Entidad de información de cliente
+            - **QuotationASO**: Entidad cotización
+            - **ValidityPeriodASO**: Entidad periodo de pago
+            - **InsuranceASO**: Entidad emisión seguro
     - utils:
         - **PISDConstants**: Entidad Constantes
         - **PISDErrors**: Entidad Errores
@@ -105,6 +113,8 @@
     - Avisos a retornar: -
 - **Método executeGetCustomerInformation(String customerId)**: Método para obtener información del cliente a través del servicio ASO listCustomers
     - Avisos a retornar: PISD00120034
+- **Método executeGifoleEmisionService(GifoleInsuranceRequestASO requestBody)**: Método para obtener para registrar leads de venta a través del servicio ASO createGifoleInsuranceRequest
+    - Avisos a retornar: PISD00120019
 
 #### 3.1.2. Libreria RBVDR211
 > Orientada a realizar la lógica de negocio de la transacción RBVDT201.
@@ -138,6 +148,7 @@
 - **Advise RBVD00000137**: ERROR AL VALIDAR DATOS EN EMISION RIMAC
 - **Advise RBVD00000138**: COTIZACION INACTIVA O INEXISTENTE - EMISION RIMAC
 - **Advise PISD00120033**: ERROR CONNECTION VALIDATE CUSTOMER SERVICE
+- **Advise PISD00120019**: ERROR DE CONNEXIÓN CON EL SERVICIO GIFOLE
 
 ## 5. Diseño de componentes:
 ![createInsurance](images/diseno-componentes-apx-createInsurance.png)
@@ -147,4 +158,5 @@
 
 - **Versión 0.4.12**: Se añade un dato particular al request del servicio de emisión de Rimac.
 - **Versión 0.5.1**: Se realiza el alta de un seguro con endoso de cesión de derechos.
-- **Versión 0.5.6**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
+- **Versión 0.5.5**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
+- **Versión 0.5.7**: Esta versión incluye el registro de los leads de venta en el servicio de GIFOLE.

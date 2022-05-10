@@ -3,6 +3,7 @@ package com.bbva.rbvd.lib.r201.impl;
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
@@ -147,6 +148,32 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			return responseList;
 		}
 
+	@Override
+	public Integer executeGifoleEmisionService(GifoleInsuranceRequestASO requestBody) {
+		LOGGER.info("***** RBVDR201Impl - executeGifoleEmisionService START *****");
+	
+		String jsonString = getRequestBodyAsJsonFormat(requestBody);
+	
+		LOGGER.info("***** RBVDR201Impl - executeGifoleEmisionService ***** Request body: {}", jsonString);
+	
+		ResponseEntity<Void> response = null;
+		Integer httpStatus = null;
+	
+		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeaders(false));
+	
+		try {
+			response = this.internalApiConnector.exchange(PISDProperties.ID_API_GIFOLE_ROYAL_INSURANCE_REQUEST_SERVICE.getValue(),
+					org.springframework.http.HttpMethod.POST, entity, Void.class);
+			httpStatus = response.getStatusCode().value();
+			LOGGER.info("***** RBVDR201Impl - executeGifoleEmisionService ***** Http code response: {}", httpStatus);
+		} catch(RestClientException ex) {
+			LOGGER.debug("***** RBVDR201Impl - executeGifoleEmisionService ***** Exception: {}", ex.getMessage());
+			this.addAdvice(PISDErrors.ERROR_CONNECTION_GIFOLE_ROYAL_INSURANCE_REQUEST_ASO_SERVICE.getAdviceCode());
+		}
+	
+		LOGGER.info("***** RBVDR201Impl - executeGifoleEmisionService END *****");
+		return httpStatus;
+	}
 
 	private String getRequestBodyAsJsonFormat(Object requestBody) {
 		return JsonHelper.getInstance().toJsonString(requestBody);
