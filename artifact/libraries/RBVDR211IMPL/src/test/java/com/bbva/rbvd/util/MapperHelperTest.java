@@ -3,6 +3,7 @@ package com.bbva.rbvd.util;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.bo.DocumentTypeBO;
 import com.bbva.pisd.dto.insurance.bo.GenderBO;
 import com.bbva.pisd.dto.insurance.bo.GeographicGroupTypeBO;
@@ -92,6 +93,7 @@ public class MapperHelperTest {
         apxRequest.setCreationUser("creationUser");
         apxRequest.setUserAudit("userAudit");
         apxRequest.setSaleChannelId("BI");
+        apxRequest.setAap("13000001");
         asoResponse = mockData.getEmisionASOResponse();
         rimacResponse = mockData.getEmisionRimacResponse();
         customerList = mockDTO.getCustomerDataResponse();
@@ -1287,6 +1289,37 @@ public class MapperHelperTest {
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
         EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation4);
+    }
+
+    @Test
+    public void createGifoleRequest_OK() {
+        apxRequest.getValidityPeriod().setEndDate(new Date(2012, 01, 02));
+        apxRequest.setExternalPolicyNumber("501481");
+        apxRequest.setId("00110115304000510603");
+        GifoleInsuranceRequestASO response1 = this.mapperHelper.createGifoleRequest(apxRequest, customerList);
+        assertNotNull(response1.getQuotation());
+        assertEquals(response1.getQuotation().getId(), apxRequest.getQuotationId());
+        assertEquals(response1.getChannel(), "13000001");
+        assertEquals(response1.getOperationType(), "INSURANCE_CREATION");
+        assertNotNull(response1.getValidityPeriod());
+        assertNotNull(response1.getInsurance());
+        assertEquals(response1.getInsurance().getId(), "00110115304000510603");
+        assertEquals(response1.getPolicyNumber(), "501481");
+        assertNotNull(response1.getProduct());
+        assertNotNull(response1.getHolder());
+
+        apxRequest.getPaymentMethod().getRelatedContracts().get(0).getProduct().setId("ACCOUNT");
+        GifoleInsuranceRequestASO response2 = this.mapperHelper.createGifoleRequest(apxRequest, null);
+        assertNotNull(response2.getQuotation());
+        assertEquals(response2.getQuotation().getId(), apxRequest.getQuotationId());
+        assertEquals(response2.getChannel(), "13000001");
+        assertEquals(response2.getOperationType(), "INSURANCE_CREATION");
+        assertNotNull(response2.getValidityPeriod());
+        assertNotNull(response2.getInsurance());
+        assertEquals(response2.getInsurance().getId(), "00110115304000510603");
+        assertEquals(response2.getPolicyNumber(), "501481");
+        assertNotNull(response2.getProduct());
+        assertNotNull(response2.getHolder());
     }
 
 }
