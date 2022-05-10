@@ -4,6 +4,7 @@ import com.bbva.elara.configuration.manager.application.ApplicationConfiguration
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.lib.r012.PISDR012;
@@ -277,7 +278,8 @@ public class RBVDR211Test {
 		assertEquals("026364", validation.getPromoter().getId());
 
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
-
+		when(mapperHelper.createGifoleRequest(anyObject(), anyObject())).thenReturn(new GifoleInsuranceRequestASO());
+		when(rbvdr201.executeGifoleEmisionService(anyObject())).thenReturn(201);
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
 		calendar.add(Calendar.DAY_OF_MONTH, 1);

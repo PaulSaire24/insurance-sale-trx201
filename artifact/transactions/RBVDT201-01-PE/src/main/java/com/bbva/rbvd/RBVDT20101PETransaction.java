@@ -28,6 +28,8 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		LOGGER.info("Cabecera channel-code: {}", saleChannelId);
 		String user = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE);
 		LOGGER.info("Cabecera user-code: {}", user);
+		String aap = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.AAP);
+		LOGGER.info("Cabecera aap: {}", aap);
 
 		PolicyDTO requestBody = new PolicyDTO();
 		requestBody.setQuotationId(this.getQuotationid());
@@ -55,6 +57,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		requestBody.setSaleChannelId(saleChannelId);
 		requestBody.setCreationUser(user);
 		requestBody.setUserAudit(user);
+		requestBody.setAap(aap);
 
 		PolicyDTO responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
