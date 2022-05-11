@@ -39,7 +39,6 @@ import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
-import com.bbva.rbvd.lib.r201.RBVDR201;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
@@ -68,7 +67,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		String endosatarioRuc = "";
 		Double endosatarioPorcentaje = 0.0;
 
-		CustomerListASO customerList = new CustomerListASO();
+		CustomerListASO customerList = null;
 
 		try {
 
