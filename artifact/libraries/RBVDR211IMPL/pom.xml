@@ -115,6 +115,9 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}-${project.version}</Bundle-SymbolicName>
 						<Bundle-Category>library</Bundle-Category>
+						<Export-Package>
+							!*;version="${arc.osgi.version}"
+						</Export-Package>
 						<Import-Package>
 							com.bbva.pisd.lib.r021.*;version="${osgi.version.manifest}",
 							com.bbva.pisd.lib.r012.*;version="${osgi.version.manifest}",
