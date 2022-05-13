@@ -137,6 +137,7 @@ public class MapperHelper {
     private static final String RUC_ID = "RUC";
 
     private static final String INSURANCE_GIFOLE_VAL = "INSURANCE_CREATION";
+    private static final String MASK_VALUE = "****";
     private static final DateTimeZone DATE_TIME_ZONE = DateTimeZone.forID("America/Lima");
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -1241,7 +1242,8 @@ private Map<String, String> tipeViaList2() {
         List<com.bbva.pisd.dto.insurance.aso.gifole.RelatedContractASO> relatedContractASOs = new ArrayList<>();
         for(RelatedContractDTO contract : responseBody.getPaymentMethod().getRelatedContracts()){
             com.bbva.pisd.dto.insurance.aso.gifole.RelatedContractASO relatedContractASO = new com.bbva.pisd.dto.insurance.aso.gifole.RelatedContractASO();
-            relatedContractASO.setNumber(contract.getNumber());
+            int beginIndex = contract.getNumber().length() - 4;
+            relatedContractASO.setNumber(MASK_VALUE.concat(contract.getNumber().substring(beginIndex)));
             relatedContractASOs.add(relatedContractASO);
         }
 
@@ -1304,6 +1306,10 @@ private Map<String, String> tipeViaList2() {
         holderASO.setContactDetails(contactDetailASOs);
         gifoleResponse.setHolder(holderASO);
 
+        com.bbva.pisd.dto.insurance.aso.gifole.InstallmentPlanASO installmentPlanASO = new com.bbva.pisd.dto.insurance.aso.gifole.InstallmentPlanASO();
+        installmentPlanASO.setTotalInstallmentsNumber(responseBody.getInstallmentPlan().getTotalNumberInstallments());
+        gifoleResponse.setInstallmentPlan(installmentPlanASO);
+        
         Gson log = new Gson();
         LOGGER.info("GifoleResponse output {}", log.toJson(gifoleResponse));
 
