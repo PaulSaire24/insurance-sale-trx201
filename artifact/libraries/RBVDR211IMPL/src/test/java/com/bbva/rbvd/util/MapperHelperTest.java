@@ -1294,6 +1294,7 @@ public class MapperHelperTest {
     @Test
     public void createGifoleRequest_OK() {
         apxRequest.getValidityPeriod().setEndDate(new Date(2012, 01, 02));
+        apxRequest.getInstallmentPlan().getPeriod().setName("MENSUAL");
         apxRequest.setExternalPolicyNumber("501481");
         apxRequest.setId("00110115304000510603");
         GifoleInsuranceRequestASO response1 = this.mapperHelper.createGifoleRequest(apxRequest, customerList);

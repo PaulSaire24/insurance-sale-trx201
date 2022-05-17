@@ -7,6 +7,7 @@ import com.bbva.pisd.dto.insurance.aso.gifole.ContactASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.ContactDetailASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.InsuranceASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.PeriodASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.PlanASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.ProductASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.QuotationASO;
@@ -113,6 +114,8 @@ public class MapperHelper {
     private static final String COLLECTION_STATUS_FIRST_RECEIPT_VALUE = "00";
     private static final String COLLECTION_STATUS_NEXT_VALUES = "02";
     private static final String CARD_PRODUCT_ID = "CARD";
+    private static final String CARD_PRODUCT_NAME = "TARJETA";
+    private static final String ACCOUNT_PRODUCT_NAME = "CUENTA";
     private static final String CARD_METHOD_TYPE = "T";
     private static final String ACCOUNT_METHOD_TYPE = "C";
     private static final String FIRST_RECEIPT_STATUS_TYPE_VALUE = "COB";
@@ -1248,7 +1251,8 @@ private Map<String, String> tipeViaList2() {
         }
 
         com.bbva.pisd.dto.insurance.aso.gifole.PaymentMethodASO paymentMethodASO = new com.bbva.pisd.dto.insurance.aso.gifole.PaymentMethodASO();
-        paymentMethodASO.setId(responseBody.getPaymentMethod().getPaymentType());
+        paymentMethodASO.setId(responseBody.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId()
+                .equals(CARD_PRODUCT_ID) ? CARD_PRODUCT_NAME : ACCOUNT_PRODUCT_NAME);
         paymentMethodASO.setRelatedContracts(relatedContractASOs);
         insuranceASO.setPaymentMethod(paymentMethodASO);
         gifoleResponse.setInsurance(insuranceASO);
@@ -1307,7 +1311,11 @@ private Map<String, String> tipeViaList2() {
         gifoleResponse.setHolder(holderASO);
 
         com.bbva.pisd.dto.insurance.aso.gifole.InstallmentPlanASO installmentPlanASO = new com.bbva.pisd.dto.insurance.aso.gifole.InstallmentPlanASO();
+        PeriodASO periodASO = new PeriodASO();
+        periodASO.setId(responseBody.getInstallmentPlan().getPeriod().getId());
+        periodASO.setName(responseBody.getInstallmentPlan().getPeriod().getName());
         installmentPlanASO.setTotalInstallmentsNumber(responseBody.getInstallmentPlan().getTotalNumberInstallments());
+        installmentPlanASO.setPeriod(periodASO);
         gifoleResponse.setInstallmentPlan(installmentPlanASO);
         
         Gson log = new Gson();
