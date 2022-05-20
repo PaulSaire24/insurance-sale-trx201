@@ -997,6 +997,7 @@ public class MapperHelper {
         EmisionBO generalEmisionRimacRequest = new EmisionBO();
         PayloadEmisionBO emisionBO = new PayloadEmisionBO();
         emisionBO.setEmision(rimacRequest.getPayload());
+        emisionBO.getEmision().setProducto((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue()));
         generalEmisionRimacRequest.setPayload(emisionBO);
 
         FinanciamientoBO financiamiento = new FinanciamientoBO();
@@ -1233,10 +1234,10 @@ private Map<String, String> tipeViaList2() {
         gifoleResponse.setOperationType(INSURANCE_GIFOLE_VAL);
         String startDate = responseBody.getValidityPeriod().getStartDate().toInstant()
         .atOffset(ZoneOffset.UTC)
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String endDate = responseBody.getValidityPeriod().getEndDate().toInstant()
         .atOffset(ZoneOffset.UTC)
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         com.bbva.pisd.dto.insurance.aso.gifole.ValidityPeriodASO validityPeriodASO = new com.bbva.pisd.dto.insurance.aso.gifole.ValidityPeriodASO(startDate, endDate);
         gifoleResponse.setValidityPeriod(validityPeriodASO);
         InsuranceASO insuranceASO = new InsuranceASO();
