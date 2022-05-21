@@ -141,6 +141,7 @@ public class MapperHelper {
 
     private static final String INSURANCE_GIFOLE_VAL = "INSURANCE_CREATION";
     private static final String MASK_VALUE = "****";
+    private static final String DATE_FORMAT_VALUE = "yyyy-MM-dd";
     private static final DateTimeZone DATE_TIME_ZONE = DateTimeZone.forID("America/Lima");
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -997,13 +998,14 @@ public class MapperHelper {
         EmisionBO generalEmisionRimacRequest = new EmisionBO();
         PayloadEmisionBO emisionBO = new PayloadEmisionBO();
         emisionBO.setEmision(rimacRequest.getPayload());
+        emisionBO.getEmision().setProducto((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue()));
         generalEmisionRimacRequest.setPayload(emisionBO);
 
         FinanciamientoBO financiamiento = new FinanciamientoBO();
         financiamiento.setFrecuencia(this.applicationConfigurationService.getProperty(requestBody.getInstallmentPlan().getPeriod().getId()));
         String strDate = requestBody.getValidityPeriod().getStartDate().toInstant()
 				.atOffset(ZoneOffset.UTC)
-				.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+				.format(DateTimeFormatter.ofPattern(DATE_FORMAT_VALUE));
         financiamiento.setFechaInicio(strDate);
         financiamiento.setNumeroCuotas(requestBody.getInstallmentPlan().getTotalNumberInstallments());
         List<FinanciamientoBO> financiamientoBOs = new ArrayList<>();
@@ -1233,10 +1235,10 @@ private Map<String, String> tipeViaList2() {
         gifoleResponse.setOperationType(INSURANCE_GIFOLE_VAL);
         String startDate = responseBody.getValidityPeriod().getStartDate().toInstant()
         .atOffset(ZoneOffset.UTC)
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+        .format(DateTimeFormatter.ofPattern(DATE_FORMAT_VALUE));
         String endDate = responseBody.getValidityPeriod().getEndDate().toInstant()
         .atOffset(ZoneOffset.UTC)
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+        .format(DateTimeFormatter.ofPattern(DATE_FORMAT_VALUE));
         com.bbva.pisd.dto.insurance.aso.gifole.ValidityPeriodASO validityPeriodASO = new com.bbva.pisd.dto.insurance.aso.gifole.ValidityPeriodASO(startDate, endDate);
         gifoleResponse.setValidityPeriod(validityPeriodASO);
         InsuranceASO insuranceASO = new InsuranceASO();
@@ -1322,6 +1324,7 @@ private Map<String, String> tipeViaList2() {
         LOGGER.info("GifoleResponse output {}", log.toJson(gifoleResponse));
 
         return gifoleResponse;
+
     }
 
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
