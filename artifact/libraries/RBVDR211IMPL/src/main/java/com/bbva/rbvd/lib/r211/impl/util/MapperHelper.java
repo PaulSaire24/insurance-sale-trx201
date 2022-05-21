@@ -1323,6 +1323,7 @@ private Map<String, String> tipeViaList2() {
         LOGGER.info("GifoleResponse output {}", log.toJson(gifoleResponse));
 
         return gifoleResponse;
+        
     }
 
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
