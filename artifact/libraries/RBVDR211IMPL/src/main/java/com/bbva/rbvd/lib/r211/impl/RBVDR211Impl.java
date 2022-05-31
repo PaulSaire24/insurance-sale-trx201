@@ -54,6 +54,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String INSURANCE_PRODUCT_TYPE_VEH = "830";
     private static final String INSURANCE_PRODUCT_TYPE_HOME = "832";
 
+	private static final String GIFOLE_SALES_ASO = "enable_gifole_sales_aso";
+
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
 
@@ -190,13 +192,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				LOGGER.debug("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email not sent, something went wrong *****");
 			}
 
-			LOGGER.info("***** RBVDR211Impl - Gifole Service START *****");
-			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(responseBody, customerList);
+			String gifoleFlag = this.applicationConfigurationService.getProperty(GIFOLE_SALES_ASO);
 			
-			Integer gifoleResponse = this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
+			gifoleLeadService(responseBody, customerList, Boolean.parseBoolean(gifoleFlag));
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole Service Enabled: {}", gifoleFlag);
 
-			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole create status {}", gifoleResponse);
-			LOGGER.info("***** RBVDR211Impl - Gifole Service END *****");
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Response: {}", responseBody);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy END *****");
 
@@ -351,5 +351,15 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				break;
 		}
 		return email;
+	}
+
+	private void gifoleLeadService(PolicyDTO policyDTO, CustomerListASO customerListASO, Boolean isGifoleEnabled) {
+
+		if (isGifoleEnabled) {
+			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(policyDTO, customerListASO);
+			Integer gifoleResponse = this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole create status {}",
+					gifoleResponse);
+		}
 	}
 }
