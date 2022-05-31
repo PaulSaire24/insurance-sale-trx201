@@ -192,8 +192,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				LOGGER.debug("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email not sent, something went wrong *****");
 			}
 
-			String gifoleEnabled = gifoleLeadService(responseBody, customerList).toString();
-			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole Service Enabled: {}", gifoleEnabled);
+			String gifoleFlag = this.applicationConfigurationService.getProperty(GIFOLE_SALES_ASO);
+			
+			gifoleLeadService(responseBody, customerList, Boolean.parseBoolean(gifoleFlag));
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole Service Enabled: {}", gifoleFlag);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Response: {}", responseBody);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy END *****");
@@ -351,16 +353,13 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		return email;
 	}
 
-	private Boolean gifoleLeadService(PolicyDTO policyDTO, CustomerListASO customerListASO) {
-		String gifoleFlag = this.applicationConfigurationService.getProperty(GIFOLE_SALES_ASO);
-		Boolean isGifoleEnabled = false;
-		if (gifoleFlag.equals("true")) {
+	private void gifoleLeadService(PolicyDTO policyDTO, CustomerListASO customerListASO, Boolean isGifoleEnabled) {
+
+		if (isGifoleEnabled) {
 			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(policyDTO, customerListASO);
 			Integer gifoleResponse = this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole create status {}",
 					gifoleResponse);
-			isGifoleEnabled = true;
 		}
-		return isGifoleEnabled;
 	}
 }
