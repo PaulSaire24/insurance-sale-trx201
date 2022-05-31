@@ -54,7 +54,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String INSURANCE_PRODUCT_TYPE_VEH = "830";
     private static final String INSURANCE_PRODUCT_TYPE_HOME = "832";
 
-	private static final String GIFOLE_LEAD_ASO = "enable_gifole_aso";
+	private static final String GIFOLE_SALES_ASO = "enable_gifole_sales_aso";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -352,7 +352,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	}
 
 	private Boolean gifoleLeadService(PolicyDTO policyDTO, CustomerListASO customerListASO) {
-		String gifoleFlag = this.applicationConfigurationService.getProperty(GIFOLE_LEAD_ASO);
+		String gifoleFlag = this.applicationConfigurationService.getProperty(GIFOLE_SALES_ASO);
 		Boolean isGifoleEnabled = false;
 		if (gifoleFlag.equals("true")) {
 			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(policyDTO, customerListASO);
