@@ -159,4 +159,4 @@
 - **Versión 0.4.12**: Se añade un dato particular al request del servicio de emisión de Rimac.
 - **Versión 0.5.1**: Se realiza el alta de un seguro con endoso de cesión de derechos.
 - **Versión 0.5.5**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
-- **Versión 0.5.12**: Esta versión incluye el registro de los leads de venta en el servicio de GIFOLE.
+- **Versión 0.5.13**: Esta versión incluye el registro de los leads de venta en el servicio de GIFOLE.

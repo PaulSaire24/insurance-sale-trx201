@@ -54,6 +54,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String INSURANCE_PRODUCT_TYPE_VEH = "830";
     private static final String INSURANCE_PRODUCT_TYPE_HOME = "832";
 
+	private static final String GIFOLE_LEAD_ASO = "enable_gifole_aso";
+
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
 
@@ -190,13 +192,15 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				LOGGER.debug("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email not sent, something went wrong *****");
 			}
 
-			LOGGER.info("***** RBVDR211Impl - Gifole Service START *****");
-			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(responseBody, customerList);
-			
-			Integer gifoleResponse = this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
+			String gifoleFlag = this.applicationConfigurationService.getProperty(GIFOLE_LEAD_ASO);
 
-			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole create status {}", gifoleResponse);
-			LOGGER.info("***** RBVDR211Impl - Gifole Service END *****");
+			if(gifoleFlag.equals("true")){
+				GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(responseBody, customerList);
+				LOGGER.info("***** RBVDR211Impl - Gifole Service START *****");
+				Integer gifoleResponse = this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
+				LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole create status {}", gifoleResponse);
+			}
+			
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Response: {}", responseBody);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy END *****");
 
