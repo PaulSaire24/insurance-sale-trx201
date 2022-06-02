@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl;
 
+import static java.util.Objects.nonNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.math.BigDecimal;
@@ -72,6 +73,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		CustomerListASO customerList = null;
 
 		try {
+
+			Map<String, Object> responseValidateIfPolicyExists = pisdR012.executeValidateIfPolicyExists(requestBody.getQuotationId());
+
+			validateIfPolicyExists(responseValidateIfPolicyExists);
 
 			Map<String, Object> responseQueryGetRequiredFields = pisdR012.executeGetRequiredFieldsForEmissionService(requestBody.getQuotationId());
 
@@ -207,6 +212,13 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			return null;
 		}
 
+	}
+
+	private void validateIfPolicyExists(Map<String, Object> responseValidateIfPolicyExists) {
+		BigDecimal resultNumber = (BigDecimal) responseValidateIfPolicyExists.get(RBVDProperties.FIELD_RESULT_NUMBER.getValue());
+		if(nonNull(resultNumber) && resultNumber.compareTo(BigDecimal.ONE) == 0) {
+			throw RBVDValidation.build(RBVDErrors.POLICY_ALREADY_EXISTS);
+		}
 	}
 
 	private void evaluateRequiredPayment(PolicyDTO requestBody) {
