@@ -14,6 +14,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.lib.r014.PISDR014;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
@@ -37,6 +38,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -279,5 +281,29 @@ public class RBVDR201Test {
 		assertEquals(PISDErrors.ERROR_CONNECTION_GIFOLE_ROYAL_INSURANCE_REQUEST_ASO_SERVICE.getAdviceCode(), this.rbvdR201.getAdviceList().get(0).getCode());
 	}
 
+	@Test
+	public void executeGetListBusinessesServiceOK() {
+		LOGGER.info("RBVDR201Test - Executing executeGetListBusinessesServiceOK...");
+		ListBusinessesASO businesses = new ListBusinessesASO();
+		businesses.setData(new ArrayList<>());
+		when(internalApiConnector.getForObject(anyString(), any(), anyMap()))
+				.thenReturn(businesses);
+
+		ListBusinessesASO validation = rbvdR201.executeGetListBusinesses("90008603", null);
+		assertNotNull(validation);
+
+		validation = rbvdR201.executeGetListBusinesses("90008603", "ABC");
+		assertNotNull(validation);
+	}
+
+	@Test
+	public void executeGetListBusinessesResponseWithRestClientException() {
+		LOGGER.info("RBVDR201Test - Executing executeGetListBusinessesResponseWithRestClientException...");
+		when(internalApiConnector.getForObject(anyString(), any(), anyMap()))
+				.thenThrow(new RestClientException(MESSAGE_EXCEPTION));
+
+		ListBusinessesASO validation = rbvdR201.executeGetListBusinesses("90008603", null);
+		assertNull(validation);
+	}
 	
 }

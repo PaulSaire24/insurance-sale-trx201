@@ -1,14 +1,20 @@
 package com.bbva.rbvd.lib.r211.impl;
 
+import static java.util.stream.Collectors.toList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
+import com.bbva.kbtq.dto.c101.entities.CustomerEntity;
+import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
+import com.bbva.rbvd.dto.insrncsale.aso.ContactDetailASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.OrganizacionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
+import com.bbva.rbvd.dto.insrncsale.utils.*;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -36,9 +42,6 @@ import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
@@ -53,8 +56,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final String INSURANCE_PRODUCT_TYPE_VEH = "830";
     private static final String INSURANCE_PRODUCT_TYPE_HOME = "832";
+	private static final String INSURANCE_PRODUCT_TYPE_FLEXIPYME = "833";
 
 	private static final String GIFOLE_SALES_ASO = "enable_gifole_sales_aso";
+    private static final String RUC_ID = "RUC";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -118,10 +123,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
 
+				setOrganization(generalEmisionRequest, requestBody.getHolder().getId(), customerList);
+
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(generalEmisionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			}else{
 
-			rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
+				rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			
 			}
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | isDigitalSale validation *****");
@@ -207,6 +214,72 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			return null;
 		}
 
+	}
+
+    private void setOrganization(EmisionBO emision, String customerId, CustomerListASO customerList){
+		PersonaBO persona = emision.getPayload().getAgregarPersona().getPersona().get(0);
+        CustomerBO customer = customerList.getData().get(0);
+        String tipoDoc = this.applicationConfigurationService.getProperty(customer.getIdentityDocuments().get(0).getDocumentType().getId());
+        String nroDoc = customer.getIdentityDocuments().get(0).getDocumentNumber();
+        if (RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20")){
+			//this.kbtqR110.executeListCustomerb(new CustomerEntity());
+
+
+
+
+            ListBusinessesASO listBussinesses = this.rbvdR201.executeGetListBusinesses(customerId, null);
+			if (listBussinesses == null) {
+				throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
+			}
+
+			//List<OrganizacionBO> organizaciones = listBussinesses.getData().stream().map(this::mapOrganization).collect(toList());
+			List<OrganizacionBO> organizaciones = mapOrganizations(listBussinesses.getData().get(0), persona);
+
+
+			emision.getPayload().getAgregarPersona().setOrganizacion(organizaciones);
+        }
+    }
+
+	private OrganizacionBO mapOrganization(final BusinessASO business){
+		OrganizacionBO organizacion = new OrganizacionBO();
+		organizacion.setTipoDocumento("R");
+		organizacion.setNroDocumento(business.getBusinessDocuments().get(0).getDocumentNumber());
+		organizacion.setRazonSocial(business.getLegalName());
+		organizacion.setPaisOrigen(business.getFormation().getCountry().getName());
+		organizacion.setFechaConstitucion(business.getFormation().getDate());
+		organizacion.setFechaInicioActividad(business.getAnnualSales().getStartDate());
+		organizacion.setTipoOrganizacion(business.getBusinessGroup().getId());
+		organizacion.setGrupoEconomico(business.getBusinessGroup().getId());
+		organizacion.setCiiu(business.getEconomicActivity().getId());
+		organizacion.setTelefonoFijo(business.getContactDetails().stream().filter(
+				d -> d.getContactType().getId().equals(ContactTypeEnum.PHONE_NUMBER.getValue())).findFirst().orElse(new ContactDetailASO()).getContact());
+		organizacion.setCorreoElectronico(business.getContactDetails().stream().filter(
+				d -> d.getContactType().getId().equals(ContactTypeEnum.EMAIL.getValue())).findFirst().orElse(new ContactDetailASO()).getContact());
+		return organizacion;
+	}
+
+	private List<OrganizacionBO> mapOrganizations(final BusinessASO business, PersonaBO persona){
+		List<OrganizacionBO> organizaciones = new ArrayList<>();
+		OrganizacionBO organizacion = new OrganizacionBO();
+		organizacion.setTipoDocumento("R");
+		organizacion.setNroDocumento(business.getBusinessDocuments().get(0).getDocumentNumber());
+		organizacion.setRazonSocial(business.getLegalName());
+		organizacion.setPaisOrigen(business.getFormation().getCountry().getName());
+		organizacion.setFechaConstitucion(business.getFormation().getDate());
+		organizacion.setFechaInicioActividad(business.getAnnualSales().getStartDate());
+		organizacion.setTipoOrganizacion(business.getBusinessGroup().getId());
+		organizacion.setGrupoEconomico(business.getBusinessGroup().getId());
+		organizacion.setCiiu(business.getEconomicActivity().getId());
+		organizacion.setTelefonoFijo(business.getContactDetails().stream().filter(
+				d -> d.getContactType().getId().equals(ContactTypeEnum.PHONE_NUMBER.getValue())).findFirst().orElse(new ContactDetailASO()).getContact());
+		organizacion.setCorreoElectronico(business.getContactDetails().stream().filter(
+				d -> d.getContactType().getId().equals(ContactTypeEnum.EMAIL.getValue())).findFirst().orElse(new ContactDetailASO()).getContact());
+		int[] intArray = new int[]{ 8,9,23 };
+		for(int i=0; i<intArray.length; i++){
+			organizacion.setRol(intArray[i]);
+			organizaciones.add(organizacion);
+		}
+		return organizaciones;
 	}
 
 	private void evaluateRequiredPayment(PolicyDTO requestBody) {
@@ -346,6 +419,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				Map<String, Object> responseQueryGetHomeRiskDirection= pisdR021.executeGetHomeRiskDirection(responseBody.getQuotationId());
 				email = this.mapperHelper.buildCreateEmailRequestHome(emissionDao, responseBody, policyNumber, customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetHomeInfo),
 				validateResponseQueryHomeRiskDirectionFields(responseQueryGetHomeRiskDirection));
+				break;
+			case INSURANCE_PRODUCT_TYPE_FLEXIPYME:
+				Map<String, Object> responseQueryGetEdificationInfo = pisdR021.executeGetHomeInfoForEmissionService(responseBody.getQuotationId());
+				Map<String, Object> responseQueryGetEdificationRiskDirection= pisdR021.executeGetHomeRiskDirection(responseBody.getQuotationId());
+				email = this.mapperHelper.buildCreateEmailRequestFlexipyme(emissionDao, responseBody, policyNumber, customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetEdificationInfo),
+						validateResponseQueryHomeRiskDirectionFields(responseQueryGetEdificationRiskDirection));
 				break;
 			default:
 				break;

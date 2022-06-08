@@ -128,10 +128,13 @@ public class MapperHelper {
     private static final String TEMPLATE_EMAIL_CODE_VEH = "PLT00945";
     private static final String SUBJECT_EMAIL_VEH = "!Genial! Acabas de comprar tu seguro vehicular con éxito";
     private static final String MAIL_SENDER = "procesos@bbva.com.pe";
+    private static final String MAIL_SUBJECT_FLEXIPYME = "mail.subject.flexipyme";
+    private static final String MAIL_SENDER_FLEXIPYME = "mail.sender.flexipyme";
 
     private static final String GMT_TIME_ZONE = "GMT";
 
     private static final String TEMPLATE_EMAIL_CODE_HOME = "PLT00968";
+    private static final String TEMPLATE_EMAIL_CODE_FLEXIPYME = "PLT00991";
     private static final String SUBJECT_EMAIL_HOME = "!Genial! Acabas de comprar tu Seguro Hogar Total con éxito";
     private static final String NONE = "none";
     private static final String PEN_CURRENCY = "S/";
@@ -833,6 +836,19 @@ public class MapperHelper {
         return email;
     }
 
+    public CreateEmailASO buildCreateEmailRequestFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection){
+        CreateEmailASO email = new CreateEmailASO();
+        email.setApplicationId(TEMPLATE_EMAIL_CODE_FLEXIPYME.concat(format.format(new Date())));
+        email.setRecipient("0,".concat(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()));
+        email.setSubject(applicationConfigurationService.getProperty(MAIL_SUBJECT_FLEXIPYME));
+        String[] data = getMailBodyDataFlexipyme(emissionDao, responseBody, policyNumber, customerInfo, homeInfo, riskDirection);
+        email.setBody(getEmailBodySructure2(data,TEMPLATE_EMAIL_CODE_FLEXIPYME));
+        email.setSender(applicationConfigurationService.getProperty(MAIL_SENDER_FLEXIPYME));
+        Gson log = new Gson();
+        LOGGER.info("arguments email Home {}", log.toJson(email));
+        return email;
+    }
+
     private ExchangeRateDTO validateExchangeRate(ExchangeRateASO exchangeRateASO) {
         ExchangeRateDTO exchangeRate = null;
         if(exchangeRateASO.getDetail().getFactor().getRatio() != 0) {
@@ -879,6 +895,49 @@ public class MapperHelper {
     }
 
     private String[] getMailBodyDataHome(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection) {
+        String[] bodyData = new String[18];
+
+        if("P".equals(homeInfo.getHousingType())) {
+            bodyData[0] = setName(customerInfo);
+            bodyData[1] = " de tu inmueble";
+            bodyData[3] = "";
+        }else{
+            bodyData[0] = setName(customerInfo);
+            bodyData[1] = " del inmueble que alquilas";
+            bodyData[3] = NONE;
+        }
+        bodyData[2] = homeInfo.getDepartmentName().concat("/").concat(homeInfo.getProvinceName()).concat("/").concat(homeInfo.getDistrictName());
+        bodyData[4] = homeInfo.getAreaPropertyNumber().toString();
+        bodyData[5] = homeInfo.getPropSeniorityYearsNumber().toString();
+        bodyData[6] = homeInfo.getFloorNumber().toString();
+
+        if("05".equals(responseBody.getProductPlan().getId())) {
+            bodyData[7] = "";
+            bodyData[10] = NONE;
+        }else if ("04".equals(responseBody.getProductPlan().getId())){
+            bodyData[7] = NONE;
+            bodyData[10] = "";
+        }else{
+            bodyData[7] = "";
+            bodyData[10] = "";
+        }
+
+        bodyData[8] = PEN_CURRENCY;
+        Locale locale = new Locale ("en", "UK");
+        NumberFormat numberFormat = NumberFormat.getInstance (locale);
+        bodyData[9] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
+        bodyData[11] = Objects.nonNull(homeInfo.getHousingAssetsLoanAmount()) ? numberFormat.format(homeInfo.getHousingAssetsLoanAmount()) : "";
+        bodyData[12] = getContractNumber(responseBody.getId());
+        bodyData[13] = policyNumber;
+        bodyData[14] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
+        bodyData[15] = emissionDao.getPaymentFrequencyName();
+        bodyData[16] = responseBody.getProductPlan().getDescription();
+        bodyData[17] = riskDirection;
+
+        return bodyData;
+    }
+
+    private String[] getMailBodyDataFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection) {
         String[] bodyData = new String[18];
 
         if("P".equals(homeInfo.getHousingType())) {

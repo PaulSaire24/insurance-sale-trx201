@@ -9,10 +9,15 @@ import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r201.impl.util.AsoExceptionHandler;
 import com.bbva.rbvd.lib.r201.impl.util.JsonHelper;
 import com.bbva.rbvd.lib.r201.impl.util.RimacExceptionHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -25,6 +30,7 @@ import javax.ws.rs.HttpMethod;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class RBVDR201Impl extends RBVDR201Abstract {
 
@@ -173,6 +179,32 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	
 		LOGGER.info("***** RBVDR201Impl - executeGifoleEmisionService END *****");
 		return httpStatus;
+	}
+
+	@Override
+	public ListBusinessesASO executeGetListBusinesses(String customerId, String expands) {
+		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START customerId ***** ", customerId);
+		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START expands ***** ", expands);
+		Map<String, Object> pathParams = new HashMap<>();
+		pathParams.put("customerId", customerId);
+		if (StringUtils.isNotBlank(expands)) pathParams.put("expand", expands);
+		ListBusinessesASO responseList = null;
+		BusinessASO output = null;
+		String responJsons = "";
+		try {
+			responseList = this.internalApiConnector.getForObject(RBVDProperties.ID_API_LIST_BUSINESSES.getValue()
+					, ListBusinessesASO.class, pathParams);
+			if (responseList != null && responseList.getData() != null && !responseList.getData().isEmpty()) {
+				output = responseList.getData().get(0);
+				LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses ***** output: {}", output);
+				responJsons = getRequestBodyAsJsonFormat(responseList.getData().get(0));
+			}
+		} catch (RestClientException e) {
+			LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses ***** Exception: {}", e.getMessage());
+		}
+		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses output ***** Response: {}", responJsons);
+		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses END getSuccess ***** ");
+		return responseList;
 	}
 
 	private String getRequestBodyAsJsonFormat(Object requestBody) {
