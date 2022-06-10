@@ -123,7 +123,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	@Override
 	public CustomerListASO executeGetCustomerInformation(String customerId) {
-		LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation START customerId ***** ", customerId);
+		LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation START ***** customerId: {} ", customerId);
 
 		Map<String, Object> pathParams = new HashMap<>();
 		pathParams.put("customerId", customerId);
@@ -137,7 +137,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			if (responseList != null && responseList.getData() != null && !responseList.getData().isEmpty()) {
 
 				output = responseList.getData().get(0);
-				LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ENTRA***** " ,output.getFirstName()
+				LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ENTRA***** output: {}" ,output.getFirstName()
 						+" - "+ output.getLastName()+" - "+ output.getBirthData().getBirthDate()+" - "
 						+ output.getIdentityDocuments().get(0).getDocumentType());
 				responJsons = getRequestBodyAsJsonFormat(responseList.getData().get(0));
@@ -181,8 +181,8 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	@Override
 	public ListBusinessesASO executeGetListBusinesses(String customerId, String expands) {
-		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START customerId ***** ", customerId);
-		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START expands ***** ", expands);
+		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START customerId: {} ***** ", customerId);
+		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START expands: {} ***** ", expands);
 		Map<String, Object> pathParams = new HashMap<>();
 		pathParams.put("customerId", customerId);
 		if (StringUtils.isNotBlank(expands)) pathParams.put("expand", expands);

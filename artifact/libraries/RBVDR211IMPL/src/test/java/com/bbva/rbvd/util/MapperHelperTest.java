@@ -1344,16 +1344,29 @@ public class MapperHelperTest {
         apxRequest.getFirstInstallment().getPaymentAmount().setCurrency("PEN");
         apxRequest.getProductPlan().setDescription("PLAN CONTENIDO");
         apxRequest.getProductPlan().setId("04");
+        apxRequest.setParticipants(null);
         CreateEmailASO email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
                 rimacResponse.getPayload().getNumeroPoliza(), customerList,
                 emissionDAO, "riskDirection", "Empresa S.A.");
         assertNotNull(email.getBody());
 
         emissionDAO.setHousingType("I");
+        ParticipantDTO legalParticipant = new ParticipantDTO();
+        ParticipantTypeDTO participantType = new ParticipantTypeDTO();
+        participantType.setId("LEGAL_REPRESENTATIVE");
+        legalParticipant.setParticipantType(participantType);
+        apxRequest.setParticipants(Collections.singletonList(legalParticipant));
         email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
                 rimacResponse.getPayload().getNumeroPoliza(), customerList,
                 emissionDAO, "riskDirection", null);
         assertNotNull(email.getBody());
 
+        IdentityDocumentDTO document = new IdentityDocumentDTO();
+        document.setDocumentType(new DocumentTypeDTO());
+        legalParticipant.setIdentityDocument(document);
+        email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
+                rimacResponse.getPayload().getNumeroPoliza(), customerList,
+                emissionDAO, "riskDirection", null);
+        assertNotNull(email.getBody());
     }
 }

@@ -14,6 +14,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.lib.r014.PISDR014;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
@@ -39,6 +40,7 @@ import org.springframework.web.client.RestClientException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -292,6 +294,10 @@ public class RBVDR201Test {
 		ListBusinessesASO validation = rbvdR201.executeGetListBusinesses("90008603", null);
 		assertNotNull(validation);
 
+		validation = rbvdR201.executeGetListBusinesses("90008603", "ABC");
+		assertNotNull(validation);
+
+		businesses.setData(Collections.singletonList(new BusinessASO()));
 		validation = rbvdR201.executeGetListBusinesses("90008603", "ABC");
 		assertNotNull(validation);
 	}

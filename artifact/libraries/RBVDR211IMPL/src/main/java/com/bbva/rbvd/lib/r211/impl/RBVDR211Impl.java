@@ -130,9 +130,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
 
 				setOrganization(generalEmisionRequest, requestBody.getHolder().getId(), customerList);
-				if (generalEmisionRequest.getPayload().getAgregarPersona().getOrganizacion() != null) {
-					legalName = generalEmisionRequest.getPayload().getAgregarPersona().getOrganizacion().get(0).getNombreComercial();
-				}
+				legalName = getLegalName(generalEmisionRequest);
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(generalEmisionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			}else{
 
@@ -201,11 +199,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Send Email *****");
 			Integer httpStatusEmail = this.rbvdR201.executeCreateEmail(email);
 
-			if(Objects.nonNull(httpStatusEmail) && httpStatusEmail == HttpStatus.OK.value()) {
-				LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email sent *****");
-			} else {
-				LOGGER.debug("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email not sent, something went wrong *****");
-			}
+			printEmailLog(httpStatusEmail);
 
 			String gifoleFlag = this.applicationConfigurationService.getProperty(GIFOLE_SALES_ASO);
 			
@@ -224,13 +218,27 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	}
 
+	private void printEmailLog(Integer httpStatusEmail){
+		if(Objects.nonNull(httpStatusEmail) && httpStatusEmail == HttpStatus.OK.value()) {
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email sent *****");
+		} else {
+			LOGGER.debug("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email not sent, something went wrong *****");
+		}
+	}
+
+	private String getLegalName(EmisionBO generalEmisionRequest){
+		if (generalEmisionRequest.getPayload().getAgregarPersona().getOrganizacion() != null) {
+			return generalEmisionRequest.getPayload().getAgregarPersona().getOrganizacion().get(0).getNombreComercial();
+		}
+		return null;
+	}
+
     private void setOrganization(EmisionBO emision, String customerId, CustomerListASO customerList){
 		PersonaBO persona = emision.getPayload().getAgregarPersona().getPersona().get(0);
         CustomerBO customer = customerList.getData().get(0);
         String tipoDoc = this.applicationConfigurationService.getProperty(customer.getIdentityDocuments().get(0).getDocumentType().getId());
         String nroDoc = customer.getIdentityDocuments().get(0).getDocumentNumber();
         if (RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20")){
-			//this.kbtqR110.executeListCustomerb(new CustomerEntity());
 
             ListBusinessesASO listBussinesses = this.rbvdR201.executeGetListBusinesses(customerId, null);
 			if (listBussinesses == null) {

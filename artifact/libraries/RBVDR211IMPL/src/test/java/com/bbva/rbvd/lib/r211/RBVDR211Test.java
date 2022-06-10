@@ -321,7 +321,7 @@ public class RBVDR211Test {
 
 		assertNotNull(validation);
 		//Now, APX sets isPaymentRequired value
-		assertFalse(validation.getFirstInstallment().getIsPaymentRequired());
+		assertTrue(validation.getFirstInstallment().getIsPaymentRequired());
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getPromoter().getId());
 
@@ -558,6 +558,7 @@ public class RBVDR211Test {
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertNotNull(validation);
 	}
+
 	@Test
 	public void executeBusinessLogicEmissionGenerateEmailFlexipymeTest() throws IOException {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionGenerateEmailFlexipymeTest...");

@@ -117,6 +117,7 @@ public class MapperHelper {
     private static final String RECEIPT_DEFAULT_DATE_VALUE = "01/01/0001";
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
     private static final String TAG_ENDORSEE = "ENDORSEE";
+    private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
 
 
     private static final String TEMPLATE_EMAIL_CODE_VEH = "PLT00945";
@@ -932,7 +933,7 @@ public class MapperHelper {
     }
 
     private String[] getMailBodyDataFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection, String legalName) {
-        String[] bodyData = new String[11];
+        String[] bodyData = new String[13];
 
         if("P".equals(homeInfo.getHousingType())) {
             bodyData[0] = ObjectUtils.defaultIfNull(legalName, setName(customerInfo)) ;
@@ -952,6 +953,18 @@ public class MapperHelper {
         bodyData[8] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getHousingAssetsLoanAmount()) : "";
         bodyData[9] = emissionDao.getPaymentFrequencyName();
         bodyData[10] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
+        if (responseBody.getParticipants() != null) {
+            ParticipantDTO legalRepre = responseBody.getParticipants().stream().filter(
+                    p -> TAG_LEGAL_REPRESENTATIVE.equals(p.getParticipantType().getId().toUpperCase()))
+                    .findFirst().orElse(null);
+            if (legalRepre != null && legalRepre.getIdentityDocument() != null){
+                bodyData[11] = legalRepre.getIdentityDocument().getDocumentType().getId();
+                bodyData[12] = legalRepre.getIdentityDocument().getNumber();
+            }else {
+                bodyData[11] = NONE;
+                bodyData[12] = NONE;
+            }
+        }
 
         return bodyData;
     }
