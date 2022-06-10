@@ -135,6 +135,21 @@ public class RBVDR211Test {
 	}
 
 	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithPolicyAlreadyExistsError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithPolicyAlreadyExistsError...");
+
+		Map<String, Object> responseValidateIfPolicyExists = new HashMap<>();
+		responseValidateIfPolicyExists.put(RBVDProperties.FIELD_RESULT_NUMBER.getValue(), BigDecimal.ONE);
+
+		when(pisdR012.executeValidateIfPolicyExists(anyString())).thenReturn(responseValidateIfPolicyExists);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.POLICY_ALREADY_EXISTS.getAdviceCode());
+	}
+
+	@Test
 	public void executeBusinessLogicEmissionPrePolicyWithNonExistentQuotation() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithNonExistentQuotation...");
 

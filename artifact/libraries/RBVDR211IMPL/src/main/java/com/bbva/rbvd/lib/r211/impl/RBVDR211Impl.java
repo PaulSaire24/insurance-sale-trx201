@@ -1,21 +1,35 @@
 package com.bbva.rbvd.lib.r211.impl;
 
-import static java.util.stream.Collectors.toList;
-import static org.springframework.util.CollectionUtils.isEmpty;
-
-import java.math.BigDecimal;
-import java.util.*;
-
-import com.bbva.kbtq.dto.c101.entities.CustomerEntity;
+import com.bbva.apx.exception.business.BusinessException;
+import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
+import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.bo.ContactDetailsBO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
-import com.bbva.rbvd.dto.insrncsale.aso.ContactDetailASO;
+import com.bbva.pisd.dto.insurance.utils.PISDErrors;
+import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.pisd.dto.insurance.utils.PISDValidation;
+import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
+import com.bbva.rbvd.dto.homeinsrc.utils.HomeInsuranceProperty;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.OrganizacionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
-import com.bbva.rbvd.dto.insrncsale.utils.*;
-import org.apache.commons.lang3.ObjectUtils;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
+import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
+import com.bbva.rbvd.dto.insrncsale.utils.ContactTypeEnum;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -24,26 +38,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
-import com.bbva.apx.exception.business.BusinessException;
-import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
-import com.bbva.pisd.dto.insurance.utils.PISDErrors;
-import com.bbva.pisd.dto.insurance.utils.PISDProperties;
-import com.bbva.pisd.dto.insurance.utils.PISDValidation;
-import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
-import com.bbva.rbvd.dto.homeinsrc.utils.HomeInsuranceProperty;
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
-import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
+import java.math.BigDecimal;
+import java.util.*;
+
+import static java.util.Objects.nonNull;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
@@ -80,6 +79,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		String legalName = null;
 
 		try {
+
+			Map<String, Object> responseValidateIfPolicyExists = pisdR012.executeValidateIfPolicyExists(requestBody.getQuotationId());
+
+			validateIfPolicyExists(responseValidateIfPolicyExists);
 
 			Map<String, Object> responseQueryGetRequiredFields = pisdR012.executeGetRequiredFieldsForEmissionService(requestBody.getQuotationId());
 
@@ -238,17 +241,17 @@ public class RBVDR211Impl extends RBVDR211Abstract {
         }
     }
 
-	private List<OrganizacionBO> mapOrganizations(final BusinessASO business, PersonaBO persona, CustomerBO customer){
+	private List<OrganizacionBO> mapOrganizations(final BusinessASO business, PersonaBO persona, CustomerBO customer) {
 		List<OrganizacionBO> organizaciones = new ArrayList<>();
 
 		String fijo = customer.getContactDetails().stream().filter(
-				d -> ContactTypeEnum.PHONE_NUMBER.getValue().equals(d.getContactType().getId())).findFirst().
+						d -> ContactTypeEnum.PHONE_NUMBER.getValue().equals(d.getContactType().getId())).findFirst().
 				orElse(new ContactDetailsBO()).getContact();
 		String correo = customer.getContactDetails().stream().filter(
-				d -> ContactTypeEnum.EMAIL.getValue().equals(d.getContactType().getId())).findFirst().
+						d -> ContactTypeEnum.EMAIL.getValue().equals(d.getContactType().getId())).findFirst().
 				orElse(new ContactDetailsBO()).getContact();
-		int[] intArray = new int[]{ 8,9,23 };
-		for(int i=0; i<intArray.length; i++){
+		int[] intArray = new int[]{8, 9, 23};
+		for (int i = 0; i < intArray.length; i++) {
 			OrganizacionBO organizacion = new OrganizacionBO();
 			organizacion.setDireccion(persona.getDireccion());
 			organizacion.setRol(intArray[i]);
@@ -273,6 +276,13 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			organizaciones.add(organizacion);
 		}
 		return organizaciones;
+	}
+
+	private void validateIfPolicyExists(Map<String, Object> responseValidateIfPolicyExists) {
+		BigDecimal resultNumber = (BigDecimal) responseValidateIfPolicyExists.get(RBVDProperties.FIELD_RESULT_NUMBER.getValue());
+		if(nonNull(resultNumber) && resultNumber.compareTo(BigDecimal.ONE) == 0) {
+			throw RBVDValidation.build(RBVDErrors.POLICY_ALREADY_EXISTS);
+		}
 	}
 
 	private void evaluateRequiredPayment(PolicyDTO requestBody) {
