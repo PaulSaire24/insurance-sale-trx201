@@ -41,15 +41,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuranceCompanyASO;
 
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.FinanciamientoBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarPersonaBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.CrearCronogramaBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
@@ -69,9 +61,11 @@ import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
+import com.bbva.rbvd.dto.insrncsale.utils.HolderTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.google.gson.Gson;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -836,16 +830,16 @@ public class MapperHelper {
         return email;
     }
 
-    public CreateEmailASO buildCreateEmailRequestFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection){
+    public CreateEmailASO buildCreateEmailRequestFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection, String legalName){
         CreateEmailASO email = new CreateEmailASO();
         email.setApplicationId(TEMPLATE_EMAIL_CODE_FLEXIPYME.concat(format.format(new Date())));
         email.setRecipient("0,".concat(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()));
         email.setSubject(applicationConfigurationService.getProperty(MAIL_SUBJECT_FLEXIPYME));
-        String[] data = getMailBodyDataFlexipyme(emissionDao, responseBody, policyNumber, customerInfo, homeInfo, riskDirection);
+        String[] data = getMailBodyDataFlexipyme(emissionDao, responseBody, policyNumber, customerInfo, homeInfo, riskDirection, legalName);
         email.setBody(getEmailBodySructure2(data,TEMPLATE_EMAIL_CODE_FLEXIPYME));
         email.setSender(applicationConfigurationService.getProperty(MAIL_SENDER_FLEXIPYME));
         Gson log = new Gson();
-        LOGGER.info("arguments email Home {}", log.toJson(email));
+        LOGGER.info("arguments email Flexipyme {}", log.toJson(email));
         return email;
     }
 
@@ -937,45 +931,27 @@ public class MapperHelper {
         return bodyData;
     }
 
-    private String[] getMailBodyDataFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection) {
-        String[] bodyData = new String[18];
+    private String[] getMailBodyDataFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection, String legalName) {
+        String[] bodyData = new String[11];
 
         if("P".equals(homeInfo.getHousingType())) {
-            bodyData[0] = setName(customerInfo);
-            bodyData[1] = " de tu inmueble";
-            bodyData[3] = "";
+            bodyData[0] = ObjectUtils.defaultIfNull(legalName, setName(customerInfo)) ;
+            bodyData[2] = HolderTypeEnum.OWNER.getName();
         }else{
             bodyData[0] = setName(customerInfo);
-            bodyData[1] = " del inmueble que alquilas";
-            bodyData[3] = NONE;
+            bodyData[2] = HolderTypeEnum.TENANT.getName();
         }
-        bodyData[2] = homeInfo.getDepartmentName().concat("/").concat(homeInfo.getProvinceName()).concat("/").concat(homeInfo.getDistrictName());
-        bodyData[4] = homeInfo.getAreaPropertyNumber().toString();
-        bodyData[5] = homeInfo.getPropSeniorityYearsNumber().toString();
-        bodyData[6] = homeInfo.getFloorNumber().toString();
-
-        if("05".equals(responseBody.getProductPlan().getId())) {
-            bodyData[7] = "";
-            bodyData[10] = NONE;
-        }else if ("04".equals(responseBody.getProductPlan().getId())){
-            bodyData[7] = NONE;
-            bodyData[10] = "";
-        }else{
-            bodyData[7] = "";
-            bodyData[10] = "";
-        }
-
-        bodyData[8] = PEN_CURRENCY;
+        bodyData[1] = responseBody.getProductPlan().getDescription();
+        bodyData[3] = riskDirection;
+        bodyData[4] = homeInfo.getPropSeniorityYearsNumber().toString();
+        bodyData[5] = homeInfo.getFloorNumber().toString();
+        bodyData[6] = getContractNumber(responseBody.getId());
+        bodyData[7] = policyNumber;
         Locale locale = new Locale ("en", "UK");
         NumberFormat numberFormat = NumberFormat.getInstance (locale);
-        bodyData[9] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
-        bodyData[11] = Objects.nonNull(homeInfo.getHousingAssetsLoanAmount()) ? numberFormat.format(homeInfo.getHousingAssetsLoanAmount()) : "";
-        bodyData[12] = getContractNumber(responseBody.getId());
-        bodyData[13] = policyNumber;
-        bodyData[14] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
-        bodyData[15] = emissionDao.getPaymentFrequencyName();
-        bodyData[16] = responseBody.getProductPlan().getDescription();
-        bodyData[17] = riskDirection;
+        bodyData[8] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getHousingAssetsLoanAmount()) : "";
+        bodyData[9] = emissionDao.getPaymentFrequencyName();
+        bodyData[10] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
 
         return bodyData;
     }
@@ -989,7 +965,6 @@ public class MapperHelper {
         }
         return "";
     }
-
 
     private String getEmailBodySructure1(String[] data, String emailCode) {
         StringBuilder body = new StringBuilder();

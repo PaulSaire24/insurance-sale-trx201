@@ -1324,4 +1324,36 @@ public class MapperHelperTest {
         assertNotNull(response2.getHolder());
     }
 
+    @Test
+    public void buildCreateEmailRequestFlexipyme_OK() {
+        apxRequest.setId("00110057794000023694");
+        apxRequest.getProductPlan().setDescription("PLAN BASICO");
+
+        when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn(null);
+        when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
+        when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
+
+        SimltInsuredHousingDAO emissionDAO = new SimltInsuredHousingDAO();
+        emissionDAO.setDepartmentName("LIMA");
+        emissionDAO.setProvinceName("LIMA");
+        emissionDAO.setDistrictName("LINCE");
+        emissionDAO.setHousingType("P");
+        emissionDAO.setAreaPropertyNumber(new BigDecimal(100));
+        emissionDAO.setPropSeniorityYearsNumber(new BigDecimal(10));
+        emissionDAO.setFloorNumber(new BigDecimal(2));
+        apxRequest.getFirstInstallment().getPaymentAmount().setCurrency("PEN");
+        apxRequest.getProductPlan().setDescription("PLAN CONTENIDO");
+        apxRequest.getProductPlan().setId("04");
+        CreateEmailASO email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
+                rimacResponse.getPayload().getNumeroPoliza(), customerList,
+                emissionDAO, "riskDirection", "Empresa S.A.");
+        assertNotNull(email.getBody());
+
+        emissionDAO.setHousingType("I");
+        email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
+                rimacResponse.getPayload().getNumeroPoliza(), customerList,
+                emissionDAO, "riskDirection", null);
+        assertNotNull(email.getBody());
+
+    }
 }
