@@ -228,24 +228,7 @@ public class MapperHelper {
 
         requestAso.setFirstInstallment(firstInstallment);
 
-        ParticipantASO participant = new ParticipantASO();
-
-        ParticipantTypeASO participantType = new ParticipantTypeASO();
-        participantType.setId(apxRequest.getParticipants().get(0).getParticipantType().getId());
-
-        participant.setParticipantType(participantType);
-        participant.setCustomerId(apxRequest.getParticipants().get(0).getCustomerId());
-
-        IdentityDocumentASO participantIdentityDocument = new IdentityDocumentASO();
-
-        DocumentTypeASO participantDocumentType = new DocumentTypeASO();
-        participantDocumentType.setId(apxRequest.getParticipants().get(0).getIdentityDocument().getDocumentType().getId());
-        participantIdentityDocument.setDocumentType(participantDocumentType);
-        participantIdentityDocument.setNumber(apxRequest.getParticipants().get(0).getIdentityDocument().getNumber());
-
-        participant.setIdentityDocument(participantIdentityDocument);
-
-        requestAso.setParticipants(Collections.singletonList(participant));
+        requestAso.setParticipants(getParticipantASO(apxRequest.getParticipants()));
 
         if(Objects.nonNull(apxRequest.getBusinessAgent())) {
             BusinessAgentASO businessAgent = new BusinessAgentASO();
@@ -274,6 +257,29 @@ public class MapperHelper {
         requestAso.setInsuranceCompany(insuranceCompany);
 
         return requestAso;
+    }
+
+    private List<ParticipantASO> getParticipantASO(List<ParticipantDTO> participants) {
+        if (Objects.isNull(participants)) return null;
+        return participants.stream().map(this::createParticipantASO).collect(Collectors.toList());
+    }
+
+    private ParticipantASO createParticipantASO(ParticipantDTO dto){
+        ParticipantASO participant = new ParticipantASO();
+        ParticipantTypeASO participantType = new ParticipantTypeASO();
+        participantType.setId(dto.getParticipantType().getId());
+        participant.setParticipantType(participantType);
+        participant.setCustomerId(dto.getCustomerId());
+
+        if (Objects.nonNull(dto.getIdentityDocument())){
+            IdentityDocumentASO participantIdentityDocument = new IdentityDocumentASO();
+            DocumentTypeASO participantDocumentType = new DocumentTypeASO();
+            participantDocumentType.setId(dto.getIdentityDocument().getDocumentType().getId());
+            participantIdentityDocument.setNumber(dto.getIdentityDocument().getNumber());
+            participantIdentityDocument.setDocumentType(participantDocumentType);
+            participant.setIdentityDocument(participantIdentityDocument);
+        }
+        return participant;
     }
 
     public EmisionBO buildRequestBodyRimac(PolicyInspectionDTO inspection, String secondParticularDataValue, String channelCode,
@@ -839,8 +845,7 @@ public class MapperHelper {
         String[] data = getMailBodyDataFlexipyme(emissionDao, responseBody, policyNumber, customerInfo, homeInfo, riskDirection, legalName);
         email.setBody(getEmailBodySructure2(data,TEMPLATE_EMAIL_CODE_FLEXIPYME));
         email.setSender(applicationConfigurationService.getProperty(MAIL_SENDER_FLEXIPYME));
-        Gson log = new Gson();
-        LOGGER.info("arguments email Flexipyme {}", log.toJson(email));
+        LOGGER.info("arguments email Flexipyme {}", email);
         return email;
     }
 
@@ -955,7 +960,7 @@ public class MapperHelper {
         bodyData[10] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
         if (responseBody.getParticipants() != null) {
             ParticipantDTO legalRepre = responseBody.getParticipants().stream().filter(
-                    p -> TAG_LEGAL_REPRESENTATIVE.equals(p.getParticipantType().getId().toUpperCase()))
+                    p -> TAG_LEGAL_REPRESENTATIVE.equalsIgnoreCase(p.getParticipantType().getId()))
                     .findFirst().orElse(null);
             if (legalRepre != null && legalRepre.getIdentityDocument() != null){
                 bodyData[11] = legalRepre.getIdentityDocument().getDocumentType().getId();
