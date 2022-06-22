@@ -3,6 +3,7 @@ package com.bbva.rbvd.lib.r211.impl.util;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.AmountASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.ContactASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.ContactDetailASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
@@ -1317,7 +1318,23 @@ private Map<String, String> tipeViaList2() {
         periodASO.setName(responseBody.getInstallmentPlan().getPeriod().getName());
         installmentPlanASO.setTotalInstallmentsNumber(responseBody.getInstallmentPlan().getTotalNumberInstallments());
         installmentPlanASO.setPeriod(periodASO);
+        AmountASO premiumAmount = new AmountASO();
+        premiumAmount.setAmount(new BigDecimal(responseBody.getFirstInstallment().getPaymentAmount().getAmount()));
+        premiumAmount.setCurrency(responseBody.getFirstInstallment().getPaymentAmount().getCurrency());
+        installmentPlanASO.setPremiumAmount(premiumAmount);
         gifoleResponse.setInstallmentPlan(installmentPlanASO);
+        
+        AmountASO totalPremiumAmount = new AmountASO();
+        totalPremiumAmount.setAmount(new BigDecimal(responseBody.getTotalAmount().getAmount()));
+        totalPremiumAmount.setCurrency(responseBody.getTotalAmount().getCurrency());
+        gifoleResponse.setTotalPremiumAmount(totalPremiumAmount);
+
+        com.bbva.pisd.dto.insurance.aso.gifole.BankASO bank = new com.bbva.pisd.dto.insurance.aso.gifole.BankASO();
+        bank.setId(responseBody.getBank().getId());
+        com.bbva.pisd.dto.insurance.aso.gifole.BranchASO branch = new com.bbva.pisd.dto.insurance.aso.gifole.BranchASO();
+        branch.setId(responseBody.getBank().getBranch().getId());
+        bank.setBranch(branch);
+        gifoleResponse.setBank(bank);
         
         Gson log = new Gson();
         LOGGER.info("GifoleResponse output {}", log.toJson(gifoleResponse));
