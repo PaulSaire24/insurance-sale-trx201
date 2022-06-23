@@ -1319,8 +1319,8 @@ private Map<String, String> tipeViaList2() {
         installmentPlanASO.setTotalInstallmentsNumber(responseBody.getInstallmentPlan().getTotalNumberInstallments());
         installmentPlanASO.setPeriod(periodASO);
         AmountASO premiumAmount = new AmountASO();
-        premiumAmount.setAmount(new BigDecimal(responseBody.getFirstInstallment().getPaymentAmount().getAmount()));
-        premiumAmount.setCurrency(responseBody.getFirstInstallment().getPaymentAmount().getCurrency());
+        premiumAmount.setAmount(new BigDecimal(responseBody.getInstallmentPlan().getPaymentAmount().getAmount()));
+        premiumAmount.setCurrency(responseBody.getInstallmentPlan().getPaymentAmount().getCurrency());
         installmentPlanASO.setPremiumAmount(premiumAmount);
         gifoleResponse.setInstallmentPlan(installmentPlanASO);
         
@@ -1335,7 +1335,7 @@ private Map<String, String> tipeViaList2() {
         branch.setId(responseBody.getBank().getBranch().getId());
         bank.setBranch(branch);
         gifoleResponse.setBank(bank);
-        
+
         Gson log = new Gson();
         LOGGER.info("GifoleResponse output {}", log.toJson(gifoleResponse));
 
