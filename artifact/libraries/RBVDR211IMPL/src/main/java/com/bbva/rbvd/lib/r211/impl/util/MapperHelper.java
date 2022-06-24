@@ -1319,13 +1319,13 @@ private Map<String, String> tipeViaList2() {
         installmentPlanASO.setTotalInstallmentsNumber(responseBody.getInstallmentPlan().getTotalNumberInstallments());
         installmentPlanASO.setPeriod(periodASO);
         AmountASO premiumAmount = new AmountASO();
-        premiumAmount.setAmount(new BigDecimal(responseBody.getInstallmentPlan().getPaymentAmount().getAmount()));
+        premiumAmount.setAmount(BigDecimal.valueOf(responseBody.getInstallmentPlan().getPaymentAmount().getAmount()));
         premiumAmount.setCurrency(responseBody.getInstallmentPlan().getPaymentAmount().getCurrency());
         installmentPlanASO.setPremiumAmount(premiumAmount);
         gifoleResponse.setInstallmentPlan(installmentPlanASO);
         
         AmountASO totalPremiumAmount = new AmountASO();
-        totalPremiumAmount.setAmount(new BigDecimal(responseBody.getTotalAmount().getAmount()));
+        totalPremiumAmount.setAmount(BigDecimal.valueOf(responseBody.getTotalAmount().getAmount()));
         totalPremiumAmount.setCurrency(responseBody.getTotalAmount().getCurrency());
         gifoleResponse.setTotalPremiumAmount(totalPremiumAmount);
 
