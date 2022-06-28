@@ -64,9 +64,11 @@ import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.HolderTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -136,7 +138,7 @@ public class MapperHelper {
     private static final String PEN_CURRENCY = "S/";
     private static final String USD_CURRENCY = "US$";
 
-    private static final String RUC_ID = "RUC";
+    private static final String RUC_ID = "R";
 
     private static final String INSURANCE_GIFOLE_VAL = "INSURANCE_CREATION";
     private static final String MASK_VALUE = "****";
@@ -956,7 +958,7 @@ public class MapperHelper {
         bodyData[7] = policyNumber;
         Locale locale = new Locale ("en", "UK");
         NumberFormat numberFormat = NumberFormat.getInstance (locale);
-        bodyData[8] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getHousingAssetsLoanAmount()) : "";
+        bodyData[8] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
         bodyData[9] = emissionDao.getPaymentFrequencyName();
         bodyData[10] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
         if (responseBody.getParticipants() != null) {
@@ -978,8 +980,8 @@ public class MapperHelper {
     private String setName(CustomerListASO responseListCustomers){
         StringBuilder name = new StringBuilder();
         if(Objects.nonNull(responseListCustomers)) {
-            name.append(responseListCustomers.getData().get(0).getFirstName()).append(" ").append(responseListCustomers.getData().get(0).getLastName()).append(" ")
-                    .append(responseListCustomers.getData().get(0).getSecondLastName()).toString();
+            name.append(responseListCustomers.getData().get(0).getFirstName()).append(" ").append(Strings.nullToEmpty( responseListCustomers.getData().get(0).getLastName())).append(" ")
+                    .append(Strings.nullToEmpty( responseListCustomers.getData().get(0).getSecondLastName())).toString();
             return validateSN(name.toString());
         }
         return "";
@@ -1071,7 +1073,7 @@ public class MapperHelper {
 		PersonaBO persona = new PersonaBO();
         List<PersonaBO> personasList = new ArrayList<>();
 	    persona.setTipoDocumento(this.applicationConfigurationService.getProperty(customer.getIdentityDocuments().get(0).getDocumentType().getId()));
-		persona.setNroDocumento(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())?(String)responseQueryGetRequiredFields.get(PISDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue()):customer.getIdentityDocuments().get(0).getDocumentNumber());
+		persona.setNroDocumento(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())?requestBody.getHolder().getIdentityDocument().getNumber():customer.getIdentityDocuments().get(0).getDocumentNumber());
 		persona.setApePaterno(customer.getLastName());
 		persona.setApeMaterno(customer.getSecondLastName());
 		persona.setNombres(customer.getFirstName());
@@ -1276,7 +1278,7 @@ private Map<String, String> tipeViaList2() {
     return map;
 }
 
-    public GifoleInsuranceRequestASO createGifoleRequest(PolicyDTO responseBody, CustomerListASO responseListCustomers){
+    public GifoleInsuranceRequestASO createGifoleRequest(PolicyDTO responseBody, CustomerListASO responseListCustomers, String legalName){
         GifoleInsuranceRequestASO gifoleResponse = new GifoleInsuranceRequestASO();
         QuotationASO quotationASO = new QuotationASO();
         quotationASO.setId(responseBody.getQuotationId());
@@ -1324,8 +1326,16 @@ private Map<String, String> tipeViaList2() {
         com.bbva.pisd.dto.insurance.aso.gifole.HolderASO holderASO = new com.bbva.pisd.dto.insurance.aso.gifole.HolderASO();
         if(Objects.nonNull(responseListCustomers)) {
             CustomerBO customer = responseListCustomers.getData().get(0);
-            holderASO.setFirstName(customer.getFirstName());
-            holderASO.setLastName(customer.getLastName().concat(" ").concat(customer.getSecondLastName()));
+            if (RUC_ID.equalsIgnoreCase(customer.getIdentityDocuments().get(0).getDocumentType().getId())
+                    && StringUtils.startsWith(customer.getIdentityDocuments().get(0).getDocumentNumber(), "20")) {
+                holderASO.setFirstName(legalName);
+            }else{
+                holderASO.setFirstName(customer.getFirstName());
+
+                if (Objects.nonNull(customer.getLastName()) && Objects.nonNull(customer.getSecondLastName()))
+                    holderASO.setLastName(customer.getLastName().concat(" ").concat(customer.getSecondLastName()));
+                else holderASO.setLastName("");
+            }
         }else{
             holderASO.setFirstName("");
             holderASO.setLastName("");

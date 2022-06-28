@@ -2,7 +2,6 @@ package com.bbva.rbvd.lib.r211.impl;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.library.AbstractLibrary;
-import com.bbva.kbtq.lib.r110.KBTQR110;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.pisd.lib.r021.PISDR021;
 import com.bbva.rbvd.lib.r201.RBVDR201;
@@ -18,9 +17,6 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 	protected PISDR012 pisdR012;
 
 	protected PISDR021 pisdR021;
-
-	protected KBTQR110 kbtqR110;
-
 	protected MapperHelper mapperHelper;
 
 
@@ -50,13 +46,6 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 	*/
 	public void setPisdR021(PISDR021 pisdR021) {
 		this.pisdR021 = pisdR021;
-	}
-
-	/**
-	* @param kbtqR110 the this.kbtqR110 to set
-	*/
-	public void setKbtqR110(KBTQR110 kbtqR110) {
-		this.kbtqR110 = kbtqR110;
 	}
 
 	public void setMapperHelper(MapperHelper mapperHelper) {

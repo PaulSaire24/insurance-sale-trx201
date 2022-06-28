@@ -307,7 +307,7 @@ public class RBVDR211Test {
 		assertEquals("026364", validation.getPromoter().getId());
 
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
-		when(mapperHelper.createGifoleRequest(anyObject(), anyObject())).thenReturn(new GifoleInsuranceRequestASO());
+		when(mapperHelper.createGifoleRequest(anyObject(), anyObject(), anyString())).thenReturn(new GifoleInsuranceRequestASO());
 		when(rbvdr201.executeGifoleEmisionService(anyObject())).thenReturn(201);
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
@@ -512,7 +512,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
-		when(mapperHelper.createGifoleRequest(anyObject(), anyObject())).thenReturn(new GifoleInsuranceRequestASO());
+		when(mapperHelper.createGifoleRequest(anyObject(), anyObject(), anyString())).thenReturn(new GifoleInsuranceRequestASO());
 		when(rbvdr201.executeGifoleEmisionService(anyObject())).thenReturn(201);
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
@@ -581,7 +581,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
-		when(mapperHelper.createGifoleRequest(anyObject(), anyObject())).thenReturn(new GifoleInsuranceRequestASO());
+		when(mapperHelper.createGifoleRequest(anyObject(), anyObject(), anyString())).thenReturn(new GifoleInsuranceRequestASO());
 		when(rbvdr201.executeGifoleEmisionService(anyObject())).thenReturn(201);
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
