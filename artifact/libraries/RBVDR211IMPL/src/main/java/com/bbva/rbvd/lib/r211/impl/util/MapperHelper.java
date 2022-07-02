@@ -71,6 +71,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 
 import org.joda.time.DateTime;
@@ -138,7 +139,7 @@ public class MapperHelper {
     private static final String PEN_CURRENCY = "S/";
     private static final String USD_CURRENCY = "US$";
 
-    private static final String RUC_ID = "RUC";
+    private static final String RUC_ID = "R";
 
     private static final String INSURANCE_GIFOLE_VAL = "INSURANCE_CREATION";
     private static final String MASK_VALUE = "****";
@@ -1019,7 +1020,7 @@ public class MapperHelper {
 		PersonaBO persona = new PersonaBO();
         List<PersonaBO> personasList = new ArrayList<>();
 	    persona.setTipoDocumento(this.applicationConfigurationService.getProperty(customer.getIdentityDocuments().get(0).getDocumentType().getId()));
-		persona.setNroDocumento(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())?(String)responseQueryGetRequiredFields.get(PISDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue()):customer.getIdentityDocuments().get(0).getDocumentNumber());
+		persona.setNroDocumento(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())?requestBody.getHolder().getIdentityDocument().getNumber():customer.getIdentityDocuments().get(0).getDocumentNumber());
 		persona.setApePaterno(customer.getLastName());
 		persona.setApeMaterno(customer.getSecondLastName());
 		persona.setNombres(customer.getFirstName());
@@ -1273,7 +1274,7 @@ private Map<String, String> tipeViaList2() {
         if(Objects.nonNull(responseListCustomers)) {
             CustomerBO customer = responseListCustomers.getData().get(0);
             holderASO.setFirstName(customer.getFirstName());
-            holderASO.setLastName(customer.getLastName().concat(" ").concat(customer.getSecondLastName()));
+            holderASO.setLastName(Strings.nullToEmpty(customer.getLastName()).concat(" ").concat(Strings.nullToEmpty(customer.getSecondLastName())));
         }else{
             holderASO.setFirstName("");
             holderASO.setLastName("");
