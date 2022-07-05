@@ -160,4 +160,4 @@
 - **Versión 0.5.1**: Se realiza el alta de un seguro con endoso de cesión de derechos.
 - **Versión 0.5.5**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
 - **Versión 0.5.14**: Esta versión incluye el registro de los leads de venta en el servicio de GIFOLE, adicionalmente, se añade la validación para comprobar la vigencia de una poliza.
-- **Versión 0.5.15**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
+- **Versión 0.5.16**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
