@@ -154,6 +154,11 @@ public class MapperHelperTest {
         assertNotNull(validation.getBank().getBranch().getId());
         assertNotNull(validation.getInsuranceCompany());
         assertNotNull(validation.getInsuranceCompany().getId());
+
+        apxRequest.setBusinessAgent(null);
+        apxRequest.setPromoter(null);
+        DataASO validation2 = mapperHelper.buildAsoRequest(apxRequest);
+
     }
 
     @Test
@@ -350,7 +355,7 @@ public class MapperHelperTest {
         rimacResponseNull.setPayload(payloadEmisionBO);
         apxRequest.setBusinessAgent(null);
         apxRequest.setPromoter(null);
-        validation = mapperHelper.buildInsuranceContract(rimacResponseNull, apxRequest, requiredFieldsEmissionDao, "00110241400000001102", false);
+        validation = mapperHelper.buildInsuranceContract(rimacResponseNull, apxRequest, requiredFieldsEmissionDao, "00110241400000001102", true);
     }
 
     @Test
@@ -952,6 +957,9 @@ public class MapperHelperTest {
         assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
         assertNull(apxRequest.getFirstInstallment().getExchangeRate());
         
+        apxRequest.getFirstInstallment().setIsPaymentRequired(false);
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
     }
 
     @Test
@@ -1253,6 +1261,7 @@ public class MapperHelperTest {
         geographicGroupsBOs.add(geographicGroupsBO);
         geographicGroupsBOs.add(geographicGroupsBO1);
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
+        when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("RC");
         EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation2);
 
@@ -1320,6 +1329,11 @@ public class MapperHelperTest {
         assertEquals(response2.getPolicyNumber(), "501481");
         assertNotNull(response2.getProduct());
         assertNotNull(response2.getHolder());
+
+        customerList.getData().get(0).setLastName(null);
+        customerList.getData().get(0).setSecondLastName(null);
+        GifoleInsuranceRequestASO response3 = this.mapperHelper.createGifoleRequest(apxRequest, null);
+        assertEquals(response3.getHolder().getLastName(), "");
     }
 
 }
