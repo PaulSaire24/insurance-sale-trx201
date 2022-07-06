@@ -325,9 +325,15 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			BusinessAgentDTO businessAgent = new BusinessAgentDTO();
 			businessAgent.setId(defaultCode);
+
 			PromoterDTO promoter = new PromoterDTO();
 			promoter.setId(defaultCode);
-
+			if(Objects.nonNull(requestBody.getPromoter())) {
+				promoter.setId(requestBody.getPromoter().getId());
+			}
+			else {
+				promoter.setId(defaultCode);
+			}
 			requestBody.setBusinessAgent(businessAgent);
 			requestBody.setPromoter(promoter);
 		}

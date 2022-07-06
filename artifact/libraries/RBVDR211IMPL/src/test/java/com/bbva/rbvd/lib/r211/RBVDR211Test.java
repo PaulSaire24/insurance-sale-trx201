@@ -323,7 +323,7 @@ public class RBVDR211Test {
 		//Now, APX sets isPaymentRequired value
 		assertTrue(validation.getFirstInstallment().getIsPaymentRequired());
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
-		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getPromoter().getId());
+		assertEquals("026364", validation.getPromoter().getId());
 
 		requestBody.setProductId("832");
 		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
