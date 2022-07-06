@@ -3,6 +3,7 @@ package com.bbva.rbvd.lib.r211.impl.util;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.AmountASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.ContactASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.ContactDetailASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
@@ -63,9 +64,11 @@ import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.HolderTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -135,7 +138,7 @@ public class MapperHelper {
     private static final String PEN_CURRENCY = "S/";
     private static final String USD_CURRENCY = "US$";
 
-    private static final String RUC_ID = "RUC";
+    private static final String RUC_ID = "R";
 
     private static final String INSURANCE_GIFOLE_VAL = "INSURANCE_CREATION";
     private static final String MASK_VALUE = "****";
@@ -228,24 +231,7 @@ public class MapperHelper {
 
         requestAso.setFirstInstallment(firstInstallment);
 
-        ParticipantASO participant = new ParticipantASO();
-
-        ParticipantTypeASO participantType = new ParticipantTypeASO();
-        participantType.setId(apxRequest.getParticipants().get(0).getParticipantType().getId());
-
-        participant.setParticipantType(participantType);
-        participant.setCustomerId(apxRequest.getParticipants().get(0).getCustomerId());
-
-        IdentityDocumentASO participantIdentityDocument = new IdentityDocumentASO();
-
-        DocumentTypeASO participantDocumentType = new DocumentTypeASO();
-        participantDocumentType.setId(apxRequest.getParticipants().get(0).getIdentityDocument().getDocumentType().getId());
-        participantIdentityDocument.setDocumentType(participantDocumentType);
-        participantIdentityDocument.setNumber(apxRequest.getParticipants().get(0).getIdentityDocument().getNumber());
-
-        participant.setIdentityDocument(participantIdentityDocument);
-
-        requestAso.setParticipants(Collections.singletonList(participant));
+        requestAso.setParticipants(getParticipantASO(apxRequest.getParticipants()));
 
         if(Objects.nonNull(apxRequest.getBusinessAgent())) {
             BusinessAgentASO businessAgent = new BusinessAgentASO();
@@ -274,6 +260,29 @@ public class MapperHelper {
         requestAso.setInsuranceCompany(insuranceCompany);
 
         return requestAso;
+    }
+
+    private List<ParticipantASO> getParticipantASO(List<ParticipantDTO> participants) {
+        if (Objects.isNull(participants)) return null;
+        return participants.stream().map(this::createParticipantASO).collect(Collectors.toList());
+    }
+
+    private ParticipantASO createParticipantASO(ParticipantDTO dto){
+        ParticipantASO participant = new ParticipantASO();
+        ParticipantTypeASO participantType = new ParticipantTypeASO();
+        participantType.setId(dto.getParticipantType().getId());
+        participant.setParticipantType(participantType);
+        participant.setCustomerId(dto.getCustomerId());
+
+        if (Objects.nonNull(dto.getIdentityDocument())){
+            IdentityDocumentASO participantIdentityDocument = new IdentityDocumentASO();
+            DocumentTypeASO participantDocumentType = new DocumentTypeASO();
+            participantDocumentType.setId(dto.getIdentityDocument().getDocumentType().getId());
+            participantIdentityDocument.setNumber(dto.getIdentityDocument().getNumber());
+            participantIdentityDocument.setDocumentType(participantDocumentType);
+            participant.setIdentityDocument(participantIdentityDocument);
+        }
+        return participant;
     }
 
     public EmisionBO buildRequestBodyRimac(PolicyInspectionDTO inspection, String secondParticularDataValue, String channelCode,
@@ -839,8 +848,7 @@ public class MapperHelper {
         String[] data = getMailBodyDataFlexipyme(emissionDao, responseBody, policyNumber, customerInfo, homeInfo, riskDirection, legalName);
         email.setBody(getEmailBodySructure2(data,TEMPLATE_EMAIL_CODE_FLEXIPYME));
         email.setSender(applicationConfigurationService.getProperty(MAIL_SENDER_FLEXIPYME));
-        Gson log = new Gson();
-        LOGGER.info("arguments email Flexipyme {}", log.toJson(email));
+        LOGGER.info("arguments email Flexipyme {}", email);
         return email;
     }
 
@@ -950,12 +958,12 @@ public class MapperHelper {
         bodyData[7] = policyNumber;
         Locale locale = new Locale ("en", "UK");
         NumberFormat numberFormat = NumberFormat.getInstance (locale);
-        bodyData[8] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getHousingAssetsLoanAmount()) : "";
+        bodyData[8] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
         bodyData[9] = emissionDao.getPaymentFrequencyName();
         bodyData[10] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
         if (responseBody.getParticipants() != null) {
             ParticipantDTO legalRepre = responseBody.getParticipants().stream().filter(
-                    p -> TAG_LEGAL_REPRESENTATIVE.equals(p.getParticipantType().getId().toUpperCase()))
+                    p -> TAG_LEGAL_REPRESENTATIVE.equalsIgnoreCase(p.getParticipantType().getId()))
                     .findFirst().orElse(null);
             if (legalRepre != null && legalRepre.getIdentityDocument() != null){
                 bodyData[11] = legalRepre.getIdentityDocument().getDocumentType().getId();
@@ -972,8 +980,8 @@ public class MapperHelper {
     private String setName(CustomerListASO responseListCustomers){
         StringBuilder name = new StringBuilder();
         if(Objects.nonNull(responseListCustomers)) {
-            name.append(responseListCustomers.getData().get(0).getFirstName()).append(" ").append(responseListCustomers.getData().get(0).getLastName()).append(" ")
-                    .append(responseListCustomers.getData().get(0).getSecondLastName()).toString();
+            name.append(responseListCustomers.getData().get(0).getFirstName()).append(" ").append(Strings.nullToEmpty( responseListCustomers.getData().get(0).getLastName())).append(" ")
+                    .append(Strings.nullToEmpty( responseListCustomers.getData().get(0).getSecondLastName())).toString();
             return validateSN(name.toString());
         }
         return "";
@@ -1065,7 +1073,7 @@ public class MapperHelper {
 		PersonaBO persona = new PersonaBO();
         List<PersonaBO> personasList = new ArrayList<>();
 	    persona.setTipoDocumento(this.applicationConfigurationService.getProperty(customer.getIdentityDocuments().get(0).getDocumentType().getId()));
-		persona.setNroDocumento(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())?(String)responseQueryGetRequiredFields.get(PISDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue()):customer.getIdentityDocuments().get(0).getDocumentNumber());
+		persona.setNroDocumento(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())?requestBody.getHolder().getIdentityDocument().getNumber():customer.getIdentityDocuments().get(0).getDocumentNumber());
 		persona.setApePaterno(customer.getLastName());
 		persona.setApeMaterno(customer.getSecondLastName());
 		persona.setNombres(customer.getFirstName());
@@ -1270,7 +1278,7 @@ private Map<String, String> tipeViaList2() {
     return map;
 }
 
-    public GifoleInsuranceRequestASO createGifoleRequest(PolicyDTO responseBody, CustomerListASO responseListCustomers){
+    public GifoleInsuranceRequestASO createGifoleRequest(PolicyDTO responseBody, CustomerListASO responseListCustomers, String legalName){
         GifoleInsuranceRequestASO gifoleResponse = new GifoleInsuranceRequestASO();
         QuotationASO quotationASO = new QuotationASO();
         quotationASO.setId(responseBody.getQuotationId());
@@ -1318,8 +1326,16 @@ private Map<String, String> tipeViaList2() {
         com.bbva.pisd.dto.insurance.aso.gifole.HolderASO holderASO = new com.bbva.pisd.dto.insurance.aso.gifole.HolderASO();
         if(Objects.nonNull(responseListCustomers)) {
             CustomerBO customer = responseListCustomers.getData().get(0);
-            holderASO.setFirstName(customer.getFirstName());
-            holderASO.setLastName(customer.getLastName().concat(" ").concat(customer.getSecondLastName()));
+            if (RUC_ID.equalsIgnoreCase(customer.getIdentityDocuments().get(0).getDocumentType().getId())
+                    && StringUtils.startsWith(customer.getIdentityDocuments().get(0).getDocumentNumber(), "20")) {
+                holderASO.setFirstName(legalName);
+            }else{
+                holderASO.setFirstName(customer.getFirstName());
+
+                if (Objects.nonNull(customer.getLastName()) && Objects.nonNull(customer.getSecondLastName()))
+                    holderASO.setLastName(customer.getLastName().concat(" ").concat(customer.getSecondLastName()));
+                else holderASO.setLastName("");
+            }
         }else{
             holderASO.setFirstName("");
             holderASO.setLastName("");
@@ -1364,8 +1380,24 @@ private Map<String, String> tipeViaList2() {
         periodASO.setName(responseBody.getInstallmentPlan().getPeriod().getName());
         installmentPlanASO.setTotalInstallmentsNumber(responseBody.getInstallmentPlan().getTotalNumberInstallments());
         installmentPlanASO.setPeriod(periodASO);
+        AmountASO premiumAmount = new AmountASO();
+        premiumAmount.setAmount(BigDecimal.valueOf(responseBody.getInstallmentPlan().getPaymentAmount().getAmount()));
+        premiumAmount.setCurrency(responseBody.getInstallmentPlan().getPaymentAmount().getCurrency());
+        installmentPlanASO.setPremiumAmount(premiumAmount);
         gifoleResponse.setInstallmentPlan(installmentPlanASO);
         
+        AmountASO totalPremiumAmount = new AmountASO();
+        totalPremiumAmount.setAmount(BigDecimal.valueOf(responseBody.getTotalAmount().getAmount()));
+        totalPremiumAmount.setCurrency(responseBody.getTotalAmount().getCurrency());
+        gifoleResponse.setTotalPremiumAmount(totalPremiumAmount);
+
+        com.bbva.pisd.dto.insurance.aso.gifole.BankASO bank = new com.bbva.pisd.dto.insurance.aso.gifole.BankASO();
+        bank.setId(responseBody.getBank().getId());
+        com.bbva.pisd.dto.insurance.aso.gifole.BranchASO branch = new com.bbva.pisd.dto.insurance.aso.gifole.BranchASO();
+        branch.setId(responseBody.getBank().getBranch().getId());
+        bank.setBranch(branch);
+        gifoleResponse.setBank(bank);
+
         Gson log = new Gson();
         LOGGER.info("GifoleResponse output {}", log.toJson(gifoleResponse));
 

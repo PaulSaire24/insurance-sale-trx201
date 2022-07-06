@@ -307,7 +307,7 @@ public class RBVDR211Test {
 		assertEquals("026364", validation.getPromoter().getId());
 
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
-		when(mapperHelper.createGifoleRequest(anyObject(), anyObject())).thenReturn(new GifoleInsuranceRequestASO());
+		when(mapperHelper.createGifoleRequest(anyObject(), anyObject(), anyString())).thenReturn(new GifoleInsuranceRequestASO());
 		when(rbvdr201.executeGifoleEmisionService(anyObject())).thenReturn(201);
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
@@ -321,7 +321,7 @@ public class RBVDR211Test {
 
 		assertNotNull(validation);
 		//Now, APX sets isPaymentRequired value
-		assertTrue(validation.getFirstInstallment().getIsPaymentRequired());
+		assertFalse(validation.getFirstInstallment().getIsPaymentRequired());
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
 		assertEquals("026364", validation.getPromoter().getId());
 
@@ -512,7 +512,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
-		when(mapperHelper.createGifoleRequest(anyObject(), anyObject())).thenReturn(new GifoleInsuranceRequestASO());
+		when(mapperHelper.createGifoleRequest(anyObject(), anyObject(), anyString())).thenReturn(new GifoleInsuranceRequestASO());
 		when(rbvdr201.executeGifoleEmisionService(anyObject())).thenReturn(201);
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
@@ -581,7 +581,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(200);
 		when(rbvdr201.executeCreateEmail(anyObject())).thenReturn(null);
-		when(mapperHelper.createGifoleRequest(anyObject(), anyObject())).thenReturn(new GifoleInsuranceRequestASO());
+		when(mapperHelper.createGifoleRequest(anyObject(), anyObject(), anyString())).thenReturn(new GifoleInsuranceRequestASO());
 		when(rbvdr201.executeGifoleEmisionService(anyObject())).thenReturn(201);
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());

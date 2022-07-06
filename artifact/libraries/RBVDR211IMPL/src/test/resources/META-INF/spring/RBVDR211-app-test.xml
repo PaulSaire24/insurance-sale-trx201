@@ -23,7 +23,4 @@
 	<bean id="pisdR021" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.pisd.lib.r021.PISDR021"/>
 	</bean>
-	<bean id="kbtqR110" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="com.bbva.kbtq.lib.r110.KBTQR110"/>
-	</bean>
 </beans>
