@@ -113,11 +113,11 @@
     - Avisos a retornar: -
 - **Método executeGetCustomerInformation(String customerId)**: Método para obtener información del cliente a través del servicio ASO listCustomers
     - Avisos a retornar: PISD00120034
-- **Método executeGifoleEmisionService(GifoleInsuranceRequestASO requestBody)**: Método para obtener para registrar leads de venta a través del servicio ASO createGifoleInsuranceRequest
+- **Método executeGifoleEmisionService(GifoleInsuranceRequestASO requestBody)**: Método para registrar leads de venta a través del servicio ASO createGifoleInsuranceRequest
     - Avisos a retornar: PISD00120019
 
 #### 3.1.2. Libreria RBVDR211
-> Orientada a realizar la lógica de negocio de la transacción RBVDT201.
+> Orientada a realizar la lógica de negocio de la transacción RBVDT201 que incluye los pasos para crear la contratación tanto para un producto de Seguro Vehicular, Seguro Hogar Total.
 
 - **Método executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody)**: Método que ejecuta toda la lógica de negocio
     - Avisos a retornar: RBVD00000129, RBVD00000121, RBVD00000122, RBVD00000123 y RBVD00000124.
@@ -125,14 +125,14 @@
 ### 3.2. Librerias Externas
 > En este apartado se detallan las librebrias externas que hace uso esta aplicacion para acceder a fuentes de terceros.
 
-- **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse/doc?at=refs%2Fheads%2Frelease%2F0.23)
+- **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse/doc/PISD_APX_Library_PISDR012.md)
     - Metodos reutilizados: executeGetRequiredFieldsForEmissionService(), executeGetPaymentPeriod(), executeSaveContract(), executeSaveContractEndoserment(), executeSaveReceipts(), executeSaveContractMove(), 
       executeGetRolesByProductAndModality(), executeSaveParticipants().
 
-- **Libreria PISDR021**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib21/browse/doc?at=release/0.1)
+- **Libreria PISDR021**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib21/browse/doc/PISD_APX_Library_PISDR021.md)
     - Metodos reutilizados: executeGetHomeInfoForEmissionService().
 
-- **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md?at=refs%2Fheads%2Frelease%2F0.10)
+- **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md)
     -  Metodos reutilizados: executeSignatureConstruction().
 
 ## 4. Mensajes de Error y Avisos:
@@ -160,4 +160,4 @@
 - **Versión 0.5.1**: Se realiza el alta de un seguro con endoso de cesión de derechos.
 - **Versión 0.5.5**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
 - **Versión 0.5.14**: Esta versión incluye el registro de los leads de venta en el servicio de GIFOLE, adicionalmente, se añade la validación para comprobar la vigencia de una poliza.
-- **Versión 0.5.15**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
+- **Versión 0.5.18**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
