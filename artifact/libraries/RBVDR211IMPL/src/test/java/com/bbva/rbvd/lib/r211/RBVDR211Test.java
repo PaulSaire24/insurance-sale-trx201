@@ -20,12 +20,12 @@ import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
-import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,9 +36,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -132,6 +130,7 @@ public class RBVDR211Test {
 		payload.setAgregarPersona(agregarPersona);
 		generalEmisionRequest.setPayload(payload);
 		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(), anyObject())).thenReturn(generalEmisionRequest);
+		when(mapperHelper.getPersonType(anyObject())).thenReturn(PersonTypeEnum.NATURAL);
 	}
 
 	@Test
@@ -321,7 +320,7 @@ public class RBVDR211Test {
 
 		assertNotNull(validation);
 		//Now, APX sets isPaymentRequired value
-		assertFalse(validation.getFirstInstallment().getIsPaymentRequired());
+		assertTrue(validation.getFirstInstallment().getIsPaymentRequired());
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
 		assertEquals("026364", validation.getPromoter().getId());
 

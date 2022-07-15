@@ -17,11 +17,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DetailASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.FactorASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
@@ -29,6 +25,7 @@ import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.*;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insrncsale.policy.*;
+import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 import org.joda.time.LocalDate;
@@ -1333,7 +1330,7 @@ public class MapperHelperTest {
         customerList.getData().get(0).setLastName(null);
         customerList.getData().get(0).setSecondLastName(null);
         GifoleInsuranceRequestASO response3 = this.mapperHelper.createGifoleRequest(apxRequest, null, null);
-        assertEquals(response3.getHolder().getLastName(), "");
+        assertEquals("", response3.getHolder().getLastName());
     }
 
     @Test
@@ -1396,13 +1393,28 @@ public class MapperHelperTest {
         GifoleInsuranceRequestASO response1 = this.mapperHelper.createGifoleRequest(apxRequest, customerList, null);
         assertNotNull(response1.getQuotation());
         assertEquals(response1.getQuotation().getId(), apxRequest.getQuotationId());
-        assertEquals(response1.getChannel(), "13000001");
-        assertEquals(response1.getOperationType(), "INSURANCE_CREATION");
+        assertEquals("13000001", response1.getChannel());
+        assertEquals("INSURANCE_CREATION", response1.getOperationType());
         assertNotNull(response1.getValidityPeriod());
         assertNotNull(response1.getInsurance());
-        assertEquals(response1.getInsurance().getId(), "00110115304000510603");
-        assertEquals(response1.getPolicyNumber(), "501481");
+        assertEquals("00110115304000510603", response1.getInsurance().getId());
+        assertEquals("501481", response1.getPolicyNumber());
         assertNotNull(response1.getProduct());
         assertNotNull(response1.getHolder());
+    }
+    @Test
+    public void getPersonTypeTest_OK() {
+        EntidadBO person = new EntidadBO();
+        PersonTypeEnum response = this.mapperHelper.getPersonType(person);
+        assertEquals(PersonTypeEnum.NATURAL, response);
+
+        person.setTipoDocumento("R");
+        person.setNroDocumento("20999999991");
+        response = this.mapperHelper.getPersonType(person);
+        assertEquals(PersonTypeEnum.JURIDIC, response);
+
+        person.setNroDocumento("10999999991");
+        response = this.mapperHelper.getPersonType(person);
+        assertEquals(PersonTypeEnum.NATURAL_WITH_BUSINESS, response);
     }
 }

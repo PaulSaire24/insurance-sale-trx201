@@ -63,6 +63,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.HolderTypeEnum;
+import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
@@ -1081,6 +1082,7 @@ public class MapperHelper {
         if(Objects.nonNull(customer.getGender())) persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
 		persona.setCorreoElectronico((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()));
 		persona.setCelular((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()));
+        persona.setTipoPersona(getPersonType(persona).getCode());
 
         StringBuilder addressExtra  = new StringBuilder();
 
@@ -1099,6 +1101,14 @@ public class MapperHelper {
         Gson log = new Gson();
         LOGGER.info("generalEmisionRimacRequest output {}", log.toJson(generalEmisionRimacRequest));
         return generalEmisionRimacRequest;
+    }
+
+    public PersonTypeEnum getPersonType(EntidadBO person) {
+        if (RUC_ID.equalsIgnoreCase(person.getTipoDocumento())){
+            if (StringUtils.startsWith(person.getNroDocumento(), "20")) return PersonTypeEnum.JURIDIC;
+            else return PersonTypeEnum.NATURAL_WITH_BUSINESS;
+        }
+        return PersonTypeEnum.NATURAL;
     }
 
     private PersonaBO getFillFieldsPerson(PersonaBO persona) {

@@ -281,6 +281,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			organizacion.setNombreVia(persona.getNombreVia());
 			organizacion.setTipoVia(persona.getTipoVia());
 			organizacion.setNumeroVia(persona.getNumeroVia());
+			organizacion.setTipoPersona(this.mapperHelper.getPersonType(organizacion).getCode());
 			organizaciones.add(organizacion);
 		}
 		return organizaciones;
