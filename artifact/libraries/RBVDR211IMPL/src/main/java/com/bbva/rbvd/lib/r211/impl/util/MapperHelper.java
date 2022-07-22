@@ -144,6 +144,7 @@ public class MapperHelper {
     private static final String INSURANCE_GIFOLE_VAL = "INSURANCE_CREATION";
     private static final String MASK_VALUE = "****";
     private static final DateTimeZone DATE_TIME_ZONE = DateTimeZone.forID("America/Lima");
+    private static final BigDecimal LEGAL_REPRESENTATIVE_ID = new BigDecimal(3);
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -702,9 +703,18 @@ public class MapperHelper {
 
     public List<IsrcContractParticipantDAO> buildIsrcContractParticipants(PolicyDTO requestBody, Map<String, Object> responseQueryRoles, String id) {
         ParticipantDTO participant = requestBody.getParticipants().get(0);
+        ParticipantDTO legarlRepre = requestBody.getParticipants().stream()
+                .filter(p -> TAG_LEGAL_REPRESENTATIVE.equals(p.getParticipantType().getId())).findFirst().orElse(null);
 
         List<Map<String, Object>> roles = (List<Map<String, Object>>) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
-        return roles.stream().map(rol -> createParticipantDao(id, rol, participant, requestBody)).collect(Collectors.toList());
+        List<IsrcContractParticipantDAO> listaParticipants = roles.stream()
+                .filter(r -> LEGAL_REPRESENTATIVE_ID.compareTo((BigDecimal) r.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())) != 0 )
+                .map(rol -> createParticipantDao(id, rol, participant, requestBody)).collect(Collectors.toList());
+        if (legarlRepre != null) {
+            Map rolLegal = Collections.singletonMap(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), LEGAL_REPRESENTATIVE_ID);
+            listaParticipants.add(createParticipantDao(id, rolLegal, legarlRepre, requestBody));
+        }
+        return listaParticipants;
     }
 
     private IsrcContractParticipantDAO createParticipantDao(String id, Map<String, Object> rol, ParticipantDTO participant, PolicyDTO requestBody) {
