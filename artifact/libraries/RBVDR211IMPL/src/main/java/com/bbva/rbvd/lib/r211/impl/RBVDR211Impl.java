@@ -236,7 +236,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
     private void setOrganization(EmisionBO emision, String customerId, CustomerListASO customerList){
 		PersonaBO persona = emision.getPayload().getAgregarPersona().getPersona().get(0);
         CustomerBO customer = customerList.getData().get(0);
-        String tipoDoc = this.applicationConfigurationService.getProperty(customer.getIdentityDocuments().get(0).getDocumentType().getId());
+        String tipoDoc = customer.getIdentityDocuments().get(0).getDocumentType().getId();
         String nroDoc = customer.getIdentityDocuments().get(0).getDocumentNumber();
         if (RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20")){
 

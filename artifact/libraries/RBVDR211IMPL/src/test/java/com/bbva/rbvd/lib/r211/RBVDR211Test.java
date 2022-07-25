@@ -537,7 +537,7 @@ public class RBVDR211Test {
 
 		when(this.applicationConfigurationService.getProperty("R")).thenReturn("RUC");
 		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(null);
-		customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("R");
+		customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("RUC");
 		customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("20999999991");
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertNull(validation);
