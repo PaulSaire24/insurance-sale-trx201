@@ -12,6 +12,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDValidation;
 import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
 import com.bbva.rbvd.dto.homeinsrc.utils.HomeInsuranceProperty;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
+import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
@@ -50,6 +51,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String KEY_PIC_CODE = "pic.code";
 	private static final String KEY_AGENT_PROMOTER_CODE = "agent.and.promoter.code";
 	private static final String KEY_TLMKT_CODE = "telemarketing.code";
+	private static final String KEY_CYPHER_CODE = "apx-pe-fpextff1-do";
 	private static final String LIMA_TIME_ZONE = "America/Lima";
 	private static final String GMT_TIME_ZONE = "GMT";
 	private static final String TAG_ENDORSEE = "ENDORSEE";
@@ -240,7 +242,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
         String nroDoc = customer.getIdentityDocuments().get(0).getDocumentNumber();
         if (RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20")){
 
-            ListBusinessesASO listBussinesses = this.rbvdR201.executeGetListBusinesses(customerId, null);
+			String xcustomerId = this.rbvdR201.executeCypherService(new CypherASO(customerId, KEY_CYPHER_CODE));
+			if (xcustomerId == null){
+				BusinessException except = RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
+				except.setMessage("ERROR AL ENCRIPTAR EL IDENTIFICADOR DEL CLIENTE");
+				throw except;
+			}
+
+			ListBusinessesASO listBussinesses = this.rbvdR201.executeGetListBusinesses(xcustomerId, null);
 			if (listBussinesses == null) {
 				throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
 			}

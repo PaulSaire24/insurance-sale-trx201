@@ -131,6 +131,8 @@ public class RBVDR211Test {
 		generalEmisionRequest.setPayload(payload);
 		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(), anyObject())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.getPersonType(anyObject())).thenReturn(PersonTypeEnum.NATURAL);
+
+		when(rbvdr201.executeCypherService(anyObject())).thenReturn("");
 	}
 
 	@Test

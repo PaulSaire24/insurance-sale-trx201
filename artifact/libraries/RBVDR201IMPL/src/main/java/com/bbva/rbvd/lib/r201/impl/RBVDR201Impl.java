@@ -7,6 +7,7 @@ import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
@@ -35,6 +36,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR201Impl.class);
 
 	private static final String ID_API_INSURANCES_CREATE_INSURANCE_ASO = "emission.aso";
+	private static final String ID_API_CYPHER = "executecypher";
 
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 	private static final String X_AMZ_DATE_HEADER = "X-Amz-Date";
@@ -217,6 +219,30 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			headers.set("BCS-Operation-Tracer", "1");
 		}
 		return headers;
+	}
+
+	@Override
+	public String executeCypherService(CypherASO input) {
+		LOGGER.info("***** RBVDR201Impl - executeCypherService START *****");
+		LOGGER.info("***** RBVDR201Impl - executeCypherService ***** Param: {}", input);
+
+		String output = null;
+
+		HttpEntity<CypherASO> entity = new HttpEntity<>(input, createHttpHeaders(false));
+
+		try {
+			CypherASO out = this.internalApiConnector.postForObject(ID_API_CYPHER, entity,
+					CypherASO.class);
+			if (out != null && out.getData() != null) {
+				output = out.getData().getDocument();
+			}
+		} catch(RestClientException e) {
+			LOGGER.info("***** RBVDR201Impl - executeCypherService ***** Exception: {}", e.getMessage());
+		}
+
+		LOGGER.info("***** RBVDR201Impl - executeCypherService ***** Response: {}", output);
+		LOGGER.info("***** RBVDR201Impl - executeCypherService END *****");
+		return output;
 	}
 
 	private HttpHeaders createHttpHeadersAWS(SignatureAWS signature) {
