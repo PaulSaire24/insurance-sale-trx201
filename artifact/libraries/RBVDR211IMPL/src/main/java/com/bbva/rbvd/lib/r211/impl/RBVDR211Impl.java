@@ -255,6 +255,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 			List<OrganizacionBO> organizaciones = mapOrganizations(listBussinesses.getData().get(0), persona, customer);
 			emision.getPayload().getAgregarPersona().setOrganizacion(organizaciones);
+			emision.getPayload().getAgregarPersona().setPersona(null);
         }
     }
 
