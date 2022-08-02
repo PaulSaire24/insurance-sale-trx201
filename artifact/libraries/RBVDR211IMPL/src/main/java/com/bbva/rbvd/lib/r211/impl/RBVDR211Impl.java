@@ -63,6 +63,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final String GIFOLE_SALES_ASO = "enable_gifole_sales_aso";
     private static final String RUC_ID = "RUC";
+    private static final String TAG_OTROS = "OTROS";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -281,7 +282,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			organizacion.setFechaConstitucion(business.getFormation().getDate());
 			organizacion.setFechaInicioActividad(business.getAnnualSales().getStartDate());
 			organizacion.setTipoOrganizacion(business.getBusinessGroup().getId());
-			organizacion.setGrupoEconomico(business.getBusinessGroup().getId());
+			organizacion.setGrupoEconomico(TAG_OTROS);
 			organizacion.setCiiu(business.getEconomicActivity().getId());
 			organizacion.setTelefonoFijo(fijo);
 			organizacion.setCorreoElectronico(correo);
