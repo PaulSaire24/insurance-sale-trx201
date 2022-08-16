@@ -12,6 +12,8 @@ import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.lib.r014.PISDR014;
+import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
+import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherDataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
@@ -56,6 +58,7 @@ public class RBVDR201Test {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR201Test.class);
 
 	private static final String MESSAGE_EXCEPTION = "CONNECTION ERROR";
+	private static final String KEY_CYPHER_CODE = "apx-pe-fpextff1-do";
 
 	private RBVDR201Impl rbvdR201 = new RBVDR201Impl();
 
@@ -311,5 +314,53 @@ public class RBVDR201Test {
 		ListBusinessesASO validation = rbvdR201.executeGetListBusinesses("90008603", null);
 		assertNull(validation);
 	}
-	
+
+	@Test
+	public void executeCypherServiceTestNull() {
+		LOGGER.info("RBVDR201Test - Executing executeCypherServiceTestOK...");
+		when(this.internalApiConnector.postForObject(anyString(), anyObject(), any())).thenReturn(null);
+		String validation = rbvdR201.executeCypherService(new CypherASO("ABC", KEY_CYPHER_CODE));
+		assertNull(validation);
+
+		CypherASO response = new CypherASO();
+		when(this.internalApiConnector.postForObject(anyString(), anyObject(), any())).thenReturn(response);
+		validation = rbvdR201.executeCypherService(new CypherASO("ABC", KEY_CYPHER_CODE));
+		assertNull(validation);
+
+		CypherDataASO data = new CypherDataASO();
+		response.setData(data);
+		when(this.internalApiConnector.postForObject(anyString(), anyObject(), any())).thenReturn(response);
+
+		validation = rbvdR201.executeCypherService(new CypherASO("ABC", KEY_CYPHER_CODE));
+		assertNull(validation);
+
+		LOGGER.info("RBVDR201Test - Executing executeCypherServiceTestOK - END... validation: {}", validation);
+	}
+
+	@Test
+	public void executeCypherServiceTestOK() {
+		LOGGER.info("RBVDR201Test - Executing executeCypherServiceTestOK...");
+		CypherASO response = new CypherASO();
+		CypherDataASO data = new CypherDataASO();
+		response.setData(data);
+		when(this.internalApiConnector.postForObject(anyString(), anyObject(), any())).thenReturn(response);
+
+		String validation = rbvdR201.executeCypherService(new CypherASO("ABC", KEY_CYPHER_CODE));
+		assertNull(validation);
+
+		data.setDocument("XYZ");
+		validation = rbvdR201.executeCypherService(new CypherASO("ABC", KEY_CYPHER_CODE));
+		assertNotNull(validation);
+		LOGGER.info("RBVDR201Test - Executing executeCypherServiceTestOK - END... validation: {}", validation);
+	}
+
+	@Test
+	public void executeCypherServiceTestRestClientException() {
+		LOGGER.info("RBVDR201Test - Executing executeCypherServiceTestRestClientException...");
+		when(this.internalApiConnector.postForObject(anyString(), anyObject(), any()))
+				.thenThrow(new RestClientException("ERROR"));
+
+		String validation = rbvdR201.executeCypherService(new CypherASO("ABC", KEY_CYPHER_CODE));
+		assertNull(validation);
+	}
 }

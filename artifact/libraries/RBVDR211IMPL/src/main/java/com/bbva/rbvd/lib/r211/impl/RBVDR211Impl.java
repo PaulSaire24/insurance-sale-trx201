@@ -266,6 +266,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		String fijo = customer.getContactDetails().stream().filter(
 						d -> ContactTypeEnum.PHONE_NUMBER.getValue().equals(d.getContactType().getId())).findFirst().
 				orElse(new ContactDetailsBO()).getContact();
+		String celular = customer.getContactDetails().stream().filter(
+						d -> ContactTypeEnum.MOBILE_NUMBER.getValue().equals(d.getContactType().getId())).findFirst().
+				orElse(new ContactDetailsBO()).getContact();
 		String correo = customer.getContactDetails().stream().filter(
 						d -> ContactTypeEnum.EMAIL.getValue().equals(d.getContactType().getId())).findFirst().
 				orElse(new ContactDetailsBO()).getContact();
@@ -285,6 +288,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			organizacion.setGrupoEconomico(TAG_OTROS);
 			organizacion.setCiiu(business.getEconomicActivity().getId());
 			organizacion.setTelefonoFijo(fijo);
+			organizacion.setCelular(celular);
 			organizacion.setCorreoElectronico(correo);
 			organizacion.setDistrito(persona.getDistrito());
 			organizacion.setProvincia(persona.getProvincia());

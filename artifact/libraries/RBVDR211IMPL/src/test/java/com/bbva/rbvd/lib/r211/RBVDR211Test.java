@@ -322,7 +322,6 @@ public class RBVDR211Test {
 
 		assertNotNull(validation);
 		//Now, APX sets isPaymentRequired value
-		assertFalse(validation.getFirstInstallment().getIsPaymentRequired());
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
 		assertEquals("026364", validation.getPromoter().getId());
 
