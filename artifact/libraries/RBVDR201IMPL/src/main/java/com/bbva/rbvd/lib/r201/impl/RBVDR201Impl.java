@@ -7,12 +7,17 @@ import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r201.impl.util.AsoExceptionHandler;
 import com.bbva.rbvd.lib.r201.impl.util.JsonHelper;
 import com.bbva.rbvd.lib.r201.impl.util.RimacExceptionHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -31,6 +36,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR201Impl.class);
 
 	private static final String ID_API_INSURANCES_CREATE_INSURANCE_ASO = "emission.aso";
+	private static final String ID_API_CYPHER = "executecypher";
 
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 	private static final String X_AMZ_DATE_HEADER = "X-Amz-Date";
@@ -119,7 +125,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	@Override
 	public CustomerListASO executeGetCustomerInformation(String customerId) {
-		LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation START customerId ***** ", customerId);
+		LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation START ***** customerId: {} ", customerId);
 
 		Map<String, Object> pathParams = new HashMap<>();
 		pathParams.put("customerId", customerId);
@@ -133,7 +139,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			if (responseList != null && responseList.getData() != null && !responseList.getData().isEmpty()) {
 
 				output = responseList.getData().get(0);
-				LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ENTRA***** " ,output.getFirstName()
+				LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation ENTRA***** output: {}" ,output.getFirstName()
 						+" - "+ output.getLastName()+" - "+ output.getBirthData().getBirthDate()+" - "
 						+ output.getIdentityDocuments().get(0).getDocumentType());
 				responJsons = getRequestBodyAsJsonFormat(responseList.getData().get(0));
@@ -175,6 +181,32 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		return httpStatus;
 	}
 
+	@Override
+	public ListBusinessesASO executeGetListBusinesses(String customerId, String expands) {
+		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START customerId: {} ***** ", customerId);
+		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START expands: {} ***** ", expands);
+		Map<String, Object> pathParams = new HashMap<>();
+		pathParams.put("customerId", customerId);
+		if (StringUtils.isNotBlank(expands)) pathParams.put("expand", expands);
+		ListBusinessesASO responseList = null;
+		BusinessASO output = null;
+		String responJsons = "";
+		try {
+			responseList = this.internalApiConnector.getForObject(RBVDProperties.ID_API_LIST_BUSINESSES.getValue()
+					, ListBusinessesASO.class, pathParams);
+			if (responseList != null && responseList.getData() != null && !responseList.getData().isEmpty()) {
+				output = responseList.getData().get(0);
+				LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses ***** output: {}", output);
+				responJsons = getRequestBodyAsJsonFormat(responseList.getData().get(0));
+			}
+		} catch (RestClientException e) {
+			LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses ***** Exception: {}", e.getMessage());
+		}
+		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses output ***** Response: {}", responJsons);
+		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses END getSuccess ***** ");
+		return responseList;
+	}
+
 	private String getRequestBodyAsJsonFormat(Object requestBody) {
 		return JsonHelper.getInstance().toJsonString(requestBody);
 	}
@@ -187,6 +219,30 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			headers.set("BCS-Operation-Tracer", "1");
 		}
 		return headers;
+	}
+
+	@Override
+	public String executeCypherService(CypherASO input) {
+		LOGGER.info("***** RBVDR201Impl - executeCypherService START *****");
+		LOGGER.info("***** RBVDR201Impl - executeCypherService ***** Param: {}", input);
+
+		String output = null;
+
+		HttpEntity<CypherASO> entity = new HttpEntity<>(input, createHttpHeaders(false));
+
+		try {
+			CypherASO out = this.internalApiConnector.postForObject(ID_API_CYPHER, entity,
+					CypherASO.class);
+			if (out != null && out.getData() != null) {
+				output = out.getData().getDocument();
+			}
+		} catch(RestClientException e) {
+			LOGGER.info("***** RBVDR201Impl - executeCypherService ***** Exception: {}", e.getMessage());
+		}
+
+		LOGGER.info("***** RBVDR201Impl - executeCypherService ***** Response: {}", output);
+		LOGGER.info("***** RBVDR201Impl - executeCypherService END *****");
+		return output;
 	}
 
 	private HttpHeaders createHttpHeadersAWS(SignatureAWS signature) {

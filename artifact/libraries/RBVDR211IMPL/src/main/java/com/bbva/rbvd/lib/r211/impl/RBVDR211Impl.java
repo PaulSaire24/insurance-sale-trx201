@@ -1,35 +1,25 @@
 package com.bbva.rbvd.lib.r211.impl;
 
-import static java.util.Objects.nonNull;
-import static org.springframework.util.CollectionUtils.isEmpty;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
+import com.bbva.pisd.dto.insurance.bo.ContactDetailsBO;
+import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.dto.insurance.utils.PISDValidation;
 import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
 import com.bbva.rbvd.dto.homeinsrc.utils.HomeInsuranceProperty;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
+import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.OrganizacionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
@@ -37,9 +27,23 @@ import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
+import com.bbva.rbvd.dto.insrncsale.utils.ContactTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+
+import java.math.BigDecimal;
+import java.util.*;
+
+import static java.util.Objects.nonNull;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
@@ -47,6 +51,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String KEY_PIC_CODE = "pic.code";
 	private static final String KEY_AGENT_PROMOTER_CODE = "agent.and.promoter.code";
 	private static final String KEY_TLMKT_CODE = "telemarketing.code";
+	private static final String KEY_CYPHER_CODE = "apx-pe-fpextff1-do";
 	private static final String LIMA_TIME_ZONE = "America/Lima";
 	private static final String GMT_TIME_ZONE = "GMT";
 	private static final String TAG_ENDORSEE = "ENDORSEE";
@@ -54,8 +59,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final String INSURANCE_PRODUCT_TYPE_VEH = "830";
     private static final String INSURANCE_PRODUCT_TYPE_HOME = "832";
+	private static final String INSURANCE_PRODUCT_TYPE_FLEXIPYME = "833";
 
 	private static final String GIFOLE_SALES_ASO = "enable_gifole_sales_aso";
+    private static final String RUC_ID = "RUC";
+    private static final String TAG_OTROS = "OTROS";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -71,6 +79,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		Double endosatarioPorcentaje = 0.0;
 
 		CustomerListASO customerList = null;
+		String legalName = null;
 
 		try {
 
@@ -123,10 +132,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
 
+				setOrganization(generalEmisionRequest, requestBody.getHolder().getId(), customerList);
+				legalName = getLegalName(generalEmisionRequest);
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(generalEmisionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			}else{
 
-			rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
+				rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			
 			}
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | isDigitalSale validation *****");
@@ -186,20 +197,16 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building email object to send *****");
 
 			CreateEmailASO email = generateEmailWithForker(responseBody.getProductId(), emissionDao, responseBody,
-					rimacResponse.getPayload().getNumeroPoliza(), customerList);
+					rimacResponse.getPayload().getNumeroPoliza(), customerList, legalName);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Send Email *****");
 			Integer httpStatusEmail = this.rbvdR201.executeCreateEmail(email);
 
-			if(Objects.nonNull(httpStatusEmail) && httpStatusEmail == HttpStatus.OK.value()) {
-				LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email sent *****");
-			} else {
-				LOGGER.debug("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email not sent, something went wrong *****");
-			}
+			printEmailLog(httpStatusEmail);
 
 			String gifoleFlag = this.applicationConfigurationService.getProperty(GIFOLE_SALES_ASO);
 			
-			gifoleLeadService(responseBody, customerList, Boolean.parseBoolean(gifoleFlag));
+			gifoleLeadService(responseBody, customerList, Boolean.parseBoolean(gifoleFlag), legalName);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole Service Enabled: {}", gifoleFlag);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Response: {}", responseBody);
@@ -212,6 +219,87 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			return null;
 		}
 
+	}
+
+	private void printEmailLog(Integer httpStatusEmail){
+		if(Objects.nonNull(httpStatusEmail) && httpStatusEmail == HttpStatus.OK.value()) {
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email sent *****");
+		} else {
+			LOGGER.debug("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Email not sent, something went wrong *****");
+		}
+	}
+
+	private String getLegalName(EmisionBO generalEmisionRequest){
+		if (generalEmisionRequest.getPayload().getAgregarPersona().getOrganizacion() != null) {
+			return generalEmisionRequest.getPayload().getAgregarPersona().getOrganizacion().get(0).getNombreComercial();
+		}
+		return null;
+	}
+
+    private void setOrganization(EmisionBO emision, String customerId, CustomerListASO customerList){
+		PersonaBO persona = emision.getPayload().getAgregarPersona().getPersona().get(0);
+        CustomerBO customer = customerList.getData().get(0);
+        String tipoDoc = customer.getIdentityDocuments().get(0).getDocumentType().getId();
+        String nroDoc = customer.getIdentityDocuments().get(0).getDocumentNumber();
+        if (RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20")){
+
+			String xcustomerId = this.rbvdR201.executeCypherService(new CypherASO(customerId, KEY_CYPHER_CODE));
+			if (xcustomerId == null){
+				BusinessException except = RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
+				except.setMessage("ERROR AL ENCRIPTAR EL IDENTIFICADOR DEL CLIENTE");
+				throw except;
+			}
+
+			ListBusinessesASO listBussinesses = this.rbvdR201.executeGetListBusinesses(xcustomerId, null);
+			if (listBussinesses == null) {
+				throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
+			}
+			List<OrganizacionBO> organizaciones = mapOrganizations(listBussinesses.getData().get(0), persona, customer);
+			emision.getPayload().getAgregarPersona().setOrganizacion(organizaciones);
+			emision.getPayload().getAgregarPersona().setPersona(null);
+        }
+    }
+
+	private List<OrganizacionBO> mapOrganizations(final BusinessASO business, PersonaBO persona, CustomerBO customer) {
+		List<OrganizacionBO> organizaciones = new ArrayList<>();
+
+		String fijo = customer.getContactDetails().stream().filter(
+						d -> ContactTypeEnum.PHONE_NUMBER.getValue().equals(d.getContactType().getId())).findFirst().
+				orElse(new ContactDetailsBO()).getContact();
+		String celular = customer.getContactDetails().stream().filter(
+						d -> ContactTypeEnum.MOBILE_NUMBER.getValue().equals(d.getContactType().getId())).findFirst().
+				orElse(new ContactDetailsBO()).getContact();
+		String correo = customer.getContactDetails().stream().filter(
+						d -> ContactTypeEnum.EMAIL.getValue().equals(d.getContactType().getId())).findFirst().
+				orElse(new ContactDetailsBO()).getContact();
+		int[] intArray = new int[]{8, 9, 23};
+		for (int i = 0; i < intArray.length; i++) {
+			OrganizacionBO organizacion = new OrganizacionBO();
+			organizacion.setDireccion(persona.getDireccion());
+			organizacion.setRol(intArray[i]);
+			organizacion.setTipoDocumento("R");
+			organizacion.setNroDocumento(business.getBusinessDocuments().get(0).getDocumentNumber());
+			organizacion.setRazonSocial(business.getLegalName());
+			organizacion.setNombreComercial(business.getLegalName());
+			organizacion.setPaisOrigen(business.getFormation().getCountry().getName());
+			organizacion.setFechaConstitucion(business.getFormation().getDate());
+			organizacion.setFechaInicioActividad(business.getAnnualSales().getStartDate());
+			organizacion.setTipoOrganizacion(business.getBusinessGroup().getId());
+			organizacion.setGrupoEconomico(TAG_OTROS);
+			organizacion.setCiiu(business.getEconomicActivity().getId());
+			organizacion.setTelefonoFijo(fijo);
+			organizacion.setCelular(celular);
+			organizacion.setCorreoElectronico(correo);
+			organizacion.setDistrito(persona.getDistrito());
+			organizacion.setProvincia(persona.getProvincia());
+			organizacion.setDepartamento(persona.getDepartamento());
+			organizacion.setNombreVia(persona.getNombreVia());
+			organizacion.setTipoVia(persona.getTipoVia());
+			organizacion.setNumeroVia(persona.getNumeroVia());
+			organizacion.setTipoPersona(this.mapperHelper.getPersonType(organizacion).getCode());
+			organizaciones.add(organizacion);
+		}
+		return organizaciones;
 	}
 
 	private void validateIfPolicyExists(Map<String, Object> responseValidateIfPolicyExists) {
@@ -253,9 +341,15 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			BusinessAgentDTO businessAgent = new BusinessAgentDTO();
 			businessAgent.setId(defaultCode);
+
 			PromoterDTO promoter = new PromoterDTO();
 			promoter.setId(defaultCode);
-
+			if(Objects.nonNull(requestBody.getPromoter())) {
+				promoter.setId(requestBody.getPromoter().getId());
+			}
+			else {
+				promoter.setId(defaultCode);
+			}
 			requestBody.setBusinessAgent(businessAgent);
 			requestBody.setPromoter(promoter);
 		}
@@ -347,7 +441,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		}
 	}
 
-	private CreateEmailASO generateEmailWithForker(String productId, RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerList){
+	private CreateEmailASO generateEmailWithForker(String productId, RequiredFieldsEmissionDAO emissionDao
+			, PolicyDTO responseBody, String policyNumber, CustomerListASO customerList, String legalName){
 		CreateEmailASO email = null;
 		switch (productId) {
 			case INSURANCE_PRODUCT_TYPE_VEH:
@@ -359,16 +454,23 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				email = this.mapperHelper.buildCreateEmailRequestHome(emissionDao, responseBody, policyNumber, customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetHomeInfo),
 				validateResponseQueryHomeRiskDirectionFields(responseQueryGetHomeRiskDirection));
 				break;
+			case INSURANCE_PRODUCT_TYPE_FLEXIPYME:
+				Map<String, Object> responseQueryGetEdificationInfo = pisdR021.executeGetHomeInfoForEmissionService(responseBody.getQuotationId());
+				Map<String, Object> responseQueryGetEdificationRiskDirection= pisdR021.executeGetHomeRiskDirection(responseBody.getQuotationId());
+				email = this.mapperHelper.buildCreateEmailRequestFlexipyme(emissionDao, responseBody, policyNumber
+						, customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetEdificationInfo),
+						validateResponseQueryHomeRiskDirectionFields(responseQueryGetEdificationRiskDirection), legalName);
+				break;
 			default:
 				break;
 		}
 		return email;
 	}
 
-	private void gifoleLeadService(PolicyDTO policyDTO, CustomerListASO customerListASO, Boolean isGifoleEnabled) {
+	private void gifoleLeadService(PolicyDTO policyDTO, CustomerListASO customerListASO, Boolean isGifoleEnabled, String legalName) {
 
 		if (isGifoleEnabled) {
-			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(policyDTO, customerListASO);
+			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(policyDTO, customerListASO, legalName);
 			Integer gifoleResponse = this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole create status {}",
 					gifoleResponse);

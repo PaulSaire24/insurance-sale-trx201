@@ -42,15 +42,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuranceCompanyASO;
 
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.FinanciamientoBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarPersonaBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.CrearCronogramaBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
@@ -70,10 +62,14 @@ import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
+import com.bbva.rbvd.dto.insrncsale.utils.HolderTypeEnum;
+import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -125,15 +121,19 @@ public class MapperHelper {
     private static final String RECEIPT_DEFAULT_DATE_VALUE = "01/01/0001";
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
     private static final String TAG_ENDORSEE = "ENDORSEE";
+    private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
 
 
     private static final String TEMPLATE_EMAIL_CODE_VEH = "PLT00945";
     private static final String SUBJECT_EMAIL_VEH = "!Genial! Acabas de comprar tu seguro vehicular con éxito";
     private static final String MAIL_SENDER = "procesos@bbva.com.pe";
+    private static final String MAIL_SUBJECT_FLEXIPYME = "mail.subject.flexipyme";
+    private static final String MAIL_SENDER_FLEXIPYME = "mail.sender.flexipyme";
 
     private static final String GMT_TIME_ZONE = "GMT";
 
     private static final String TEMPLATE_EMAIL_CODE_HOME = "PLT00968";
+    private static final String TEMPLATE_EMAIL_CODE_FLEXIPYME = "PLT00991";
     private static final String SUBJECT_EMAIL_HOME = "!Genial! Acabas de comprar tu Seguro Hogar Total con éxito";
     private static final String NONE = "none";
     private static final String PEN_CURRENCY = "S/";
@@ -144,6 +144,7 @@ public class MapperHelper {
     private static final String INSURANCE_GIFOLE_VAL = "INSURANCE_CREATION";
     private static final String MASK_VALUE = "****";
     private static final DateTimeZone DATE_TIME_ZONE = DateTimeZone.forID("America/Lima");
+    private static final BigDecimal LEGAL_REPRESENTATIVE_ID = new BigDecimal(3);
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -232,24 +233,7 @@ public class MapperHelper {
 
         requestAso.setFirstInstallment(firstInstallment);
 
-        ParticipantASO participant = new ParticipantASO();
-
-        ParticipantTypeASO participantType = new ParticipantTypeASO();
-        participantType.setId(apxRequest.getParticipants().get(0).getParticipantType().getId());
-
-        participant.setParticipantType(participantType);
-        participant.setCustomerId(apxRequest.getParticipants().get(0).getCustomerId());
-
-        IdentityDocumentASO participantIdentityDocument = new IdentityDocumentASO();
-
-        DocumentTypeASO participantDocumentType = new DocumentTypeASO();
-        participantDocumentType.setId(apxRequest.getParticipants().get(0).getIdentityDocument().getDocumentType().getId());
-        participantIdentityDocument.setDocumentType(participantDocumentType);
-        participantIdentityDocument.setNumber(apxRequest.getParticipants().get(0).getIdentityDocument().getNumber());
-
-        participant.setIdentityDocument(participantIdentityDocument);
-
-        requestAso.setParticipants(Collections.singletonList(participant));
+        requestAso.setParticipants(getParticipantASO(apxRequest.getParticipants()));
 
         if(Objects.nonNull(apxRequest.getBusinessAgent())) {
             BusinessAgentASO businessAgent = new BusinessAgentASO();
@@ -278,6 +262,29 @@ public class MapperHelper {
         requestAso.setInsuranceCompany(insuranceCompany);
 
         return requestAso;
+    }
+
+    private List<ParticipantASO> getParticipantASO(List<ParticipantDTO> participants) {
+        if (Objects.isNull(participants)) return null;
+        return participants.stream().map(this::createParticipantASO).collect(Collectors.toList());
+    }
+
+    private ParticipantASO createParticipantASO(ParticipantDTO dto){
+        ParticipantASO participant = new ParticipantASO();
+        ParticipantTypeASO participantType = new ParticipantTypeASO();
+        participantType.setId(dto.getParticipantType().getId());
+        participant.setParticipantType(participantType);
+        participant.setCustomerId(dto.getCustomerId());
+
+        if (Objects.nonNull(dto.getIdentityDocument())){
+            IdentityDocumentASO participantIdentityDocument = new IdentityDocumentASO();
+            DocumentTypeASO participantDocumentType = new DocumentTypeASO();
+            participantDocumentType.setId(dto.getIdentityDocument().getDocumentType().getId());
+            participantIdentityDocument.setNumber(dto.getIdentityDocument().getNumber());
+            participantIdentityDocument.setDocumentType(participantDocumentType);
+            participant.setIdentityDocument(participantIdentityDocument);
+        }
+        return participant;
     }
 
     public EmisionBO buildRequestBodyRimac(PolicyInspectionDTO inspection, String secondParticularDataValue, String channelCode,
@@ -696,9 +703,18 @@ public class MapperHelper {
 
     public List<IsrcContractParticipantDAO> buildIsrcContractParticipants(PolicyDTO requestBody, Map<String, Object> responseQueryRoles, String id) {
         ParticipantDTO participant = requestBody.getParticipants().get(0);
+        ParticipantDTO legarlRepre = requestBody.getParticipants().stream()
+                .filter(p -> TAG_LEGAL_REPRESENTATIVE.equals(p.getParticipantType().getId())).findFirst().orElse(null);
 
         List<Map<String, Object>> roles = (List<Map<String, Object>>) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
-        return roles.stream().map(rol -> createParticipantDao(id, rol, participant, requestBody)).collect(Collectors.toList());
+        List<IsrcContractParticipantDAO> listaParticipants = roles.stream()
+                .filter(r -> LEGAL_REPRESENTATIVE_ID.compareTo((BigDecimal) r.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())) != 0 )
+                .map(rol -> createParticipantDao(id, rol, participant, requestBody)).collect(Collectors.toList());
+        if (legarlRepre != null) {
+            Map rolLegal = Collections.singletonMap(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), LEGAL_REPRESENTATIVE_ID);
+            listaParticipants.add(createParticipantDao(id, rolLegal, legarlRepre, requestBody));
+        }
+        return listaParticipants;
     }
 
     private IsrcContractParticipantDAO createParticipantDao(String id, Map<String, Object> rol, ParticipantDTO participant, PolicyDTO requestBody) {
@@ -835,6 +851,18 @@ public class MapperHelper {
         return email;
     }
 
+    public CreateEmailASO buildCreateEmailRequestFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection, String legalName){
+        CreateEmailASO email = new CreateEmailASO();
+        email.setApplicationId(TEMPLATE_EMAIL_CODE_FLEXIPYME.concat(format.format(new Date())));
+        email.setRecipient("0,".concat(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()));
+        email.setSubject(applicationConfigurationService.getProperty(MAIL_SUBJECT_FLEXIPYME));
+        String[] data = getMailBodyDataFlexipyme(emissionDao, responseBody, policyNumber, customerInfo, homeInfo, riskDirection, legalName);
+        email.setBody(getEmailBodySructure2(data,TEMPLATE_EMAIL_CODE_FLEXIPYME));
+        email.setSender(applicationConfigurationService.getProperty(MAIL_SENDER_FLEXIPYME));
+        LOGGER.info("arguments email Flexipyme {}", email);
+        return email;
+    }
+
     private ExchangeRateDTO validateExchangeRate(ExchangeRateASO exchangeRateASO) {
         ExchangeRateDTO exchangeRate = null;
         if(exchangeRateASO.getDetail().getFactor().getRatio() != 0) {
@@ -923,16 +951,52 @@ public class MapperHelper {
         return bodyData;
     }
 
+    private String[] getMailBodyDataFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection, String legalName) {
+        String[] bodyData = new String[13];
+
+        if("P".equals(homeInfo.getHousingType())) {
+            bodyData[0] = ObjectUtils.defaultIfNull(legalName, setName(customerInfo)) ;
+            bodyData[2] = HolderTypeEnum.OWNER.getName();
+        }else{
+            bodyData[0] = setName(customerInfo);
+            bodyData[2] = HolderTypeEnum.TENANT.getName();
+        }
+        bodyData[1] = responseBody.getProductPlan().getDescription();
+        bodyData[3] = riskDirection;
+        bodyData[4] = homeInfo.getPropSeniorityYearsNumber().toString();
+        bodyData[5] = homeInfo.getFloorNumber().toString();
+        bodyData[6] = getContractNumber(responseBody.getId());
+        bodyData[7] = policyNumber;
+        Locale locale = new Locale ("en", "UK");
+        NumberFormat numberFormat = NumberFormat.getInstance (locale);
+        bodyData[8] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
+        bodyData[9] = emissionDao.getPaymentFrequencyName();
+        bodyData[10] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
+        if (responseBody.getParticipants() != null) {
+            ParticipantDTO legalRepre = responseBody.getParticipants().stream().filter(
+                    p -> TAG_LEGAL_REPRESENTATIVE.equalsIgnoreCase(p.getParticipantType().getId()))
+                    .findFirst().orElse(null);
+            if (legalRepre != null && legalRepre.getIdentityDocument() != null){
+                bodyData[11] = legalRepre.getIdentityDocument().getDocumentType().getId();
+                bodyData[12] = legalRepre.getIdentityDocument().getNumber();
+            }else {
+                bodyData[11] = NONE;
+                bodyData[12] = NONE;
+            }
+        }
+
+        return bodyData;
+    }
+
     private String setName(CustomerListASO responseListCustomers){
         StringBuilder name = new StringBuilder();
         if(Objects.nonNull(responseListCustomers)) {
-            name.append(responseListCustomers.getData().get(0).getFirstName()).append(" ").append(responseListCustomers.getData().get(0).getLastName()).append(" ")
-                    .append(responseListCustomers.getData().get(0).getSecondLastName()).toString();
+            name.append(responseListCustomers.getData().get(0).getFirstName()).append(" ").append(Strings.nullToEmpty( responseListCustomers.getData().get(0).getLastName())).append(" ")
+                    .append(Strings.nullToEmpty( responseListCustomers.getData().get(0).getSecondLastName())).toString();
             return validateSN(name.toString());
         }
         return "";
     }
-
 
     private String getEmailBodySructure1(String[] data, String emailCode) {
         StringBuilder body = new StringBuilder();
@@ -1028,6 +1092,7 @@ public class MapperHelper {
         if(Objects.nonNull(customer.getGender())) persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
 		persona.setCorreoElectronico((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()));
 		persona.setCelular((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()));
+        persona.setTipoPersona(getPersonType(persona).getCode());
 
         StringBuilder addressExtra  = new StringBuilder();
 
@@ -1046,6 +1111,14 @@ public class MapperHelper {
         Gson log = new Gson();
         LOGGER.info("generalEmisionRimacRequest output {}", log.toJson(generalEmisionRimacRequest));
         return generalEmisionRimacRequest;
+    }
+
+    public PersonTypeEnum getPersonType(EntidadBO person) {
+        if (RUC_ID.equalsIgnoreCase(person.getTipoDocumento())){
+            if (StringUtils.startsWith(person.getNroDocumento(), "20")) return PersonTypeEnum.JURIDIC;
+            else return PersonTypeEnum.NATURAL_WITH_BUSINESS;
+        }
+        return PersonTypeEnum.NATURAL;
     }
 
     private PersonaBO getFillFieldsPerson(PersonaBO persona) {
@@ -1225,7 +1298,7 @@ private Map<String, String> tipeViaList2() {
     return map;
 }
 
-    public GifoleInsuranceRequestASO createGifoleRequest(PolicyDTO responseBody, CustomerListASO responseListCustomers){
+    public GifoleInsuranceRequestASO createGifoleRequest(PolicyDTO responseBody, CustomerListASO responseListCustomers, String legalName){
         GifoleInsuranceRequestASO gifoleResponse = new GifoleInsuranceRequestASO();
         QuotationASO quotationASO = new QuotationASO();
         quotationASO.setId(responseBody.getQuotationId());
@@ -1273,8 +1346,16 @@ private Map<String, String> tipeViaList2() {
         com.bbva.pisd.dto.insurance.aso.gifole.HolderASO holderASO = new com.bbva.pisd.dto.insurance.aso.gifole.HolderASO();
         if(Objects.nonNull(responseListCustomers)) {
             CustomerBO customer = responseListCustomers.getData().get(0);
-            holderASO.setFirstName(customer.getFirstName());
-            holderASO.setLastName(Strings.nullToEmpty(customer.getLastName()).concat(" ").concat(Strings.nullToEmpty(customer.getSecondLastName())));
+            if (RUC_ID.equalsIgnoreCase(customer.getIdentityDocuments().get(0).getDocumentType().getId())
+                    && StringUtils.startsWith(customer.getIdentityDocuments().get(0).getDocumentNumber(), "20")) {
+                holderASO.setFirstName(legalName);
+            }else{
+                holderASO.setFirstName(customer.getFirstName());
+
+                if (Objects.nonNull(customer.getLastName()) && Objects.nonNull(customer.getSecondLastName()))
+                    holderASO.setLastName(customer.getLastName().concat(" ").concat(customer.getSecondLastName()));
+                else holderASO.setLastName("");
+            }
         }else{
             holderASO.setFirstName("");
             holderASO.setLastName("");
