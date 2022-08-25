@@ -89,19 +89,14 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.bbva.rbvd</groupId>
-			<artifactId>RBVDR201</artifactId>
-			<version>0.6.0-SNAPSHOT</version>
+			<groupId>com.bbva.pisd</groupId>
+			<artifactId>PISDR021</artifactId>
+			<version>0.1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR012</artifactId>
-			<version>0.24.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.bbva.pisd</groupId>
-			<artifactId>PISDR021</artifactId>
-			<version>0.1.3</version>
+			<version>0.25.0</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -115,6 +110,9 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}-${project.version}</Bundle-SymbolicName>
 						<Bundle-Category>library</Bundle-Category>
+						<Export-Package>
+							!*;version="${osgi.version.manifest}"
+						</Export-Package>
 						<Import-Package>
 							com.bbva.pisd.lib.r021.*;version="${osgi.version.manifest}",
 							com.bbva.pisd.lib.r012.*;version="${osgi.version.manifest}",
