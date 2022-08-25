@@ -17,12 +17,11 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 
 	protected RBVDR201 rbvdR201;
 
-	protected PISDR012 pisdR012;
-
 	protected PISDR021 pisdR021;
 
-	protected MapperHelper mapperHelper;
+	protected PISDR012 pisdR012;
 
+	protected MapperHelper mapperHelper;
 
 	/**
 	* @param applicationConfigurationService the this.applicationConfigurationService to set
@@ -39,19 +38,21 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 	}
 
 	/**
-	* @param pisdR012 the this.pisdR012 to set
-	*/
-	public void setPisdR012(PISDR012 pisdR012) {
-		this.pisdR012 = pisdR012;
-	}
-
-	/**
 	* @param pisdR021 the this.pisdR021 to set
 	*/
 	public void setPisdR021(PISDR021 pisdR021) {
 		this.pisdR021 = pisdR021;
 	}
 
-	public void setMapperHelper(MapperHelper mapperHelper) { this.mapperHelper = mapperHelper; }
+	/**
+	* @param pisdR012 the this.pisdR012 to set
+	*/
+	public void setPisdR012(PISDR012 pisdR012) {
+		this.pisdR012 = pisdR012;
+	}
+
+	public void setMapperHelper(MapperHelper mapperHelper) {
+		this.mapperHelper = mapperHelper;
+	}
 
 }

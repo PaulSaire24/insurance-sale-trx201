@@ -1,48 +1,63 @@
 package com.bbva.rbvd.util;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
+import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
+
 import com.bbva.pisd.dto.insurance.bo.DocumentTypeBO;
 import com.bbva.pisd.dto.insurance.bo.GenderBO;
 import com.bbva.pisd.dto.insurance.bo.GeographicGroupTypeBO;
 import com.bbva.pisd.dto.insurance.bo.GeographicGroupsBO;
 import com.bbva.pisd.dto.insurance.bo.IdentityDocumentsBO;
+
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
+
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+
 import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
-import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
+
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.DetailASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.FactorASO;
+
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
+
+import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
+
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
+
 import com.bbva.rbvd.dto.insrncsale.dao.*;
+
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
+
 import com.bbva.rbvd.dto.insrncsale.policy.*;
+
+import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+
 import java.math.BigDecimal;
+
 import java.util.*;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.of;
+
 import static org.junit.Assert.*;
+
 import static org.mockito.Mockito.*;
 
 public class MapperHelperTest {
@@ -63,6 +78,7 @@ public class MapperHelperTest {
     private PolicyASO asoResponse;
     private EmisionBO rimacResponse;
     private CustomerListASO customerList;
+
     @Before
     public void setUp() throws IOException {
         applicationConfigurationService = mock(ApplicationConfigurationService.class);
@@ -100,7 +116,7 @@ public class MapperHelperTest {
         when(receiptDao.getPremiumCurrencyExchAmount()).thenReturn(BigDecimal.valueOf(1));
         when(receiptDao.getPremiumChargeOperationId()).thenReturn("chargeOperationId");
         when(receiptDao.getCurrencyId()).thenReturn("currencyId");
-        when(receiptDao.getReceiptIssueDate()).thenReturn("0103/02/2021");
+        when(receiptDao.getReceiptIssueDate()).thenReturn("03/02/2021");
         when(receiptDao.getReceiptStartDate()).thenReturn("01/01/0001");
         when(receiptDao.getReceiptEndDate()).thenReturn("01/01/0001");
         when(receiptDao.getReceiptCollectionDate()).thenReturn("03/02/2021");
@@ -128,6 +144,7 @@ public class MapperHelperTest {
         apxRequest.setCreationUser("creationUser");
         apxRequest.setUserAudit("userAudit");
         apxRequest.setSaleChannelId("BI");
+        apxRequest.setAap("13000001");
         asoResponse = mockData.getEmisionASOResponse();
         rimacResponse = mockData.getEmisionRimacResponse();
         customerList = mockDTO.getCustomerDataResponse();
@@ -190,6 +207,8 @@ public class MapperHelperTest {
         assertNotNull(validation.getBank().getBranch().getId());
         assertNotNull(validation.getInsuranceCompany());
         assertNotNull(validation.getInsuranceCompany().getId());
+
+        /*Faltan escenarios null con BA y PROMOTER*/
     }
 
     @Test
@@ -254,19 +273,17 @@ public class MapperHelperTest {
         inspectionDTO.setContactDetails(new ArrayList<ContactDetailDTO>());
         validation = mapperHelper.buildRequestBodyRimac(inspectionDTO, "secondValue", "channelCode",
                 "dataId", "saleOffice");
-        
+
         assertNotNull(validation.getPayload().getContactoInspeccion());
         assertNotNull(validation.getPayload().getContactoInspeccion().getNombre());
         assertNull(validation.getPayload().getContactoInspeccion().getCorreo());
         assertNull(validation.getPayload().getContactoInspeccion().getTelefono());
         assertEquals(inspection.getFullName(), validation.getPayload().getContactoInspeccion().getNombre());
         assertEquals(Optional.of(1L).get(), validation.getPayload().getIndInspeccion());
-
     }
 
     @Test
     public void buildInsuranceContract_OK() {
-
         /* ........................ Pruebas p030557 ........................ */
 
         InsuranceContractDAO validation = mapperHelper.buildInsuranceContract(apxRequest, requiredFieldsEmissionDao, "00110241400000001102", false);
@@ -291,7 +308,7 @@ public class MapperHelperTest {
         assertNotNull(validation.getDomicileContractId());
         assertNotNull(validation.getCardIssuingMarkType());
         assertNotNull(validation.getIssuedReceiptNumber());
-        assertNotNull(validation.getPaymentFrequencyId()); //agregando
+        assertNotNull(validation.getPaymentFrequencyId());
         assertNotNull(validation.getPremiumAmount());
         assertNotNull(validation.getSettlePendingPremiumAmount());
         assertNotNull(validation.getCurrencyId());
@@ -299,8 +316,8 @@ public class MapperHelperTest {
         assertNotNull(validation.getBeneficiaryType());
         assertNotNull(validation.getRenewalNumber());
         assertNotNull(validation.getCtrctDisputeStatusType());
-        assertNotNull(validation.getEndorsementPolicyIndType()); //agregando
-        assertNotNull(validation.getInsrncCoContractStatusType()); //agregando
+        assertNotNull(validation.getEndorsementPolicyIndType());
+        assertNotNull(validation.getInsrncCoContractStatusType());
         assertNotNull(validation.getContractStatusId());
         assertNotNull(validation.getCreationUserId());
         assertNotNull(validation.getUserAuditId());
@@ -378,7 +395,6 @@ public class MapperHelperTest {
         assertEquals(N_VALUE, validation.getAutomaticDebitIndicatorType());
 
         /* .................................................................................................... */
-
     }
 
     @Test
@@ -605,188 +621,6 @@ public class MapperHelperTest {
     }
 
     @Test
-    public void getRimacContractInformation_OK() {
-        String contractNumber = "00117799454000009162";
-
-        Map<String, Object> validation = mapperHelper.getRimacContractInformation(rimacResponse, contractNumber);
-
-        assertNotNull(validation.get(RBVDProperties.FIELD_POLICY_ID.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_POLICY_END_DATE.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_COMPANY_PRODUCT_ID.getValue()));
-
-        rimacResponse.getPayload().getCuotasFinanciamiento().clear();
-
-        CuotaFinancimientoBO cuotaAnual = new CuotaFinancimientoBO();
-        cuotaAnual.setCuota(1L);
-        cuotaAnual.setFechaVencimiento(new LocalDate(new Date(), DateTimeZone.UTC));
-
-        rimacResponse.getPayload().setCuotasFinanciamiento(of(cuotaAnual).collect(toList()));
-
-        validation = mapperHelper.getRimacContractInformation(rimacResponse, contractNumber);
-
-        assertEquals("02/06/2022", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
-
-        rimacResponse.getPayload().getCuotasFinanciamiento().clear();
-
-        validation = mapperHelper.getRimacContractInformation(rimacResponse, contractNumber);
-
-        assertNull(validation.get(RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue()));
-    }
-
-    @Test
-    public void buildNextInsuranceCtrReceipt_OK() {
-        List<InsuranceCtrReceiptsDAO> validation = mapperHelper.buildNextInsuranceCtrReceipt(receiptDao, rimacResponse);
-
-        String defaultDate = "01/01/0001";
-
-        validation.forEach(receipt -> {
-            assertNotNull(receipt.getEntityId());
-            assertNotNull(receipt.getBranchId());
-            assertNotNull(receipt.getIntAccountId());
-            assertNotNull(receipt.getPolicyReceiptId());
-            assertNotNull(receipt.getInsuranceCompanyId());
-            assertNotNull(receipt.getPremiumPaymentReceiptAmount());
-            assertNull(receipt.getPremiumChargeOperationId());
-            assertNotNull(receipt.getCurrencyId());
-            assertNotNull(receipt.getReceiptIssueDate());
-            assertNotNull(receipt.getReceiptStartDate());
-            assertNotNull(receipt.getReceiptEndDate());
-            assertNotNull(receipt.getReceiptCollectionDate());
-            assertNotNull(receipt.getReceiptExpirationDate());
-            assertNotNull(receipt.getReceiptsTransmissionDate());
-            assertNotNull(receipt.getReceiptCollectionStatusType());
-            assertNull(receipt.getInsuranceCollectionMoveId());
-            assertNotNull(receipt.getPaymentMethodType());
-            assertNotNull(receipt.getDebitAccountId());
-            assertNull(receipt.getDebitChannelType());
-            assertNotNull(receipt.getChargeAttemptsNumber());
-            assertNotNull(receipt.getInsrncCoReceiptStatusType());
-            assertNotNull(receipt.getReceiptStatusType());
-            assertNotNull(receipt.getCreationUserId());
-            assertNotNull(receipt.getUserAuditId());
-            assertNotNull(receipt.getManagementBranchId());
-            assertNotNull(receipt.getVariablePremiumAmount());
-            assertNotNull(receipt.getFixPremiumAmount());
-            assertNotNull(receipt.getSettlementVarPremiumAmount());
-            assertNotNull(receipt.getSettlementFixPremiumAmount());
-            assertNotNull(receipt.getLastChangeBranchId());
-            assertNotNull(receipt.getGlBranchId());
-
-            assertEquals(receiptDao.getEntityId(), receipt.getEntityId());
-            assertEquals(receiptDao.getBranchId(), receipt.getBranchId());
-            assertEquals(receiptDao.getIntAccountId(), receipt.getIntAccountId());
-            assertEquals(BigDecimal.valueOf(1), receipt.getInsuranceCompanyId());
-            assertEquals(BigDecimal.valueOf(0), receipt.getPremiumPaymentReceiptAmount());
-            assertEquals(BigDecimal.valueOf(0), receipt.getFixingExchangeRateAmount());
-            assertEquals(BigDecimal.valueOf(0), receipt.getPremiumCurrencyExchAmount());
-            assertEquals(receiptDao.getCurrencyId(), receipt.getCurrencyId());
-            assertEquals(defaultDate, receipt.getReceiptIssueDate());
-            assertEquals(defaultDate, receipt.getReceiptStartDate());
-            assertEquals(defaultDate, receipt.getReceiptEndDate());
-            assertEquals(defaultDate, receipt.getReceiptCollectionDate());
-            assertEquals(defaultDate, receipt.getReceiptsTransmissionDate());
-            assertEquals("02", receipt.getReceiptCollectionStatusType());
-            assertEquals(receiptDao.getPaymentMethodType(), receipt.getPaymentMethodType());
-            assertEquals(receiptDao.getDebitAccountId(), receipt.getDebitAccountId());
-            assertEquals(BigDecimal.valueOf(0), receipt.getChargeAttemptsNumber());
-            assertEquals(receiptDao.getInsrncCoReceiptStatusType(), receipt.getInsrncCoReceiptStatusType());
-            assertEquals("INC", receipt.getReceiptStatusType());
-            assertEquals(receiptDao.getCreationUserId(), receipt.getCreationUserId());
-            assertEquals(receiptDao.getUserAuditId(), receipt.getUserAuditId());
-            assertEquals(receiptDao.getManagementBranchId(), receipt.getManagementBranchId());
-            assertEquals(BigDecimal.valueOf(0), receipt.getVariablePremiumAmount());
-            assertEquals(receiptDao.getFixPremiumAmount(), receipt.getFixPremiumAmount());
-            assertEquals(BigDecimal.valueOf(0), receipt.getSettlementVarPremiumAmount());
-            assertEquals(BigDecimal.valueOf(0), receipt.getSettlementFixPremiumAmount());
-            assertEquals(receiptDao.getLastChangeBranchId(), receipt.getLastChangeBranchId());
-            assertEquals(receiptDao.getGlBranchId(), receipt.getGlBranchId());
-        });
-
-        rimacResponse.getPayload().getCuotasFinanciamiento().clear();
-
-        validation = mapperHelper.buildNextInsuranceCtrReceipt(receiptDao, rimacResponse);
-
-        assertTrue(validation.isEmpty());
-    }
-
-    @Test
-    public void createSaveReceiptsArguments_OK() {
-
-        Map<String, Object>[] validation = mapperHelper.createSaveReceiptsArguments(singletonList(receiptDao));
-
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_POLICY_RECEIPT_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_COMPANY_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_PREMIUM_PAYMENT_RECEIPT_AMOUNT.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_FIXING_EXCHANGE_RATE_AMOUNT.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_PREMIUM_CURRENCY_EXCH_AMOUNT.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_PREMIUM_CHARGE_OPERATION_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_CURRENCY_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_ISSUE_DATE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_START_DATE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_END_DATE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_COLLECTION_DATE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_EXPIRATION_DATE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPTS_TRANSMISSION_DATE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_COLLECTION_STATUS_TYPE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_COLLECTION_MOVE_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_PAYMENT_METHOD_TYPE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_DEBIT_ACCOUNT_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_DEBIT_CHANNEL_TYPE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_CHARGE_ATTEMPTS_NUMBER.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSRNC_CO_RECEIPT_STATUS_TYPE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_STATUS_TYPE.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_MANAGEMENT_BRANCH_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_VARIABLE_PREMIUM_AMOUNT.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_FIX_PREMIUM_AMOUNT.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_SETTLEMENT_VAR_PREMIUM_AMOUNT.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_SETTLEMENT_FIX_PREMIUM_AMOUNT.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_LAST_CHANGE_BRANCH_ID.getValue()));
-        assertNotNull(validation[0].get(RBVDProperties.FIELD_GL_BRANCH_ID.getValue()));
-
-        assertEquals(receiptDao.getEntityId(), validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
-        assertEquals(receiptDao.getBranchId(), validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
-        assertEquals(receiptDao.getIntAccountId(), validation[0].get(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue()));
-        assertEquals(receiptDao.getPolicyReceiptId(), validation[0].get(RBVDProperties.FIELD_POLICY_RECEIPT_ID.getValue()));
-        assertEquals(receiptDao.getInsuranceCompanyId(), validation[0].get(RBVDProperties.FIELD_INSURANCE_COMPANY_ID.getValue()));
-        assertEquals(receiptDao.getPremiumPaymentReceiptAmount(), validation[0].get(RBVDProperties.FIELD_PREMIUM_PAYMENT_RECEIPT_AMOUNT.getValue()));
-        assertEquals(receiptDao.getFixingExchangeRateAmount(), validation[0].get(RBVDProperties.FIELD_FIXING_EXCHANGE_RATE_AMOUNT.getValue()));
-        assertEquals(receiptDao.getPremiumCurrencyExchAmount(), validation[0].get(RBVDProperties.FIELD_PREMIUM_CURRENCY_EXCH_AMOUNT.getValue()));
-        assertEquals(receiptDao.getPremiumChargeOperationId(), validation[0].get(RBVDProperties.FIELD_PREMIUM_CHARGE_OPERATION_ID.getValue()));
-        assertEquals(receiptDao.getCurrencyId(), validation[0].get(RBVDProperties.FIELD_CURRENCY_ID.getValue()));
-        assertEquals(receiptDao.getReceiptIssueDate(), validation[0].get(RBVDProperties.FIELD_RECEIPT_ISSUE_DATE.getValue()));
-        assertEquals(receiptDao.getReceiptStartDate(), validation[0].get(RBVDProperties.FIELD_RECEIPT_START_DATE.getValue()));
-        assertEquals(receiptDao.getReceiptEndDate(), validation[0].get(RBVDProperties.FIELD_RECEIPT_END_DATE.getValue()));
-        assertEquals(receiptDao.getReceiptCollectionDate(), validation[0].get(RBVDProperties.FIELD_RECEIPT_COLLECTION_DATE.getValue()));
-        assertEquals(receiptDao.getReceiptExpirationDate(), validation[0].get(RBVDProperties.FIELD_RECEIPT_EXPIRATION_DATE.getValue()));
-        assertEquals(receiptDao.getReceiptsTransmissionDate(), validation[0].get(RBVDProperties.FIELD_RECEIPTS_TRANSMISSION_DATE.getValue()));
-        assertEquals(receiptDao.getReceiptCollectionStatusType(), validation[0].get(RBVDProperties.FIELD_RECEIPT_COLLECTION_STATUS_TYPE.getValue()));
-        assertEquals(receiptDao.getInsuranceCollectionMoveId(), validation[0].get(RBVDProperties.FIELD_INSURANCE_COLLECTION_MOVE_ID.getValue()));
-        assertEquals(receiptDao.getPaymentMethodType(), validation[0].get(RBVDProperties.FIELD_PAYMENT_METHOD_TYPE.getValue()));
-        assertEquals(receiptDao.getDebitAccountId(), validation[0].get(RBVDProperties.FIELD_DEBIT_ACCOUNT_ID.getValue()));
-        assertEquals(receiptDao.getDebitChannelType(), validation[0].get(RBVDProperties.FIELD_DEBIT_CHANNEL_TYPE.getValue()));
-        assertEquals(receiptDao.getChargeAttemptsNumber(), validation[0].get(RBVDProperties.FIELD_CHARGE_ATTEMPTS_NUMBER.getValue()));
-        assertEquals(receiptDao.getInsrncCoReceiptStatusType(), validation[0].get(RBVDProperties.FIELD_INSRNC_CO_RECEIPT_STATUS_TYPE.getValue()));
-        assertEquals(receiptDao.getReceiptStatusType(), validation[0].get(RBVDProperties.FIELD_RECEIPT_STATUS_TYPE.getValue()));
-        assertEquals(receiptDao.getCreationUserId(), validation[0].get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
-        assertEquals(receiptDao.getUserAuditId(), validation[0].get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
-        assertEquals(receiptDao.getManagementBranchId(), validation[0].get(RBVDProperties.FIELD_MANAGEMENT_BRANCH_ID.getValue()));
-        assertEquals(receiptDao.getVariablePremiumAmount(), validation[0].get(RBVDProperties.FIELD_VARIABLE_PREMIUM_AMOUNT.getValue()));
-        assertEquals(receiptDao.getFixPremiumAmount(), validation[0].get(RBVDProperties.FIELD_FIX_PREMIUM_AMOUNT.getValue()));
-        assertEquals(receiptDao.getSettlementVarPremiumAmount(), validation[0].get(RBVDProperties.FIELD_SETTLEMENT_VAR_PREMIUM_AMOUNT.getValue()));
-        assertEquals(receiptDao.getSettlementFixPremiumAmount(), validation[0].get(RBVDProperties.FIELD_SETTLEMENT_FIX_PREMIUM_AMOUNT.getValue()));
-        assertEquals(receiptDao.getLastChangeBranchId(), validation[0].get(RBVDProperties.FIELD_LAST_CHANGE_BRANCH_ID.getValue()));
-        assertEquals(receiptDao.getGlBranchId(), validation[0].get(RBVDProperties.FIELD_GL_BRANCH_ID.getValue()));
-    }
-
-    @Test
     public void buildIsrcContractMov_OK() {
         IsrcContractMovDAO isrcContractMovDao = mapperHelper.buildIsrcContractMov(asoResponse, "creationUser", "userAudit");
 
@@ -946,7 +780,7 @@ public class MapperHelperTest {
         when(participantDao.getCreationUserId()).thenReturn("creationUser");
         when(participantDao.getUserAuditId()).thenReturn("userAudit");
 
-        Map<String, Object>[] validation = mapperHelper.createSaveParticipantArguments(singletonList(participantDao));
+        Map<String, Object>[] validation = mapperHelper.createSaveParticipantArguments(Collections.singletonList(participantDao));
 
         assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
         assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
@@ -973,202 +807,6 @@ public class MapperHelperTest {
         assertEquals(participantDao.getRegistrySituationType(), validation[0].get(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue()));
         assertEquals(participantDao.getCreationUserId(), validation[0].get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
         assertEquals(participantDao.getUserAuditId(), validation[0].get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
-    }
-
-    @Test
-    public void mappingOutputFields_OK() {
-        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
-
-        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
-
-        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
-
-        assertNotNull(apxRequest.getId());
-        assertNotNull(apxRequest.getProductDescription());
-        assertNotNull(apxRequest.getProductPlan().getDescription());
-        assertNotNull(apxRequest.getOperationDate());
-        assertNotNull(apxRequest.getValidityPeriod().getEndDate());
-        assertNotNull(apxRequest.getTotalAmount().getExchangeRate());
-        assertNotNull(apxRequest.getInstallmentPlan().getPeriod().getName());
-        assertNotNull(apxRequest.getInstallmentPlan().getExchangeRate());
-        apxRequest.getHolder().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
-        apxRequest.getInspection().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
-        assertNotNull(apxRequest.getFirstInstallment().getFirstPaymentDate());
-        assertNotNull(apxRequest.getFirstInstallment().getAccountingDate());
-        assertNotNull(apxRequest.getFirstInstallment().getOperationDate());
-        assertNotNull(apxRequest.getFirstInstallment().getOperationNumber());
-        assertNotNull(apxRequest.getFirstInstallment().getTransactionNumber());
-        assertNotNull(apxRequest.getFirstInstallment().getExchangeRate());
-        apxRequest.getParticipants().forEach(participant -> assertTrue(Objects.nonNull(participant.getId()) && Objects.nonNull(participant.getCustomerId())));
-        assertNotNull(apxRequest.getInsuranceCompany().getName());
-        assertNotNull(apxRequest.getInsuranceCompany().getProductId());
-        assertNotNull(apxRequest.getExternalQuotationId());
-        assertNotNull(apxRequest.getExternalPolicyNumber());
-        assertNotNull(apxRequest.getStatus().getId());
-        assertNotNull(apxRequest.getStatus().getDescription());
-        assertNotNull(apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
-
-        assertEquals(asoResponse.getData().getId(), apxRequest.getId());
-        assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
-        assertEquals(requiredFieldsEmissionDao.getInsuranceModalityName(), apxRequest.getProductPlan().getDescription());
-        assertEquals(asoResponse.getData().getOperationDate(), apxRequest.getOperationDate());
-        assertEquals(requiredFieldsEmissionDao.getPaymentFrequencyName(),
-                apxRequest.getInstallmentPlan().getPeriod().getName());
-        assertEquals(asoResponse.getData().getFirstInstallment().getOperationNumber(),
-                apxRequest.getFirstInstallment().getOperationNumber());
-        assertEquals(asoResponse.getData().getFirstInstallment().getTransactionNumber(),
-                apxRequest.getFirstInstallment().getTransactionNumber());
-        assertEquals(asoResponse.getData().getInsuranceCompany().getName(), apxRequest.getInsuranceCompany().getName());
-        assertEquals(rimacResponse.getPayload().getCodProducto(), apxRequest.getInsuranceCompany().getProductId());
-        assertEquals(requiredFieldsEmissionDao.getInsuranceCompanyQuotaId(), apxRequest.getExternalQuotationId());
-        assertEquals(rimacResponse.getPayload().getNumeroPoliza(), apxRequest.getExternalPolicyNumber());
-        assertEquals("FOR", apxRequest.getStatus().getId());
-        assertEquals(asoResponse.getData().getStatus().getDescription(), apxRequest.getStatus().getDescription());
-        assertEquals("04040005", apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
-
-
-        asoResponse.getData().getTotalAmount().getExchangeRate().getDetail().getFactor().setRatio(0.0);
-        asoResponse.getData().getInstallmentPlan().getExchangeRate().getDetail().getFactor().setRatio(0.0);
-        asoResponse.getData().getFirstInstallment().getExchangeRate().getDetail().getFactor().setRatio(0.0);
-
-        mapperHelper.mappingOutputFields(apxRequest, asoResponse, null, requiredFieldsEmissionDao);
-
-        assertNull(apxRequest.getTotalAmount().getExchangeRate());
-        assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
-        assertNull(apxRequest.getFirstInstallment().getExchangeRate());
-        assertEquals(apxRequest.getInstallmentPlan().getMaturityDate(), apxRequest.getValidityPeriod().getEndDate());
-        assertEquals("", apxRequest.getInsuranceCompany().getProductId());
-        
-    }
-
-    @Test
-    public void mappingOutputFieldsEndorsee_OK() {
-        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
-
-        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
-        ParticipantDTO participanteEndorsee = new ParticipantDTO();
-        ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
-        tipoParticipante.setId("ENDORSEE");
-        participanteEndorsee.setBenefitPercentage(0.0d);
-        participanteEndorsee.setParticipantType(tipoParticipante);
-
-        IdentityDocumentDTO document = new IdentityDocumentDTO();
-        DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
-        tipoDocumento.setId("RUC");
-        document.setDocumentType(tipoDocumento);
-        document.setNumber("12345678");
-        participanteEndorsee.setIdentityDocument(document);
-
-        apxRequest.getParticipants().add(participanteEndorsee);
-
-        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
-
-        assertNotNull(apxRequest.getId());
-        assertNotNull(apxRequest.getProductDescription());
-        assertNotNull(apxRequest.getProductPlan().getDescription());
-        assertNotNull(apxRequest.getOperationDate());
-        assertNotNull(apxRequest.getValidityPeriod().getEndDate());
-        assertNotNull(apxRequest.getTotalAmount().getExchangeRate());
-        assertNotNull(apxRequest.getInstallmentPlan().getPeriod().getName());
-        assertNotNull(apxRequest.getInstallmentPlan().getExchangeRate());
-        apxRequest.getHolder().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
-        apxRequest.getInspection().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
-        assertNotNull(apxRequest.getFirstInstallment().getFirstPaymentDate());
-        assertNotNull(apxRequest.getFirstInstallment().getAccountingDate());
-        assertNotNull(apxRequest.getFirstInstallment().getOperationDate());
-        assertNotNull(apxRequest.getFirstInstallment().getOperationNumber());
-        assertNotNull(apxRequest.getFirstInstallment().getTransactionNumber());
-        assertNotNull(apxRequest.getFirstInstallment().getExchangeRate());
-        apxRequest.getParticipants().forEach(participant -> assertTrue(Objects.nonNull(participant.getId()) && Objects.nonNull(participant.getCustomerId())));
-        assertNotNull(apxRequest.getInsuranceCompany().getName());
-        assertNotNull(apxRequest.getInsuranceCompany().getProductId());
-        assertNotNull(apxRequest.getExternalQuotationId());
-        assertNotNull(apxRequest.getExternalPolicyNumber());
-        assertNotNull(apxRequest.getStatus().getId());
-        assertNotNull(apxRequest.getStatus().getDescription());
-        assertNotNull(apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
-
-        assertEquals(asoResponse.getData().getId(), apxRequest.getId());
-        assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
-        assertEquals(requiredFieldsEmissionDao.getInsuranceModalityName(), apxRequest.getProductPlan().getDescription());
-        assertEquals(asoResponse.getData().getOperationDate(), apxRequest.getOperationDate());
-        assertEquals(requiredFieldsEmissionDao.getPaymentFrequencyName(),
-                apxRequest.getInstallmentPlan().getPeriod().getName());
-        assertEquals(asoResponse.getData().getFirstInstallment().getOperationNumber(),
-                apxRequest.getFirstInstallment().getOperationNumber());
-        assertEquals(asoResponse.getData().getFirstInstallment().getTransactionNumber(),
-                apxRequest.getFirstInstallment().getTransactionNumber());
-        assertEquals(asoResponse.getData().getInsuranceCompany().getName(), apxRequest.getInsuranceCompany().getName());
-        assertEquals(rimacResponse.getPayload().getCodProducto(), apxRequest.getInsuranceCompany().getProductId());
-        assertEquals(requiredFieldsEmissionDao.getInsuranceCompanyQuotaId(), apxRequest.getExternalQuotationId());
-        assertEquals(rimacResponse.getPayload().getNumeroPoliza(), apxRequest.getExternalPolicyNumber());
-        assertEquals("FOR", apxRequest.getStatus().getId());
-        assertEquals(asoResponse.getData().getStatus().getDescription(), apxRequest.getStatus().getDescription());
-        assertEquals("04040005", apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
-
-
-        asoResponse.getData().getTotalAmount().getExchangeRate().getDetail().getFactor().setRatio(0.0);
-        asoResponse.getData().getInstallmentPlan().getExchangeRate().getDetail().getFactor().setRatio(0.0);
-        asoResponse.getData().getFirstInstallment().getExchangeRate().getDetail().getFactor().setRatio(0.0);
-
-        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
-
-        assertNull(apxRequest.getTotalAmount().getExchangeRate());
-        assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
-        assertNull(apxRequest.getFirstInstallment().getExchangeRate());
-        assertEquals("", apxRequest.getParticipants().get(1).getId());
-        assertEquals("", apxRequest.getParticipants().get(1).getCustomerId());
-
-
-
-    }
-
-    @Test
-    public void buildCreateEmailRequest_OK() {
-        apxRequest.setId("00110057794000023694");
-        apxRequest.getProductPlan().setDescription("PLAN BASICO");
-
-        CreateEmailASO email = mapperHelper.buildCreateEmailRequestVeh(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
-
-        assertNotNull(email.getApplicationId());
-        assertNotNull(email.getRecipient());
-        assertNotNull(email.getSubject());
-        assertNotNull(email.getBody());
-        assertNotNull(email.getSender());
-
-        when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn(null);
-        when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
-        when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
-        email = mapperHelper.buildCreateEmailRequestVeh(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
-        assertNotNull(email.getBody());
-
-        SimltInsuredHousingDAO emissionDAO = new SimltInsuredHousingDAO();
-        emissionDAO.setDepartmentName("LIMA");
-        emissionDAO.setProvinceName("LIMA");
-        emissionDAO.setDistrictName("LINCE");
-        emissionDAO.setHousingType("P");
-        emissionDAO.setAreaPropertyNumber(new BigDecimal(100));
-        emissionDAO.setPropSeniorityYearsNumber(new BigDecimal(10));
-        emissionDAO.setFloorNumber(new BigDecimal(2));
-        apxRequest.getFirstInstallment().getPaymentAmount().setCurrency("PEN");
-        apxRequest.getProductPlan().setDescription("PLAN CONTENIDO");
-        apxRequest.getProductPlan().setId("04");
-        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), customerList, emissionDAO, "riskDirection");
-        assertNotNull(email.getBody());
-
-        emissionDAO.setHousingType("A");
-        apxRequest.getProductPlan().setDescription("PLAN EDIFICACION");
-        apxRequest.getProductPlan().setId("05");
-        emissionDAO.setHousingAssetsLoanAmount(new BigDecimal(20000));
-        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), customerList, emissionDAO, "riskDirection");
-        assertNotNull(email.getBody());
-
-        emissionDAO.setHousingType("A");
-        apxRequest.getProductPlan().setDescription("PLAN EDIFICACION + CONTENIDO");
-        apxRequest.getProductPlan().setId("06");
-        emissionDAO.setEdificationLoanAmount(new BigDecimal(150000.00));
-        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), null, emissionDAO, "riskDirection");
-        assertNotNull(email.getBody());
     }
 
     @Test
@@ -1262,15 +900,16 @@ public class MapperHelperTest {
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue(), "33556255");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue(), "HOGAR_TOTAL");
         EmisionBO emisionInput = new EmisionBO();
         DatoParticularBO datoParticular1 = new DatoParticularBO();
         datoParticular1.setCodigo("");
         datoParticular1.setEtiqueta("CANAL_TERCERO");
-        datoParticular1.setValor("PC"); 
+        datoParticular1.setValor("PC");
         DatoParticularBO datoParticular2 = new DatoParticularBO();
         datoParticular2.setCodigo("");
         datoParticular2.setEtiqueta("DATOS_DE_CUENTA");
-        datoParticular2.setValor("CUENTA||***8744||PEN"); 
+        datoParticular2.setValor("CUENTA||***8744||PEN");
         DatoParticularBO datoParticular3 = new DatoParticularBO();
         datoParticular3.setCodigo("");
         datoParticular3.setEtiqueta("NRO_CERT_BANCO");
@@ -1339,6 +978,7 @@ public class MapperHelperTest {
         geographicGroupsBOs.add(geographicGroupsBO);
         geographicGroupsBOs.add(geographicGroupsBO1);
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
+        when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("RC");
         EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation2);
 
@@ -1374,6 +1014,510 @@ public class MapperHelperTest {
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
         EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation4);
+    }
+
+    @Test
+    public void getRimacContractInformation_OK() {
+        String contractNumber = "00117799454000009162";
+
+        Map<String, Object> validation = mapperHelper.getRimacContractInformation(rimacResponse, contractNumber);
+
+        assertNotNull(validation.get(RBVDProperties.FIELD_POLICY_ID.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_POLICY_END_DATE.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
+        assertNotNull(validation.get(RBVDProperties.FIELD_INSURANCE_COMPANY_PRODUCT_ID.getValue()));
+
+        rimacResponse.getPayload().getCuotasFinanciamiento().clear();
+
+        CuotaFinancimientoBO cuotaAnual = new CuotaFinancimientoBO();
+        cuotaAnual.setCuota(1L);
+        cuotaAnual.setFechaVencimiento(new LocalDate(new Date(), DateTimeZone.UTC));
+
+        rimacResponse.getPayload().setCuotasFinanciamiento(of(cuotaAnual).collect(toList()));
+
+        validation = mapperHelper.getRimacContractInformation(rimacResponse, contractNumber);
+
+        assertEquals("02/06/2022", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
+
+        rimacResponse.getPayload().getCuotasFinanciamiento().clear();
+
+        validation = mapperHelper.getRimacContractInformation(rimacResponse, contractNumber);
+
+        assertNull(validation.get(RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue()));
+    }
+
+    @Test
+    public void buildNextInsuranceCtrReceipt_OK() {
+        List<InsuranceCtrReceiptsDAO> validation = mapperHelper.buildNextInsuranceCtrReceipt(receiptDao, rimacResponse);
+
+        String defaultDate = "01/01/0001";
+
+        validation.forEach(receipt -> {
+            assertNotNull(receipt.getEntityId());
+            assertNotNull(receipt.getBranchId());
+            assertNotNull(receipt.getIntAccountId());
+            assertNotNull(receipt.getPolicyReceiptId());
+            assertNotNull(receipt.getInsuranceCompanyId());
+            assertNotNull(receipt.getPremiumPaymentReceiptAmount());
+            assertNull(receipt.getPremiumChargeOperationId());
+            assertNotNull(receipt.getCurrencyId());
+            assertNotNull(receipt.getReceiptIssueDate());
+            assertNotNull(receipt.getReceiptStartDate());
+            assertNotNull(receipt.getReceiptEndDate());
+            assertNotNull(receipt.getReceiptCollectionDate());
+            assertNotNull(receipt.getReceiptExpirationDate());
+            assertNotNull(receipt.getReceiptsTransmissionDate());
+            assertNotNull(receipt.getReceiptCollectionStatusType());
+            assertNull(receipt.getInsuranceCollectionMoveId());
+            assertNotNull(receipt.getPaymentMethodType());
+            assertNotNull(receipt.getDebitAccountId());
+            assertNull(receipt.getDebitChannelType());
+            assertNotNull(receipt.getChargeAttemptsNumber());
+            assertNotNull(receipt.getInsrncCoReceiptStatusType());
+            assertNotNull(receipt.getReceiptStatusType());
+            assertNotNull(receipt.getCreationUserId());
+            assertNotNull(receipt.getUserAuditId());
+            assertNotNull(receipt.getManagementBranchId());
+            assertNotNull(receipt.getVariablePremiumAmount());
+            assertNotNull(receipt.getFixPremiumAmount());
+            assertNotNull(receipt.getSettlementVarPremiumAmount());
+            assertNotNull(receipt.getSettlementFixPremiumAmount());
+            assertNotNull(receipt.getLastChangeBranchId());
+            assertNotNull(receipt.getGlBranchId());
+
+            assertEquals(receiptDao.getEntityId(), receipt.getEntityId());
+            assertEquals(receiptDao.getBranchId(), receipt.getBranchId());
+            assertEquals(receiptDao.getIntAccountId(), receipt.getIntAccountId());
+            assertEquals(BigDecimal.valueOf(1), receipt.getInsuranceCompanyId());
+            assertEquals(BigDecimal.valueOf(0), receipt.getPremiumPaymentReceiptAmount());
+            assertEquals(BigDecimal.valueOf(0), receipt.getFixingExchangeRateAmount());
+            assertEquals(BigDecimal.valueOf(0), receipt.getPremiumCurrencyExchAmount());
+            assertEquals(receiptDao.getCurrencyId(), receipt.getCurrencyId());
+            assertEquals(defaultDate, receipt.getReceiptIssueDate());
+            assertEquals(defaultDate, receipt.getReceiptStartDate());
+            assertEquals(defaultDate, receipt.getReceiptEndDate());
+            assertEquals(defaultDate, receipt.getReceiptCollectionDate());
+            assertEquals(defaultDate, receipt.getReceiptsTransmissionDate());
+            assertEquals("02", receipt.getReceiptCollectionStatusType());
+            assertEquals(receiptDao.getPaymentMethodType(), receipt.getPaymentMethodType());
+            assertEquals(receiptDao.getDebitAccountId(), receipt.getDebitAccountId());
+            assertEquals(BigDecimal.valueOf(0), receipt.getChargeAttemptsNumber());
+            assertEquals(receiptDao.getInsrncCoReceiptStatusType(), receipt.getInsrncCoReceiptStatusType());
+            assertEquals("INC", receipt.getReceiptStatusType());
+            assertEquals(receiptDao.getCreationUserId(), receipt.getCreationUserId());
+            assertEquals(receiptDao.getUserAuditId(), receipt.getUserAuditId());
+            assertEquals(receiptDao.getManagementBranchId(), receipt.getManagementBranchId());
+            assertEquals(BigDecimal.valueOf(0), receipt.getVariablePremiumAmount());
+            assertEquals(receiptDao.getFixPremiumAmount(), receipt.getFixPremiumAmount());
+            assertEquals(BigDecimal.valueOf(0), receipt.getSettlementVarPremiumAmount());
+            assertEquals(BigDecimal.valueOf(0), receipt.getSettlementFixPremiumAmount());
+            assertEquals(receiptDao.getLastChangeBranchId(), receipt.getLastChangeBranchId());
+            assertEquals(receiptDao.getGlBranchId(), receipt.getGlBranchId());
+        });
+
+        rimacResponse.getPayload().getCuotasFinanciamiento().clear();
+
+        validation = mapperHelper.buildNextInsuranceCtrReceipt(receiptDao, rimacResponse);
+
+        assertTrue(validation.isEmpty());
+    }
+
+    @Test
+    public void createSaveReceiptsArguments_OK() {
+        Map<String, Object>[] validation = mapperHelper.createSaveReceiptsArguments(Collections.singletonList(receiptDao));
+
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_POLICY_RECEIPT_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_COMPANY_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_PREMIUM_PAYMENT_RECEIPT_AMOUNT.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_FIXING_EXCHANGE_RATE_AMOUNT.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_PREMIUM_CURRENCY_EXCH_AMOUNT.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_PREMIUM_CHARGE_OPERATION_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_CURRENCY_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_ISSUE_DATE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_START_DATE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_END_DATE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_COLLECTION_DATE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_EXPIRATION_DATE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPTS_TRANSMISSION_DATE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_COLLECTION_STATUS_TYPE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSURANCE_COLLECTION_MOVE_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_PAYMENT_METHOD_TYPE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_DEBIT_ACCOUNT_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_DEBIT_CHANNEL_TYPE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_CHARGE_ATTEMPTS_NUMBER.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_INSRNC_CO_RECEIPT_STATUS_TYPE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_RECEIPT_STATUS_TYPE.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_MANAGEMENT_BRANCH_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_VARIABLE_PREMIUM_AMOUNT.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_FIX_PREMIUM_AMOUNT.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_SETTLEMENT_VAR_PREMIUM_AMOUNT.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_SETTLEMENT_FIX_PREMIUM_AMOUNT.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_LAST_CHANGE_BRANCH_ID.getValue()));
+        assertNotNull(validation[0].get(RBVDProperties.FIELD_GL_BRANCH_ID.getValue()));
+
+        assertEquals(receiptDao.getEntityId(), validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
+        assertEquals(receiptDao.getBranchId(), validation[0].get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
+        assertEquals(receiptDao.getIntAccountId(), validation[0].get(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue()));
+        assertEquals(receiptDao.getPolicyReceiptId(), validation[0].get(RBVDProperties.FIELD_POLICY_RECEIPT_ID.getValue()));
+        assertEquals(receiptDao.getInsuranceCompanyId(), validation[0].get(RBVDProperties.FIELD_INSURANCE_COMPANY_ID.getValue()));
+        assertEquals(receiptDao.getPremiumPaymentReceiptAmount(), validation[0].get(RBVDProperties.FIELD_PREMIUM_PAYMENT_RECEIPT_AMOUNT.getValue()));
+        assertEquals(receiptDao.getFixingExchangeRateAmount(), validation[0].get(RBVDProperties.FIELD_FIXING_EXCHANGE_RATE_AMOUNT.getValue()));
+        assertEquals(receiptDao.getPremiumCurrencyExchAmount(), validation[0].get(RBVDProperties.FIELD_PREMIUM_CURRENCY_EXCH_AMOUNT.getValue()));
+        assertEquals(receiptDao.getPremiumChargeOperationId(), validation[0].get(RBVDProperties.FIELD_PREMIUM_CHARGE_OPERATION_ID.getValue()));
+        assertEquals(receiptDao.getCurrencyId(), validation[0].get(RBVDProperties.FIELD_CURRENCY_ID.getValue()));
+        assertEquals(receiptDao.getReceiptIssueDate(), validation[0].get(RBVDProperties.FIELD_RECEIPT_ISSUE_DATE.getValue()));
+        assertEquals(receiptDao.getReceiptStartDate(), validation[0].get(RBVDProperties.FIELD_RECEIPT_START_DATE.getValue()));
+        assertEquals(receiptDao.getReceiptEndDate(), validation[0].get(RBVDProperties.FIELD_RECEIPT_END_DATE.getValue()));
+        assertEquals(receiptDao.getReceiptCollectionDate(), validation[0].get(RBVDProperties.FIELD_RECEIPT_COLLECTION_DATE.getValue()));
+        assertEquals(receiptDao.getReceiptExpirationDate(), validation[0].get(RBVDProperties.FIELD_RECEIPT_EXPIRATION_DATE.getValue()));
+        assertEquals(receiptDao.getReceiptsTransmissionDate(), validation[0].get(RBVDProperties.FIELD_RECEIPTS_TRANSMISSION_DATE.getValue()));
+        assertEquals(receiptDao.getReceiptCollectionStatusType(), validation[0].get(RBVDProperties.FIELD_RECEIPT_COLLECTION_STATUS_TYPE.getValue()));
+        assertEquals(receiptDao.getInsuranceCollectionMoveId(), validation[0].get(RBVDProperties.FIELD_INSURANCE_COLLECTION_MOVE_ID.getValue()));
+        assertEquals(receiptDao.getPaymentMethodType(), validation[0].get(RBVDProperties.FIELD_PAYMENT_METHOD_TYPE.getValue()));
+        assertEquals(receiptDao.getDebitAccountId(), validation[0].get(RBVDProperties.FIELD_DEBIT_ACCOUNT_ID.getValue()));
+        assertEquals(receiptDao.getDebitChannelType(), validation[0].get(RBVDProperties.FIELD_DEBIT_CHANNEL_TYPE.getValue()));
+        assertEquals(receiptDao.getChargeAttemptsNumber(), validation[0].get(RBVDProperties.FIELD_CHARGE_ATTEMPTS_NUMBER.getValue()));
+        assertEquals(receiptDao.getInsrncCoReceiptStatusType(), validation[0].get(RBVDProperties.FIELD_INSRNC_CO_RECEIPT_STATUS_TYPE.getValue()));
+        assertEquals(receiptDao.getReceiptStatusType(), validation[0].get(RBVDProperties.FIELD_RECEIPT_STATUS_TYPE.getValue()));
+        assertEquals(receiptDao.getCreationUserId(), validation[0].get(RBVDProperties.FIELD_CREATION_USER_ID.getValue()));
+        assertEquals(receiptDao.getUserAuditId(), validation[0].get(RBVDProperties.FIELD_USER_AUDIT_ID.getValue()));
+        assertEquals(receiptDao.getManagementBranchId(), validation[0].get(RBVDProperties.FIELD_MANAGEMENT_BRANCH_ID.getValue()));
+        assertEquals(receiptDao.getVariablePremiumAmount(), validation[0].get(RBVDProperties.FIELD_VARIABLE_PREMIUM_AMOUNT.getValue()));
+        assertEquals(receiptDao.getFixPremiumAmount(), validation[0].get(RBVDProperties.FIELD_FIX_PREMIUM_AMOUNT.getValue()));
+        assertEquals(receiptDao.getSettlementVarPremiumAmount(), validation[0].get(RBVDProperties.FIELD_SETTLEMENT_VAR_PREMIUM_AMOUNT.getValue()));
+        assertEquals(receiptDao.getSettlementFixPremiumAmount(), validation[0].get(RBVDProperties.FIELD_SETTLEMENT_FIX_PREMIUM_AMOUNT.getValue()));
+        assertEquals(receiptDao.getLastChangeBranchId(), validation[0].get(RBVDProperties.FIELD_LAST_CHANGE_BRANCH_ID.getValue()));
+        assertEquals(receiptDao.getGlBranchId(), validation[0].get(RBVDProperties.FIELD_GL_BRANCH_ID.getValue()));
+    }
+
+    @Test
+    public void mappingOutputFields_OK() {
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getId());
+        assertNotNull(apxRequest.getProductDescription());
+        assertNotNull(apxRequest.getProductPlan().getDescription());
+        assertNotNull(apxRequest.getOperationDate());
+        assertNotNull(apxRequest.getValidityPeriod().getEndDate());
+        assertNotNull(apxRequest.getTotalAmount().getExchangeRate());
+        assertNotNull(apxRequest.getInstallmentPlan().getPeriod().getName());
+        assertNotNull(apxRequest.getInstallmentPlan().getExchangeRate());
+        apxRequest.getHolder().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
+        apxRequest.getInspection().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
+        assertNotNull(apxRequest.getFirstInstallment().getFirstPaymentDate());
+        assertNotNull(apxRequest.getFirstInstallment().getAccountingDate());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationDate());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationNumber());
+        assertNotNull(apxRequest.getFirstInstallment().getTransactionNumber());
+        assertNotNull(apxRequest.getFirstInstallment().getExchangeRate());
+        apxRequest.getParticipants().forEach(participant -> assertTrue(Objects.nonNull(participant.getId()) && Objects.nonNull(participant.getCustomerId())));
+        assertNotNull(apxRequest.getInsuranceCompany().getName());
+        assertNotNull(apxRequest.getInsuranceCompany().getProductId());
+        assertNotNull(apxRequest.getExternalQuotationId());
+        assertNotNull(apxRequest.getExternalPolicyNumber());
+        assertNotNull(apxRequest.getStatus().getId());
+        assertNotNull(apxRequest.getStatus().getDescription());
+        assertNotNull(apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+
+        assertEquals(asoResponse.getData().getId(), apxRequest.getId());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceModalityName(), apxRequest.getProductPlan().getDescription());
+        assertEquals(asoResponse.getData().getOperationDate(), apxRequest.getOperationDate());
+        assertEquals(requiredFieldsEmissionDao.getPaymentFrequencyName(),
+                apxRequest.getInstallmentPlan().getPeriod().getName());
+        assertEquals(asoResponse.getData().getFirstInstallment().getOperationNumber(),
+                apxRequest.getFirstInstallment().getOperationNumber());
+        assertEquals(asoResponse.getData().getFirstInstallment().getTransactionNumber(),
+                apxRequest.getFirstInstallment().getTransactionNumber());
+        assertEquals(asoResponse.getData().getInsuranceCompany().getName(), apxRequest.getInsuranceCompany().getName());
+        assertEquals(rimacResponse.getPayload().getCodProducto(), apxRequest.getInsuranceCompany().getProductId());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceCompanyQuotaId(), apxRequest.getExternalQuotationId());
+        assertEquals(rimacResponse.getPayload().getNumeroPoliza(), apxRequest.getExternalPolicyNumber());
+        assertEquals("FOR", apxRequest.getStatus().getId());
+        assertEquals(asoResponse.getData().getStatus().getDescription(), apxRequest.getStatus().getDescription());
+        assertEquals("04040005", apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+
+
+        asoResponse.getData().getTotalAmount().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+        asoResponse.getData().getInstallmentPlan().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+        asoResponse.getData().getFirstInstallment().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, null, requiredFieldsEmissionDao);
+
+        assertNull(apxRequest.getTotalAmount().getExchangeRate());
+        assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
+        assertNull(apxRequest.getFirstInstallment().getExchangeRate());
+        assertEquals(apxRequest.getInstallmentPlan().getMaturityDate(), apxRequest.getValidityPeriod().getEndDate());
+        assertEquals("", apxRequest.getInsuranceCompany().getProductId());
+
+    }
+
+    @Test
+    public void mappingOutputFieldsEndorsee_OK() {
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+        ParticipantDTO participanteEndorsee = new ParticipantDTO();
+        ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
+        tipoParticipante.setId("ENDORSEE");
+        participanteEndorsee.setBenefitPercentage(0.0d);
+        participanteEndorsee.setParticipantType(tipoParticipante);
+
+        IdentityDocumentDTO document = new IdentityDocumentDTO();
+        DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+        tipoDocumento.setId("RUC");
+        document.setDocumentType(tipoDocumento);
+        document.setNumber("12345678");
+        participanteEndorsee.setIdentityDocument(document);
+
+        apxRequest.getParticipants().add(participanteEndorsee);
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getId());
+        assertNotNull(apxRequest.getProductDescription());
+        assertNotNull(apxRequest.getProductPlan().getDescription());
+        assertNotNull(apxRequest.getOperationDate());
+        assertNotNull(apxRequest.getValidityPeriod().getEndDate());
+        assertNotNull(apxRequest.getTotalAmount().getExchangeRate());
+        assertNotNull(apxRequest.getInstallmentPlan().getPeriod().getName());
+        assertNotNull(apxRequest.getInstallmentPlan().getExchangeRate());
+        apxRequest.getHolder().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
+        apxRequest.getInspection().getContactDetails().forEach(contactDetail -> assertNotNull(contactDetail.getId()));
+        assertNotNull(apxRequest.getFirstInstallment().getFirstPaymentDate());
+        assertNotNull(apxRequest.getFirstInstallment().getAccountingDate());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationDate());
+        assertNotNull(apxRequest.getFirstInstallment().getOperationNumber());
+        assertNotNull(apxRequest.getFirstInstallment().getTransactionNumber());
+        assertNotNull(apxRequest.getFirstInstallment().getExchangeRate());
+        apxRequest.getParticipants().forEach(participant -> assertTrue(Objects.nonNull(participant.getId()) && Objects.nonNull(participant.getCustomerId())));
+        assertNotNull(apxRequest.getInsuranceCompany().getName());
+        assertNotNull(apxRequest.getInsuranceCompany().getProductId());
+        assertNotNull(apxRequest.getExternalQuotationId());
+        assertNotNull(apxRequest.getExternalPolicyNumber());
+        assertNotNull(apxRequest.getStatus().getId());
+        assertNotNull(apxRequest.getStatus().getDescription());
+        assertNotNull(apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+
+        assertEquals(asoResponse.getData().getId(), apxRequest.getId());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceModalityName(), apxRequest.getProductPlan().getDescription());
+        assertEquals(asoResponse.getData().getOperationDate(), apxRequest.getOperationDate());
+        assertEquals(requiredFieldsEmissionDao.getPaymentFrequencyName(),
+                apxRequest.getInstallmentPlan().getPeriod().getName());
+        assertEquals(asoResponse.getData().getFirstInstallment().getOperationNumber(),
+                apxRequest.getFirstInstallment().getOperationNumber());
+        assertEquals(asoResponse.getData().getFirstInstallment().getTransactionNumber(),
+                apxRequest.getFirstInstallment().getTransactionNumber());
+        assertEquals(asoResponse.getData().getInsuranceCompany().getName(), apxRequest.getInsuranceCompany().getName());
+        assertEquals(rimacResponse.getPayload().getCodProducto(), apxRequest.getInsuranceCompany().getProductId());
+        assertEquals(requiredFieldsEmissionDao.getInsuranceCompanyQuotaId(), apxRequest.getExternalQuotationId());
+        assertEquals(rimacResponse.getPayload().getNumeroPoliza(), apxRequest.getExternalPolicyNumber());
+        assertEquals("FOR", apxRequest.getStatus().getId());
+        assertEquals(asoResponse.getData().getStatus().getDescription(), apxRequest.getStatus().getDescription());
+        assertEquals("04040005", apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+
+
+        asoResponse.getData().getTotalAmount().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+        asoResponse.getData().getInstallmentPlan().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+        asoResponse.getData().getFirstInstallment().getExchangeRate().getDetail().getFactor().setRatio(0.0);
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNull(apxRequest.getTotalAmount().getExchangeRate());
+        assertNull(apxRequest.getInstallmentPlan().getExchangeRate());
+        assertNull(apxRequest.getFirstInstallment().getExchangeRate());
+        assertEquals("", apxRequest.getParticipants().get(1).getId());
+        assertEquals("", apxRequest.getParticipants().get(1).getCustomerId());
+
+
+
+    }
+
+
+
+
+    @Test
+    public void buildCreateEmailRequest_OK() {
+        apxRequest.setId("00110057794000023694");
+        apxRequest.getProductPlan().setDescription("PLAN BASICO");
+
+        CreateEmailASO email = mapperHelper.buildCreateEmailRequestVeh(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+
+        assertNotNull(email.getApplicationId());
+        assertNotNull(email.getRecipient());
+        assertNotNull(email.getSubject());
+        assertNotNull(email.getBody());
+        assertNotNull(email.getSender());
+
+        when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn(null);
+        when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
+        when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
+        email = mapperHelper.buildCreateEmailRequestVeh(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza());
+        assertNotNull(email.getBody());
+
+        SimltInsuredHousingDAO emissionDAO = new SimltInsuredHousingDAO();
+        emissionDAO.setDepartmentName("LIMA");
+        emissionDAO.setProvinceName("LIMA");
+        emissionDAO.setDistrictName("LINCE");
+        emissionDAO.setHousingType("P");
+        emissionDAO.setAreaPropertyNumber(new BigDecimal(100));
+        emissionDAO.setPropSeniorityYearsNumber(new BigDecimal(10));
+        emissionDAO.setFloorNumber(new BigDecimal(2));
+        apxRequest.getFirstInstallment().getPaymentAmount().setCurrency("PEN");
+        apxRequest.getProductPlan().setDescription("PLAN CONTENIDO");
+        apxRequest.getProductPlan().setId("04");
+        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), customerList, emissionDAO, "riskDirection");
+        assertNotNull(email.getBody());
+
+        emissionDAO.setHousingType("A");
+        apxRequest.getProductPlan().setDescription("PLAN EDIFICACION");
+        apxRequest.getProductPlan().setId("05");
+        emissionDAO.setHousingAssetsLoanAmount(new BigDecimal(20000));
+        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), customerList, emissionDAO, "riskDirection");
+        assertNotNull(email.getBody());
+
+        emissionDAO.setHousingType("A");
+        apxRequest.getProductPlan().setDescription("PLAN EDIFICACION + CONTENIDO");
+        apxRequest.getProductPlan().setId("06");
+        emissionDAO.setEdificationLoanAmount(new BigDecimal(150000.00));
+        email = mapperHelper.buildCreateEmailRequestHome(requiredFieldsEmissionDao, apxRequest, rimacResponse.getPayload().getNumeroPoliza(), null, emissionDAO, "riskDirection");
+        assertNotNull(email.getBody());
+    }
+
+    @Test
+    public void buildCreateEmailRequestFlexipyme_OK() {
+        apxRequest.setId("00110057794000023694");
+        apxRequest.getProductPlan().setDescription("PLAN BASICO");
+
+        when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn(null);
+        when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
+        when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
+
+        SimltInsuredHousingDAO emissionDAO = new SimltInsuredHousingDAO();
+        emissionDAO.setDepartmentName("LIMA");
+        emissionDAO.setProvinceName("LIMA");
+        emissionDAO.setDistrictName("LINCE");
+        emissionDAO.setHousingType("P");
+        emissionDAO.setAreaPropertyNumber(new BigDecimal(100));
+        emissionDAO.setPropSeniorityYearsNumber(new BigDecimal(10));
+        emissionDAO.setFloorNumber(new BigDecimal(2));
+        apxRequest.getFirstInstallment().getPaymentAmount().setCurrency("PEN");
+        apxRequest.getProductPlan().setDescription("PLAN CONTENIDO");
+        apxRequest.getProductPlan().setId("04");
+        apxRequest.setParticipants(null);
+        CreateEmailASO email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
+                rimacResponse.getPayload().getNumeroPoliza(), customerList,
+                emissionDAO, "riskDirection", "Empresa S.A.");
+        assertNotNull(email.getBody());
+
+        emissionDAO.setHousingType("I");
+        ParticipantDTO legalParticipant = new ParticipantDTO();
+        ParticipantTypeDTO participantType = new ParticipantTypeDTO();
+        participantType.setId("LEGAL_REPRESENTATIVE");
+        legalParticipant.setParticipantType(participantType);
+        apxRequest.setParticipants(Collections.singletonList(legalParticipant));
+        email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
+                rimacResponse.getPayload().getNumeroPoliza(), customerList,
+                emissionDAO, "riskDirection", null);
+        assertNotNull(email.getBody());
+
+        IdentityDocumentDTO document = new IdentityDocumentDTO();
+        document.setDocumentType(new DocumentTypeDTO());
+        legalParticipant.setIdentityDocument(document);
+        email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
+                rimacResponse.getPayload().getNumeroPoliza(), customerList,
+                emissionDAO, "riskDirection", null);
+        assertNotNull(email.getBody());
+    }
+
+    @Test
+    public void createGifoleRequest_OK() {
+        apxRequest.getValidityPeriod().setEndDate(new Date(2012, 01, 02));
+        apxRequest.getInstallmentPlan().getPeriod().setName("MENSUAL");
+        apxRequest.setExternalPolicyNumber("501481");
+        apxRequest.setId("00110115304000510603");
+        GifoleInsuranceRequestASO response1 = this.mapperHelper.createGifoleRequest(apxRequest, customerList, null);
+        assertNotNull(response1.getQuotation());
+        assertEquals(response1.getQuotation().getId(), apxRequest.getQuotationId());
+        assertEquals(response1.getChannel(), "13000001");
+        assertEquals(response1.getOperationType(), "INSURANCE_CREATION");
+        assertNotNull(response1.getValidityPeriod());
+        assertNotNull(response1.getInsurance());
+        assertEquals(response1.getInsurance().getId(), "00110115304000510603");
+        assertEquals(response1.getPolicyNumber(), "501481");
+        assertNotNull(response1.getProduct());
+        assertNotNull(response1.getHolder());
+
+        apxRequest.getPaymentMethod().getRelatedContracts().get(0).getProduct().setId("ACCOUNT");
+        GifoleInsuranceRequestASO response2 = this.mapperHelper.createGifoleRequest(apxRequest, null, null);
+        assertNotNull(response2.getQuotation());
+        assertEquals(response2.getQuotation().getId(), apxRequest.getQuotationId());
+        assertEquals(response2.getChannel(), "13000001");
+        assertEquals(response2.getOperationType(), "INSURANCE_CREATION");
+        assertNotNull(response2.getValidityPeriod());
+        assertNotNull(response2.getInsurance());
+        assertEquals(response2.getInsurance().getId(), "00110115304000510603");
+        assertEquals(response2.getPolicyNumber(), "501481");
+        assertNotNull(response2.getProduct());
+        assertNotNull(response2.getHolder());
+
+        customerList.getData().get(0).setLastName(null);
+        customerList.getData().get(0).setSecondLastName(null);
+
+        GifoleInsuranceRequestASO response3 = this.mapperHelper.createGifoleRequest(apxRequest, null, null);
+        assertEquals("", response3.getHolder().getLastName());
+    }
+
+    @Test
+    public void createGifoleRequestWithRUC20_OK() {
+        apxRequest.getValidityPeriod().setEndDate(new Date(2012, 01, 02));
+        apxRequest.getInstallmentPlan().getPeriod().setName("MENSUAL");
+        apxRequest.setExternalPolicyNumber("501481");
+        apxRequest.setId("00110115304000510603");
+
+        customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("20999999991");
+        customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("R");
+        customerList.getData().get(0).setLastName(null);
+
+        GifoleInsuranceRequestASO response1 = this.mapperHelper.createGifoleRequest(apxRequest, customerList, null);
+        assertNotNull(response1.getQuotation());
+        assertEquals(response1.getQuotation().getId(), apxRequest.getQuotationId());
+        assertEquals("13000001", response1.getChannel());
+        assertEquals("INSURANCE_CREATION", response1.getOperationType());
+        assertNotNull(response1.getValidityPeriod());
+        assertNotNull(response1.getInsurance());
+        assertEquals("00110115304000510603", response1.getInsurance().getId());
+        assertEquals("501481", response1.getPolicyNumber());
+        assertNotNull(response1.getProduct());
+        assertNotNull(response1.getHolder());
+    }
+
+    @Test
+    public void getPersonTypeTest_OK() {
+        EntidadBO person = new EntidadBO();
+        PersonTypeEnum response = this.mapperHelper.getPersonType(person);
+        assertEquals(PersonTypeEnum.NATURAL, response);
+
+        person.setTipoDocumento("R");
+        person.setNroDocumento("20999999991");
+        response = this.mapperHelper.getPersonType(person);
+        assertEquals(PersonTypeEnum.JURIDIC, response);
+
+        person.setNroDocumento("10999999991");
+        response = this.mapperHelper.getPersonType(person);
+        assertEquals(PersonTypeEnum.NATURAL_WITH_BUSINESS, response);
     }
 
 }
