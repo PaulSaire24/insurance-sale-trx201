@@ -63,6 +63,10 @@
             - **InsuranceCompanyASO**: Entidad compañia aseguradora
             - **StatusASO**: Entidad estado
             - **BankASO**: Entidad banco
+        - listbusinesses:
+            - **ListBusinessesASO**: Entidad que contiene los datos del cliente jurídico
+        - cypher:
+            - **CypherASO**: Entidad de cifrado
     - bo:
         - emision:
             - **EmisionBO**: Entidad emision
@@ -115,6 +119,10 @@
     - Avisos a retornar: PISD00120034
 - **Método executeGifoleEmisionService(GifoleInsuranceRequestASO requestBody)**: Método para registrar leads de venta a través del servicio ASO createGifoleInsuranceRequest
     - Avisos a retornar: PISD00120019
+- **Método executeGetListBusinesses(String customerId, String expands)**: Método para obtener información de un cliente jurídico
+    - Avisos a retornar: -
+- **Método executeCypherService(CypherASO input)**: Método para cifrar el identificador de cliente.
+    - Avisos a retornar: -
 
 #### 3.1.2. Libreria RBVDR211
 > Orientada a realizar la lógica de negocio de la transacción RBVDT201 que incluye los pasos para crear la contratación tanto para un producto de Seguro Vehicular, Seguro Hogar Total.
@@ -126,7 +134,7 @@
 > En este apartado se detallan las librebrias externas que hace uso esta aplicacion para acceder a fuentes de terceros.
 
 - **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse/doc/PISD_APX_Library_PISDR012.md)
-    - Metodos reutilizados: executeGetRequiredFieldsForEmissionService(), executeGetPaymentPeriod(), executeSaveContract(), executeSaveContractEndoserment(), executeSaveReceipts(), executeSaveContractMove(), 
+    - Metodos reutilizados: executeGetRequiredFieldsForEmissionService(), executeGetPaymentPeriod(), executeSaveContract(), executeSaveContractEndoserment(), executeSaveReceipts(), executeSaveContractMove(),
       executeGetRolesByProductAndModality(), executeSaveParticipants().
 
 - **Libreria PISDR021**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib21/browse/doc/PISD_APX_Library_PISDR021.md)
@@ -149,6 +157,7 @@
 - **Advise RBVD00000138**: COTIZACION INACTIVA O INEXISTENTE - EMISION RIMAC
 - **Advise PISD00120033**: ERROR CONNECTION VALIDATE CUSTOMER SERVICE
 - **Advise PISD00120019**: ERROR DE CONNEXIÓN CON EL SERVICIO GIFOLE
+- **Advise RBVD00000166**: ERROR AL ENCRIPTAR EL IDENTIFICADOR DEL CLIENTE/ No se pudo realizar la conexion con el servicio Listar Business.
 
 ## 5. Diseño de componentes:
 ![createInsurance](images/diseno-componentes-apx-createInsurance.png)
@@ -161,3 +170,4 @@
 - **Versión 0.5.5**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
 - **Versión 0.5.14**: Esta versión incluye el registro de los leads de venta en el servicio de GIFOLE, adicionalmente, se añade la validación para comprobar la vigencia de una poliza.
 - **Versión 0.5.18**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
+- **Versión 0.6.1**: Esta versión incluye la capacidad de generar un alta de póliza a clientes jurídicos.
