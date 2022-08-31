@@ -22,6 +22,11 @@
 			<version>0.6.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<groupId>com.bbva.rbvd</groupId>
+			<artifactId>RBVDR201</artifactId>
+			<version>0.6.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>com.bbva.elara</groupId>
 			<artifactId>elara-aspect</artifactId>
 			<version>${apx.core.online.version}</version>
@@ -98,16 +103,6 @@
 			<artifactId>PISDR012</artifactId>
 			<version>0.26.0-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>com.bbva.pisd.dto.insurance</groupId>
-			<artifactId>PISDC011</artifactId>
-			<version>0.16.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.bbva.rbvd</groupId>
-			<artifactId>RBVDR201</artifactId>
-			<version>0.6.0-SNAPSHOT</version>
-		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>
@@ -128,7 +123,6 @@
 							com.bbva.pisd.lib.r012.*;version="${osgi.version.manifest}",
 							com.bbva.rbvd.lib.r201.*;version="${osgi.version.manifest}",
 							com.bbva.rbvd.lib.r211.*;version="${osgi.version.manifest}",
-							com.bbva.pisd.dto.insurance.*;version="${osgi.version.manifest}",
 							com.bbva.elara.*;version="${osgi.version.manifest}",
 							org.osgi.framework;version="${osgi.version.manifest}",
 							com.bbva.elara.aspect;version="${osgi.version.manifest}",
