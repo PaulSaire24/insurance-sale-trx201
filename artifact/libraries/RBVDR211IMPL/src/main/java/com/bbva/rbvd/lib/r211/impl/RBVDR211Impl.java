@@ -175,11 +175,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			validateInsertion(insertedContractMove, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_MOV_TABLE);
 
-			Map<String, Object> argumentsForRoles = new HashMap<>();
-			argumentsForRoles.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), emissionDao.getInsuranceProductId());
-			argumentsForRoles.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), requestBody.getProductPlan().getId());
-
-			Map<String, Object> responseQueryRoles = this.pisdR012.executeGetASingleRow(RBVDProperties.QUERY_SELECT_INSRNC_ROLE_MODALITY.getValue(), argumentsForRoles);
+			Map<String, Object> responseQueryRoles = this.pisdR012.executeGetRolesByProductAndModality(emissionDao.getInsuranceProductId(), requestBody.getProductPlan().getId());
 
 			if(!isEmpty((List) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue()))) {
 

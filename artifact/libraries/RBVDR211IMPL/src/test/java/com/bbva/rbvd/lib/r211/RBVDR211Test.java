@@ -253,12 +253,7 @@ public class RBVDR211Test {
 
 		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
 
-		Map<String, Object> argumentsForRoles = new HashMap<>();
-		argumentsForRoles.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), BigDecimal.ONE);
-		argumentsForRoles.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), "01");
-
-		when(pisdR012.executeGetASingleRow(RBVDProperties.QUERY_SELECT_INSRNC_ROLE_MODALITY.getValue(), argumentsForRoles)).
-				thenReturn(responseQueryRoles);
+		when(pisdR012.executeGetRolesByProductAndModality(BigDecimal.ONE, "01")).thenReturn(responseQueryRoles);
 
 		Map<String, Object>[] arguments = new Map[1];
 		arguments[0] = new HashMap<>();
