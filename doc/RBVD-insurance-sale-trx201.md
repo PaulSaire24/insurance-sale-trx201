@@ -76,7 +76,7 @@
             - **CypherASO**: Entidad cifrado
         - listbusinesses:
             - **BusinessASO**: Entidad negocio
-            - **ListBusinessesASO**: Entidad negocios
+            - **ListBusinessesASO**: Entidad que contiene los datos del cliente jurídico
         - **RelatedContractASO**: Entidad contrato relacionado
         - **RelatedContractProductASO**: Entidad contrato producto relacionado
         - **HolderASO**: Entidad propietario
@@ -142,15 +142,15 @@
     - Avisos a retornar: -
 - **Método executeGetCustomerInformation(String customerId)**: Método para obtener información del cliente a través del servicio ASO listCustomers
     - Avisos a retornar: PISD00120034
-- **executeGifoleEmisionService(GifoleInsuranceRequestASO requestBody)**: Método para enviar información de cotización a través del servicio ASO createGifoleInsuranceRequest
-    - Avisos a retornar: - PISD00120019
-- **executeGetListBusinesses(String customerId, String expands)**: 
+- **Método executeGifoleEmisionService(GifoleInsuranceRequestASO requestBody)**: Método para registrar leads de venta a través del servicio ASO createGifoleInsuranceRequest
+    - Avisos a retornar: PISD00120019
+- **Método executeGetListBusinesses(String customerId, String expands)**: Método para obtener información de un cliente jurídico
     - Avisos a retornar: -
-- **executeCypherService(CypherASO input)**:
+- **Método executeCypherService(CypherASO input)**: Método para cifrar el identificador de cliente.
     - Avisos a retornar: -
 
 #### 3.1.2. Libreria RBVDR211
-> Orientada a realizar la lógica de negocio de la transacción RBVDT201.
+> Orientada a realizar la lógica de negocio de la transacción RBVDT201 que incluye los pasos para crear la contratación tanto para un producto de Seguro Vehicular, Seguro Hogar Total.
 
 - **Método executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody)**: Método que ejecuta toda la lógica de negocio
     - Avisos a retornar: RBVD00000129, RBVD00000121, RBVD00000122, RBVD00000123 y RBVD00000124.
@@ -164,7 +164,7 @@
 - **Libreria PISDR021**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib21/browse/doc?at=release/0.1)
     - Metodos reutilizados: executeGetHomeInfoForEmissionService(), executeGetHomeRiskDirection().
 
-- **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md?at=refs%2Fheads%2Frelease%2F0.10)
+- **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md)
     -  Metodos reutilizados: executeSignatureConstruction().
 
 ## 4. Mensajes de Error y Avisos:
@@ -180,7 +180,8 @@
 - **Advise RBVD00000137**: ERROR AL VALIDAR DATOS EN EMISION RIMAC
 - **Advise RBVD00000138**: COTIZACION INACTIVA O INEXISTENTE - EMISION RIMAC
 - **Advise PISD00120033**: ERROR CONNECTION VALIDATE CUSTOMER SERVICE
-- **Advise PISD00120019**: -
+- **Advise PISD00120019**: ERROR DE CONNEXIÓN CON EL SERVICIO GIFOLE
+- **Advise RBVD00000166**: ERROR AL ENCRIPTAR EL IDENTIFICADOR DEL CLIENTE/ No se pudo realizar la conexion con el servicio Listar Business.
 
 ## 5. Diseño de componentes:
 ![createInsurance](images/diseno-componentes-apx-createInsurance.png)
@@ -190,4 +191,8 @@
 
 - **Versión 0.4.12**: Se añade un dato particular al request del servicio de emisión de Rimac.
 - **Versión 0.5.1**: Se realiza el alta de un seguro con endoso de cesión de derechos.
-- **Versión 0.5.6**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
+- **Versión 0.5.5**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
+- **Versión 0.5.14**: Esta versión incluye el registro de los leads de venta en el servicio de GIFOLE, adicionalmente, se añade la validación para comprobar la vigencia de una poliza.
+- **Versión 0.5.18**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
+- **Versión 0.6.1**: Esta versión incluye la capacidad de generar un alta de póliza a clientes jurídicos.
+- **Versión 0.7.0**: Esta versión incluye un nuevo flujo de emisión para evitar el bloqueo ante errores en servicios de parte de rimac.

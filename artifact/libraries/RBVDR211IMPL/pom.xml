@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>com.bbva.rbvd</groupId>
 		<artifactId>LIBRARIES-insurance-sale-trx201</artifactId>
-		<version>0.6.0-SNAPSHOT</version>
+		<version>0.7.0-SNAPSHOT</version>
 	</parent>
 	<groupId>com.bbva.rbvd</groupId>
 	<artifactId>RBVDR211IMPL</artifactId>
 	<name>RBVDR211IMPL</name>
-	<version>0.6.0-SNAPSHOT</version>
+	<version>0.7.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<description>Library to execute business logic</description>
 	<properties>
@@ -19,12 +19,7 @@
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
 			<artifactId>RBVDR211</artifactId>
-			<version>0.6.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.bbva.rbvd</groupId>
-			<artifactId>RBVDR201</artifactId>
-			<version>0.6.0-SNAPSHOT</version>
+			<version>0.7.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.elara</groupId>
@@ -94,14 +89,19 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.bbva.pisd</groupId>
-			<artifactId>PISDR021</artifactId>
-			<version>0.1.3</version>
+			<groupId>com.bbva.rbvd</groupId>
+			<artifactId>RBVDR201</artifactId>
+			<version>0.7.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR012</artifactId>
 			<version>0.26.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.bbva.pisd</groupId>
+			<artifactId>PISDR021</artifactId>
+			<version>0.1.3</version>
 		</dependency>
 	</dependencies>
 	<build>

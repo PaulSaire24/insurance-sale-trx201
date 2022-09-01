@@ -42,23 +42,20 @@ import com.bbva.rbvd.dto.insrncsale.utils.ContactTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
-
 import org.apache.commons.lang3.StringUtils;
-
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-
 import java.util.*;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
+
+import static java.util.Objects.isNull;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
@@ -98,7 +95,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 		Double endosatarioPorcentaje;
 
-		CustomerListASO customerList = new CustomerListASO();
+		CustomerListASO customerList = null;
 
 		String legalName = null;
 

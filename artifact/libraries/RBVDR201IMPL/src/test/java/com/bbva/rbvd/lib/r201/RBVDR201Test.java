@@ -363,5 +363,4 @@ public class RBVDR201Test {
 		String validation = rbvdR201.executeCypherService(new CypherASO("ABC", KEY_CYPHER_CODE));
 		assertNull(validation);
 	}
-	
 }

@@ -1519,5 +1519,4 @@ public class MapperHelperTest {
         response = this.mapperHelper.getPersonType(person);
         assertEquals(PersonTypeEnum.NATURAL_WITH_BUSINESS, response);
     }
-
 }
