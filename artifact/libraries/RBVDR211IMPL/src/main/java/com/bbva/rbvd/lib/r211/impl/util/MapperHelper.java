@@ -92,9 +92,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 
 import java.text.NumberFormat;
@@ -116,8 +113,6 @@ import java.util.stream.Collectors;
 import static java.util.Objects.nonNull;
 
 public class MapperHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MapperHelper.class);
 
     private static final String EMAIL_VALUE = "EMAIL";
     private static final String PHONE_NUMBER_VALUE = "PHONE";
@@ -1335,8 +1330,8 @@ public class MapperHelper {
         quotationASO.setId(responseBody.getQuotationId());
         gifoleResponse.setQuotation(quotationASO);
         gifoleResponse.setChannel(responseBody.getAap());
-        DateTime currentDate = new DateTime(new Date(), DATE_TIME_ZONE);
-        gifoleResponse.setOperationDate(currentDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")));
+        DateTime operationDate = new DateTime(new Date(), DATE_TIME_ZONE);
+        gifoleResponse.setOperationDate(operationDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")));
         gifoleResponse.setOperationType(INSURANCE_GIFOLE_VAL);
         String startDate = responseBody.getValidityPeriod().getStartDate().toInstant()
                 .atOffset(ZoneOffset.UTC)

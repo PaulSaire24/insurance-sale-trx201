@@ -1451,12 +1451,12 @@ public class MapperHelperTest {
         GifoleInsuranceRequestASO response1 = this.mapperHelper.createGifoleRequest(apxRequest, customerList, null);
         assertNotNull(response1.getQuotation());
         assertEquals(response1.getQuotation().getId(), apxRequest.getQuotationId());
-        assertEquals(response1.getChannel(), "13000001");
-        assertEquals(response1.getOperationType(), "INSURANCE_CREATION");
+        assertEquals("13000001", response1.getChannel());
+        assertEquals("INSURANCE_CREATION", response1.getOperationType());
         assertNotNull(response1.getValidityPeriod());
         assertNotNull(response1.getInsurance());
-        assertEquals(response1.getInsurance().getId(), "00110115304000510603");
-        assertEquals(response1.getPolicyNumber(), "501481");
+        assertEquals("00110115304000510603", response1.getInsurance().getId());
+        assertEquals("501481", response1.getPolicyNumber());
         assertNotNull(response1.getProduct());
         assertNotNull(response1.getHolder());
 
@@ -1464,12 +1464,12 @@ public class MapperHelperTest {
         GifoleInsuranceRequestASO response2 = this.mapperHelper.createGifoleRequest(apxRequest, null, null);
         assertNotNull(response2.getQuotation());
         assertEquals(response2.getQuotation().getId(), apxRequest.getQuotationId());
-        assertEquals(response2.getChannel(), "13000001");
-        assertEquals(response2.getOperationType(), "INSURANCE_CREATION");
+        assertEquals("13000001", response2.getChannel());
+        assertEquals("INSURANCE_CREATION", response2.getOperationType());
         assertNotNull(response2.getValidityPeriod());
         assertNotNull(response2.getInsurance());
-        assertEquals(response2.getInsurance().getId(), "00110115304000510603");
-        assertEquals(response2.getPolicyNumber(), "501481");
+        assertEquals("00110115304000510603", response2.getInsurance().getId());
+        assertEquals("501481", response2.getPolicyNumber());
         assertNotNull(response2.getProduct());
         assertNotNull(response2.getHolder());
 

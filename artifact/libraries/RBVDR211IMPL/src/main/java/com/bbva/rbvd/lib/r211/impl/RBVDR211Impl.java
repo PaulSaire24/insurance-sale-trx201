@@ -42,15 +42,23 @@ import com.bbva.rbvd.dto.insrncsale.utils.ContactTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Map;
+import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Date;
+import java.util.ArrayList;
 
 import static java.util.Objects.nonNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -251,7 +259,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					policyNumber, customerList, legalName);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Sending email ... *****");
-			this.rbvdR201.executeCreateEmail(email);
+			Integer emailHttpStatus = this.rbvdR201.executeCreateEmail(email);
 
 			String gifoleFlag = this.applicationConfigurationService.getProperty(GIFOLE_SALES_ASO);
 
