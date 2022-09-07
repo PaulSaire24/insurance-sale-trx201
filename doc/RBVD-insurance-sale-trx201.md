@@ -20,33 +20,27 @@
 ## 2. DTOs:
 
 > En este apartado se detallan todas las clases DTOs utilizadas en este recurso.
-- **RBVDC202**:
+- **RBVDC201**:
     - dao:
         - **SimltInsuredHousingDAO**: Entidad para DAO para obtener información de hogar.
-    - utils:
-        - **HomeInsuranceProperty**: Entidad Constantes
 - **PISDC011**:
     - aso:
-        - email:
-            - **CreateEmailASO**: Entidad email
-        - gifole:
-            - **AmountASO**: Entidad monto
-            - **ContactASO**: Entidad contacto
-            - **ContactDetailASO**: Entidad detalle contacto
-            - **GifoleInsuranceRequestASO**: Entidad request gifole
-            - **InsuranceASO**: Entidad seguro
-            - **PeriodASO**: Entidad periodo
-            - **PlanASO**: Entidad plan
-            - **ProductASO**: Entidad producto
-            - **QuotationASO**: Entidad cotización
+        - customerList:
+            - **CustomerListASO**: Entidad CustomerListASO
         - bo:
             - customer:
                 - **AddPersonBO**: Entidad RegisterAdditionalVehBO
                 - **CustomerBO**: Entidad CustomerBO
                 - **DataPersona**: Entidad DataPersona
                 - **Persona**: Entidad Persona
-            - **ContactDetailsBO**: Entidad detalle contrato
-        - **CustomerListASO**: Entidad CustomerListASO
+        - gifole:
+            - **GifoleInsuranceRequestASO**: Entidad nueva para Gifole
+            - **ProductASO**: Entidad producto
+            - **InstallmentPlanASO**: Entidad plan aplicado
+            - **HolderASO**: Entidad de información de cliente
+            - **QuotationASO**: Entidad cotización
+            - **ValidityPeriodASO**: Entidad periodo de pago
+            - **InsuranceASO**: Entidad emisión seguro
     - utils:
         - **PISDConstants**: Entidad Constantes
         - **PISDErrors**: Entidad Errores
@@ -62,68 +56,49 @@
             - **TotalAmountASO**: Entidad monto total
             - **InsuredAmountASO**: Entidad monto asegurado
             - **InstallmentPlanASO**: Entidad plan de pago
-            - **PaymentPeriodASO**:Entidad periodo de pago
             - **FirstInstallmentASO**: Entidad primer pago
             - **ParticipantASO**: Entidad participante
-            - **ParticipantTypeASO**: Entidad tipo participante
             - **BusinessAgentASO**: Entidad gestor
             - **PromoterASO**: Entidad presentador
             - **InsuranceCompanyASO**: Entidad compañia aseguradora
             - **StatusASO**: Entidad estado
             - **BankASO**: Entidad banco
-            - **BranchASO**: Entidad oficina
-        - cypher:
-            - **CypherASO**: Entidad cifrado
         - listbusinesses:
-            - **BusinessASO**: Entidad negocio
             - **ListBusinessesASO**: Entidad que contiene los datos del cliente jurídico
-        - **RelatedContractASO**: Entidad contrato relacionado
-        - **RelatedContractProductASO**: Entidad contrato producto relacionado
-        - **HolderASO**: Entidad propietario
-        - **IdentityDocumentASO**: Entidad documento identidad
-        - **DocumentTypeASO**: Entidad tipo documento identidad
-        - **PaymentAmountASO**: Entidad monto pago
-        - **ExchangeRateASO**: Entidad tipo cambio
+        - cypher:
+            - **CypherASO**: Entidad de cifrado
     - bo:
         - emision:
             - **EmisionBO**: Entidad emision
-            - **FinanciamientoBO**: Entidad financiamiento
             - **PayloadEmisionBO**: Entidad payload
-            - **PersonaBO**: Entidad persona
-            - **AgregarPersonaBO**: Entidad agregar persona
             - **ContactoInspeccionBO**: Entidad contacto inspección
-            - **CrearCronogramaBO**: Entidad cronograma
             - **DatoParticularBO**: Entidad dato particular
             - **CuotaFinancimientoBO**: Entidad cuota financiamiento
-            - **EntidadBO**: Entidad entidad
             - **EndosatarioBO**: Entidad endosatario
-            - **OrganizacionBO**: Entidad organización
-    - dao:
-        - **InsuranceContractDAO**: Entidad seguro contratado
-        - **RequiredFieldsEmissionDAO**: Entidad campos requeridos
-        - **InsuranceCtrReceiptsDAO**: Entidad ingresos
-        - **IsrcContractMovDAO**: Entidad contrato
-        - **IsrcContractParticipantDAO**: Entidad participantes contrato
     - policy:
         - **PolicyDTO**: Entidad poliza para APX
+        - **PolicyProductPlan**: Entidad plan de producto para APX
+        - **PolicyPaymentMethodDTO**: Entidad metodo de pago para APX
+        - **TotalAmountDTO**: Entidad cantidad total para APX
+        - **InsuredAmountDTO**: Entidad cantidad asegurada para APX
+        - **InsuranceCompanyDTO**: Entidad compañia aseguradora para APX
         - **RelatedContractDTO**: Entidad contratos relacionados
+        - **PolicyInstallmentPlanDTO**: Entidad plan de pago para APX
+        - **FirstInstallmentDTO**: Entidad primer pago para APX
         - **ParticipantDTO**: Entidad participante para APX
         - **BusinessAgentDTO**: Entidad gestor para APX
         - **PromoterDTO**: Entidad presentador para APX
-        - **ExchangeRateDTO**: Entidad tipo de cambio para APX
-        - **DetailDTO**: Entidad detalle para APX
-        - **FactorDTO**: Entidad factor para APX
     - commons:
+        - **HolderDTO**: Entidad titular
         - **PaymentAmountDTO**: Entidad cantidad de pago
+        - **IdentityDocumentDTO**: Entidad documento de identidad
+        - **ValidityPeriodDTO**: Entidad periodo de validez
         - **PolicyInspectionDTO**: Entidad inspección
+        - **ExchangeRateDTO**: Entidad tipo de cambio
         - **QuotationStatusDTO**: Entidad estado de cotizacion
+        - **BankDTO**: Entidad banco
+        - **LinkDTO**: Entidad link
         - **ContactDetailDTO**: Entidad detalle de contacto
-    - utils:
-        - **ContactTypeEnum**: Entidad constantes
-        - **HolderTypeEnum**: Entidad constantes
-        - **PersonTypeEnum**: Entidad constantes
-        - **RBVDErrors**: Entidad errores
-        - **RBVDProperties**: Entidad propiedades
 
 ## 3. Librerias:
 
@@ -132,7 +107,9 @@
 
 #### 3.1.1. Libreria RBVDR201
 > Orientada a consumir el servicio createInsurance del API insurances,
-> el servicio createEmail del API notifications-gateway y el servicio de emisión de poliza de Rimac.
+> el servicio createEmail del API notifications-gateway, el servicio listCustomers del API customers, 
+> el servicio createGifoleInsuranceRequest del API gifole, el servicio createCryptoDocument del API business-cryptography, 
+> el servicio listBusinesses del API businesses y el servicio de emisión de poliza de Rimac.
 
 - **Método executePrePolicyEmissionASO(DataASO requestBody)**: Método que consume el servicio ASO createInsurance, para recuperar el alta del seguro generada por Host.
     - Avisos a retornar: RBVD00000136
@@ -158,10 +135,11 @@
 ### 3.2. Librerias Externas
 > En este apartado se detallan las librebrias externas que hace uso esta aplicacion para acceder a fuentes de terceros.
 
-- **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse/doc?at=refs%2Fheads%2Frelease%2F0.23)
-    - Metodos reutilizados: executeGetASingleRow(), executeInsertSingleRow(), executeSaveParticipants(), executeSaveReceipts().
+- **Libreria PISDR012**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib12/browse/doc/PISD_APX_Library_PISDR012.md)
+    - Metodos reutilizados: executeGetASingleRow(), executeInsertSingleRow(), executeSaveReceipts(), executeGetRolesByProductAndModality(), 
+      executeSaveParticipants().
 
-- **Libreria PISDR021**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib21/browse/doc?at=release/0.1)
+- **Libreria PISDR021**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib21/browse/doc/PISD_APX_Library_PISDR021.md)
     - Metodos reutilizados: executeGetHomeInfoForEmissionService(), executeGetHomeRiskDirection().
 
 - **Libreria PISDR014**: [Ver documentaction](https://globaldevtools.bbva.com/bitbucket/projects/PE_PISD_APP-ID-26197_DSG/repos/insuranceroyal-lib14/browse/doc/PISD-insuranceroyal-lib14.md)
@@ -194,5 +172,4 @@
 - **Versión 0.5.5**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
 - **Versión 0.5.14**: Esta versión incluye el registro de los leads de venta en el servicio de GIFOLE, adicionalmente, se añade la validación para comprobar la vigencia de una poliza.
 - **Versión 0.5.18**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
-- **Versión 0.6.1**: Esta versión incluye la capacidad de generar un alta de póliza a clientes jurídicos.
-- **Versión 0.7.0**: Esta versión incluye un nuevo flujo de emisión para evitar el bloqueo ante errores en servicios de parte de rimac.
+- **Versión 0.7.0**: Esta versión incluye la capacidad de generar un alta de póliza a clientes jurídicos y además si ha modificado el flujo del servicio.
