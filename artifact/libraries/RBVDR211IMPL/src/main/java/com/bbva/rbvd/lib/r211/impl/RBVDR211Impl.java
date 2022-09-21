@@ -23,6 +23,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 
+import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.OrganizacionBO;
@@ -53,6 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
@@ -60,10 +62,10 @@ import java.util.HashMap;
 import java.util.Date;
 import java.util.ArrayList;
 
-import static java.util.Objects.nonNull;
-import static org.springframework.util.CollectionUtils.isEmpty;
-
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toList;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
@@ -161,15 +163,15 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			validateInsertion(insertedContract, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
 
-			InsuranceCtrReceiptsDAO firstReceiptInformation = this.mapperHelper.getFirstReceiptInformation(asoResponse, requestBody);
-			Map<String, Object> argumentsForFirstReceipt = this.mapperHelper.createReceipt(firstReceiptInformation);
-			argumentsForFirstReceipt.forEach(
-					(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveFirstReceipt parameter {} with value: {} *****", key, value));
+			List<InsuranceCtrReceiptsDAO> receiptsList = this.mapperHelper.buildInsuranceCtrReceipts(asoResponse, requestBody);
 
-			int insertedFirstReceipt = this.pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue(), argumentsForFirstReceipt,
-					RBVDProperties.FIELD_POLICY_RECEIPT_ID.getValue());
+			Map<String, Object>[] receiptsArguments = this.mapperHelper.createSaveReceiptsArguments(receiptsList);
+			Arrays.stream(receiptsArguments).
+					forEach(receipt -> receipt.
+							forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value)));
 
-			validateInsertion(insertedFirstReceipt, RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
+			validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue(),
+					receiptsArguments), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
 
 			IsrcContractMovDAO contractMovDao = this.mapperHelper.buildIsrcContractMov(asoResponse, requestBody.getCreationUser(), requestBody.getUserAudit());
 			Map<String, Object> argumentsForContractMov = this.mapperHelper.createSaveContractMovArguments(contractMovDao);
@@ -186,13 +188,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 				List<IsrcContractParticipantDAO> participants = this.mapperHelper.buildIsrcContractParticipants(requestBody, responseQueryRoles, asoResponse.getData().getId());
 
-				Map<String, Object>[] arguments = this.mapperHelper.createSaveParticipantArguments(participants);
+				Map<String, Object>[] participantsArguments = this.mapperHelper.createSaveParticipantArguments(participants);
 
-				Arrays.stream(arguments).forEach(
-						argumentsMap -> argumentsMap.forEach(
+				Arrays.stream(participantsArguments).forEach(
+						participant -> participant.forEach(
 								(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy | SaveParticipants parameter {} with value: {} *****", key, value)));
 
-				validateMultipleInsertion(this.pisdR012.executeSaveParticipants(arguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
+				validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSRNC_CTR_PARTICIPANT.getValue(),
+						participantsArguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
 			}
 
 			if(isEndorsement){
@@ -238,13 +241,18 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 				validateInsertion(updatedContract, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
 
-				List<InsuranceCtrReceiptsDAO> otherReceipts = this.mapperHelper.buildNextInsuranceCtrReceipt(firstReceiptInformation, rimacResponse);
+				List<InsuranceCtrReceiptsDAO> otherReceipts = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
+						filter(cuota -> cuota.getCuota().compareTo(1L) > 0).map(cuota -> this.generateNextReceipt(asoResponse, cuota)).
+						collect(toList());
 
-				Map<String, Object>[] receiptsArguments = this.mapperHelper.createSaveReceiptsArguments(otherReceipts);
-				Arrays.stream(receiptsArguments).
-						forEach(receiptArguments -> receiptArguments.
+				Map<String, Object>[] receiptUpdateArguments = this.mapperHelper.createSaveReceiptsArguments(otherReceipts);
+
+				Arrays.stream(receiptUpdateArguments).
+						forEach(receiptUpdated -> receiptUpdated.
 								forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value)));
-				validateMultipleInsertion(this.pisdR012.executeSaveReceipts(receiptsArguments), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
+
+				validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS",
+						receiptUpdateArguments), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
 
 				policyNumber = rimacResponse.getPayload().getNumeroPoliza();
 			}
@@ -508,6 +516,16 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				break;
 		}
 		return email;
+	}
+
+	private InsuranceCtrReceiptsDAO generateNextReceipt(PolicyASO asoResponse, CuotaFinancimientoBO cuota) {
+		InsuranceCtrReceiptsDAO nextReceipt = new InsuranceCtrReceiptsDAO();
+		nextReceipt.setEntityId(asoResponse.getData().getId().substring(0, 4));
+		nextReceipt.setBranchId(asoResponse.getData().getId().substring(4, 8));
+		nextReceipt.setIntAccountId(asoResponse.getData().getId().substring(10));
+		nextReceipt.setPolicyReceiptId(BigDecimal.valueOf(cuota.getCuota()));
+		nextReceipt.setReceiptExpirationDate(this.mapperHelper.generateCorrectDateFormat(cuota.getFechaVencimiento()));
+		return nextReceipt;
 	}
 
 	private SimltInsuredHousingDAO validateResponseQueryGetHomeRequiredFields(Map<String, Object> responseQueryGetHomeRequiredFields) {
