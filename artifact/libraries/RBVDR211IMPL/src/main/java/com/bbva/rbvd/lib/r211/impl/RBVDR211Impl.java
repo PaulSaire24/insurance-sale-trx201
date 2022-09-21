@@ -42,6 +42,7 @@ import org.springframework.http.HttpStatus;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -342,16 +343,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			BusinessAgentDTO businessAgent = new BusinessAgentDTO();
 			businessAgent.setId(defaultCode);
 
-			PromoterDTO promoter = new PromoterDTO();
-			promoter.setId(defaultCode);
-			if(Objects.nonNull(requestBody.getPromoter())) {
-				promoter.setId(requestBody.getPromoter().getId());
-			}
-			else {
+			if(isNull(requestBody.getPromoter())) {
+				PromoterDTO promoter = new PromoterDTO();
 				promoter.setId(defaultCode);
+				requestBody.setPromoter(promoter);
 			}
 			requestBody.setBusinessAgent(businessAgent);
-			requestBody.setPromoter(promoter);
 		}
 	}
 
@@ -421,7 +418,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	}
 
 	private void validateMultipleInsertion(int[] insertedRows, RBVDErrors error) {
-		if(Objects.isNull(insertedRows) || insertedRows.length == 0) {
+		if(isNull(insertedRows) || insertedRows.length == 0) {
 			throw RBVDValidation.build(error);
 		}
 	}
