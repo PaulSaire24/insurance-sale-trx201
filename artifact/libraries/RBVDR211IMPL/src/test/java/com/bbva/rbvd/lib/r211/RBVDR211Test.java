@@ -317,13 +317,13 @@ public class RBVDR211Test {
 		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
 		this.requestBody.getBank().getBranch().setId("0057");
 		this.requestBody.setSaleChannelId("BI");
-
+		this.requestBody.setPromoter(null);
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
 		//Now, APX sets isPaymentRequired value
 		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getBusinessAgent().getId());
-		assertEquals("026364", validation.getPromoter().getId());
+		assertEquals(AGENT_AND_PROMOTER_DEFAULT_CODE, validation.getPromoter().getId());
 
 		requestBody.setProductId("832");
 		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
@@ -349,6 +349,11 @@ public class RBVDR211Test {
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(new CustomerListASO());
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertNull(validation);
+		when(rbvdr201.executeCypherService(anyObject())).thenReturn(null);
+		customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("20345728394");
+		customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("RUC");
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 	}
 
 	@Test
