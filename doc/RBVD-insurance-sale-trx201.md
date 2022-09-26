@@ -170,4 +170,4 @@
 - **Versión 0.5.5**: Esta versión permite manejar una bifurcación a la hora de consumir servicios de Rimac, lo que permitirá manejar uri's diferentes según el tipo de producto especificado. Se agregaron adecuaciones para producto HOGAR TOTAL.
 - **Versión 0.5.14**: Esta versión incluye el registro de los leads de venta en el servicio de GIFOLE, adicionalmente, se añade la validación para comprobar la vigencia de una poliza.
 - **Versión 0.5.18**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
-- **Versión 0.6.4**: Esta versión incluye la capacidad de generar un alta de póliza a clientes jurídicos.
+- **Versión 0.6.5**: Esta versión incluye la capacidad de generar un alta de póliza a clientes jurídicos.
