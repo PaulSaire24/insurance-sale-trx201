@@ -415,7 +415,7 @@ public class MapperHelper {
         contractDao.setInsurPendingDebtIndType((apxRequest.getFirstInstallment().getIsPaymentRequired()) ? N_VALUE : S_VALUE);
 
         contractDao.setTotalDebtAmount((apxRequest.getFirstInstallment().getIsPaymentRequired())
-                ? BigDecimal.valueOf(0) : BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()));
+                ? BigDecimal.ZERO : BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()));
 
         contractDao.setPrevPendBillRcptsNumber((apxRequest.getFirstInstallment().getIsPaymentRequired())
                 ? BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1)
@@ -491,17 +491,27 @@ public class MapperHelper {
         return arguments;
     }
 
-    public InsuranceCtrReceiptsDAO getFirstReceiptInformation(PolicyASO asoResponse, PolicyDTO requestBody) {
+    public List<InsuranceCtrReceiptsDAO> buildInsuranceCtrReceipts(PolicyASO asoResponse, PolicyDTO requestBody) {
+
+        List<InsuranceCtrReceiptsDAO> receiptList = new ArrayList<>();
+
         InsuranceCtrReceiptsDAO firstReceipt = new InsuranceCtrReceiptsDAO();
         firstReceipt.setEntityId(asoResponse.getData().getId().substring(0, 4));
         firstReceipt.setBranchId(asoResponse.getData().getId().substring(4, 8));
         firstReceipt.setIntAccountId(asoResponse.getData().getId().substring(10));
         firstReceipt.setPolicyReceiptId(BigDecimal.ONE);
         firstReceipt.setPremiumPaymentReceiptAmount(BigDecimal.valueOf(requestBody.getFirstInstallment().getPaymentAmount().getAmount()));
-        firstReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(asoResponse.getData()
-                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()));
-        firstReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(asoResponse.getData()
-                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()));
+
+        if(Objects.nonNull(asoResponse.getData().getFirstInstallment().getExchangeRate())) {
+            firstReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(asoResponse.getData()
+                    .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()));
+            firstReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(asoResponse.getData()
+                    .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()));
+        } else {
+            firstReceipt.setFixingExchangeRateAmount(BigDecimal.ZERO);
+            firstReceipt.setPremiumCurrencyExchAmount(BigDecimal.ZERO);
+        }
+
         firstReceipt.setPremiumChargeOperationId(asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
         firstReceipt.setCurrencyId(requestBody.getFirstInstallment().getPaymentAmount().getCurrency());
 
@@ -542,10 +552,52 @@ public class MapperHelper {
         firstReceipt.setLastChangeBranchId(requestBody.getBank().getBranch().getId());
         firstReceipt.setInsuranceCompanyId(new BigDecimal(requestBody.getInsuranceCompany().getId()));
         firstReceipt.setGlBranchId(asoResponse.getData().getId().substring(4, 8));
-        return firstReceipt;
+
+        receiptList.add(firstReceipt);
+
+        if("MONTHLY".equals(requestBody.getInstallmentPlan().getPeriod().getId())) {
+            generateMonthlyReceipts(firstReceipt, receiptList);
+        }
+
+        return receiptList;
     }
 
-    public Map<String, Object> createReceipt(InsuranceCtrReceiptsDAO receiptDao) {
+    private void generateMonthlyReceipts(InsuranceCtrReceiptsDAO firstReceipt, List<InsuranceCtrReceiptsDAO> receiptList) {
+        int receiptNumber = 2;
+        for(int i = 0; i < 11; i++) {
+            InsuranceCtrReceiptsDAO nextReceipt = new InsuranceCtrReceiptsDAO();
+            nextReceipt.setEntityId(firstReceipt.getEntityId());
+            nextReceipt.setBranchId(firstReceipt.getBranchId());
+            nextReceipt.setIntAccountId(firstReceipt.getIntAccountId());
+            nextReceipt.setInsuranceCompanyId(firstReceipt.getInsuranceCompanyId());
+            nextReceipt.setPolicyReceiptId(BigDecimal.valueOf(receiptNumber++));
+            nextReceipt.setPremiumPaymentReceiptAmount(BigDecimal.ZERO);
+            nextReceipt.setFixingExchangeRateAmount(BigDecimal.ZERO);
+            nextReceipt.setPremiumCurrencyExchAmount(BigDecimal.ZERO);
+            nextReceipt.setCurrencyId(firstReceipt.getCurrencyId());
+            nextReceipt.setReceiptIssueDate(RECEIPT_DEFAULT_DATE_VALUE);
+            nextReceipt.setReceiptStartDate(firstReceipt.getReceiptStartDate());
+            nextReceipt.setReceiptEndDate(firstReceipt.getReceiptEndDate());
+            nextReceipt.setReceiptCollectionDate(RECEIPT_DEFAULT_DATE_VALUE);
+            nextReceipt.setReceiptExpirationDate(RECEIPT_DEFAULT_DATE_VALUE);
+            nextReceipt.setReceiptsTransmissionDate(RECEIPT_DEFAULT_DATE_VALUE);
+            nextReceipt.setReceiptCollectionStatusType(COLLECTION_STATUS_NEXT_VALUES);
+            nextReceipt.setPaymentMethodType(firstReceipt.getPaymentMethodType());
+            nextReceipt.setDebitAccountId(firstReceipt.getDebitAccountId());
+            nextReceipt.setReceiptStatusType(NEXT_RECEIPTS_STATUS_TYPE_VALUE);
+            nextReceipt.setCreationUserId(firstReceipt.getCreationUserId());
+            nextReceipt.setUserAuditId(firstReceipt.getUserAuditId());
+            nextReceipt.setManagementBranchId(firstReceipt.getManagementBranchId());
+            nextReceipt.setFixPremiumAmount(firstReceipt.getFixPremiumAmount());
+            nextReceipt.setSettlementFixPremiumAmount(BigDecimal.ZERO);
+            nextReceipt.setLastChangeBranchId(firstReceipt.getLastChangeBranchId());
+            nextReceipt.setGlBranchId(firstReceipt.getGlBranchId());
+
+            receiptList.add(nextReceipt);
+        }
+    }
+
+    private Map<String, Object> createReceipt(InsuranceCtrReceiptsDAO receiptDao) {
         Map<String, Object> receiptArguments = new HashMap<>();
 
         receiptArguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), receiptDao.getEntityId());
@@ -796,9 +848,9 @@ public class MapperHelper {
         nextReceipt.setIntAccountId(firstReceipt.getIntAccountId());
         nextReceipt.setInsuranceCompanyId(firstReceipt.getInsuranceCompanyId());
         nextReceipt.setPolicyReceiptId(BigDecimal.valueOf(cuota.getCuota()));
-        nextReceipt.setPremiumPaymentReceiptAmount(BigDecimal.valueOf(0));
-        nextReceipt.setFixingExchangeRateAmount(BigDecimal.valueOf(0));
-        nextReceipt.setPremiumCurrencyExchAmount(BigDecimal.valueOf(0));
+        nextReceipt.setPremiumPaymentReceiptAmount(BigDecimal.ZERO);
+        nextReceipt.setFixingExchangeRateAmount(BigDecimal.ZERO);
+        nextReceipt.setPremiumCurrencyExchAmount(BigDecimal.ZERO);
         nextReceipt.setCurrencyId(firstReceipt.getCurrencyId());
         nextReceipt.setReceiptIssueDate(RECEIPT_DEFAULT_DATE_VALUE);
         nextReceipt.setReceiptStartDate(firstReceipt.getReceiptStartDate());
@@ -814,7 +866,7 @@ public class MapperHelper {
         nextReceipt.setUserAuditId(firstReceipt.getUserAuditId());
         nextReceipt.setManagementBranchId(firstReceipt.getManagementBranchId());
         nextReceipt.setFixPremiumAmount(firstReceipt.getFixPremiumAmount());
-        nextReceipt.setSettlementFixPremiumAmount(BigDecimal.valueOf(0));
+        nextReceipt.setSettlementFixPremiumAmount(BigDecimal.ZERO);
         nextReceipt.setLastChangeBranchId(firstReceipt.getLastChangeBranchId());
         nextReceipt.setGlBranchId(firstReceipt.getGlBranchId());
 
@@ -1133,7 +1185,7 @@ public class MapperHelper {
         return new LocalDate(date, DateTimeZone.forID(GMT_TIME_ZONE));
     }
 
-    private String generateCorrectDateFormat(LocalDate localDate) {
+    public String generateCorrectDateFormat(LocalDate localDate) {
         String day = (localDate.getDayOfMonth() < 10) ? "0" + localDate.getDayOfMonth() : String.valueOf(localDate.getDayOfMonth());
         String month = (localDate.getMonthOfYear() < 10) ? "0" + localDate.getMonthOfYear() : String.valueOf(localDate.getMonthOfYear());
         return day + "/" + month + "/" + localDate.getYear();
