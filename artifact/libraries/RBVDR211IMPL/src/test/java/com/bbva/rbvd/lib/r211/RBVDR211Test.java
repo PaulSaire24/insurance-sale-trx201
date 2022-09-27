@@ -64,6 +64,8 @@ public class RBVDR211Test {
 
 	private PolicyDTO requestBody;
 
+	private Map<String, Object>[] argumentsForMultipleInsertion;
+
 	private Map<String, Object> argumentValidateIfPolicyExists;
 	private Map<String, Object> responseValidateIfPolicyExists;
 	private Map<String, Object> responseQueryGetRequiredFields;
@@ -96,6 +98,9 @@ public class RBVDR211Test {
 		rbvdr211.setMapperHelper(mapperHelper);
 
 		requestBody = mockData.getCreateInsuranceRequestBody();
+
+		argumentsForMultipleInsertion = new Map[1];
+		argumentsForMultipleInsertion[0] = new HashMap<>();
 
 		mockDTO = MockDTO.getInstance();
 		customerList = mockDTO.getCustomerDataResponse();
@@ -157,8 +162,10 @@ public class RBVDR211Test {
 				RBVDProperties.FIELD_CUSTOMER_ID.getValue(), RBVDProperties.FIELD_INSRNC_CO_CONTRACT_STATUS_TYPE.getValue(),
 				RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), RBVDProperties.FIELD_USER_AUDIT_ID.getValue())).thenReturn(1);
 
-		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue(), new HashMap<>(),
-				RBVDProperties.FIELD_POLICY_RECEIPT_ID.getValue())).thenReturn(1);
+		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
+
+		when(pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue(), argumentsForMultipleInsertion)).
+				thenReturn(new int[2]);
 
 		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSRNC_CONTRACT_MOV.getValue(), new HashMap<>())).
 				thenReturn(1);
@@ -169,7 +176,8 @@ public class RBVDR211Test {
 				RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue(), RBVDProperties.FIELD_INSURANCE_POLICY_END_DATE.getValue(),
 				RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue(), RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue())).thenReturn(1);
 
-		when(pisdR012.executeSaveReceipts(any())).thenReturn(new int[1]);
+		when(pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS", argumentsForMultipleInsertion)).
+				thenReturn(new int[2]);
 		/* P030557 */
 	}
 
@@ -220,11 +228,11 @@ public class RBVDR211Test {
 	}
 
 	@Test
-	public void executeBusinessLogicEmissionPrePolicyWithFirstReceiptInsertionError() {
-		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithFirstReceiptInsertionError...");
+	public void executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError...");
 
-		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue(), new HashMap<>(),
-				RBVDProperties.FIELD_POLICY_RECEIPT_ID.getValue())).thenReturn(0);
+		when(pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue(), argumentsForMultipleInsertion)).
+				thenReturn(new int[0]);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -256,12 +264,10 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeGetRolesByProductAndModality(BigDecimal.ONE, "01")).thenReturn(responseQueryRoles);
 
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
+		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 
-		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
-
-		when(pisdR012.executeSaveParticipants(any())).thenReturn(null);
+		when(pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSRNC_CTR_PARTICIPANT.getValue(), argumentsForMultipleInsertion)).
+				thenReturn(new int[0]);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -279,19 +285,12 @@ public class RBVDR211Test {
 
 		when(responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue())).thenReturn(roles);
 
-		Map<String, Object> argumentsForRoles = new HashMap<>();
-		argumentsForRoles.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), BigDecimal.ONE);
-		argumentsForRoles.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), "01");
+		when(pisdR012.executeGetRolesByProductAndModality(BigDecimal.ONE, "01")).thenReturn(responseQueryRoles);
 
-		when(pisdR012.executeGetASingleRow(RBVDProperties.QUERY_SELECT_INSRNC_ROLE_MODALITY.getValue(), argumentsForRoles)).
-				thenReturn(responseQueryRoles);
+		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
-
-		when(mapperHelper.createSaveParticipantArguments(anyList())).thenReturn(arguments);
-
-		when(pisdR012.executeSaveParticipants(any())).thenReturn(new int[1]);
+		when(pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSRNC_CTR_PARTICIPANT.getValue(), argumentsForMultipleInsertion)).
+				thenReturn(new int[2]);
 
 		ParticipantDTO secondParticipant = new ParticipantDTO();
 
@@ -333,15 +332,11 @@ public class RBVDR211Test {
 	}
 
 	@Test
-	public void executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError() {
-		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError...");
+	public void executeBusinessLogicEmissionPrePolicyWithReceiptsUpdateError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithReceiptsUpdateError...");
 
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
-
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
-
-		when(pisdR012.executeSaveReceipts(any())).thenReturn(null);
+		when(pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS", argumentsForMultipleInsertion)).
+				thenReturn(null);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -353,11 +348,6 @@ public class RBVDR211Test {
 	public void executeBusinessLogicEmissionPrePolicyWithVehicularProductOK() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithVehicularProductOK...");
 
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
-
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
-
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
@@ -366,11 +356,6 @@ public class RBVDR211Test {
 	@Test
 	public void executeBusinessLogicEmissionPrePolicyWithHomeProductOK() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithHomeProductOK...");
-
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
-
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
 
 		requestBody.setProductId("832");
 
@@ -402,11 +387,6 @@ public class RBVDR211Test {
 	@Test
 	public void eexecuteBusinessLogicEmissionPrePolicySetOrganizationTest() {
 		LOGGER.info("RBVDR211Test - Executing eexecuteBusinessLogicEmissionPrePolicySetOrganizationTest...");
-
-		Map<String, Object>[] arguments = new Map[1];
-		arguments[0] = new HashMap<>();
-
-		when(mapperHelper.createSaveReceiptsArguments(anyList())).thenReturn(arguments);
 
 		this.requestBody.getBank().getBranch().setId("7794");
 		requestBody.setProductId("833");

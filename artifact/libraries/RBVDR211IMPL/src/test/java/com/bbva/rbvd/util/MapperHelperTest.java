@@ -18,8 +18,11 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
 
+import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 
+import com.bbva.rbvd.dto.insrncsale.aso.emision.DetailASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.FactorASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 
 import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
@@ -547,77 +550,79 @@ public class MapperHelperTest {
     }
 
     @Test
-    public void getFirstReceiptInformation_OK() {
-        InsuranceCtrReceiptsDAO validation = mapperHelper.getFirstReceiptInformation(asoResponse, apxRequest);
+    public void buildInsuranceCtrReceipt_OK() {
+        List<InsuranceCtrReceiptsDAO> validation = mapperHelper.buildInsuranceCtrReceipts(asoResponse, apxRequest);
 
-        assertNotNull(validation.getEntityId());
-        assertNotNull(validation.getBranchId());
-        assertNotNull(validation.getIntAccountId());
-        assertNotNull(validation.getPremiumPaymentReceiptAmount());
-        assertNotNull(validation.getFixingExchangeRateAmount());
-        assertNotNull(validation.getPremiumCurrencyExchAmount());
-        assertNotNull(validation.getPremiumChargeOperationId());
-        assertNotNull(validation.getCurrencyId());
-        assertNotNull(validation.getReceiptIssueDate());
-        assertNotNull(validation.getReceiptCollectionDate());
-        assertNotNull(validation.getReceiptsTransmissionDate());
-        assertNotNull(validation.getReceiptExpirationDate());
-        assertNotNull(validation.getInsuranceCollectionMoveId());
-        assertNotNull(validation.getPaymentMethodType());
-        assertNotNull(validation.getDebitAccountId());
-        assertNotNull(validation.getDebitChannelType());
-        assertNotNull(validation.getCreationUserId());
-        assertNotNull(validation.getUserAuditId());
-        assertNotNull(validation.getManagementBranchId());
-        assertNotNull(validation.getFixPremiumAmount());
-        assertNotNull(validation.getSettlementFixPremiumAmount());
-        assertNotNull(validation.getLastChangeBranchId());
-        assertNotNull(validation.getInsuranceCompanyId());
-        assertNotNull(validation.getGlBranchId());
+        assertNotNull(validation.get(0).getEntityId());
+        assertNotNull(validation.get(0).getBranchId());
+        assertNotNull(validation.get(0).getIntAccountId());
+        assertNotNull(validation.get(0).getPolicyReceiptId());
+        assertNotNull(validation.get(0).getInsuranceCompanyId());
+        assertNotNull(validation.get(0).getPremiumPaymentReceiptAmount());
+        assertNotNull(validation.get(0).getCurrencyId());
+        assertNotNull(validation.get(0).getReceiptStartDate());
+        assertNotNull(validation.get(0).getReceiptEndDate());
+        assertNotNull(validation.get(0).getReceiptExpirationDate());
+        assertNotNull(validation.get(0).getReceiptCollectionStatusType());
+        assertNotNull(validation.get(0).getPaymentMethodType());
+        assertNotNull(validation.get(0).getDebitAccountId());
+        assertNotNull(validation.get(0).getDebitChannelType());
+        assertNotNull(validation.get(0).getChargeAttemptsNumber());
+        assertNotNull(validation.get(0).getInsrncCoReceiptStatusType());
+        assertNotNull(validation.get(0).getReceiptStatusType());
+        assertNotNull(validation.get(0).getCreationUserId());
+        assertNotNull(validation.get(0).getUserAuditId());
+        assertNotNull(validation.get(0).getManagementBranchId());
+        assertNotNull(validation.get(0).getVariablePremiumAmount());
+        assertNotNull(validation.get(0).getFixPremiumAmount());
+        assertNotNull(validation.get(0).getSettlementVarPremiumAmount());
+        assertNotNull(validation.get(0).getSettlementFixPremiumAmount());
+        assertNotNull(validation.get(0).getLastChangeBranchId());
+        assertNotNull(validation.get(0).getGlBranchId());
 
-        assertEquals(asoResponse.getData().getId().substring(0, 4), validation.getEntityId());
-        assertEquals(asoResponse.getData().getId().substring(4, 8), validation.getBranchId());
-        assertEquals(asoResponse.getData().getId().substring(10), validation.getIntAccountId());
-        assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()),
-                validation.getPremiumPaymentReceiptAmount());
+        assertEquals("0011", validation.get(0).getEntityId());
+        assertEquals("0241", validation.get(0).getBranchId());
+        assertEquals("0000001102", validation.get(0).getIntAccountId());
+        assertEquals(BigDecimal.valueOf(1), validation.get(0).getPolicyReceiptId());
+        assertEquals(BigDecimal.valueOf(1), validation.get(0).getInsuranceCompanyId());
+        assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.get(0).getPremiumPaymentReceiptAmount());
         assertEquals(BigDecimal.valueOf(asoResponse.getData()
-                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()), validation.getFixingExchangeRateAmount());
+                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()), validation.get(0).getFixingExchangeRateAmount());
         assertEquals(BigDecimal.valueOf(asoResponse.getData()
-                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.getPremiumCurrencyExchAmount());
-        assertEquals(asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1),
-                validation.getPremiumChargeOperationId());
-        assertEquals(apxRequest.getFirstInstallment().getPaymentAmount().getCurrency(), validation.getCurrencyId());
-        assertEquals("01/01/0001", validation.getReceiptIssueDate());
-        assertEquals("01/01/0001", validation.getReceiptCollectionDate());
-        assertEquals("01/01/0001", validation.getReceiptsTransmissionDate());
-        assertEquals("15/06/2021", validation.getReceiptExpirationDate());
-        assertEquals(asoResponse.getData().getFirstInstallment().getTransactionNumber(),
-                validation.getInsuranceCollectionMoveId());
-        assertEquals("T", validation.getPaymentMethodType());
-        assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId(),
-                validation.getDebitAccountId());
-        assertEquals(apxRequest.getSaleChannelId(), validation.getDebitChannelType());
-        assertEquals(apxRequest.getCreationUser(), validation.getCreationUserId());
-        assertEquals(apxRequest.getUserAudit(), validation.getUserAuditId());
-        assertEquals(apxRequest.getBank().getBranch().getId(), validation.getManagementBranchId());
-        assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()),
-                validation.getFixPremiumAmount());
-        assertEquals(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()), validation.getSettlementFixPremiumAmount());
-        assertEquals(apxRequest.getBank().getBranch().getId(), validation.getLastChangeBranchId());
-        assertEquals(new BigDecimal(apxRequest.getInsuranceCompany().getId()), validation.getInsuranceCompanyId());
-        assertEquals(asoResponse.getData().getId().substring(4, 8), validation.getGlBranchId());
+                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.get(0).getPremiumCurrencyExchAmount());
+        assertEquals(apxRequest.getFirstInstallment().getPaymentAmount().getCurrency(), validation.get(0).getCurrencyId());
+        assertEquals("01/01/0001", validation.get(0).getReceiptStartDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptEndDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptIssueDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptCollectionDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptsTransmissionDate());
+        //assertEquals("02/06/2021", validation.get(0).getReceiptExpirationDate());
+        assertEquals("00", validation.get(0).getReceiptCollectionStatusType());
+        assertEquals("T", validation.get(0).getPaymentMethodType());
+        assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId(), validation.get(0).getDebitAccountId());
+        assertEquals(apxRequest.getSaleChannelId(), validation.get(0).getDebitChannelType());
+        assertEquals(BigDecimal.valueOf(0), validation.get(0).getChargeAttemptsNumber());
+        assertEquals("INC", validation.get(0).getInsrncCoReceiptStatusType());
+        assertEquals("INC", validation.get(0).getReceiptStatusType());
+        assertEquals(apxRequest.getCreationUser(), validation.get(0).getCreationUserId());
+        assertEquals(apxRequest.getUserAudit(), validation.get(0).getUserAuditId());
+        assertEquals(apxRequest.getBank().getBranch().getId(), validation.get(0).getManagementBranchId());
+        assertEquals(BigDecimal.valueOf(0), validation.get(0).getVariablePremiumAmount());
+        assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.get(0).getFixPremiumAmount());
+        assertEquals(BigDecimal.valueOf(0), validation.get(0).getSettlementVarPremiumAmount());
+        assertEquals(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()), validation.get(0).getSettlementFixPremiumAmount());
+        assertEquals(apxRequest.getBank().getBranch().getId(), validation.get(0).getLastChangeBranchId());
+        assertEquals("0241", validation.get(0).getGlBranchId());
 
-        /* Otherwise cases */
-
-        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+        asoResponse.getData().getFirstInstallment().setExchangeRate(null);
         apxRequest.getPaymentMethod().getRelatedContracts().get(0).getProduct().setId("ACCOUNT");
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
 
-        validation = mapperHelper.getFirstReceiptInformation(asoResponse, apxRequest);
+        validation = mapperHelper.buildInsuranceCtrReceipts(asoResponse, apxRequest);
 
-        assertEquals("12/07/2021", validation.getReceiptIssueDate());
-        assertEquals("12/07/2021", validation.getReceiptCollectionDate());
-        assertEquals("12/07/2021", validation.getReceiptsTransmissionDate());
-        assertEquals("C", validation.getPaymentMethodType());
+        assertEquals(BigDecimal.ZERO, validation.get(0).getFixingExchangeRateAmount());
+        assertEquals(BigDecimal.ZERO, validation.get(0).getPremiumCurrencyExchAmount());
+        assertEquals("COB", validation.get(0).getReceiptStatusType());
     }
 
     @Test
