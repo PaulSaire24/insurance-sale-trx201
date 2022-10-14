@@ -765,7 +765,9 @@ public class MapperHelper {
         CustomerBO customer = customerList.getData().get(0);
         PersonaBO persona = new PersonaBO();
         List<PersonaBO> personasList = new ArrayList<>();
-        persona.setTipoDocumento(this.applicationConfigurationService.getProperty(customer.getIdentityDocuments().get(0).getDocumentType().getId()));
+        persona.setTipoDocumento(this.applicationConfigurationService.getProperty(Objects.isNull(requestBody.getHolder())?
+                customer.getIdentityDocuments().get(0).getDocumentType().getId()
+                : requestBody.getHolder().getIdentityDocument().getDocumentType().getId()));
         persona.setNroDocumento(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())?requestBody.getHolder().getIdentityDocument().getNumber():customer.getIdentityDocuments().get(0).getDocumentNumber());
         persona.setApePaterno(customer.getLastName());
         persona.setApeMaterno(customer.getSecondLastName());
