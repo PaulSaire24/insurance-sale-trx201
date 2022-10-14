@@ -173,4 +173,4 @@
 - **Versión 0.5.14**: Esta versión incluye el registro de los leads de venta en el servicio de GIFOLE, adicionalmente, se añade la validación para comprobar la vigencia de una poliza.
 - **Versión 0.5.18**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
 - **Versión 0.6.5**: Esta versión incluye la capacidad de generar un alta de póliza a clientes jurídicos.
-- **Versión 0.7.2**: En esta versión se ha modificado el flujo del servicio ante escenarios de caida por el lado de nuestro backend.
+- **Versión 0.7.3**: En esta versión se ha modificado el flujo del servicio ante escenarios de caida por el lado de nuestro backend.

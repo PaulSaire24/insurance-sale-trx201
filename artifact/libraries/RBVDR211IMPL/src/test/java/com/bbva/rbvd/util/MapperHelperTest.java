@@ -1019,6 +1019,10 @@ public class MapperHelperTest {
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
         EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation4);
+
+        apxRequest.setHolder(null);
+        EmisionBO validation5 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        assertNotNull(validation5);
     }
 
     @Test
