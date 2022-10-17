@@ -2,7 +2,11 @@ package com.bbva.rbvd.lib.r211.impl;
 
 import com.bbva.apx.exception.business.BusinessException;
 
+import com.bbva.ksmk.dto.caas.CredentialsDTO;
+import com.bbva.ksmk.dto.caas.InputDTO;
+import com.bbva.ksmk.dto.caas.OutputDTO;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
+import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 
@@ -29,6 +33,7 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.OrganizacionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
 
+import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
@@ -55,13 +60,10 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 
-import java.util.Map;
-import java.util.List;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Date;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
+import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
@@ -70,6 +72,12 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211Impl.class);
+
+	private static final String CHANNEL_GLOMO = "pisd.channel.glomo.aap";
+	private static final String BASE64_URL = "B64URL";
+	private static final String APPNAME = "apx-pe";
+	private static final String INPUT_CONTEXT_CRYPTO_CONTACTDETAIL = "operation=DO;type=contactDetailId;origin=ASO;endpoint=ASO;securityLevel=5";
+	private static final String CRED_EXTRA_PARAMS = "user=KSMK;country=PE";
 	private static final String KEY_PIC_CODE = "pic.code";
 	private static final String KEY_AGENT_PROMOTER_CODE = "agent.and.promoter.code";
 	private static final String KEY_TLMKT_CODE = "telemarketing.code";
@@ -365,6 +373,13 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			LOGGER.info("***** It's digital sale!! *****");
 
+			String glomoAap = this.applicationConfigurationService.getProperty(CHANNEL_GLOMO);
+
+			if(glomoAap.equals(requestBody.getAap())) {
+				LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | It's GLOMO channel!! *****");
+				this.getContactDetails(requestBody);
+			}
+
 			String defaultCode = this.applicationConfigurationService.getProperty(KEY_AGENT_PROMOTER_CODE);
 
 			BusinessAgentDTO businessAgent = new BusinessAgentDTO();
@@ -377,6 +392,49 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 			requestBody.setBusinessAgent(businessAgent);
 		}
+	}
+
+	private void getContactDetails(PolicyDTO requestBody) {
+		String customerId = requestBody.getHolder().getId();
+
+		String emailCode = requestBody.getHolder().getContactDetails().get(0).getId();
+		String phoneCode = requestBody.getHolder().getContactDetails().get(1).getId();
+
+		GetContactDetailsASO contactDetails = rbvdR201.executeGetContactDetailsService(customerId);
+
+		String b64Email = this.encodeB64(emailCode.getBytes(StandardCharsets.UTF_8));
+
+		List<OutputDTO> output = this.ksmkR002.executeKSMKR002(singletonList(new InputDTO(b64Email, BASE64_URL)), "", INPUT_CONTEXT_CRYPTO_CONTACTDETAIL,
+				new CredentialsDTO(APPNAME, "", CRED_EXTRA_PARAMS));
+
+		String emailCryptoCode = output.get(0).getData();
+		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** KSMK Response EmailCrypto: {}", emailCryptoCode);
+		Optional<ContactDetailsBO> emailContact = contactDetails.getData().stream()
+				.filter(contact -> emailCryptoCode.equals(contact.getContactDetailId())).findFirst();
+
+		ContactDTO firstContact = new ContactDTO();
+		firstContact.setContactDetailType("EMAIL");
+		firstContact.setAddress(emailContact.map(ContactDetailsBO::getContact).orElse("No se encontro correo"));
+		firstContact.setPhoneNumber("");
+
+		requestBody.getHolder().getContactDetails().get(0).setContact(firstContact);
+
+		String b64Phone = this.encodeB64(phoneCode.getBytes(StandardCharsets.UTF_8));
+
+		output = this.ksmkR002.executeKSMKR002(singletonList(new InputDTO(b64Phone, BASE64_URL)), "", INPUT_CONTEXT_CRYPTO_CONTACTDETAIL,
+				new CredentialsDTO(APPNAME, "", CRED_EXTRA_PARAMS));
+
+		String phoneCryptoCode = output.get(0).getData();
+		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** KSMK Response PhoneCrypto: {}", phoneCryptoCode);
+		Optional<ContactDetailsBO> phoneContact = contactDetails.getData().stream()
+				.filter(contact -> phoneCryptoCode.equals(contact.getContactDetailId())).findFirst();
+
+		ContactDTO secondContact = new ContactDTO();
+		secondContact.setContactDetailType("PHONE");
+		secondContact.setPhoneNumber(phoneContact.map(ContactDetailsBO::getContact).orElse("No se encontro celular"));
+		secondContact.setAddress("");
+
+		requestBody.getHolder().getContactDetails().get(1).setContact(secondContact);
 	}
 
 	private String createSecondDataValue(PolicyASO asoResponse) {
@@ -560,4 +618,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
 		}
 	}
+
+	private String encodeB64(byte[] hash) {
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+	}
+
 }

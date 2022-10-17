@@ -41,7 +41,8 @@
 			</dto>
 			<list order="3" name="contactDetails" mandatory="0">
 				<dto order="1" name="Type" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO" artifactId="RBVDC201">
-					<dto order="1" name="contact" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.commons.ContactDTO" artifactId="RBVDC201">
+					<parameter order="1"  name="id" mandatory="0" type="String" size="20"/>
+					<dto order="2" name="contact" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.commons.ContactDTO" artifactId="RBVDC201">
 						<parameter order="1" name="contactDetailType" mandatory="1" type="String" size="30"/>
 						<parameter order="2" name="address" mandatory="0" type="String" size="100"/>
 						<parameter order="3" name="phoneNumber" mandatory="0" type="String" size="40"/>
@@ -207,12 +208,12 @@
 			</dto>
 			<list order="3" name="contactDetails" mandatory="0">
 				<dto order="1" name="Type" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO" artifactId="RBVDC201">
-					<dto order="1" name="contact" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.commons.ContactDTO" artifactId="RBVDC201">
+					<parameter order="1" name="id" mandatory="0" type="String" size="20"/>
+					<dto order="2" name="contact" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.commons.ContactDTO" artifactId="RBVDC201">
 						<parameter order="1" name="contactDetailType" mandatory="1" type="String" size="30"/>
 						<parameter order="2" name="address" mandatory="0" type="String" size="100"/>
 						<parameter order="3" name="phoneNumber" mandatory="0" type="String" size="40"/>
 					</dto>
-					<parameter order="2" name="id" mandatory="1" type="String" size="20"/>
 				</dto>
 			</list>
 		</dto>
