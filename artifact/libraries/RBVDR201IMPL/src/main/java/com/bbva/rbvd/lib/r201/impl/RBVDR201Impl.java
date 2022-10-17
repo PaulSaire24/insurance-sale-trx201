@@ -3,6 +3,7 @@ package com.bbva.rbvd.lib.r201.impl;
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
+import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 
@@ -44,6 +45,8 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR201Impl.class);
 
+	private static final String CUSTOMER_ID = "customerId";
+	private static final String GET_CONTACT_DETAILS_SERVICE_ID = "glomoContactDetails";
 	private static final String ID_API_INSURANCES_CREATE_INSURANCE_ASO = "emission.aso";
 	private static final String ID_API_CYPHER = "executecypher";
 
@@ -51,6 +54,23 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	private static final String X_AMZ_DATE_HEADER = "X-Amz-Date";
 	private static final String X_API_KEY_HEADER = "x-api-key";
 	private static final String TRACE_ID_HEADER = "traceId";
+
+	@Override
+	public GetContactDetailsASO executeGetContactDetailsService(String customerId) {
+		LOGGER.info("***** PISDR007Impl - executeGetContactDetailsService START *****");
+
+		Map<String, String> pathParam = new HashMap<>();
+		pathParam.put(CUSTOMER_ID, customerId);
+
+		try {
+			GetContactDetailsASO response = this.internalApiConnector.getForObject(GET_CONTACT_DETAILS_SERVICE_ID, GetContactDetailsASO.class, pathParam);
+			LOGGER.info("***** PISDR007Impl - executeGetContactDetailsService END *****");
+			return response;
+		} catch(RestClientException ex) {
+			LOGGER.debug("***** PISDR007Impl - executeGetContactDetailsService ***** Something went wrong: {}", ex.getMessage());
+			return null;
+		}
+	}
 
 	@Override
 	public PolicyASO executePrePolicyEmissionASO(DataASO requestBody) {
@@ -136,7 +156,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 
 		Map<String, Object> pathParams = new HashMap<>();
-		pathParams.put("customerId", customerId);
+		pathParams.put(CUSTOMER_ID, customerId);
 
 		try {
 			CustomerListASO responseList = this.internalApiConnector.getForObject(PISDProperties.ID_API_CUSTOMER_INFORMATION.getValue(),CustomerListASO.class,pathParams);
@@ -182,7 +202,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START customerId: {} ***** ", customerId);
 		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START expands: {} ***** ", expands);
 		Map<String, Object> pathParams = new HashMap<>();
-		pathParams.put("customerId", customerId);
+		pathParams.put(CUSTOMER_ID, customerId);
 		if (StringUtils.isNotBlank(expands)) pathParams.put("expand", expands);
 		ListBusinessesASO responseList = null;
 		BusinessASO output = null;

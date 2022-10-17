@@ -3,7 +3,10 @@ package com.bbva.rbvd.lib.r211;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
+import com.bbva.ksmk.dto.caas.OutputDTO;
+import com.bbva.ksmk.lib.r002.KSMKR002;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
+import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
@@ -38,6 +41,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -60,6 +64,7 @@ public class RBVDR211Test {
 	private RBVDR201 rbvdr201;
 	private PISDR012 pisdR012;
 	private PISDR021 pisdR021;
+	private KSMKR002 ksmkr002;
 	private MapperHelper mapperHelper;
 
 	private PolicyDTO requestBody;
@@ -89,12 +94,14 @@ public class RBVDR211Test {
 		rbvdr201 = mock(RBVDR201.class);
 		pisdR012 = mock(PISDR012.class);
 		pisdR021 = mock(PISDR021.class);
+		ksmkr002 = mock(KSMKR002.class);
 		mapperHelper = mock(MapperHelper.class);
 
 		rbvdr211.setApplicationConfigurationService(applicationConfigurationService);
 		rbvdr211.setRbvdR201(rbvdr201);
 		rbvdr211.setPisdR012(pisdR012);
 		rbvdr211.setPisdR021(pisdR021);
+		rbvdr211.setKsmkR002(ksmkr002);
 		rbvdr211.setMapperHelper(mapperHelper);
 
 		requestBody = mockData.getCreateInsuranceRequestBody();
@@ -121,6 +128,7 @@ public class RBVDR211Test {
 		roles = mock(List.class);
 		firstRole = mock(Map.class);
 
+		when(this.applicationConfigurationService.getProperty("pisd.channel.glomo.aap")).thenReturn("13000013");
 		when(this.applicationConfigurationService.getProperty("telemarketing.code")).thenReturn("7794");
 		when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
 		when(this.applicationConfigurationService.getProperty("agent.and.promoter.code")).thenReturn(AGENT_AND_PROMOTER_DEFAULT_CODE);
@@ -211,8 +219,24 @@ public class RBVDR211Test {
 	}
 
 	@Test
-	public void executeBusinessLogicEmissionPrePolicyWitContractInsertionError() {
+	public void executeBusinessLogicEmissionPrePolicyWitContractInsertionError() throws IOException {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWitContractInsertionError...");
+
+		requestBody.getHolder().getContactDetails().get(0).setId("C001985478569");
+		requestBody.getHolder().getContactDetails().get(0).setContact(null);
+		requestBody.getHolder().getContactDetails().get(1).setId("EMAIL001");
+		requestBody.getHolder().getContactDetails().get(1).setContact(null);
+		requestBody.setAap("13000013");
+
+		when(applicationConfigurationService.getProperty("pisd.channel.glomo.aap")).thenReturn("13000013");
+
+		GetContactDetailsASO contactDetailsResponse = mockDTO.getContactDetailsResponse();
+
+		when(rbvdr201.executeGetContactDetailsService(anyString())).thenReturn(contactDetailsResponse);
+
+		OutputDTO firstOutput = new OutputDTO();
+		firstOutput.setData("emhSTGcxRnM");
+		when(ksmkr002.executeKSMKR002(anyList(), anyString(), anyString(), anyObject())).thenReturn(singletonList(firstOutput));
 
 		when(pisdR012.executeInsertSingleRow(PISDProperties.QUERY_INSERT_INSURANCE_CONTRACT.getValue(), new HashMap<>(),
 				RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(),

@@ -7,6 +7,7 @@ import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.elara.utility.api.connector.APIConnector;
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
+import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
@@ -93,6 +94,33 @@ public class RBVDR201Test {
 				.thenReturn(new SignatureAWS("", "", "", ""));
 		mockDTO = MockDTO.getInstance();
 		customerList = mockDTO.getCustomerDataResponse();
+	}
+
+	@Test
+	public void executeGetContactDetailsServiceOK() throws IOException {
+		LOGGER.info("RBVDR201Test - Executing executeGetContactDetailsServiceOK...");
+
+		GetContactDetailsASO responseListCustomers = mockDTO.getContactDetailsResponse();
+
+		when(internalApiConnector.getForObject(anyString(), any(), anyMap())).
+				thenReturn(responseListCustomers);
+
+		GetContactDetailsASO validation = rbvdR201.executeGetContactDetailsService("customerId");
+
+		assertNotNull(validation);
+		assertFalse(validation.getData().isEmpty());
+	}
+
+	@Test
+	public void executeGetContactDetailsServiceWithRestClientException() {
+		LOGGER.info("RBVDR201Test - Executing executeGetContactDetailsServiceWithRestClientException...");
+
+		when(internalApiConnector.getForObject(anyString(), any(), anyMap())).
+				thenThrow(new RestClientException(MESSAGE_EXCEPTION));
+
+		GetContactDetailsASO validation = rbvdR201.executeGetContactDetailsService("customerId");
+
+		assertNull(validation);
 	}
 
 	@Test(expected = BusinessException.class)
