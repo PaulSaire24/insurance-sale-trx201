@@ -174,3 +174,4 @@
 - **Versión 0.5.18**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
 - **Versión 0.6.5**: Esta versión incluye la capacidad de generar un alta de póliza a clientes jurídicos.
 - **Versión 0.7.4**: En esta versión se ha modificado el flujo del servicio ante escenarios de caida por el lado de nuestro backend.
+- **Versión 0.7.5**: En esta versión se ha remplazado la obtención de datos del cliente mediante el ASO listcustomer por la librería externa pbtqr002.

@@ -267,28 +267,6 @@ public class RBVDR201Test {
 	}
 
 	@Test
-	public void executeGetCustomerInformationServiceOK() {
-		LOGGER.info("RBVDR201Test - Executing executeGetCustomerInformationServiceOK...");
-
-		when(internalApiConnector.getForObject(anyString(), any(), anyMap()))
-				.thenReturn(customerList);
-
-		CustomerListASO validation = rbvdR201.executeGetCustomerInformation("90008603");
-		assertNotNull(validation);
-		assertNotNull(validation.getData().get(0).getFirstName());
-	}
-
-	@Test
-	public void executeRegisterAdditionalCustomerResponseWithRestClientException() {
-		LOGGER.info("RBVDR201Test - Executing executeGetCustomerInformationServiceOK...");
-		when(internalApiConnector.getForObject(anyString(), any(), anyMap()))
-				.thenThrow(new RestClientException(MESSAGE_EXCEPTION));
-
-		CustomerListASO validation = rbvdR201.executeGetCustomerInformation("90008603");
-		assertNull(validation);
-	}
-
-	@Test
 	public void executeNewGifoleServiceOK() {
 		LOGGER.info("RBVDR201Test - Executing executeGifoleServiceOK...");
 
