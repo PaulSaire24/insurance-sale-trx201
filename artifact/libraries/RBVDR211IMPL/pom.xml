@@ -108,6 +108,11 @@
 			<artifactId>KSMKR002</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.bbva.pbtq</groupId>
+			<artifactId>PBTQR002</artifactId>
+			<version>0.1.3</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>
