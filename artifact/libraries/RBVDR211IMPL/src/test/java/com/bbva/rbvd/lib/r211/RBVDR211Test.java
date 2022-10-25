@@ -469,4 +469,47 @@ public class RBVDR211Test {
 
 		assertNotNull(validation);
 	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithError() {
+		LOGGER.info("RBVDR211Test - Executing eexecuteBusinessLogicEmissionPrePolicySetOrganizationTest...");
+
+		this.requestBody.getBank().getBranch().setId("7794");
+		requestBody.setProductId("833");
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+
+		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
+		this.requestBody.getBank().getBranch().setId("0057");
+		this.requestBody.setSaleChannelId("BI");
+
+		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
+		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("DISTRICT_NAME", "LINCE");
+		responseGetHomeInfoForEmissionService.put("HOUSING_TYPE", "A");
+		responseGetHomeInfoForEmissionService.put("AREA_PROPERTY_1_NUMBER", new BigDecimal(2));
+		responseGetHomeInfoForEmissionService.put("PROP_SENIORITY_YEARS_NUMBER", new BigDecimal(10));
+		responseGetHomeInfoForEmissionService.put("FLOOR_NUMBER", new BigDecimal(3));
+		responseGetHomeInfoForEmissionService.put("EDIFICATION_LOAN_AMOUNT", new BigDecimal(111.1));
+		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
+
+		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
+		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
+
+		customerList.setData(new ArrayList<>());
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+
+		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
+
+		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(responseGetHomeRiskDirectionService);
+
+		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(null);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNull(validation);
+	}
 }

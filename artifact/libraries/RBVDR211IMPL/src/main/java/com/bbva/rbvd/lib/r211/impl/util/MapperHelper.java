@@ -16,6 +16,7 @@ import com.bbva.pisd.dto.insurance.aso.gifole.PlanASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.ProductASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.QuotationASO;
 
+import com.bbva.pisd.dto.insurance.bo.ContactDetailsBO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
@@ -84,6 +85,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.google.common.base.Strings;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -987,9 +989,14 @@ public class MapperHelper {
     }
 
     public CreateEmailASO buildCreateEmailRequestFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection, String legalName){
+        ContactDetailsBO emailContact = customerInfo.getData().get(0).getContactDetails()
+                .stream().filter(p -> EMAIL_VALUE.equalsIgnoreCase(p.getContactType().getId())).findFirst().orElse(new ContactDetailsBO());
+        String recipientAddress = BooleanUtils.toString(StringUtils.isEmpty(emailContact.getContact())
+                , responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()
+                , emailContact.getContact());
         CreateEmailASO email = new CreateEmailASO();
         email.setApplicationId(TEMPLATE_EMAIL_CODE_FLEXIPYME.concat(format.format(new Date())));
-        email.setRecipient("0,".concat(responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()));
+        email.setRecipient("0,".concat(recipientAddress));
         email.setSubject(applicationConfigurationService.getProperty(MAIL_SUBJECT_FLEXIPYME));
         String[] data = getMailBodyDataFlexipyme(emissionDao, responseBody, policyNumber, customerInfo, homeInfo, riskDirection, legalName);
         email.setBody(getEmailBodySructure2(data,TEMPLATE_EMAIL_CODE_FLEXIPYME));
