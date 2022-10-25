@@ -5,7 +5,6 @@ import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.ksmk.dto.caas.OutputDTO;
 import com.bbva.ksmk.lib.r002.KSMKR002;
-import com.bbva.pbtq.lib.r002.PBTQR002;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
@@ -13,20 +12,11 @@ import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.pisd.lib.r021.PISDR021;
-import com.bbva.rbvd.dto.insrncsale.aso.BusinessDocumentASO;
-import com.bbva.rbvd.dto.insrncsale.aso.BusinessGroupASO;
-import com.bbva.rbvd.dto.insrncsale.aso.CountryASO;
-import com.bbva.rbvd.dto.insrncsale.aso.EconomicActivityASO;
-import com.bbva.rbvd.dto.insrncsale.aso.FormationASO;
-import com.bbva.rbvd.dto.insrncsale.aso.SaleASO;
+import com.bbva.rbvd.dto.insrncsale.aso.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarPersonaBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.OrganizacionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
@@ -39,7 +29,6 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
-import com.bbva.rbvd.util.MockHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,12 +39,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
@@ -80,7 +64,6 @@ public class RBVDR211Test {
 	private RBVDR201 rbvdr201;
 	private PISDR012 pisdR012;
 	private PISDR021 pisdR021;
-	private PBTQR002 pbtqR002;
 	private KSMKR002 ksmkr002;
 	private MapperHelper mapperHelper;
 
@@ -152,7 +135,6 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_RUC")).thenReturn("00000000000");
 		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_PORCENTAJE")).thenReturn("40");
 		when(this.applicationConfigurationService.getProperty("enable_gifole_sales_aso")).thenReturn("true");
-		when(this.applicationConfigurationService.getProperty("R")).thenReturn("RUC");
 
 		asoResponse = mockData.getEmisionASOResponse();
 		rimacResponse = mockData.getEmisionRimacResponse();
@@ -205,9 +187,6 @@ public class RBVDR211Test {
 		when(pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS", argumentsForMultipleInsertion)).
 				thenReturn(new int[2]);
 		/* P030557 */
-
-		pbtqR002 = mock(PBTQR002.class);
-		rbvdr211.setPbtqR002(pbtqR002);
 	}
 
 	@Test
@@ -403,8 +382,8 @@ public class RBVDR211Test {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithHomeProductOK...");
 
 		requestBody.setProductId("832");
-		//when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
-		when(pbtqR002.executeSearchInHostByCustomerId(anyString())).thenReturn(MockHelper.getExecuteSearchInHostByCustomerIdMock());
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
 
 		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
 		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
@@ -427,29 +406,6 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
-	}
-
-	@Test
-	public void executeBusinessLogicEmissionPrePolicyCICSBusinessException() {
-		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyCICSBusinessException...");
-		requestBody.setProductId("832");
-		when(pbtqR002.executeSearchInHostByCustomerId(anyString())).thenReturn(MockHelper.getSearchInHostByCustomerIdErrorMock());
-		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
-		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
-		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
-		responseGetHomeInfoForEmissionService.put("DISTRICT_NAME", "LINCE");
-		responseGetHomeInfoForEmissionService.put("HOUSING_TYPE", "A");
-		responseGetHomeInfoForEmissionService.put("AREA_PROPERTY_1_NUMBER", new BigDecimal(2));
-		responseGetHomeInfoForEmissionService.put("PROP_SENIORITY_YEARS_NUMBER", new BigDecimal(10));
-		responseGetHomeInfoForEmissionService.put("FLOOR_NUMBER", new BigDecimal(3));
-		responseGetHomeInfoForEmissionService.put("EDIFICATION_LOAN_AMOUNT", new BigDecimal(111.1));
-		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
-		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
-		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
-		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
-		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(responseGetHomeRiskDirectionService);
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
-		assertNull(validation);
 	}
 
 	@Test
@@ -481,8 +437,7 @@ public class RBVDR211Test {
 		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
 		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
 
-		//when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
-		when(pbtqR002.executeSearchInHostByCustomerId(anyString())).thenReturn(MockHelper.getExecuteSearchInHostByCustomerIdWithRUCMock());
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
 
 		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
 
@@ -513,5 +468,48 @@ public class RBVDR211Test {
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithError() {
+		LOGGER.info("RBVDR211Test - Executing eexecuteBusinessLogicEmissionPrePolicySetOrganizationTest...");
+
+		this.requestBody.getBank().getBranch().setId("7794");
+		requestBody.setProductId("833");
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+
+		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
+		this.requestBody.getBank().getBranch().setId("0057");
+		this.requestBody.setSaleChannelId("BI");
+
+		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
+		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("DISTRICT_NAME", "LINCE");
+		responseGetHomeInfoForEmissionService.put("HOUSING_TYPE", "A");
+		responseGetHomeInfoForEmissionService.put("AREA_PROPERTY_1_NUMBER", new BigDecimal(2));
+		responseGetHomeInfoForEmissionService.put("PROP_SENIORITY_YEARS_NUMBER", new BigDecimal(10));
+		responseGetHomeInfoForEmissionService.put("FLOOR_NUMBER", new BigDecimal(3));
+		responseGetHomeInfoForEmissionService.put("EDIFICATION_LOAN_AMOUNT", new BigDecimal(111.1));
+		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
+
+		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
+		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
+
+		customerList.setData(new ArrayList<>());
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+
+		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
+
+		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(responseGetHomeRiskDirectionService);
+
+		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(null);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNull(validation);
 	}
 }

@@ -5,22 +5,12 @@ import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.ksmk.dto.caas.CredentialsDTO;
 import com.bbva.ksmk.dto.caas.InputDTO;
 import com.bbva.ksmk.dto.caas.OutputDTO;
-import com.bbva.pbtq.dto.validatedocument.response.host.pewu.PEWUResponse;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 
-import com.bbva.pisd.dto.insurance.bo.AddressesBO;
-import com.bbva.pisd.dto.insurance.bo.BirthDataBO;
 import com.bbva.pisd.dto.insurance.bo.ContactDetailsBO;
-import com.bbva.pisd.dto.insurance.bo.ContactTypeBO;
-import com.bbva.pisd.dto.insurance.bo.DocumentTypeBO;
-import com.bbva.pisd.dto.insurance.bo.GenderBO;
-import com.bbva.pisd.dto.insurance.bo.GeographicGroupTypeBO;
-import com.bbva.pisd.dto.insurance.bo.GeographicGroupsBO;
-import com.bbva.pisd.dto.insurance.bo.IdentityDocumentsBO;
-import com.bbva.pisd.dto.insurance.bo.LocationBO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
@@ -59,10 +49,6 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
-import com.bbva.rbvd.lib.r211.impl.util.AddressEnum;
-import com.bbva.rbvd.lib.r211.impl.util.ContactTypeEnum2;
-import com.bbva.rbvd.lib.r211.impl.util.GenderEnum;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.joda.time.DateTime;
@@ -82,9 +68,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
@@ -117,9 +101,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String GIFOLE_SALES_ASO = "enable_gifole_sales_aso";
 	private static final String RUC_ID = "RUC";
 	private static final String TAG_OTROS = "OTROS";
-
-	private static final List<String> LIST_IDEDIR1 = Arrays.asList("ALAMEDA", "AVENUE", "STREET", "MALL", "ROAD", "SHOPPING_ARCADE", "JIRON", "JETTY", "OVAL", "PEDESTRIAN_WALK", "SQUARE", "PARK", "PROLONGATION", "PASSAGE", "BRIDGE", "DESCENT", "PORTAL", "UNCATEGORIZED", "NOT_PROVIDED");
-	private static final List<String> LIST_IDEDIR2 = Arrays.asList("GROUP", "AAHH", "HOUSING_COMPLEX", "COMMUNITY", "HOUSING_COOPERATIVE", "STAGE", "SHANTYTOWN", "NEIGHBORHOOD", "URBANIZATION", "NEIGHBORHOOD_UNIT", "ZONE", "ASSOCIATION", "INDIGENOUS_COMMUNITY", "PEASANT_COMMUNITY", "FUNDO", "MINING_CAMP", "RESIDENTIAL");
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -248,9 +229,13 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			if (!requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VEH.getValue())) {
-				customerList = getCustomerInformationFromCics(requestBody.getHolder().getId());
-				LOGGER.info("***** RBVDR211Impl - CICS getCustomerInformation - customerList:{} *****", customerList);
-
+				customerList = this.rbvdR201.executeGetCustomerInformation(requestBody.getHolder().getId());
+				try {
+					validateQueryCustomerResponse(customerList);
+				} catch (BusinessException ex) {
+					LOGGER.info("***** PISDR0019Impl - executeListCustomerResponse {} *****", ex.getMessage());
+					return null;
+				}
 				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
 
 				setOrganization(generalEmisionRequest, requestBody.getHolder().getId(), customerList);
@@ -492,6 +477,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		}
 	}
 
+	private void validateQueryCustomerResponse(CustomerListASO customerList) {
+		if (isEmpty(customerList.getData())) {
+			throw PISDValidation.build(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE);
+		}
+	}
+
 	private void setOrganization(EmisionBO emision, String customerId, CustomerListASO customerList){
 		PersonaBO persona = emision.getPayload().getAgregarPersona().getPersona().get(0);
 		CustomerBO customer = customerList.getData().get(0);
@@ -639,121 +630,4 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
 	}
 
-	private CustomerListASO getCustomerInformationFromCics(String customerID) {
-		LOGGER.info("***** RBVDR211Impl - getCustomerInformationFromCics START *****");
-		PEWUResponse listCustomerCics = this.pbtqR002.executeSearchInHostByCustomerId(customerID);
-		validateListCustomerCicsResponse(listCustomerCics);
-
-		CustomerListASO out = mapListCustomerCicsResponse(listCustomerCics);
-
-		LOGGER.info("***** RBVDR211Impl - getCustomerInformationFromCics END *****");
-		return out;
-	}
-	private CustomerListASO mapListCustomerCicsResponse(PEWUResponse listCustomerCics) {
-		CustomerListASO out = new CustomerListASO();
-		CustomerBO customer = new CustomerBO();
-
-		IdentityDocumentsBO document = new IdentityDocumentsBO();
-		DocumentTypeBO docType = new DocumentTypeBO();
-		docType.setId(this.applicationConfigurationService.getProperty(listCustomerCics.getPemsalwu().getTdoi()));
-		document.setDocumentType(docType);
-		document.setDocumentNumber(listCustomerCics.getPemsalwu().getNdoi());
-
-		customer.setFirstName(listCustomerCics.getPemsalwu().getNombres());
-		customer.setLastName(listCustomerCics.getPemsalwu().getApellip());
-		customer.setSecondLastName(listCustomerCics.getPemsalwu().getApellim());
-		BirthDataBO birth = new BirthDataBO();
-		birth.setBirthDate(listCustomerCics.getPemsalwu().getFechan());
-		customer.setBirthData(birth);
-		String genero = Objects.toString(EnumUtils.getEnum(GenderEnum.class, listCustomerCics.getPemsalwu().getSexo()), null);
-		GenderBO gender = null;
-		if(genero != null) {
-			gender = new GenderBO();
-			gender.setId(genero);
-		}
-		customer.setGender(gender);
-
-		AddressesBO address = new AddressesBO();
-		LocationBO location = new LocationBO();
-		List<GeographicGroupsBO> geoGroups = new ArrayList<>();
-
-		geoGroups.add(getNewGeoGroup("DEPARTMENT", listCustomerCics.getPemsalw4().getDesdept(), listCustomerCics.getPemsalwu().getCodigod()));
-		geoGroups.add(getNewGeoGroup("PROVINCE", listCustomerCics.getPemsalw4().getDesprov(), listCustomerCics.getPemsalwu().getCodigop()));
-		geoGroups.add(getNewGeoGroup("DISTRICT", listCustomerCics.getPemsalw4().getDesdist(), listCustomerCics.getPemsalwu().getCodigdi()));
-		geoGroups.add(getNewGeoGroup("EXTERIOR_NUMBER", listCustomerCics.getPemsalwu().getNroext1(), listCustomerCics.getPemsalwu().getNroext1()));
-		geoGroups.add(getNewGeoGroup("INTERIOR_NUMBER", listCustomerCics.getPemsalwu().getNroint1(), listCustomerCics.getPemsalwu().getNroext1()));
-		geoGroups.add(getNewGeoGroup("BLOCK", listCustomerCics.getPemsalwu().getManzana(), listCustomerCics.getPemsalwu().getManzana()));
-		geoGroups.add(getNewGeoGroup("LOT", listCustomerCics.getPemsalwu().getLote(), listCustomerCics.getPemsalwu().getManzana()));
-		String idendi1 = AddressEnum.findByHostValue(listCustomerCics.getPemsalwu().getIdendi1()).toString();
-		String idendi2 = AddressEnum.findByHostValue(listCustomerCics.getPemsalwu().getIdendi2()).toString();
-		geoGroups.add(getNewGeoGroup(idendi1, listCustomerCics.getPemsalwu().getNombdi1()
-				, LIST_IDEDIR1.stream().filter(s->s.equalsIgnoreCase(idendi1)).findFirst().orElse(null)));
-		geoGroups.add(getNewGeoGroup(idendi2, listCustomerCics.getPemsalwu().getNombdi2()
-				, LIST_IDEDIR2.stream().filter(s->s.equalsIgnoreCase(idendi2)).findFirst().orElse(null)));
-
-		location.setGeographicGroups(geoGroups.stream().filter(Objects::nonNull).collect(Collectors.toList()));
-		address.setLocation(location);
-		customer.setAddresses(Arrays.asList(address));
-
-		customer.setIdentityDocuments(Arrays.asList(document));
-
-		customer.setContactDetails(getContactDetails(listCustomerCics));
-
-		out.setData(Arrays.asList(customer));
-		return out;
-	}
-
-	private static List<ContactDetailsBO> getContactDetails(PEWUResponse cics){
-		List<ContactDetailsBO> out = new ArrayList<>();
-		ContactDetailsBO detail = new ContactDetailsBO();
-		detail.setContactDetailId(cics.getPemsalwu().getIdencon());
-		ContactTypeBO contactType = new ContactTypeBO();
-		contactType.setId(Objects.toString(EnumUtils.getEnum(ContactTypeEnum2.class, cics.getPemsalwu().getTipocon()), null));
-		contactType.setName(cics.getPemsalw5().getDescmco());
-		detail.setContactType(contactType);
-		detail.setContact(cics.getPemsalwu().getContact());
-		out.add(detail);
-
-		detail = new ContactDetailsBO();
-		detail.setContactDetailId(cics.getPemsalwu().getIdenco2());
-		contactType = new ContactTypeBO();
-		contactType.setId(Objects.toString(EnumUtils.getEnum(ContactTypeEnum2.class, cics.getPemsalwu().getTipoco2()), null));
-		contactType.setName(cics.getPemsalw5().getDescmc1());
-		detail.setContactType(contactType);
-		detail.setContact(cics.getPemsalwu().getContac2());
-		out.add(detail);
-
-		detail = new ContactDetailsBO();
-		detail.setContactDetailId(cics.getPemsalwu().getIdenco3());
-		contactType = new ContactTypeBO();
-		contactType.setId(Objects.toString(EnumUtils.getEnum(ContactTypeEnum2.class, cics.getPemsalwu().getTipoco3()), null));
-		contactType.setName(cics.getPemsalw5().getDescmc2());
-		detail.setContactType(contactType);
-		detail.setContact(cics.getPemsalwu().getContac3());
-		out.add(detail);
-		return out.stream().filter(Objects::nonNull).collect(Collectors.toList());
-	}
-
-	private GeographicGroupsBO getNewGeoGroup(String geoId, String geoName, String toValidate){
-		if(Objects.isNull(toValidate)) return null;
-		GeographicGroupsBO geoGroup = new GeographicGroupsBO();
-		GeographicGroupTypeBO geoType = new GeographicGroupTypeBO();
-		geoType.setId(geoId);
-		geoGroup.setName(geoName);
-		geoGroup.setGeographicGroupType(geoType);
-		return geoGroup;
-	}
-	private void validateListCustomerCicsResponse(PEWUResponse cicsResponse) {
-		if (!StringUtils.isEmpty(cicsResponse.getHostAdviceCode())) {
-			BusinessException listCustomerCicsError = PISDValidation.build(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE);
-			StringBuilder sb = new StringBuilder(listCustomerCicsError.getMessage());
-			sb.append(" | ");
-			sb.append(cicsResponse.getHostAdviceCode());
-			sb.append("-");
-			sb.append(cicsResponse.getHostMessage());
-			listCustomerCicsError.setMessage(sb.toString());
-			LOGGER.info("***** RBVDR211Impl - validateListCustomerCicsResponse ERROR:{} *****", listCustomerCicsError.getMessage());
-			throw listCustomerCicsError;
-		}
-	}
 }
