@@ -990,8 +990,8 @@ public class MapperHelper {
 
     public CreateEmailASO buildCreateEmailRequestFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection, String legalName){
         ContactDetailsBO emailContact = customerInfo.getData().get(0).getContactDetails()
-                .stream().filter(p -> ContactTypeEnum2.MA.toString().equalsIgnoreCase(p.getContactType().getId())).findFirst().orElse(new ContactDetailsBO());
-        String recipientAddress = BooleanUtils.toString(Objects.isNull(emailContact.getContact())
+                .stream().filter(p -> EMAIL_VALUE.equalsIgnoreCase(p.getContactType().getId())).findFirst().orElse(new ContactDetailsBO());
+        String recipientAddress = BooleanUtils.toString(StringUtils.isEmpty(emailContact.getContact())
                 , responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()
                 , emailContact.getContact());
         CreateEmailASO email = new CreateEmailASO();
