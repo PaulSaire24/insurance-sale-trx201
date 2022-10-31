@@ -399,6 +399,28 @@ public class RBVDR211Test {
 	public void executeBusinessLogicEmissionPrePolicyWithEndorsementUpdateError() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithEndorsementUpdateError...");
 
+		ParticipantDTO secondParticipant = new ParticipantDTO();
+
+		IdentityDocumentDTO document = new IdentityDocumentDTO();
+
+		DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+		tipoDocumento.setId("RUC");
+
+		document.setDocumentType(tipoDocumento);
+		secondParticipant.setIdentityDocument(document);
+
+		secondParticipant.setBenefitPercentage(0.0d);
+
+		ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
+		tipoParticipante.setId("ENDORSEE");
+
+		secondParticipant.setParticipantType(tipoParticipante);
+
+		requestBody.getParticipants().add(secondParticipant);
+
+		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_POLICY_ENDORSEMENT.getValue(), new HashMap<>())).
+				thenReturn(1);
+
 		Map<String, Object> filters = new HashMap<>();
 		filters.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), "957968");
 		filters.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), "0000001102");
@@ -415,6 +437,28 @@ public class RBVDR211Test {
 	@Test
 	public void executeBusinessLogicEmissionPrePolicyWithVehicularProductOK() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithVehicularProductOK...");
+
+		ParticipantDTO secondParticipant = new ParticipantDTO();
+
+		IdentityDocumentDTO document = new IdentityDocumentDTO();
+
+		DocumentTypeDTO tipoDocumento = new DocumentTypeDTO();
+		tipoDocumento.setId("RUC");
+
+		document.setDocumentType(tipoDocumento);
+		secondParticipant.setIdentityDocument(document);
+
+		secondParticipant.setBenefitPercentage(0.0d);
+
+		ParticipantTypeDTO tipoParticipante = new ParticipantTypeDTO();
+		tipoParticipante.setId("ENDORSEE");
+
+		secondParticipant.setParticipantType(tipoParticipante);
+
+		requestBody.getParticipants().add(secondParticipant);
+
+		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_POLICY_ENDORSEMENT.getValue(), new HashMap<>())).
+				thenReturn(1);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
