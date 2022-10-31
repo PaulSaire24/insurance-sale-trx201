@@ -732,7 +732,7 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_DOCUMENT_TYPE_ID.getValue(), "R");
         arguments.put(RBVDProperties.FIELD_DOCUMENT_ID.getValue(), endosatarioRuc);
         arguments.put(RBVDProperties.FIELD_ENDORSEMENT_SEQUENCE_NUMBER.getValue(), 1);
-        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), contractDao.getPolicyId());
+        arguments.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), "TO PROCESS");
         arguments.put(RBVDProperties.FIELD_ENDORSEMENT_EFF_START_DATE.getValue(), contractDao.getInsuranceContractStartDate());
         arguments.put(RBVDProperties.FIELD_ENDORSEMENT_EFF_END_DATE.getValue(), contractDao.getInsuranceContractEndDate());
         arguments.put(RBVDProperties.FIELD_POLICY_ENDORSEMENT_PER.getValue(), endosatarioPorcentaje);
