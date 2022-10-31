@@ -7,6 +7,7 @@ import com.bbva.rbvd.dto.insrncsale.commons.LinkDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ValidityPeriodDTO;
+import com.bbva.rbvd.dto.insrncsale.offer.PolicyDurationDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FirstInstallmentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.InsuranceCompanyDTO;
@@ -21,6 +22,9 @@ import com.bbva.rbvd.dto.insrncsale.policy.TotalAmountDTO;
 import java.util.Calendar;
 import java.util.List;
 
+/**
+ * In this class, the input and output data is defined automatically through the setters and getters.
+ */
 public abstract class AbstractRBVDT20101PETransaction extends AbstractTransaction {
 
 	public AbstractRBVDT20101PETransaction(){
@@ -165,6 +169,13 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	 */
 	protected InsuranceCompanyDTO getInsurancecompany(){
 		return (InsuranceCompanyDTO)this.getParameter("insuranceCompany");
+	}
+
+	/**
+	 * Return value for input parameter couponCode
+	 */
+	protected String getCouponcode(){
+		return (String)this.getParameter("couponCode");
 	}
 
 	/**
@@ -361,5 +372,19 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	 */
 	protected void setIdentityverificationcode(final String field){
 		this.addParameter("identityVerificationCode", field);
+	}
+
+	/**
+	 * Set value for String output parameter couponCode
+	 */
+	protected void setCouponcode(final String field){
+		this.addParameter("couponCode", field);
+	}
+
+	/**
+	 * Set value for PolicyDurationDTO output parameter policyDuration
+	 */
+	protected void setPolicyduration(final PolicyDurationDTO field){
+		this.addParameter("policyDuration", field);
 	}
 }
