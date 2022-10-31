@@ -52,6 +52,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		requestBody.setBank(this.getBank());
 		requestBody.setIdentityVerificationCode(this.getIdentityverificationcode());
 		requestBody.setInsuranceCompany(this.getInsurancecompany());
+		requestBody.setCouponCode(this.getCouponcode());
 
 		requestBody.setTraceId(traceId);
 		requestBody.setSaleChannelId(saleChannelId);
@@ -95,6 +96,8 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 			this.setStatus(responseBody.getStatus());
 			this.setBank(responseBody.getBank());
 			this.setIdentityverificationcode(responseBody.getIdentityVerificationCode());
+			this.setCouponcode(responseBody.getCouponCode());
+			this.setPolicyduration(responseBody.getPolicyDuration());
 
 			this.setHttpResponseCode(HttpResponseCode.HTTP_CODE_200, Severity.OK);
 		} else {

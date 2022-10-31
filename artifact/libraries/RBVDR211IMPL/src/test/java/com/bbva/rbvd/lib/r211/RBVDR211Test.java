@@ -1,44 +1,63 @@
 package com.bbva.rbvd.lib.r211;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
+
 import com.bbva.ksmk.dto.caas.OutputDTO;
+
 import com.bbva.ksmk.lib.r002.KSMKR002;
+
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
+
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
+
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.pisd.lib.r021.PISDR021;
+
 import com.bbva.rbvd.dto.insrncsale.aso.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
+
 import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
+
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
+
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
+
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import org.junit.runner.RunWith;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
+
 import java.math.BigDecimal;
+
 import java.util.*;
 
 import static java.util.Collections.singletonList;
@@ -74,6 +93,7 @@ public class RBVDR211Test {
 	private Map<String, Object> argumentValidateIfPolicyExists;
 	private Map<String, Object> responseValidateIfPolicyExists;
 	private Map<String, Object> responseQueryGetRequiredFields;
+	private Map<String, Object> argumentsUpdateEndorsementTable;
 
 	private Map<String, Object> responseQueryRoles;
 	private List<Map<String, Object>> roles;
@@ -127,6 +147,10 @@ public class RBVDR211Test {
 		responseQueryRoles = mock(Map.class);
 		roles = mock(List.class);
 		firstRole = mock(Map.class);
+
+		argumentsUpdateEndorsementTable = new HashMap<>();
+		argumentsUpdateEndorsementTable.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), "957968");
+		argumentsUpdateEndorsementTable.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), "0000001102");
 
 		when(this.applicationConfigurationService.getProperty("pisd.channel.glomo.aap")).thenReturn("13000013");
 		when(this.applicationConfigurationService.getProperty("telemarketing.code")).thenReturn("7794");
@@ -186,6 +210,9 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS", argumentsForMultipleInsertion)).
 				thenReturn(new int[2]);
+
+		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", argumentsUpdateEndorsementTable,
+				RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue())).thenReturn(1);
 		/* P030557 */
 	}
 
@@ -366,6 +393,23 @@ public class RBVDR211Test {
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithEndorsementUpdateError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithEndorsementUpdateError...");
+
+		Map<String, Object> filters = new HashMap<>();
+		filters.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), "957968");
+		filters.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), "0000001102");
+
+		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", filters,
+				RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue())).thenReturn(0);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode());
 	}
 
 	@Test

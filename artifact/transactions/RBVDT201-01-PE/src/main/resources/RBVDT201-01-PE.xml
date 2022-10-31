@@ -3,12 +3,12 @@
 	<paramsIn>
 		<parameter order="1" name="quotationId" mandatory="0" type="String" size="20"/>
 		<parameter order="2" name="productId" mandatory="1" type="String" size="40"/>
-		<dto order="3" name="productPlan" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.PolicyProductPlan" artifactId="RBVDC201">
+		<dto order="3" name="productPlan" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.PolicyProductPlan" artifactId="RBVDC201">
 			<parameter order="1" name="id" mandatory="1" type="String" size="10"/>
 		</dto>
 		<dto order="4" name="paymentMethod" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO" artifactId="RBVDC201">
 			<parameter order="1" name="paymentType" mandatory="1" type="String" size="30"/>
-			<list order="2" name="relatedContracts" mandatory="1">
+			<list order="2" name="relatedContracts" mandatory="0">
 				<dto order="1" name="Type" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO" artifactId="RBVDC201">
 					<parameter order="1" name="contractId" mandatory="1" type="String" size="20"/>
 					<parameter order="2" name="number" mandatory="0" type="String" size="20"/>
@@ -41,8 +41,8 @@
 			</dto>
 			<list order="3" name="contactDetails" mandatory="0">
 				<dto order="1" name="Type" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO" artifactId="RBVDC201">
-					<parameter order="1"  name="id" mandatory="0" type="String" size="20"/>
-					<dto order="2" name="contact" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.commons.ContactDTO" artifactId="RBVDC201">
+					<parameter order="1" name="id" mandatory="0" type="String" size="20"/>
+					<dto order="2" name="contact" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.commons.ContactDTO" artifactId="RBVDC201">
 						<parameter order="1" name="contactDetailType" mandatory="1" type="String" size="30"/>
 						<parameter order="2" name="address" mandatory="0" type="String" size="100"/>
 						<parameter order="3" name="phoneNumber" mandatory="0" type="String" size="40"/>
@@ -139,6 +139,7 @@
 		<dto order="20" name="insuranceCompany" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.InsuranceCompanyDTO" artifactId="RBVDC201">
 			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
 		</dto>
+		<parameter order="21" name="couponCode" mandatory="0" type="String" size="20"/>
 	</paramsIn>
 	<paramsOut>
 		<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
@@ -146,13 +147,13 @@
 		<parameter order="3" name="quotationId" mandatory="0" type="String" size="20"/>
 		<parameter order="4" name="productId" mandatory="1" type="String" size="40"/>
 		<parameter order="5" name="productDescription" mandatory="0" type="String" size="60"/>
-		<dto order="6" name="productPlan" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.PolicyProductPlan" artifactId="RBVDC201">
+		<dto order="6" name="productPlan" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.PolicyProductPlan" artifactId="RBVDC201">
 			<parameter order="1" name="id" mandatory="1" type="String" size="10"/>
 			<parameter order="2" name="description" mandatory="0" type="String" size="200"/>
 		</dto>
 		<dto order="7" name="paymentMethod" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO" artifactId="RBVDC201">
 			<parameter order="1" name="paymentType" mandatory="1" type="String" size="20"/>
-			<list order="2" name="relatedContracts" mandatory="1">
+			<list order="2" name="relatedContracts" mandatory="0">
 				<dto order="1" name="Type" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO" artifactId="RBVDC201">
 					<parameter order="1" name="contractId" mandatory="1" type="String" size="20"/>
 					<parameter order="2" name="number" mandatory="0" type="String" size="20"/>
@@ -329,7 +330,7 @@
 					<parameter order="1" name="amount" mandatory="1" type="Double" size="17"/>
 					<parameter order="2" name="currency" mandatory="1" type="String" size="3"/>
 				</dto>
-				<parameter order="9" name="id" mandatory="1" type="String" size="8"/>
+				<parameter order="9" name="id" mandatory="0" type="String" size="8"/>
 				<parameter order="10" name="fullName" mandatory="0" type="String" size="80"/>
 			</dto>
 		</list>
@@ -359,6 +360,12 @@
 			</dto>
 		</dto>
 		<parameter order="28" name="identityVerificationCode" mandatory="0" type="String" size="15"/>
+		<parameter order="29" name="couponCode" mandatory="0" type="String" size="20"/>
+		<dto order="30" name="policyDuration" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.offer.PolicyDurationDTO" artifactId="RBVDC201">
+			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+			<parameter order="2" name="name" mandatory="0" type="String" size="20"/>
+			<parameter order="3" name="number" mandatory="1" type="Long" size="3"/>
+		</dto>
 	</paramsOut>
 	<description>Trx to create a policy</description>
 </transaction>

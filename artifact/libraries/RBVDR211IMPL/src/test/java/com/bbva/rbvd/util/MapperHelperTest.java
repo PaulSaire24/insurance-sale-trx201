@@ -887,7 +887,7 @@ public class MapperHelperTest {
         assertEquals("R", validation.get(RBVDProperties.FIELD_DOCUMENT_TYPE_ID.getValue()));
         assertEquals("1245", validation.get(RBVDProperties.FIELD_DOCUMENT_ID.getValue()));
         assertEquals(1, validation.get(RBVDProperties.FIELD_ENDORSEMENT_SEQUENCE_NUMBER.getValue()));
-        assertEquals(contractDao.getPolicyId(), validation.get(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue()));
+        assertEquals("TO PROCESS", validation.get(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue()));
         assertEquals(contractDao.getInsuranceContractStartDate(), validation.get(RBVDProperties.FIELD_ENDORSEMENT_EFF_START_DATE.getValue()));
         assertEquals(contractDao.getInsuranceContractEndDate(), validation.get(RBVDProperties.FIELD_ENDORSEMENT_EFF_END_DATE.getValue()));
         assertEquals(100.00, validation.get(RBVDProperties.FIELD_POLICY_ENDORSEMENT_PER.getValue()));
