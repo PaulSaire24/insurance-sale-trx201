@@ -271,16 +271,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 				policyNumber = rimacResponse.getPayload().getNumeroPoliza();
 
-				Map<String, Object> policyIdForEndorsementTable = new HashMap<>();
-				policyIdForEndorsementTable.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), policyNumber);
-
 				String intAccountId = asoResponse.getData().getId().substring(10);
-				policyIdForEndorsementTable.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), intAccountId);
 
-				int updateEndorsement = this.pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", policyIdForEndorsementTable,
-						RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue());
+				isItNecessaryUpdateEndorsementRow(isEndorsement, policyNumber, intAccountId);
 
-				validateInsertion(updateEndorsement, RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
 			}
 
 			responseBody = requestBody;
@@ -485,6 +479,19 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private void validateMultipleInsertion(int[] insertedRows, RBVDErrors error) {
 		if(isNull(insertedRows) || insertedRows.length == 0) {
 			throw RBVDValidation.build(error);
+		}
+	}
+
+	private void isItNecessaryUpdateEndorsementRow(Boolean isEndorsement, String policyNumber, String intAccountId) {
+		if(isEndorsement) {
+			Map<String, Object> policyIdForEndorsementTable = new HashMap<>();
+			policyIdForEndorsementTable.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), policyNumber);
+			policyIdForEndorsementTable.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), intAccountId);
+
+			int updateEndorsement = this.pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", policyIdForEndorsementTable,
+					RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue());
+
+			validateInsertion(updateEndorsement, RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
 		}
 	}
 
