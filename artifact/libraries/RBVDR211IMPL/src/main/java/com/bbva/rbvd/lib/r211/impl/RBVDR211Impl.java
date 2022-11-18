@@ -422,7 +422,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		String emailCryptoCode = output.get(0).getData();
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** KSMK Response EmailCrypto: {}", emailCryptoCode);
 		Optional<ContactDetailsBO> emailContact = contactDetails.getData().stream()
-				.filter(contact -> emailCryptoCode.equals(contact.getContactDetailId())).findFirst();
+				.filter(contact -> emailCryptoCode.contains(contact.getContactDetailId())).findFirst();
 
 		ContactDTO firstContact = new ContactDTO();
 		firstContact.setContactDetailType("EMAIL");
@@ -439,7 +439,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		String phoneCryptoCode = output.get(0).getData();
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** KSMK Response PhoneCrypto: {}", phoneCryptoCode);
 		Optional<ContactDetailsBO> phoneContact = contactDetails.getData().stream()
-				.filter(contact -> phoneCryptoCode.equals(contact.getContactDetailId())).findFirst();
+				.filter(contact -> phoneCryptoCode.contains(contact.getContactDetailId())).findFirst();
 
 		ContactDTO secondContact = new ContactDTO();
 		secondContact.setContactDetailType("PHONE");
