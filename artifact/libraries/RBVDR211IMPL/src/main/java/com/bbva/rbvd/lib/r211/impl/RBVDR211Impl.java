@@ -150,6 +150,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
 
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Setting branchId provided by HOST *****");
+			String hostBranchId = asoResponse.getData().getBank().getBranch().getId();
+			requestBody.getBank().getBranch().setId(hostBranchId);
+
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Is it coming from TLMKT? *****");
 			evaluateBranchIdValue(requestBody);
 
