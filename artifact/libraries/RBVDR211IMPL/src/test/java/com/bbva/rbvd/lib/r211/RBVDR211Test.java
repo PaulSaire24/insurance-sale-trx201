@@ -158,7 +158,6 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getProperty("agent.and.promoter.code")).thenReturn(AGENT_AND_PROMOTER_DEFAULT_CODE);
 		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_RUC")).thenReturn("00000000000");
 		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_PORCENTAJE")).thenReturn("40");
-		when(this.applicationConfigurationService.getProperty("enable_gifole_sales_aso")).thenReturn("true");
 
 		asoResponse = mockData.getEmisionASOResponse();
 		rimacResponse = mockData.getEmisionRimacResponse();

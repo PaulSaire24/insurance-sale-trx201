@@ -4,8 +4,6 @@ import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
@@ -18,6 +16,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
+import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.bbva.rbvd.lib.r201.impl.util.AsoExceptionHandler;
@@ -29,12 +28,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
-
-import javax.ws.rs.HttpMethod;
 
 import java.nio.charset.StandardCharsets;
 
@@ -48,6 +46,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	private static final String CUSTOMER_ID = "customerId";
 	private static final String GET_CONTACT_DETAILS_SERVICE_ID = "glomoContactDetails";
 	private static final String ID_API_INSURANCES_CREATE_INSURANCE_ASO = "emission.aso";
+	private static final String ID_PUT_EVENT_UPSILON_SERVICE = "createdInsurancePutEvent";
 	private static final String ID_API_CYPHER = "executecypher";
 
 	private static final String AUTHORIZATION_HEADER = "Authorization";
@@ -106,7 +105,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 		EmisionBO responseBody = null;
 
-		SignatureAWS signature = this.pisdR014.executeSignatureConstruction(jsonString, HttpMethod.POST,
+		SignatureAWS signature = this.pisdR014.executeSignatureConstruction(jsonString, HttpMethod.POST.toString(),
 				this.rimacUrlForker.generateUriForSignatureAWS(productId, quotationId), null, traceId);
 
 		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeadersAWS(signature));
@@ -126,31 +125,6 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	}
 
 	@Override
-	public Integer executeCreateEmail(CreateEmailASO requestBody) {
-		LOGGER.info("***** RBVDR201Impl - executeCreateEmail START *****");
-
-		String jsonFormat = getRequestBodyAsJsonFormat(requestBody);
-
-		LOGGER.info("***** RBVDR201Impl - executeCreateEmail ***** Request body: {}", jsonFormat);
-
-		Integer httpStatus = null;
-
-		try {
-			HttpEntity<String> entity = new HttpEntity<>(jsonFormat, createHttpHeaders(false));
-			ResponseEntity<String> response = this.internalApiConnector.exchange(PISDProperties.ID_API_NOTIFICATIONS_GATEWAY_CREATE_EMAIL_SERVICE.getValue(),
-					org.springframework.http.HttpMethod.POST, entity, String.class);
-			httpStatus = response.getStatusCode().value();
-			LOGGER.info("***** RBVDR201Impl - executeCreateEmail ***** Http code response: {}", httpStatus);
-		} catch(RestClientException ex) {
-			LOGGER.debug("***** RBVDR201Impl - executeCreateEmail ***** Exception: {}", ex.getMessage());
-			LOGGER.debug("***** RBVDR201Impl - executeCreateEmail | No se envió el correo con el detalle de la poliza al cliente *****");
-		}
-
-		LOGGER.info("***** RBVDR201Impl - executeCreateEmail END *****");
-		return httpStatus;
-	}
-
-	@Override
 	public CustomerListASO executeGetCustomerInformation(String customerId) {
 		LOGGER.info("***** RBVDR201Impl - executeGetCustomerInformation START ***** customerId: {} ", customerId);
 
@@ -167,34 +141,6 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			this.addAdvice(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getAdviceCode());
 			return null;
 		}
-	}
-
-
-	@Override
-	public Integer executeGifoleEmisionService(GifoleInsuranceRequestASO requestBody) {
-		LOGGER.info("***** RBVDR201Impl - executeGifoleEmisionService START *****");
-
-		String jsonString = getRequestBodyAsJsonFormat(requestBody);
-
-		LOGGER.info("***** RBVDR201Impl - executeGifoleEmisionService ***** Request body: {}", jsonString);
-
-		ResponseEntity<Void> response = null;
-		Integer httpStatus = null;
-
-		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeaders(false));
-
-		try {
-			response = this.internalApiConnector.exchange(PISDProperties.ID_API_GIFOLE_ROYAL_INSURANCE_REQUEST_SERVICE.getValue(),
-					org.springframework.http.HttpMethod.POST, entity, Void.class);
-			httpStatus = response.getStatusCode().value();
-			LOGGER.info("***** RBVDR201Impl - executeGifoleEmisionService ***** Http code response: {}", httpStatus);
-		} catch(RestClientException ex) {
-			LOGGER.debug("***** RBVDR201Impl - executeGifoleEmisionService ***** Exception: {}", ex.getMessage());
-			this.addAdvice(PISDErrors.ERROR_CONNECTION_GIFOLE_ROYAL_INSURANCE_REQUEST_ASO_SERVICE.getAdviceCode());
-		}
-
-		LOGGER.info("***** RBVDR201Impl - executeGifoleEmisionService END *****");
-		return httpStatus;
 	}
 
 	@Override
@@ -245,6 +191,31 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		LOGGER.info("***** RBVDR201Impl - executeCypherService ***** Response: {}", output);
 		LOGGER.info("***** RBVDR201Impl - executeCypherService END *****");
 		return output;
+	}
+
+	@Override
+	public Integer executePutEventUpsilonService(CreatedInsrcEventDTO createdInsuranceEvent) {
+		LOGGER.info("***** RBVDR201Impl - executePutEventUpsilonService START *****");
+
+		String jsonString = getRequestBodyAsJsonFormat(createdInsuranceEvent);
+
+		LOGGER.info("***** RBVDR201Impl - executePutEventUpsilonService Request body: {}", jsonString);
+
+		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeaders(false));
+
+		try {
+			ResponseEntity<Void> responseEntity = this.internalApiConnectorImpersonation.
+					exchange(ID_PUT_EVENT_UPSILON_SERVICE, HttpMethod.POST, entity, Void.class);
+
+			Integer httpStatusCode = responseEntity.getStatusCode().value();
+
+			LOGGER.info("***** RBVDR201Impl - executePutEventUpsilonService END *****");
+			return httpStatusCode;
+		} catch(RestClientException ex) {
+			LOGGER.info("***** RBVDR201Impl - executePutEventUpsilonService ***** Exception: {}", ex.getMessage());
+			return 0;
+		}
+
 	}
 
 	private String getRequestBodyAsJsonFormat(Object requestBody) {

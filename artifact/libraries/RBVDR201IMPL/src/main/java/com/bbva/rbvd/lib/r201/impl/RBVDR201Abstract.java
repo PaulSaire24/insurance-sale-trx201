@@ -21,6 +21,8 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 
 	protected APIConnector internalApiConnector;
 
+	protected APIConnector internalApiConnectorImpersonation;
+
 	protected PISDR014 pisdR014;
 
 	protected RimacUrlForker rimacUrlForker;
@@ -51,6 +53,10 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 	*/
 	public void setInternalApiConnector(APIConnector internalApiConnector) {
 		this.internalApiConnector = internalApiConnector;
+	}
+
+	public void setInternalApiConnectorImpersonation(APIConnector internalApiConnectorImpersonation) {
+		this.internalApiConnectorImpersonation = internalApiConnectorImpersonation;
 	}
 
 	/**
