@@ -758,8 +758,16 @@ public class MapperHelper {
         persona.setNombres(customer.getFirstName());
         persona.setFechaNacimiento(customer.getBirthData().getBirthDate());
         if(Objects.nonNull(customer.getGender())) persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
-        persona.setCorreoElectronico((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()));
-        persona.setCelular((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()));
+        persona.setCorreoElectronico(Objects.isNull(
+                responseQueryGetRequiredFields.get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()))
+                        ? requestBody.getHolder().getContactDetails().get(0).getContact().getAddress()
+                        : (String) responseQueryGetRequiredFields
+                                .get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()));
+        persona.setCelular(Objects.isNull(
+                responseQueryGetRequiredFields.get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()))
+                        ? requestBody.getHolder().getContactDetails().get(1).getContact().getPhoneNumber()
+                        : (String) responseQueryGetRequiredFields
+                                .get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()));
         persona.setTipoPersona(getPersonType(persona).getCode());
 
         StringBuilder addressExtra  = new StringBuilder();
