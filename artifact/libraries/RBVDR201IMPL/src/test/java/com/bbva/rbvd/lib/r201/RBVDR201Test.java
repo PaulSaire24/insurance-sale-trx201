@@ -1,40 +1,57 @@
 package com.bbva.rbvd.lib.r201;
 
 import com.bbva.apx.exception.business.BusinessException;
+
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 
 import com.bbva.elara.utility.api.connector.APIConnector;
+
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
+
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
+
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
-import com.bbva.pisd.dto.insurance.utils.PISDErrors;
+
 import com.bbva.pisd.lib.r014.PISDR014;
+
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherDataASO;
+
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
+
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+
+import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
+import com.bbva.rbvd.dto.insrncsale.events.CreatedInsuranceDTO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
+
 import com.bbva.rbvd.lib.r201.factory.ApiConnectorFactoryMock;
+
 import com.bbva.rbvd.lib.r201.impl.RBVDR201Impl;
 import com.bbva.rbvd.lib.r201.impl.util.RimacUrlForker;
+
 import com.bbva.rbvd.mock.MockBundleContext;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
@@ -67,6 +84,7 @@ public class RBVDR201Test {
 	private MockData mockData;
 	private APIConnector internalApiConnector;
 	private APIConnector externalApiConnector;
+	private APIConnector internalApiConnectorImpersonation;
 	private RimacUrlForker rimacUrlForker;
 	private CustomerListASO customerList;
 	private MockDTO mockDTO;
@@ -85,6 +103,9 @@ public class RBVDR201Test {
 
 		externalApiConnector = apiConnectorFactoryMock.getAPIConnector(mockBundleContext, false);
 		rbvdR201.setExternalApiConnector(externalApiConnector);
+
+		internalApiConnectorImpersonation = apiConnectorFactoryMock.getAPIConnector(mockBundleContext, true, true);
+		rbvdR201.setInternalApiConnectorImpersonation(internalApiConnectorImpersonation);
 
 		pisdr014 = mock(PISDR014.class);
 		rbvdR201.setPisdR014(pisdr014);
@@ -244,29 +265,6 @@ public class RBVDR201Test {
 	}
 
 	@Test
-	public void executeCreateEmailWithRestClientException() {
-		LOGGER.info("RBVDR201Test - Executing executeCreateEmailWithRestClientException...");
-		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<String>) any()))
-				.thenThrow(new RestClientException(MESSAGE_EXCEPTION));
-
-		Integer validation = rbvdR201.executeCreateEmail(new CreateEmailASO());
-
-		assertNull(validation);
-	}
-
-	@Test
-	public void executeCreateEmailOK() {
-		LOGGER.info("RBVDR201Test - Executing executeCreateEmailOK...");
-		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<String>) any()))
-				.thenReturn(new ResponseEntity<>("", HttpStatus.OK));
-
-		Integer validation = rbvdR201.executeCreateEmail(new CreateEmailASO());
-
-		assertNotNull(validation);
-		assertEquals(new Integer(HttpStatus.OK.value()), validation);
-	}
-
-	@Test
 	public void executeGetCustomerInformationServiceOK() {
 		LOGGER.info("RBVDR201Test - Executing executeGetCustomerInformationServiceOK...");
 
@@ -286,32 +284,6 @@ public class RBVDR201Test {
 
 		CustomerListASO validation = rbvdR201.executeGetCustomerInformation("90008603");
 		assertNull(validation);
-	}
-
-	@Test
-	public void executeNewGifoleServiceOK() {
-		LOGGER.info("RBVDR201Test - Executing executeGifoleServiceOK...");
-
-		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<Void>) any()))
-				.thenReturn(new ResponseEntity<>(HttpStatus.CREATED));
-
-		Integer validation = rbvdR201.executeGifoleEmisionService(new GifoleInsuranceRequestASO());
-
-		assertNotNull(validation);
-		assertEquals(new Integer(201), validation);
-	}
-
-	@Test
-	public void executeNewGifoleServiceWithRestClientException() {
-		LOGGER.info("RBVDR201Test - Executing executeGifoleServiceWithRestClientException...");
-
-		when(this.internalApiConnector.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<Void>) any()))
-				.thenThrow(new RestClientException(MESSAGE_EXCEPTION));
-
-		Integer validation = rbvdR201.executeGifoleEmisionService(new GifoleInsuranceRequestASO());
-
-		assertNull(validation);
-		assertEquals(PISDErrors.ERROR_CONNECTION_GIFOLE_ROYAL_INSURANCE_REQUEST_ASO_SERVICE.getAdviceCode(), this.rbvdR201.getAdviceList().get(0).getCode());
 	}
 
 	@Test
@@ -391,4 +363,31 @@ public class RBVDR201Test {
 		String validation = rbvdR201.executeCypherService(new CypherASO("ABC", KEY_CYPHER_CODE));
 		assertNull(validation);
 	}
+
+	@Test
+	public void executePutEventUpsilonServiceOK() {
+		LOGGER.info("RBVDR201Test - Executing executePutEventUpsilonServiceOK...");
+
+		when(this.internalApiConnectorImpersonation.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<Integer>)any())).
+				thenReturn(new ResponseEntity<>(HttpStatus.CREATED));
+
+		Integer validation = rbvdR201.executePutEventUpsilonService(new CreatedInsrcEventDTO());
+
+		assertNotNull(validation);
+		assertEquals(201, validation.intValue());
+	}
+
+	@Test
+	public void executePutEventUpsilonServiceWithRestClientException() {
+		LOGGER.info("RBVDR201Test - Executing executePutEventUpsilonServiceWithRestClientException...");
+
+		when(this.internalApiConnectorImpersonation.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<Integer>)any())).
+				thenThrow(new RestClientException(MESSAGE_EXCEPTION));
+
+		Integer validation = rbvdR201.executePutEventUpsilonService(new CreatedInsrcEventDTO());
+
+		assertNotNull(validation);
+		assertEquals(0, validation.intValue());
+	}
+
 }

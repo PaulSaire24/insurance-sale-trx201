@@ -7,8 +7,6 @@ import com.bbva.ksmk.dto.caas.InputDTO;
 import com.bbva.ksmk.dto.caas.OutputDTO;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-import com.bbva.pisd.dto.insurance.aso.gifole.GifoleInsuranceRequestASO;
 
 import com.bbva.pisd.dto.insurance.bo.ContactDetailsBO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
@@ -40,6 +38,7 @@ import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 
+import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
@@ -61,6 +60,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 
 import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -74,6 +74,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
+
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
@@ -94,11 +95,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String TAG_ENDORSEE = "ENDORSEE";
 	private static final String TAG_RUC = "RUC";
 
-	private static final String INSURANCE_PRODUCT_TYPE_VEH = "830";
-	private static final String INSURANCE_PRODUCT_TYPE_HOME = "832";
-	private static final String INSURANCE_PRODUCT_TYPE_FLEXIPYME = "833";
-
-	private static final String GIFOLE_SALES_ASO = "enable_gifole_sales_aso";
 	private static final String RUC_ID = "RUC";
 	private static final String TAG_OTROS = "OTROS";
 
@@ -121,8 +117,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		Double endosatarioPorcentaje;
 
 		CustomerListASO customerList = null;
-
-		String legalName = null;
 
 		try {
 
@@ -243,7 +237,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
 
 				setOrganization(generalEmisionRequest, requestBody.getHolder().getId(), customerList);
-				legalName = getLegalName(generalEmisionRequest);
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(generalEmisionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			} else {
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
@@ -285,18 +278,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			this.mapperHelper.mappingOutputFields(responseBody, asoResponse, rimacResponse, emissionDao);
 
-			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building email object to send *****");
+			CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(responseBody);
 
-			CreateEmailASO email = generateEmailWithForker(responseBody.getProductId(), emissionDao, responseBody,
-					policyNumber, customerList, legalName);
+			Integer httpStatusCode = this.rbvdR201.executePutEventUpsilonService(createdInsrcEventDTO);
 
-			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Sending email ... *****");
-			Integer emailHttpStatus = this.rbvdR201.executeCreateEmail(email);
-
-			String gifoleFlag = this.applicationConfigurationService.getProperty(GIFOLE_SALES_ASO);
-
-			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Gifole Service Enabled: {}", gifoleFlag);
-			gifoleLeadService(responseBody, customerList, Boolean.parseBoolean(gifoleFlag), legalName);
+			LOGGER.info("***** RBVDR211Impl - Executing createdInsurance event -> Http status code: {} *****", httpStatusCode);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Response: {}", responseBody);
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy END *****");
@@ -579,32 +565,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		return null;
 	}
 
-	private CreateEmailASO generateEmailWithForker(String productId, RequiredFieldsEmissionDAO emissionDao
-			, PolicyDTO responseBody, String policyNumber, CustomerListASO customerList, String legalName){
-		CreateEmailASO email = null;
-		switch (productId) {
-			case INSURANCE_PRODUCT_TYPE_VEH:
-				email = this.mapperHelper.buildCreateEmailRequestVeh(emissionDao, responseBody, policyNumber);
-				break;
-			case INSURANCE_PRODUCT_TYPE_HOME:
-				Map<String, Object> responseQueryGetHomeInfo = pisdR021.executeGetHomeInfoForEmissionService(responseBody.getQuotationId());
-				Map<String, Object> responseQueryGetHomeRiskDirection= pisdR021.executeGetHomeRiskDirection(responseBody.getQuotationId());
-				email = this.mapperHelper.buildCreateEmailRequestHome(emissionDao, responseBody, policyNumber, customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetHomeInfo),
-						validateResponseQueryHomeRiskDirectionFields(responseQueryGetHomeRiskDirection));
-				break;
-			case INSURANCE_PRODUCT_TYPE_FLEXIPYME:
-				Map<String, Object> responseQueryGetEdificationInfo = pisdR021.executeGetHomeInfoForEmissionService(responseBody.getQuotationId());
-				Map<String, Object> responseQueryGetEdificationRiskDirection= pisdR021.executeGetHomeRiskDirection(responseBody.getQuotationId());
-				email = this.mapperHelper.buildCreateEmailRequestFlexipyme(emissionDao, responseBody, policyNumber
-						, customerList, validateResponseQueryGetHomeRequiredFields(responseQueryGetEdificationInfo),
-						validateResponseQueryHomeRiskDirectionFields(responseQueryGetEdificationRiskDirection), legalName);
-				break;
-			default:
-				break;
-		}
-		return email;
-	}
-
 	private InsuranceCtrReceiptsDAO generateNextReceipt(PolicyASO asoResponse, CuotaFinancimientoBO cuota) {
 		InsuranceCtrReceiptsDAO nextReceipt = new InsuranceCtrReceiptsDAO();
 		nextReceipt.setEntityId(asoResponse.getData().getId().substring(0, 4));
@@ -613,39 +573,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		nextReceipt.setPolicyReceiptId(BigDecimal.valueOf(cuota.getCuota()));
 		nextReceipt.setReceiptExpirationDate(this.mapperHelper.generateCorrectDateFormat(cuota.getFechaVencimiento()));
 		return nextReceipt;
-	}
-
-	private SimltInsuredHousingDAO validateResponseQueryGetHomeRequiredFields(Map<String, Object> responseQueryGetHomeRequiredFields) {
-		if(isEmpty(responseQueryGetHomeRequiredFields)) {
-			throw RBVDValidation.build(RBVDErrors.NON_EXISTENT_QUOTATION);
-		}
-		SimltInsuredHousingDAO emissionDao = new SimltInsuredHousingDAO();
-		emissionDao.setDepartmentName((String) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_DEPARTMENT_NAME.getValue()));
-		emissionDao.setProvinceName((String) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_PROVINCE_NAME.getValue()));
-		emissionDao.setDistrictName((String) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_DISTRICT_NAME.getValue()));
-		emissionDao.setHousingType((String) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_HOUSING_TYPE.getValue()));
-		emissionDao.setAreaPropertyNumber((BigDecimal) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_AREA_PROPERTY_1_NUMBER.getValue()));
-		emissionDao.setPropSeniorityYearsNumber((BigDecimal) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_PROP_SENIORITY_YEARS_NUMBER.getValue()));
-		emissionDao.setFloorNumber((BigDecimal) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_FLOOR_NUMBER.getValue()));
-		emissionDao.setEdificationLoanAmount((BigDecimal) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_EDIFICATION_LOAN_AMOUNT.getValue()));
-		emissionDao.setHousingAssetsLoanAmount((BigDecimal) responseQueryGetHomeRequiredFields.get(HomeInsuranceProperty.FIELD_HOUSING_ASSETS_LOAN_AMOUNT.getValue()));
-
-		return emissionDao;
-	}
-
-	private String validateResponseQueryHomeRiskDirectionFields(Map<String, Object> responseQueryGetHomeRiskDirection) {
-		if(isEmpty(responseQueryGetHomeRiskDirection)) {
-			throw RBVDValidation.build(RBVDErrors.NON_EXISTENT_QUOTATION);
-		}
-
-		return (String) responseQueryGetHomeRiskDirection.get(HomeInsuranceProperty.FIELD_LEGAL_ADDRESS_DESC.getValue());
-	}
-
-	private void gifoleLeadService(PolicyDTO policyDTO, CustomerListASO customerListASO, Boolean isGifoleEnabled, String legalName) {
-		if (isGifoleEnabled) {
-			GifoleInsuranceRequestASO gifoleRequest = this.mapperHelper.createGifoleRequest(policyDTO, customerListASO, legalName);
-			this.rbvdR201.executeGifoleEmisionService(gifoleRequest);
-		}
 	}
 
 	private String encodeB64(byte[] hash) {
