@@ -30,6 +30,16 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		LOGGER.info("Cabecera user-code: {}", user);
 		String aap = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.AAP);
 		LOGGER.info("Cabecera aap: {}", aap);
+		String ipv4 = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.IPADDRESS);
+		LOGGER.info("Cabecera ipv4: {}", ipv4);
+		String environmentCode = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.ENVIRONCODE);
+		LOGGER.info("Cabecera environmentCode: {}", environmentCode);
+		String productCode = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.PRODUCTCODE);
+		LOGGER.info("Cabecera productCode: {}", productCode);
+		String headerOperationDate = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.OPERATIONDATE);
+		LOGGER.info("Cabecera operationDate: {}", headerOperationDate);
+		String operationTime = (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.OPERATIONTIME);
+		LOGGER.info("Cabecera operationTime: {}", operationTime);
 
 		PolicyDTO requestBody = new PolicyDTO();
 		requestBody.setQuotationId(this.getQuotationid());
@@ -59,6 +69,11 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		requestBody.setCreationUser(user);
 		requestBody.setUserAudit(user);
 		requestBody.setAap(aap);
+		requestBody.setIpv4(ipv4);
+		requestBody.setEnvironmentCode(environmentCode);
+		requestBody.setProductCode(productCode);
+		requestBody.setHeaderOperationDate(headerOperationDate);
+		requestBody.setHeaderOperationTime(operationTime);
 
 		PolicyDTO responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
