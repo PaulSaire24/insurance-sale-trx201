@@ -969,9 +969,10 @@ public class MapperHelper {
 
         holder.setIdentityDocument(identityDocument);
 
-        List<ContactDetailDTO> contactDetails = policy.getHolder().getContactDetails().stream().map(this::createContactDetail).collect(toList());
+        List<ContactDetailDTO> contactDetailsForHolder = policy.getHolder().getContactDetails().
+                stream().map(this::createContactDetailForHolder).collect(toList());
 
-        holder.setContactDetails(contactDetails);
+        holder.setContactDetails(contactDetailsForHolder);
 
         createdInsurance.setHolder(holder);
 
@@ -1015,6 +1016,28 @@ public class MapperHelper {
 
         createdInsurance.setProduct(product);
 
+        PolicyPaymentMethodDTO paymentMethod = new PolicyPaymentMethodDTO();
+        paymentMethod.setPaymentType(policy.getPaymentMethod().getPaymentType());
+
+        RelatedContractDTO relatedContract = new RelatedContractDTO();
+        relatedContract.setContractId(policy.getPaymentMethod().getRelatedContracts().get(0).getContractId());
+        relatedContract.setNumber(policy.getPaymentMethod().getRelatedContracts().get(0).getNumber());
+
+        paymentMethod.setRelatedContracts(singletonList(relatedContract));
+
+        createdInsurance.setPaymentMethod(paymentMethod);
+
+        PolicyInspectionDTO inspection = new PolicyInspectionDTO();
+        inspection.setIsRequired(policy.getInspection().getIsRequired());
+        inspection.setFullName(policy.getInspection().getFullName());
+
+        List<ContactDetailDTO> contactDetailsForInspection = policy.getInspection().getContactDetails().
+                stream().map(this::createContactDetailForInspection).collect(toList());
+
+        inspection.setContactDetails(contactDetailsForInspection);
+
+        createdInsurance.setInspection(inspection);
+
         createdInsuranceEvent.setCreatedInsurance(createdInsurance);
 
         EventDTO event = new EventDTO("CreatedInsurance", "pe.rbvd.app-id-105529.prod");
@@ -1054,8 +1077,8 @@ public class MapperHelper {
         return createdInsuranceEvent;
     }
 
-    private ContactDetailDTO createContactDetail(ContactDetailDTO contactDetailFromEmission) {
-        ContactDetailDTO contactDetailForEvent = new ContactDetailDTO();
+    private ContactDetailDTO createContactDetailForHolder(ContactDetailDTO contactDetailFromEmission) {
+        ContactDetailDTO contactDetailForHolderEvent = new ContactDetailDTO();
         ContactDTO contact = new ContactDTO();
         if(EMAIL_VALUE.equals(contactDetailFromEmission.getContact().getContactDetailType())) {
             contact.setContactType(EMAIL_VALUE);
@@ -1064,8 +1087,20 @@ public class MapperHelper {
             contact.setContactType(MOBILE_VALUE);
             contact.setValue(contactDetailFromEmission.getContact().getPhoneNumber());
         }
-        contactDetailForEvent.setContact(contact);
-        return contactDetailForEvent;
+        contactDetailForHolderEvent.setContact(contact);
+        return contactDetailForHolderEvent;
+    }
+
+    private ContactDetailDTO createContactDetailForInspection(ContactDetailDTO contactDetailFromEmission) {
+        ContactDetailDTO contactDetailForEventInspection = new ContactDetailDTO();
+        if(EMAIL_VALUE.equals(contactDetailFromEmission.getContact().getContactDetailType())) {
+            contactDetailForEventInspection.setContactType(EMAIL_VALUE);
+            contactDetailForEventInspection.setValue(contactDetailFromEmission.getContact().getAddress());
+        } else {
+            contactDetailForEventInspection.setContactType(PHONE_NUMBER_VALUE);
+            contactDetailForEventInspection.setValue(contactDetailFromEmission.getContact().getPhoneNumber());
+        }
+        return contactDetailForEventInspection;
     }
 
     public CreateEmailASO buildCreateEmailRequestFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection, String legalName){

@@ -1467,6 +1467,17 @@ public class MapperHelperTest {
         assertNotNull(validation.getCreatedInsurance().getValidityPeriod().getStartDate());
         assertNotNull(validation.getCreatedInsurance().getValidityPeriod().getEndDate());
 
+        assertNotNull(validation.getCreatedInsurance().getPaymentMethod());
+        assertNotNull(validation.getCreatedInsurance().getPaymentMethod().getPaymentType());
+        assertFalse(validation.getCreatedInsurance().getPaymentMethod().getRelatedContracts().isEmpty());
+        assertNotNull(validation.getCreatedInsurance().getPaymentMethod().getRelatedContracts().get(0).getContractId());
+        assertNotNull(validation.getCreatedInsurance().getPaymentMethod().getRelatedContracts().get(0).getNumber());
+
+        assertNotNull(validation.getCreatedInsurance().getInspection());
+        assertFalse(validation.getCreatedInsurance().getInspection().getIsRequired());
+        assertNotNull(validation.getCreatedInsurance().getInspection().getFullName());
+        assertFalse(validation.getCreatedInsurance().getInspection().getContactDetails().isEmpty());
+
         assertNotNull(validation.getHeader().getOrigin().getAap());
         assertNotNull(validation.getHeader().getOrigin().getBank());
         assertNotNull(validation.getHeader().getOrigin().getBank().getBankId());
@@ -1530,6 +1541,30 @@ public class MapperHelperTest {
         assertEquals(apxRequest.getIpv4(), validation.getHeader().getOrigin().getIpv4());
         assertEquals("APX_RBVDT211_CreatedInsurance", validation.getHeader().getOrigin().getOperation());
         assertEquals(apxRequest.getProductCode(), validation.getHeader().getOrigin().getProductCode());
+
+        assertEquals(apxRequest.getPaymentMethod().getPaymentType(),
+                validation.getCreatedInsurance().getPaymentMethod().getPaymentType());
+
+        assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId(),
+                validation.getCreatedInsurance().getPaymentMethod().getRelatedContracts().get(0).getContractId());
+
+        assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getNumber(),
+                validation.getCreatedInsurance().getPaymentMethod().getRelatedContracts().get(0).getNumber());
+
+        assertEquals(apxRequest.getInspection().getIsRequired(), validation.getCreatedInsurance().getInspection().getIsRequired());
+        assertEquals(apxRequest.getInspection().getFullName(), validation.getCreatedInsurance().getInspection().getFullName());
+
+        validation.getCreatedInsurance().getInspection().getContactDetails().stream().forEachOrdered( contactDetail -> {
+            assertNotNull(contactDetail.getContactType());
+            assertNotNull(contactDetail.getValue());
+            if("EMAIL".equals(contactDetail.getContactType())) {
+                assertEquals(apxRequest.getInspection().getContactDetails().get(0).getContact().getAddress(),
+                        contactDetail.getValue());
+            } else {
+                assertEquals(apxRequest.getInspection().getContactDetails().get(1).getContact().getPhoneNumber(),
+                        contactDetail.getValue());
+            }
+        });
 
         String timestamp = apxRequest.getHeaderOperationDate().concat(" ").concat(apxRequest.getHeaderOperationTime());
         assertEquals(timestamp, validation.getHeader().getOrigin().getTimestamp());
