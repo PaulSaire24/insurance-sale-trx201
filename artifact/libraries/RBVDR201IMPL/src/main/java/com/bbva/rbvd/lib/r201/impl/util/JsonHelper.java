@@ -10,6 +10,8 @@ import com.google.gson.JsonSerializationContext;
 import org.joda.time.LocalDate;
 
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class JsonHelper {
 
@@ -22,6 +24,7 @@ public class JsonHelper {
         gson = new GsonBuilder()
                 .setDateFormat(DATE)
                 .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
+                .registerTypeHierarchyAdapter(Calendar.class, new CalendarAdapter())
                 .create();
     }
 
@@ -38,6 +41,16 @@ class LocalDateAdapter implements JsonSerializer<LocalDate> {
     @Override
     public JsonElement serialize(LocalDate src, Type typeOfSrc, JsonSerializationContext context) {
         return new JsonPrimitive(src.toString());
+    }
+
+}
+
+class CalendarAdapter implements JsonSerializer<Calendar> {
+
+    @Override
+    public JsonElement serialize(Calendar src, Type typeOfSrc, JsonSerializationContext context) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        return new JsonPrimitive(dateFormat.format(src.getTime()));
     }
 
 }
