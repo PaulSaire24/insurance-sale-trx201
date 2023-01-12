@@ -59,6 +59,7 @@ import org.springframework.web.client.RestClientException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 
 import static org.junit.Assert.*;
@@ -371,7 +372,12 @@ public class RBVDR201Test {
 		when(this.internalApiConnectorImpersonation.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<Integer>)any())).
 				thenReturn(new ResponseEntity<>(HttpStatus.CREATED));
 
-		Integer validation = rbvdR201.executePutEventUpsilonService(new CreatedInsrcEventDTO());
+		CreatedInsrcEventDTO createdInsrcEvent = new CreatedInsrcEventDTO();
+		CreatedInsuranceDTO createdInsurance = new CreatedInsuranceDTO();
+		createdInsurance.setOperationDate(Calendar.getInstance());
+		createdInsrcEvent.setCreatedInsurance(createdInsurance);
+
+		Integer validation = rbvdR201.executePutEventUpsilonService(createdInsrcEvent);
 
 		assertNotNull(validation);
 		assertEquals(201, validation.intValue());
