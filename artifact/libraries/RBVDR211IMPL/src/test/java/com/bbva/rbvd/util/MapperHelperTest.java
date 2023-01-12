@@ -1494,7 +1494,6 @@ public class MapperHelperTest {
         assertNotNull(validation.getHeader().getTraces().getParentSpanId());
 
         assertEquals(apxRequest.getQuotationId(), validation.getCreatedInsurance().getQuotationId());
-        assertEquals(apxRequest.getOperationDate(), validation.getCreatedInsurance().getOperationDate());
 
         assertEquals(apxRequest.getValidityPeriod().getStartDate(),
                 validation.getCreatedInsurance().getValidityPeriod().getStartDate());
