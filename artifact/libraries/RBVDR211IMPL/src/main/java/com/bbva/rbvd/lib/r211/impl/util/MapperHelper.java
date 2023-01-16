@@ -59,12 +59,6 @@ import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
-/*
-import com.bbva.rbvd.dto.insrncsale.commons.;
-import com.bbva.rbvd.dto.insrncsale.commons.;
-import com.bbva.rbvd.dto.insrncsale.commons.;
-import com.bbva.rbvd.dto.insrncsale.commons.;
-import com.bbva.rbvd.dto.insrncsale.commons.;*/
 
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
@@ -77,11 +71,6 @@ import com.bbva.rbvd.dto.insrncsale.events.CreatedInsuranceDTO;
 import com.bbva.rbvd.dto.insrncsale.events.ProductCreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.events.PlanCreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.events.InstallmentPlansCreatedInsrcEvent;
-/*
-import com.bbva.rbvd.dto.insrncsale.events.;
-import com.bbva.rbvd.dto.insrncsale.events.;
-import com.bbva.rbvd.dto.insrncsale.events.;
-import com.bbva.rbvd.dto.insrncsale.events.;*/
 
 import com.bbva.rbvd.dto.insrncsale.events.header.EventDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.OriginDTO;
@@ -102,12 +91,6 @@ import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
-/*
-import com.bbva.rbvd.dto.insrncsale.policy.;
-import com.bbva.rbvd.dto.insrncsale.policy.;
-import com.bbva.rbvd.dto.insrncsale.policy.;
-import com.bbva.rbvd.dto.insrncsale.policy.;
-import com.bbva.rbvd.dto.insrncsale.policy.;*/
 
 import com.bbva.rbvd.dto.insrncsale.utils.HolderTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
@@ -140,12 +123,6 @@ import java.util.HashMap;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
-/*
-import java.util.;
-import java.util.;
-import java.util.;
-import java.util.;
-import java.util.;*/
 
 import java.util.stream.Collectors;
 
@@ -1001,7 +978,6 @@ public class MapperHelper {
         createdInsurance.setQuotationId(policy.getQuotationId());
 
         Calendar operationDate = Calendar.getInstance();
-        operationDate.setTimeZone(TimeZone.getTimeZone("America/Lima"));
         operationDate.setTime(policy.getOperationDate());
 
         createdInsurance.setOperationDate(operationDate);
@@ -1361,26 +1337,24 @@ public class MapperHelper {
     private String getFullDirectionFromCustomer(String viaTipoNombre,
                                                 StringBuilder additionalAddress2, StringBuilder additionalAddress3, StringBuilder addressExtra,
                                                 PersonaBO persona) {
-        String fullDirection = (Objects.nonNull(viaTipoNombre) ? viaTipoNombre.concat(" ") : "")
+        return (Objects.nonNull(viaTipoNombre) ? viaTipoNombre.concat(" ") : "")
                 .concat(Objects.nonNull(persona.getNumeroVia()) ? persona.getNumeroVia().concat(" ") : "")
                 .concat(additionalAddress2.length() != 0 ? additionalAddress2.toString().concat(" ") : "")
                 .concat(additionalAddress3.length() != 0 ? additionalAddress3.toString().concat(" ") : "")
                 .concat(addressExtra.length() != 0 ? addressExtra.toString() : "");
-        return fullDirection;
     }
 
     private void fillAddress2(PersonaBO persona, CustomerBO customer,int j,boolean viaFull,String id, StringBuilder additionalAddress2, StringBuilder additionalAddress3){
         if(Objects.nonNull(persona.getTipoVia())&&viaFull){
             Map<String, String> map = tipeViaList();
-            for (String clave:map.keySet()) {
-                String valor = map.get(clave);
-                if (clave.equals(id)&&viaFull&&!valor.equals(persona.getTipoVia())){
+            map.forEach((key, value) -> {
+                String valor = map.get(key);
+                if (key.equals(id)&&!valor.equals(persona.getTipoVia())){
                     String direction2 = valor+" "+customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
                             .getName();
                     additionalAddress2.append(direction2);
                 }
-            }
-
+            });
         }
 
         String direction3 = fillAddress3(persona,customer,j,id);
@@ -1396,16 +1370,11 @@ public class MapperHelper {
     }
 
     private String fillAddress3(PersonaBO persona, CustomerBO customer,int j,String id){
-        String address3 = null;
-        Map<String, String> maps = tipeViaList2();
-        for (String clave:maps.keySet()) {
-            String valor = maps.get(clave);
-            if (clave.equals(id)&&!valor.equals(persona.getTipoVia())){
-                address3 = valor+" "+customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
-                        .getName().concat(" ");
-            }
-        }
-        return address3;
+        Map<String, String> map = tipeViaList2();
+        return map.entrySet().stream().filter(entry -> entry.getKey().equals(id) && !entry.getValue().equals(persona.getTipoVia())).findFirst()
+                .map(entry -> entry.getValue() + " " + customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
+                        .getName() + " ")
+                .orElse(null);
     }
 
     private void fillAddressExtra(StringBuilder addressExtra, CustomerBO customer,int j){

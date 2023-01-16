@@ -15,10 +15,6 @@ import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.dto.insurance.utils.PISDValidation;
 
-import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
-
-import com.bbva.rbvd.dto.homeinsrc.utils.HomeInsuranceProperty;
-
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -556,13 +552,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			organizaciones.add(organizacion);
 		}
 		return organizaciones;
-	}
-
-	private String getLegalName(EmisionBO generalEmisionRequest){
-		if (generalEmisionRequest.getPayload().getAgregarPersona().getOrganizacion() != null) {
-			return generalEmisionRequest.getPayload().getAgregarPersona().getOrganizacion().get(0).getNombreComercial();
-		}
-		return null;
 	}
 
 	private InsuranceCtrReceiptsDAO generateNextReceipt(PolicyASO asoResponse, CuotaFinancimientoBO cuota) {
