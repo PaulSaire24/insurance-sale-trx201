@@ -4,11 +4,13 @@ import com.bbva.elara.transaction.AbstractTransaction;
 import com.bbva.rbvd.dto.insrncsale.commons.BankDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.LinkDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ValidityPeriodDTO;
 import com.bbva.rbvd.dto.insrncsale.offer.PolicyDurationDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.DeliveryDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FirstInstallmentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.InsuranceCompanyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.InsuredAmountDTO;
@@ -176,6 +178,13 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	 */
 	protected String getCouponcode(){
 		return (String)this.getParameter("couponCode");
+	}
+
+	/**
+	 * Return value for input parameter deliveries
+	 */
+	protected List<DeliveryDTO> getDeliveries(){
+		return (List<DeliveryDTO>)this.getParameter("deliveries");
 	}
 
 	/**
@@ -386,5 +395,12 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	 */
 	protected void setPolicyduration(final PolicyDurationDTO field){
 		this.addParameter("policyDuration", field);
+	}
+
+	/**
+	 * Set value for PaymentAmountDTO output parameter totalAmountWithoutTax
+	 */
+	protected void setTotalamountwithouttax(final PaymentAmountDTO field){
+		this.addParameter("totalAmountWithoutTax", field);
 	}
 }
