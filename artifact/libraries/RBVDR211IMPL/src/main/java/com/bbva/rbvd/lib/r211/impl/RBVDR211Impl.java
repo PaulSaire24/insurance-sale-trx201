@@ -122,7 +122,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Map<String, Object> responseValidateIfPolicyExists = pisdR012.executeGetASingleRow(RBVDProperties.QUERY_VALIDATE_IF_POLICY_EXISTS.getValue(),
 					quotationIdArgument);
 
-			validateIfPolicyExists(responseValidateIfPolicyExists);
+			validateIfPolicyExists(responseValidateIfPolicyExists); // if not throw exception
 
 			Map<String, Object> responseQueryGetRequiredFields = pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(),
 					quotationIdArgument);
@@ -133,11 +133,13 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Map<String, Object> responseQueryGetPaymentPeriod = pisdR012.executeGetASingleRow(RBVDProperties.QUERY_SELECT_PAYMENT_PERIOD.getValue(),
 					frequencyTypeArgument);
 
+			// get all data saved
 			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields, responseQueryGetPaymentPeriod);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Required payment evaluation *****");
 			evaluateRequiredPayment(requestBody);
 
+			// call ASO to send data to host
 			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Setting branchId provided by HOST *****");
@@ -157,6 +159,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | AreThereMoreThanOneParticipant validation *****");
 			isEndorsement = validateEndorsement(requestBody);
 
+			// start to save in our data base
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(requestBody, emissionDao, asoResponse.getData().getId(), isEndorsement);
 
 			Map<String, Object> argumentsForSaveContract = this.mapperHelper.createSaveContractArguments(contractDao);
@@ -178,7 +181,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Arrays.stream(receiptsArguments).
 					forEach(receipt -> receipt.
 							forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value)));
-
+			// 12 rows is generated
 			validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue(),
 					receiptsArguments), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
 

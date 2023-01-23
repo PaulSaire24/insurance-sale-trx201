@@ -964,6 +964,12 @@ public class MapperHelper {
             responseBody.getValidityPeriod().setEndDate(convertLocaldateToDate(rimacResponse.getPayload().getFechaFinal()));
             responseBody.getInsuranceCompany().setProductId(rimacResponse.getPayload().getCodProducto());
             responseBody.setExternalPolicyNumber(rimacResponse.getPayload().getNumeroPoliza());
+
+            //added without IGV
+            PaymentAmountDTO paymentAmountWithOutIGV = new PaymentAmountDTO();
+            paymentAmountWithOutIGV.setAmount(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMontoSinIGV());
+            paymentAmountWithOutIGV.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMoneda());
+            responseBody.getInstallmentPlan().setPaymentWithoutTax(paymentAmountWithOutIGV);
         } else {
             responseBody.getValidityPeriod().setEndDate(responseBody.getInstallmentPlan().getMaturityDate());
             responseBody.getInsuranceCompany().setProductId("");
