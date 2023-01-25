@@ -406,6 +406,14 @@
 				</dto>
 			</dto>
 		</dto>
+		<list order="32" name="deliveries" mandatory="0">
+			<dto order="1" name="Type" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.DeliveryDTO" artifactId="RBVDC201">
+				<dto order="1" name="serviceType" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.ServiceTypeDTO" artifactId="RBVDC201">
+					<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+				</dto>
+				<parameter order="2" name="method" mandatory="1" type="String" size="20"/>
+			</dto>
+		</list>
 	</paramsOut>
 	<description>Trx to create a policy</description>
 </transaction>

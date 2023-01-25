@@ -403,4 +403,11 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	protected void setTotalamountwithouttax(final PaymentAmountDTO field){
 		this.addParameter("totalAmountWithoutTax", field);
 	}
+
+	/**
+	 * Set value for List<DeliveryDTO> output parameter deliveries
+	 */
+	protected void setDeliveries(final List<DeliveryDTO> field){
+		this.addParameter("deliveries", field);
+	}
 }
