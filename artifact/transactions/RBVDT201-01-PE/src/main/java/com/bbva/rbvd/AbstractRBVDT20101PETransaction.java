@@ -400,7 +400,7 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	/**
 	 * Set value for PaymentAmountDTO output parameter totalAmountWithoutTax
 	 */
-	protected void setTotalamountwithouttax(final PaymentAmountDTO field){
+	protected void setTotalamountwithouttax(final TotalAmountDTO field){
 		this.addParameter("totalAmountWithoutTax", field);
 	}
 

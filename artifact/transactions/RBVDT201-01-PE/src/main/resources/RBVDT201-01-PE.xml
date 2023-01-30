@@ -390,7 +390,7 @@
 			<parameter order="2" name="name" mandatory="0" type="String" size="20"/>
 			<parameter order="3" name="number" mandatory="1" type="Long" size="3"/>
 		</dto>
-		<dto order="31" name="totalAmountWithoutTax" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO" artifactId="RBVDC201">
+		<dto order="31" name="totalAmountWithoutTax" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.commons.TotalAmountDTO" artifactId="RBVDC201">
 			<parameter order="1" name="amount" mandatory="1" type="Double" size="16"/>
 			<parameter order="2" name="currency" mandatory="1" type="String" size="3"/>
 			<dto order="3" name="exchangeRate" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO" artifactId="RBVDC201">
@@ -401,8 +401,8 @@
 					<dto order="1" name="factor" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.FactorDTO" artifactId="RBVDC201">
 						<parameter order="1" name="value" mandatory="1" type="Double" size="16"/>
 						<parameter order="2" name="ratio" mandatory="1" type="Double" size="4"/>
-						<parameter order="3" name="priceType" mandatory="1" type="String" size="20"/>
 					</dto>
+					<parameter order="2" name="priceType" mandatory="1" type="String" size="20"/>
 				</dto>
 			</dto>
 		</dto>

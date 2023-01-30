@@ -81,16 +81,7 @@ import com.bbva.rbvd.dto.insrncsale.events.header.TraceDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.HeaderDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.FlagDTO;
 
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.TotalInstallmentDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PaymentPeriodDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyInstallmentPlanDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.*;
 
 import com.bbva.rbvd.dto.insrncsale.utils.HolderTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
@@ -967,9 +958,15 @@ public class MapperHelper {
 
             //added without IGV
             PaymentAmountDTO paymentAmountWithOutIGV = new PaymentAmountDTO();
+            TotalAmountDTO totalAmountDTO = new TotalAmountDTO();
             paymentAmountWithOutIGV.setAmount(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMontoSinIGV());
             paymentAmountWithOutIGV.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMoneda());
             responseBody.getInstallmentPlan().setPaymentWithoutTax(paymentAmountWithOutIGV);
+
+            totalAmountDTO.setAmount(rimacResponse.getPayload().getPrimaBrutaSinIGV());
+            totalAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMoneda());
+            responseBody.setTotalAmountWithoutTax(totalAmountDTO);
+
         } else {
             responseBody.getValidityPeriod().setEndDate(responseBody.getInstallmentPlan().getMaturityDate());
             responseBody.getInsuranceCompany().setProductId("");

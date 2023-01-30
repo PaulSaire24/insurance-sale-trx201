@@ -58,6 +58,7 @@ import static java.util.stream.Stream.of;
 
 import static org.junit.Assert.*;
 
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 public class MapperHelperTest {
@@ -1209,6 +1210,8 @@ public class MapperHelperTest {
 
         when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
 
+        rimacResponse.getPayload().setPrimaBrutaSinIGV(new Double("567.46"));
+
         mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
 
         assertNotNull(apxRequest.getId());
@@ -1235,6 +1238,7 @@ public class MapperHelperTest {
         assertNotNull(apxRequest.getStatus().getId());
         assertNotNull(apxRequest.getStatus().getDescription());
         assertNotNull(apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax());
 
         assertEquals(asoResponse.getData().getId(), apxRequest.getId());
         assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
@@ -1253,7 +1257,6 @@ public class MapperHelperTest {
         assertEquals("FOR", apxRequest.getStatus().getId());
         assertEquals(asoResponse.getData().getStatus().getDescription(), apxRequest.getStatus().getDescription());
         assertEquals("04040005", apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
-
 
         asoResponse.getData().getTotalAmount().getExchangeRate().getDetail().getFactor().setRatio(0.0);
         asoResponse.getData().getInstallmentPlan().getExchangeRate().getDetail().getFactor().setRatio(0.0);

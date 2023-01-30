@@ -94,6 +94,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 			this.setValidityperiod(responseBody.getValidityPeriod());
 			this.setLinks(responseBody.getLinks());
 			this.setTotalamount(responseBody.getTotalAmount());
+			this.setTotalamountwithouttax(responseBody.getTotalAmountWithoutTax());
 			this.setInsuredamount(responseBody.getInsuredAmount());
 			this.setIsdatatreatment(responseBody.getIsDataTreatment());
 			this.setHolder(responseBody.getHolder());
