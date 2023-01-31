@@ -81,8 +81,8 @@ import com.bbva.rbvd.dto.insrncsale.events.header.TraceDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.HeaderDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.FlagDTO;
 
-
 import com.bbva.rbvd.dto.insrncsale.policy.*;
+
 import com.bbva.rbvd.dto.insrncsale.utils.HolderTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
@@ -121,7 +121,6 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
 public class MapperHelper {
-
     private static final String EMAIL_VALUE = "EMAIL";
     private static final String MOBILE_VALUE = "MOBILE";
     private static final String PHONE_NUMBER_VALUE = "PHONE";
@@ -145,7 +144,6 @@ public class MapperHelper {
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
     private static final String TAG_ENDORSEE = "ENDORSEE";
     private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
-
 
     private static final String MAIL_SUBJECT_FLEXIPYME = "mail.subject.flexipyme";
     private static final String MAIL_SENDER_FLEXIPYME = "mail.sender.flexipyme";
@@ -278,8 +276,11 @@ public class MapperHelper {
     }
 
     private List<ParticipantASO> getParticipantASO(List<ParticipantDTO> participants) {
-        if (Objects.isNull(participants)) return null;
-        return participants.stream().map(this::createParticipantASO).collect(Collectors.toList());
+        if (Objects.nonNull(participants)){
+            return participants.stream().map(this::createParticipantASO).collect(Collectors.toList());
+        }else{
+            return null;
+        }
     }
 
     private ParticipantASO createParticipantASO(ParticipantDTO dto){
@@ -957,11 +958,11 @@ public class MapperHelper {
 
             //added without IGV
             PaymentAmountDTO paymentAmountWithOutIGV = new PaymentAmountDTO();
-            TotalAmountDTO totalAmountDTO = new TotalAmountDTO();
             paymentAmountWithOutIGV.setAmount(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMontoSinIGV());
             paymentAmountWithOutIGV.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMoneda());
             responseBody.getInstallmentPlan().setPaymentWithoutTax(paymentAmountWithOutIGV);
 
+            TotalAmountDTO totalAmountDTO = new TotalAmountDTO();
             totalAmountDTO.setAmount(rimacResponse.getPayload().getPrimaBrutaSinIGV());
             totalAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMoneda());
             responseBody.setTotalAmountWithoutTax(totalAmountDTO);
@@ -1441,5 +1442,4 @@ public class MapperHelper {
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;
     }
-
 }

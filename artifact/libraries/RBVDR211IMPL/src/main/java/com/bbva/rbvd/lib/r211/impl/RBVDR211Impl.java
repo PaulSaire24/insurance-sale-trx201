@@ -74,9 +74,7 @@ import static java.util.stream.Collectors.toList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class RBVDR211Impl extends RBVDR211Abstract {
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211Impl.class);
-
 	private static final String CHANNEL_GLOMO = "pisd.channel.glomo.aap";
 	private static final String BASE64_URL = "B64URL";
 	private static final String APPNAME = "apx-pe";
