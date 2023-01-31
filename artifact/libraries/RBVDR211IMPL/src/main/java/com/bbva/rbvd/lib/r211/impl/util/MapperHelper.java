@@ -56,6 +56,7 @@ import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.ValidityPeriodDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
@@ -122,7 +123,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import java.util.stream.Collectors;
 
@@ -982,7 +982,12 @@ public class MapperHelper {
 
         createdInsurance.setOperationDate(operationDate);
 
-        createdInsurance.setValidityPeriod(policy.getValidityPeriod());
+        ValidityPeriodDTO validityPeriod = new ValidityPeriodDTO();
+        LocalDate startDate = convertDateToLocalDate(policy.getValidityPeriod().getStartDate());
+        validityPeriod.setStartDate(convertLocaldateToDate(startDate));
+        validityPeriod.setEndDate(policy.getValidityPeriod().getEndDate());
+
+        createdInsurance.setValidityPeriod(validityPeriod);
 
         HolderDTO holder = new HolderDTO();
         holder.setId(policy.getHolder().getId());
