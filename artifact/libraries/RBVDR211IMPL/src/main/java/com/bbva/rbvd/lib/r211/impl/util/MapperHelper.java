@@ -276,11 +276,8 @@ public class MapperHelper {
     }
 
     private List<ParticipantASO> getParticipantASO(List<ParticipantDTO> participants) {
-        if (Objects.nonNull(participants)){
-            return participants.stream().map(this::createParticipantASO).collect(Collectors.toList());
-        }else{
-            return null;
-        }
+        if (Objects.isNull(participants)) return null;
+        return participants.stream().map(this::createParticipantASO).collect(Collectors.toList());
     }
 
     private ParticipantASO createParticipantASO(ParticipantDTO dto){
