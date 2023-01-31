@@ -4,7 +4,6 @@ import com.bbva.elara.transaction.AbstractTransaction;
 import com.bbva.rbvd.dto.insrncsale.commons.BankDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.LinkDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ValidityPeriodDTO;

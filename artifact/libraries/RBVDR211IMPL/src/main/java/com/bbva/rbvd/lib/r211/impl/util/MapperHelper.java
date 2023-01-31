@@ -81,8 +81,8 @@ import com.bbva.rbvd.dto.insrncsale.events.header.TraceDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.HeaderDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.FlagDTO;
 
-import com.bbva.rbvd.dto.insrncsale.policy.*;
 
+import com.bbva.rbvd.dto.insrncsale.policy.*;
 import com.bbva.rbvd.dto.insrncsale.utils.HolderTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
@@ -113,7 +113,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import java.util.stream.Collectors;
 
