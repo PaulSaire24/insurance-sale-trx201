@@ -50,6 +50,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		requestBody.setTotalAmount(this.getTotalamount());
 		requestBody.setInsuredAmount(this.getInsuredamount());
 		requestBody.setIsDataTreatment(this.getIsdatatreatment());
+		requestBody.setDeliveries(this.getDeliveries());
 		requestBody.setHolder(this.getHolder());
 		requestBody.setRelatedContracts(this.getRelatedcontracts());
 		requestBody.setInstallmentPlan(this.getInstallmentplan());
@@ -97,6 +98,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 			this.setTotalamountwithouttax(responseBody.getTotalAmountWithoutTax());
 			this.setInsuredamount(responseBody.getInsuredAmount());
 			this.setIsdatatreatment(responseBody.getIsDataTreatment());
+			this.setDeliveries(responseBody.getDeliveries());
 			this.setHolder(responseBody.getHolder());
 			this.setRelatedcontracts(responseBody.getRelatedContracts());
 			this.setInstallmentplan(responseBody.getInstallmentPlan());

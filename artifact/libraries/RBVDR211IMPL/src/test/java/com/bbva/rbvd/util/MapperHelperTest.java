@@ -1572,7 +1572,60 @@ public class MapperHelperTest {
         assertEquals(timestamp, validation.getHeader().getOrigin().getTimestamp());
 
         assertEquals(apxRequest.getCreationUser(), validation.getHeader().getOrigin().getUser());
+    }
 
+    @Test
+    public void testMontoSinIGVNullInInstallmentPlanPaymentWithoutTax(){
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax());
+        assertNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax().getAmount());
+    }
+
+    @Test
+    public void testMontoSinIGVNotNullInInstallmentPlanPaymentWithoutTax(){
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+
+        rimacResponse.getPayload().getCuotasFinanciamiento().get(0).setMontoSinIGV(new Double("495.36"));
+        rimacResponse.getPayload().getCuotasFinanciamiento().get(1).setMontoSinIGV(new Double("298.57"));
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax());
+        assertNotNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax().getAmount());
+        assertNotNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax().getCurrency());
+    }
+
+    @Test
+    public void testTotalAmountWithoutTaxOK(){
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+        rimacResponse.getPayload().setPrimaBrutaSinIGV(new Double("4657.28"));
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getTotalAmountWithoutTax());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax().getAmount());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax().getCurrency());
+    }
+
+    @Test
+    public void testTotalAmountWithoutTaxWithPrimaBrutaSinIgvIsNull(){
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getTotalAmountWithoutTax());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax().getAmount());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax().getCurrency());
+        assertEquals(new Double("0.0"),apxRequest.getTotalAmountWithoutTax().getAmount());
     }
 
 }

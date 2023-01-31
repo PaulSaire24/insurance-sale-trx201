@@ -963,7 +963,9 @@ public class MapperHelper {
             responseBody.getInstallmentPlan().setPaymentWithoutTax(paymentAmountWithOutIGV);
 
             TotalAmountDTO totalAmountDTO = new TotalAmountDTO();
-            totalAmountDTO.setAmount(rimacResponse.getPayload().getPrimaBrutaSinIGV());
+            totalAmountDTO.setAmount(
+                    Objects.nonNull(rimacResponse.getPayload().getPrimaBrutaSinIGV()) ? rimacResponse.getPayload().getPrimaBrutaSinIGV()
+                            : 0.0);
             totalAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMoneda());
             responseBody.setTotalAmountWithoutTax(totalAmountDTO);
 
