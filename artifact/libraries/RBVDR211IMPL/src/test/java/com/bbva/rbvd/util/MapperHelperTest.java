@@ -1210,7 +1210,7 @@ public class MapperHelperTest {
 
         when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
 
-        rimacResponse.getPayload().setPrimaBrutaSinIGV(new Double("567.46"));
+        rimacResponse.getPayload().setPrimaBrutaSinIgv(new Double("567.46"));
 
         mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
 
@@ -1592,8 +1592,8 @@ public class MapperHelperTest {
 
         when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
 
-        rimacResponse.getPayload().getCuotasFinanciamiento().get(0).setMontoSinIGV(new Double("495.36"));
-        rimacResponse.getPayload().getCuotasFinanciamiento().get(1).setMontoSinIGV(new Double("298.57"));
+        rimacResponse.getPayload().getCuotasFinanciamiento().get(0).setMontoSinIgv(new Double("495.36"));
+        rimacResponse.getPayload().getCuotasFinanciamiento().get(1).setMontoSinIgv(new Double("298.57"));
 
         mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
 
@@ -1607,7 +1607,7 @@ public class MapperHelperTest {
         apxRequest.getFirstInstallment().setIsPaymentRequired(true);
 
         when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
-        rimacResponse.getPayload().setPrimaBrutaSinIGV(new Double("4657.28"));
+        rimacResponse.getPayload().setPrimaBrutaSinIgv(new Double("4657.28"));
         mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
 
         assertNotNull(apxRequest.getTotalAmountWithoutTax());
@@ -1616,7 +1616,7 @@ public class MapperHelperTest {
     }
 
     @Test
-    public void testTotalAmountWithoutTaxWithPrimaBrutaSinIgvIsNull(){
+    public void testTotalAmountWithoutTaxWithPrimaBrutaSinIgv(){
         apxRequest.getFirstInstallment().setIsPaymentRequired(true);
 
         when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
@@ -1625,7 +1625,7 @@ public class MapperHelperTest {
         assertNotNull(apxRequest.getTotalAmountWithoutTax());
         assertNotNull(apxRequest.getTotalAmountWithoutTax().getAmount());
         assertNotNull(apxRequest.getTotalAmountWithoutTax().getCurrency());
-        assertEquals(new Double("0.0"),apxRequest.getTotalAmountWithoutTax().getAmount());
+        assertEquals(new Double("757.9424"),apxRequest.getTotalAmountWithoutTax().getAmount());
     }
 
 }
