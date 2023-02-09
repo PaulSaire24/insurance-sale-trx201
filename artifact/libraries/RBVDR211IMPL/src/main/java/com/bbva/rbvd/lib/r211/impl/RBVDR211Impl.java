@@ -95,7 +95,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
 
-		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy START *****");
+		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy START VERSION 1 *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Param: {}", requestBody);
 
 		EmisionBO rimacResponse = null;
@@ -133,12 +133,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			// get all data saved
 			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields, responseQueryGetPaymentPeriod);
+			LOGGER.info("***** emissionDao => {} *****",emissionDao);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Required payment evaluation *****");
 			evaluateRequiredPayment(requestBody);
 
 			// call ASO to send data to host
 			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
+			LOGGER.info("***** executePrePolicyEmissionASO - asoResponse => {} *****",asoResponse);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Setting branchId provided by HOST *****");
 			String hostBranchId = asoResponse.getData().getBank().getBranch().getId();
@@ -153,6 +155,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building Rimac request *****");
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
 					requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
+			LOGGER.info("RBVDR211Impl - call buildRequestBodyRimac rimacRequest v1 => {}",rimacRequest);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | AreThereMoreThanOneParticipant validation *****");
 			isEndorsement = validateEndorsement(requestBody);
@@ -213,6 +216,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				endosatarioPorcentaje = requestBody.getParticipants().get(1).getBenefitPercentage();
 
 				rimacRequest.getPayload().setEndosatario(new EndosatarioBO(endosatarioRuc, endosatarioPorcentaje.intValue()));
+				LOGGER.info("RBVDR211Impl - call buildRequestBodyRimac rimacRequest v2 => {}",rimacRequest);
 
 				Map<String, Object> argumentsForSaveEndorsement = this.mapperHelper.createSaveEndorsementArguments(contractDao, endosatarioRuc, endosatarioPorcentaje);
 				argumentsForSaveEndorsement.forEach(
@@ -232,6 +236,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					return null;
 				}
 				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
+				LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****",generalEmisionRequest);
 
 				setOrganization(generalEmisionRequest, requestBody.getHolder().getId(), customerList);
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(generalEmisionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
@@ -239,8 +244,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			}
 
+			LOGGER.info("rimacResponse => {}",rimacResponse);
+
 			if(nonNull(rimacResponse)) {
-				LOGGER.info("rimacResponse => {}",rimacResponse);
 				LOGGER.info("rimacResponse - cuotasFinanciamiento => {}",rimacResponse.getPayload().getCuotasFinanciamiento());
 				LOGGER.info("rimacResponse - primaBrutaSinIGV => {}",rimacResponse.getPayload().getPrimaBrutaSinIgv());
 
@@ -278,6 +284,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			responseBody = requestBody;
 
 			this.mapperHelper.mappingOutputFields(responseBody, asoResponse, rimacResponse, emissionDao);
+			LOGGER.info("***** Before Response - responseBody => {} *****",responseBody);
+			LOGGER.info("***** Before Response - asoResponse => {} *****",asoResponse);
+			LOGGER.info("***** Before Response - rimacResponse => {} *****",rimacResponse);
+			LOGGER.info("***** Before Response - emissionDao => {} *****",emissionDao);
 
 			CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(responseBody);
 
