@@ -965,15 +965,15 @@ public class MapperHelper {
 
             //added without IGV
             PaymentAmountDTO paymentAmountWithOutIGV = new PaymentAmountDTO();
-            paymentAmountWithOutIGV.setAmount(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMontoSinIgv());
-            paymentAmountWithOutIGV.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMoneda());
+            paymentAmountWithOutIGV.setAmount(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMontoSinIgv());
+            paymentAmountWithOutIGV.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
             responseBody.getInstallmentPlan().setPaymentWithoutTax(paymentAmountWithOutIGV);
 
             TotalAmountDTO totalAmountDTO = new TotalAmountDTO();
             totalAmountDTO.setAmount(
                     Objects.nonNull(rimacResponse.getPayload().getPrimaBrutaSinIgv()) ? rimacResponse.getPayload().getPrimaBrutaSinIgv()
                             : 0.0);
-            totalAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(1).getMoneda());
+            totalAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
             responseBody.setTotalAmountWithoutTax(totalAmountDTO);
 
         } else {
