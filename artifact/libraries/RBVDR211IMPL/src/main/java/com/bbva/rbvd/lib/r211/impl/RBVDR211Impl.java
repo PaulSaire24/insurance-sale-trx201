@@ -148,9 +148,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Map<String, Object> responseQueryGetRequiredFields = pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(),
 					quotationIdArgument);
 
-			if(this.applicationConfigurationService.getDefaultProperty(PROPERTY_VALIDATION_RANGE + requestBody.getProductId() + "." + requestBody.getSaleChannelId(), "0").equals("1"))
-				validateAmountQuotation(responseQueryGetRequiredFields, requestBody);
-
 			Map<String, Object> frequencyTypeArgument = this.createSingleArgument(requestBody.getInstallmentPlan().getPeriod().getId(),
 					RBVDProperties.FIELD_POLICY_PAYMENT_FREQUENCY_TYPE.getValue());
 
@@ -158,6 +155,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					frequencyTypeArgument);
 
 			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields, responseQueryGetPaymentPeriod);
+
+			if(this.applicationConfigurationService.getDefaultProperty(PROPERTY_VALIDATION_RANGE + requestBody.getProductId() + "." + requestBody.getSaleChannelId(), "0").equals("1"))
+				validateAmountQuotation(responseQueryGetRequiredFields, requestBody);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Required payment evaluation *****");
 			evaluateRequiredPayment(requestBody);
