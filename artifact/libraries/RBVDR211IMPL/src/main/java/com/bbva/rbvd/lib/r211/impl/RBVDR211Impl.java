@@ -62,14 +62,7 @@ import java.math.BigDecimal;
 
 import java.nio.charset.StandardCharsets;
 import java.time.temporal.ValueRange;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
@@ -662,6 +655,13 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		}
 	}
 	private void validateAmountQuotation(Map<String, Object> quotation, PolicyDTO request ) {
+
+		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: inicio *****");
+
+		if(Objects.isNull(quotation.get(FIELD_POLICY_PAYMENT_FREQUENCY_TYPE)) &&
+				Objects.isNull(quotation.get(FIELD_PREMIUM_CURRENCY_ID)) &&
+				Objects.isNull(quotation.get(FIELD_PREMIUM_AMOUNT)))
+			throw RBVDValidation.build(RBVDErrors.QUERY_EMPTY_RESULT);
 
 		String frequency = quotation.get(FIELD_POLICY_PAYMENT_FREQUENCY_TYPE).toString();
 

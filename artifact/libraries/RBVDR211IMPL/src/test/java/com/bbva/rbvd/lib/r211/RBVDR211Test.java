@@ -750,4 +750,22 @@ public class RBVDR211Test {
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
+
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyNull() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", null);
+		responseBD.put("PREMIUM_CURRENCY_ID", null);
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", null);
+		requestBody.getTotalAmount().setAmount(1560d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
+	}
 }
