@@ -666,8 +666,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: inicio *****");
 
-		if(Objects.isNull(quotation.get(FIELD_POLICY_PAYMENT_FREQUENCY_TYPE)) &&
-				Objects.isNull(quotation.get(FIELD_PREMIUM_CURRENCY_ID)) &&
+		if(Objects.isNull(quotation.get(FIELD_POLICY_PAYMENT_FREQUENCY_TYPE)) ||
+				Objects.isNull(quotation.get(FIELD_PREMIUM_CURRENCY_ID)) ||
 				Objects.isNull(quotation.get(FIELD_PREMIUM_AMOUNT)))
 			throw RBVDValidation.build(RBVDErrors.QUERY_EMPTY_RESULT);
 
