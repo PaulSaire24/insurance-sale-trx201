@@ -706,6 +706,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				paymentCurrency.equals(request.getFirstInstallment().getPaymentAmount().getCurrency()))){
 			throw RBVDValidation.build(RBVDErrors.BAD_REQUEST_CREATEINSURANCE);
 		}
+
+		if(!(isValidateRange(request.getInstallmentPlan().getPaymentAmount().getAmount().intValue(), amountQuotationMin, amountQuotationMax) &&
+				paymentCurrency.equals(request.getInstallmentPlan().getPaymentAmount().getCurrency()))){
+			throw RBVDValidation.build(RBVDErrors.BAD_REQUEST_CREATEINSURANCE);
+		}
 	}
 	private boolean isValidateRange(Integer value, Integer min, Integer max) {
 		final ValueRange range = ValueRange.of(min, max);

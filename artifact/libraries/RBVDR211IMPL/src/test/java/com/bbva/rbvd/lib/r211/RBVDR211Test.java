@@ -801,4 +801,41 @@ public class RBVDR211Test {
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
 	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyNullFour() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyNullFour...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT",  new BigDecimal(100));
+		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(100d);
+		requestBody.getTotalAmount().setAmount(1200d);
+		requestBody.getInstallmentPlan().getPaymentAmount().setAmount(10000d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyOK() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyOK...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT",  new BigDecimal(100));
+		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(100d);
+		requestBody.getTotalAmount().setAmount(1200d);
+		requestBody.getInstallmentPlan().getPaymentAmount().setAmount(100d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+	}
 }
