@@ -174,5 +174,5 @@
 - **Versión 0.5.18**: Esta versión incluye información acerca del monto de primas y de oficina de venta para leads de GIFOLE.
 - **Versión 0.6.5**: Esta versión incluye la capacidad de generar un alta de póliza a clientes jurídicos.
 - **Versión 0.7.10**: En esta versión se ha modificado el flujo del servicio ante escenarios de caida por el lado de nuestro backend,
-- **Versión 0.7.12**: En esta versión se ha modificado para validar el monto de la prima cotizada con la ingresada desde el input,
+- **Versión 0.7.13**: En esta versión se ha modificado para validar el monto de la prima cotizada con la ingresada desde el input,
  se añade busqueda de detalles de contacto de cliente cuando el servicio es consumido por GLOMO y se utiliza el valor de branchId obtenido desde HOST.
