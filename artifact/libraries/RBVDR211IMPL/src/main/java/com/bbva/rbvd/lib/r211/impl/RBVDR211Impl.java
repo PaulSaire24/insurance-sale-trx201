@@ -57,6 +57,7 @@ import java.math.BigDecimal;
 
 import java.nio.charset.StandardCharsets;
 
+import java.time.temporal.ValueRange;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -64,6 +65,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Collections.singletonList;
@@ -94,6 +96,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String RUC_ID = "RUC";
 	private static final String TAG_OTROS = "OTROS";
 
+	private static final String FIELD_PREMIUM_AMOUNT = "PREMIUM_AMOUNT";
+	private static final String FIELD_PREMIUM_CURRENCY_ID = "PREMIUM_CURRENCY_ID";
+	private static final String FIELD_POLICY_PAYMENT_FREQUENCY_TYPE = "POLICY_PAYMENT_FREQUENCY_TYPE";
+	private static final String PROPERTY_RANGE_PAYMENT_AMOUNT = "property.range.payment.amount.insurance";
+	private static final String PROPERTY_VALIDATION_RANGE = "property.validation.range.";
+
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
 
@@ -122,6 +130,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Map<String, Object> responseValidateIfPolicyExists = pisdR012.executeGetASingleRow(RBVDProperties.QUERY_VALIDATE_IF_POLICY_EXISTS.getValue(),
 					quotationIdArgument);
 
+			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Validation  *****");
 			validateIfPolicyExists(responseValidateIfPolicyExists);
 
 			Map<String, Object> responseQueryGetRequiredFields = pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(),
@@ -134,6 +143,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					frequencyTypeArgument);
 
 			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields, responseQueryGetPaymentPeriod);
+
+			if(this.applicationConfigurationService.getDefaultProperty(PROPERTY_VALIDATION_RANGE + requestBody.getProductId() + "." + requestBody.getSaleChannelId(), "0").equals("1"))
+				validateAmountQuotation(responseQueryGetRequiredFields, requestBody);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Required payment evaluation *****");
 			evaluateRequiredPayment(requestBody);
@@ -562,6 +574,60 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		nextReceipt.setPolicyReceiptId(BigDecimal.valueOf(cuota.getCuota()));
 		nextReceipt.setReceiptExpirationDate(this.mapperHelper.generateCorrectDateFormat(cuota.getFechaVencimiento()));
 		return nextReceipt;
+	}
+
+	private void validateAmountQuotation(Map<String, Object> quotation, PolicyDTO request ) {
+		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: inicio *****");
+
+		if(Objects.isNull(quotation.get(FIELD_POLICY_PAYMENT_FREQUENCY_TYPE)) ||
+				Objects.isNull(quotation.get(FIELD_PREMIUM_CURRENCY_ID)) ||
+				Objects.isNull(quotation.get(FIELD_PREMIUM_AMOUNT)))
+			throw RBVDValidation.build(RBVDErrors.QUERY_EMPTY_RESULT);
+
+		String frequency = quotation.get(FIELD_POLICY_PAYMENT_FREQUENCY_TYPE).toString();
+
+		Integer paymentAmount = ((BigDecimal) quotation.get(FIELD_PREMIUM_AMOUNT)).intValue();
+		String paymentCurrency = quotation.get(FIELD_PREMIUM_CURRENCY_ID).toString();
+		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: frecuencia: {} *****", frequency);
+		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: monto: {} *****", paymentAmount);
+		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: moneda: {} *****", paymentCurrency);
+
+		Integer rangePaymentAmount = Integer.parseInt(this.applicationConfigurationService.getDefaultProperty(PROPERTY_RANGE_PAYMENT_AMOUNT, "5"));
+		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: rangePaymentAmount: {} *****", rangePaymentAmount);
+
+		Integer amountQuotationMin = ((100 - rangePaymentAmount)*paymentAmount)/100;
+		Integer amountQuotationMax = ((100 + rangePaymentAmount)*paymentAmount)/100;
+		Integer amountTotalAmountMin = ((100 - rangePaymentAmount)*paymentAmount*12)/100;
+		Integer amountTotalAmountMax = ((100 + rangePaymentAmount)*paymentAmount*12)/100;
+
+		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: prima minimo: {} *****", amountQuotationMin);
+		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: prima maximo: {} *****", amountQuotationMax);
+		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: monto minimo: {} *****", amountTotalAmountMin);
+		LOGGER.info("***** RBVDR211Impl - validateAmountQuotation: monto maximo: {} *****", amountTotalAmountMax);
+
+		if(frequency.equals("A") && !(paymentCurrency.equals(request.getTotalAmount().getCurrency()) &&
+				isValidateRange(request.getTotalAmount().getAmount().intValue(), amountQuotationMin, amountQuotationMax))) {
+			throw RBVDValidation.build(RBVDErrors.BAD_REQUEST_CREATEINSURANCE);
+		}
+
+		if(frequency.equals("M") && !(paymentCurrency.equals(request.getTotalAmount().getCurrency()) &&
+				isValidateRange(request.getTotalAmount().getAmount().intValue(), amountTotalAmountMin, amountTotalAmountMax))) {
+			throw RBVDValidation.build(RBVDErrors.BAD_REQUEST_CREATEINSURANCE);
+		}
+
+		if(!(isValidateRange(request.getFirstInstallment().getPaymentAmount().getAmount().intValue(), amountQuotationMin, amountQuotationMax) &&
+				paymentCurrency.equals(request.getFirstInstallment().getPaymentAmount().getCurrency()))){
+			throw RBVDValidation.build(RBVDErrors.BAD_REQUEST_CREATEINSURANCE);
+		}
+
+		if(!(isValidateRange(request.getInstallmentPlan().getPaymentAmount().getAmount().intValue(), amountQuotationMin, amountQuotationMax) &&
+				paymentCurrency.equals(request.getInstallmentPlan().getPaymentAmount().getCurrency()))){
+			throw RBVDValidation.build(RBVDErrors.BAD_REQUEST_CREATEINSURANCE);
+		}
+	}
+	private boolean isValidateRange(Integer value, Integer min, Integer max) {
+		final ValueRange range = ValueRange.of(min, max);
+		return range.isValidIntValue(value);
 	}
 
 	private String encodeB64(byte[] hash) {
