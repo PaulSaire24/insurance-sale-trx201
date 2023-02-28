@@ -125,6 +125,7 @@ public class RBVDR211Test {
 		rbvdr211.setMapperHelper(mapperHelper);
 
 		requestBody = mockData.getCreateInsuranceRequestBody();
+		requestBody.setSaleChannelId("XX");
 
 		argumentsForMultipleInsertion = new Map[1];
 		argumentsForMultipleInsertion[0] = new HashMap<>();
@@ -158,6 +159,11 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getProperty("agent.and.promoter.code")).thenReturn(AGENT_AND_PROMOTER_DEFAULT_CODE);
 		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_RUC")).thenReturn("00000000000");
 		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_PORCENTAJE")).thenReturn("40");
+		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.830.NN", "0")).thenReturn("1");
+		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.830.XX", "0")).thenReturn("0");
+		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.832.XX", "0")).thenReturn("0");
+		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.833.BI", "0")).thenReturn("0");
+		when(this.applicationConfigurationService.getDefaultProperty("property.range.payment.amount.insurance", "5")).thenReturn("5");
 
 		asoResponse = mockData.getEmisionASOResponse();
 		rimacResponse = mockData.getEmisionRimacResponse();
@@ -598,5 +604,233 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNull(validation);
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", new BigDecimal(130.00));
+		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		requestBody.getTotalAmount().setAmount(1560d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountTotalAmountMonthlyError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", new BigDecimal(130.00));
+		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(100d);
+		requestBody.getTotalAmount().setAmount(1700d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyCurrencyError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", new BigDecimal(130.00));
+		responseBD.put("PREMIUM_CURRENCY_ID", "PEN");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(100d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountTotalAmountCurrencyMonthlyError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", new BigDecimal(130.00));
+		responseBD.put("PREMIUM_CURRENCY_ID", "PEN");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(100d);
+		requestBody.getTotalAmount().setAmount(1700d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationAnnualError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", new BigDecimal(1000));
+		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "A");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(300d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountTotalAmountAnnualError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", new BigDecimal(1000));
+		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "A");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(300d);
+		requestBody.getTotalAmount().setAmount(300d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationAnnualCurrencyError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", new BigDecimal(1000));
+		responseBD.put("PREMIUM_CURRENCY_ID", "PEN");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "A");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(300d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountTotalAmountCurrencyAnnualError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", new BigDecimal(1000));
+		responseBD.put("PREMIUM_CURRENCY_ID", "PEN");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "A");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(300d);
+		requestBody.getTotalAmount().setAmount(300d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyNull() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", null);
+		responseBD.put("PREMIUM_CURRENCY_ID", null);
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", null);
+		requestBody.getTotalAmount().setAmount(1560d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyNullTwo() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", null);
+		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", null);
+		requestBody.getTotalAmount().setAmount(1560d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyNullThree() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", null);
+		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		requestBody.getTotalAmount().setAmount(1560d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyNullFour() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyNullFour...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT",  new BigDecimal(100));
+		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(100d);
+		requestBody.getTotalAmount().setAmount(1200d);
+		requestBody.getInstallmentPlan().getPaymentAmount().setAmount(10000d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyOK() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationMonthlyOK...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT",  new BigDecimal(100));
+		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		requestBody.getFirstInstallment().getPaymentAmount().setAmount(100d);
+		requestBody.getTotalAmount().setAmount(1200d);
+		requestBody.getInstallmentPlan().getPaymentAmount().setAmount(100d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
 	}
 }
