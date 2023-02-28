@@ -1192,7 +1192,7 @@ public class MapperHelper {
         bodyData[7] = policyNumber;
         Locale locale = new Locale ("en", "UK");
         NumberFormat numberFormat = NumberFormat.getInstance (locale);
-        bodyData[8] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
+        bodyData[8] = Objects.nonNull(responseBody.getInsuredAmount().getAmount()) ? numberFormat.format((responseBody.getInsuredAmount().getAmount())) : "";
         bodyData[9] = emissionDao.getPaymentFrequencyName();
         bodyData[10] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
         if (responseBody.getParticipants() != null) {
