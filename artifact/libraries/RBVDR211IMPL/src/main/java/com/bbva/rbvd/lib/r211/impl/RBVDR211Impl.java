@@ -254,8 +254,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("rimacResponse => {}",rimacResponse);
 
 			if(nonNull(rimacResponse)) {
-				LOGGER.info("rimacResponse - cuotasFinanciamiento => {}",rimacResponse.getPayload().getCuotasFinanciamiento());
-				LOGGER.info("rimacResponse - primaBrutaSinIGV => {}",rimacResponse.getPayload().getPrimaBrutaSinIgv());
+				LOGGER.info("RBVDR211 rimacResponse cuotasFinanciamiento => {}",rimacResponse.getPayload().getCuotasFinanciamiento());
 
 				Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformation(rimacResponse, asoResponse.getData().getId());
 				argumentsRimacContractInformation.forEach(
