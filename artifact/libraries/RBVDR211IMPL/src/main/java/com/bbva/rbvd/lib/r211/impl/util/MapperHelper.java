@@ -56,6 +56,7 @@ import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.ValidityPeriodDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
@@ -994,7 +995,12 @@ public class MapperHelper {
 
         createdInsurance.setOperationDate(operationDate);
 
-        createdInsurance.setValidityPeriod(policy.getValidityPeriod());
+        ValidityPeriodDTO validityPeriod = new ValidityPeriodDTO();
+        LocalDate startDate = convertDateToLocalDate(policy.getValidityPeriod().getStartDate());
+        validityPeriod.setStartDate(convertLocaldateToDate(startDate));
+        validityPeriod.setEndDate(policy.getValidityPeriod().getEndDate());
+
+        createdInsurance.setValidityPeriod(validityPeriod);
 
         HolderDTO holder = new HolderDTO();
         holder.setId(policy.getHolder().getId());
@@ -1199,7 +1205,7 @@ public class MapperHelper {
         bodyData[7] = policyNumber;
         Locale locale = new Locale ("en", "UK");
         NumberFormat numberFormat = NumberFormat.getInstance (locale);
-        bodyData[8] = Objects.nonNull(homeInfo.getEdificationLoanAmount()) ? numberFormat.format(homeInfo.getEdificationLoanAmount()) : "";
+        bodyData[8] = Objects.nonNull(responseBody.getInsuredAmount().getAmount()) ? numberFormat.format((responseBody.getInsuredAmount().getAmount())) : "";
         bodyData[9] = emissionDao.getPaymentFrequencyName();
         bodyData[10] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
         if (responseBody.getParticipants() != null) {
