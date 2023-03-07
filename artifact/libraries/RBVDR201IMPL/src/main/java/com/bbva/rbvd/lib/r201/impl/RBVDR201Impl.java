@@ -42,13 +42,11 @@ import java.util.Map;
 public class RBVDR201Impl extends RBVDR201Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR201Impl.class);
-
 	private static final String CUSTOMER_ID = "customerId";
 	private static final String GET_CONTACT_DETAILS_SERVICE_ID = "glomoContactDetails";
 	private static final String ID_API_INSURANCES_CREATE_INSURANCE_ASO = "emission.aso";
 	private static final String ID_PUT_EVENT_UPSILON_SERVICE = "createdInsurancePutEvent";
 	private static final String ID_API_CYPHER = "executecypher";
-
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 	private static final String X_AMZ_DATE_HEADER = "X-Amz-Date";
 	private static final String X_API_KEY_HEADER = "x-api-key";
@@ -119,7 +117,9 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Response: {}", getRequestBodyAsJsonFormat(responseBody));
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService END *****");
 		} catch (RestClientException ex) {
-			LOGGER.debug("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
+			this.addAdviceWithDescription("RBVD10094932",ex.getMessage());
+			this.addAdviceWithDescription("RBVD10094943","Error al devolver informacion de Rimac en Alta de Poliza");
+			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
 		}
 		return responseBody;
 	}

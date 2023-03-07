@@ -130,7 +130,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Map<String, Object> responseValidateIfPolicyExists = pisdR012.executeGetASingleRow(RBVDProperties.QUERY_VALIDATE_IF_POLICY_EXISTS.getValue(),
 					quotationIdArgument);
 
-			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Validation  *****");
 			validateIfPolicyExists(responseValidateIfPolicyExists);
 
 			Map<String, Object> responseQueryGetRequiredFields = pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(),
@@ -224,6 +223,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				endosatarioPorcentaje = requestBody.getParticipants().get(1).getBenefitPercentage();
 
 				rimacRequest.getPayload().setEndosatario(new EndosatarioBO(endosatarioRuc, endosatarioPorcentaje.intValue()));
+				LOGGER.info("RBVDR211Impl - call buildRequestBodyRimac rimacRequest v2 => {}",rimacRequest);
 
 				Map<String, Object> argumentsForSaveEndorsement = this.mapperHelper.createSaveEndorsementArguments(contractDao, endosatarioRuc, endosatarioPorcentaje);
 				argumentsForSaveEndorsement.forEach(
@@ -243,6 +243,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					return null;
 				}
 				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
+				LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****",generalEmisionRequest);
 
 				setOrganization(generalEmisionRequest, requestBody.getHolder().getId(), customerList);
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(generalEmisionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
@@ -250,7 +251,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			}
 
+			LOGGER.info("rimacResponse => {}",rimacResponse);
+
 			if(nonNull(rimacResponse)) {
+				LOGGER.info("RBVDR211 rimacResponse cuotasFinanciamiento => {}",rimacResponse.getPayload().getCuotasFinanciamiento());
+
 				Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformation(rimacResponse, asoResponse.getData().getId());
 				argumentsRimacContractInformation.forEach(
 						(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - UpdateContract parameter {} with value: {} *****", key, value));
@@ -285,6 +290,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			responseBody = requestBody;
 
 			this.mapperHelper.mappingOutputFields(responseBody, asoResponse, rimacResponse, emissionDao);
+			LOGGER.info("***** Before Response - responseBody => {} *****",responseBody);
+			LOGGER.info("***** Before Response - asoResponse => {} *****",asoResponse);
+			LOGGER.info("***** Before Response - rimacResponse => {} *****",rimacResponse);
+			LOGGER.info("***** Before Response - emissionDao => {} *****",emissionDao);
 
 			CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(responseBody);
 

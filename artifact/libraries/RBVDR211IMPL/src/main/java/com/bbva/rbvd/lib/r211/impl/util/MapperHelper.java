@@ -84,12 +84,13 @@ import com.bbva.rbvd.dto.insrncsale.events.header.FlagDTO;
 
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.TotalInstallmentDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PaymentPeriodDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.TotalAmountDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyInstallmentPlanDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PaymentPeriodDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.TotalInstallmentDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
@@ -131,7 +132,6 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
 public class MapperHelper {
-
     private static final String EMAIL_VALUE = "EMAIL";
     private static final String MOBILE_VALUE = "MOBILE";
     private static final String PHONE_NUMBER_VALUE = "PHONE";
@@ -155,7 +155,6 @@ public class MapperHelper {
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
     private static final String TAG_ENDORSEE = "ENDORSEE";
     private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
-
 
     private static final String MAIL_SUBJECT_FLEXIPYME = "mail.subject.flexipyme";
     private static final String MAIL_SENDER_FLEXIPYME = "mail.sender.flexipyme";
@@ -964,6 +963,20 @@ public class MapperHelper {
             responseBody.getValidityPeriod().setEndDate(convertLocaldateToDate(rimacResponse.getPayload().getFechaFinal()));
             responseBody.getInsuranceCompany().setProductId(rimacResponse.getPayload().getCodProducto());
             responseBody.setExternalPolicyNumber(rimacResponse.getPayload().getNumeroPoliza());
+
+            //added without IGV
+            PaymentAmountDTO paymentAmountWithOutIGV = new PaymentAmountDTO();
+            paymentAmountWithOutIGV.setAmount(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMontoSinIgv());
+            paymentAmountWithOutIGV.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
+            responseBody.getInstallmentPlan().setPaymentWithoutTax(paymentAmountWithOutIGV);
+
+            TotalAmountDTO totalAmountDTO = new TotalAmountDTO();
+            totalAmountDTO.setAmount(
+                    Objects.nonNull(rimacResponse.getPayload().getPrimaBrutaSinIgv()) ? rimacResponse.getPayload().getPrimaBrutaSinIgv()
+                            : 0.0);
+            totalAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
+            responseBody.setTotalAmountWithoutTax(totalAmountDTO);
+
         } else {
             responseBody.getValidityPeriod().setEndDate(responseBody.getInstallmentPlan().getMaturityDate());
             responseBody.getInsuranceCompany().setProductId("");
@@ -1444,5 +1457,4 @@ public class MapperHelper {
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;
     }
-
 }

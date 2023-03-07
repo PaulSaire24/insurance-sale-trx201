@@ -58,6 +58,7 @@ import static java.util.stream.Stream.of;
 
 import static org.junit.Assert.*;
 
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 public class MapperHelperTest {
@@ -1209,6 +1210,8 @@ public class MapperHelperTest {
 
         when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
 
+        rimacResponse.getPayload().setPrimaBrutaSinIgv(new Double("567.46"));
+
         mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
 
         assertNotNull(apxRequest.getId());
@@ -1235,6 +1238,7 @@ public class MapperHelperTest {
         assertNotNull(apxRequest.getStatus().getId());
         assertNotNull(apxRequest.getStatus().getDescription());
         assertNotNull(apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax());
 
         assertEquals(asoResponse.getData().getId(), apxRequest.getId());
         assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
@@ -1253,7 +1257,6 @@ public class MapperHelperTest {
         assertEquals("FOR", apxRequest.getStatus().getId());
         assertEquals(asoResponse.getData().getStatus().getDescription(), apxRequest.getStatus().getDescription());
         assertEquals("04040005", apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
-
 
         asoResponse.getData().getTotalAmount().getExchangeRate().getDetail().getFactor().setRatio(0.0);
         asoResponse.getData().getInstallmentPlan().getExchangeRate().getDetail().getFactor().setRatio(0.0);
@@ -1567,7 +1570,60 @@ public class MapperHelperTest {
         assertEquals(timestamp, validation.getHeader().getOrigin().getTimestamp());
 
         assertEquals(apxRequest.getCreationUser(), validation.getHeader().getOrigin().getUser());
+    }
 
+    @Test
+    public void testMontoSinIGVNullInInstallmentPlanPaymentWithoutTax(){
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax());
+        assertNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax().getAmount());
+    }
+
+    @Test
+    public void testMontoSinIGVNotNullInInstallmentPlanPaymentWithoutTax(){
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+
+        rimacResponse.getPayload().getCuotasFinanciamiento().get(0).setMontoSinIgv(new Double("495.36"));
+        rimacResponse.getPayload().getCuotasFinanciamiento().get(1).setMontoSinIgv(new Double("298.57"));
+
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax());
+        assertNotNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax().getAmount());
+        assertNotNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax().getCurrency());
+    }
+
+    @Test
+    public void testTotalAmountWithoutTaxOK(){
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+        rimacResponse.getPayload().setPrimaBrutaSinIgv(new Double("4657.28"));
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getTotalAmountWithoutTax());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax().getAmount());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax().getCurrency());
+    }
+
+    @Test
+    public void testTotalAmountWithoutTaxWithPrimaBrutaSinIgv(){
+        apxRequest.getFirstInstallment().setIsPaymentRequired(true);
+
+        when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
+        mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
+
+        assertNotNull(apxRequest.getTotalAmountWithoutTax());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax().getAmount());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax().getCurrency());
+        assertEquals(new Double("757.9424"),apxRequest.getTotalAmountWithoutTax().getAmount());
     }
 
 }
