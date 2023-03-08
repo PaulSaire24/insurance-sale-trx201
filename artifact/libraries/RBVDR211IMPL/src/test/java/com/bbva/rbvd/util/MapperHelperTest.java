@@ -57,8 +57,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.of;
 
 import static org.junit.Assert.*;
-
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 public class MapperHelperTest {
@@ -1209,9 +1207,6 @@ public class MapperHelperTest {
         apxRequest.getFirstInstallment().setIsPaymentRequired(true);
 
         when(this.applicationConfigurationService.getProperty("FORMALIZADO")).thenReturn("FOR");
-
-        rimacResponse.getPayload().setPrimaBrutaSinIgv(new Double("567.46"));
-
         mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
 
         assertNotNull(apxRequest.getId());
@@ -1238,7 +1233,6 @@ public class MapperHelperTest {
         assertNotNull(apxRequest.getStatus().getId());
         assertNotNull(apxRequest.getStatus().getDescription());
         assertNotNull(apxRequest.getHolder().getIdentityDocument().getDocumentNumber());
-        assertNotNull(apxRequest.getTotalAmountWithoutTax());
 
         assertEquals(asoResponse.getData().getId(), apxRequest.getId());
         assertEquals(requiredFieldsEmissionDao.getInsuranceProductDesc(), apxRequest.getProductDescription());
@@ -1349,8 +1343,6 @@ public class MapperHelperTest {
         assertNull(apxRequest.getFirstInstallment().getExchangeRate());
         assertEquals("", apxRequest.getParticipants().get(1).getId());
         assertEquals("", apxRequest.getParticipants().get(1).getCustomerId());
-
-
 
     }
 
@@ -1580,8 +1572,10 @@ public class MapperHelperTest {
 
         mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
 
-        assertNotNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax());
-        assertNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax().getAmount());
+        assertNull(apxRequest.getInstallmentPlan().getPaymentWithoutTax());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax().getCurrency());
+        assertNotNull(apxRequest.getTotalAmountWithoutTax().getAmount());
     }
 
     @Test

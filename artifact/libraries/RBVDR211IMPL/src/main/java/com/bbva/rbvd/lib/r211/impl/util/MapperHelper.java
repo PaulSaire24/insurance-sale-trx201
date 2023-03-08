@@ -965,16 +965,24 @@ public class MapperHelper {
             responseBody.setExternalPolicyNumber(rimacResponse.getPayload().getNumeroPoliza());
 
             //added without IGV
-            PaymentAmountDTO paymentAmountWithOutIGV = new PaymentAmountDTO();
-            paymentAmountWithOutIGV.setAmount(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMontoSinIgv());
-            paymentAmountWithOutIGV.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
+            PaymentAmountDTO paymentAmountWithOutIGV = null;
+
+            if(Objects.nonNull(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMontoSinIgv()) &&
+                    Objects.nonNull(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda())){
+                paymentAmountWithOutIGV = new PaymentAmountDTO();
+                paymentAmountWithOutIGV.setAmount(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMontoSinIgv());
+                paymentAmountWithOutIGV.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
+            }
             responseBody.getInstallmentPlan().setPaymentWithoutTax(paymentAmountWithOutIGV);
 
-            TotalAmountDTO totalAmountDTO = new TotalAmountDTO();
-            totalAmountDTO.setAmount(
-                    Objects.nonNull(rimacResponse.getPayload().getPrimaBrutaSinIgv()) ? rimacResponse.getPayload().getPrimaBrutaSinIgv()
-                            : 0.0);
-            totalAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
+            TotalAmountDTO totalAmountDTO = null;
+
+            if(Objects.nonNull(rimacResponse.getPayload().getPrimaBrutaSinIgv()) &&
+                Objects.nonNull(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda())){
+                totalAmountDTO = new TotalAmountDTO();
+                totalAmountDTO.setAmount(rimacResponse.getPayload().getPrimaBrutaSinIgv());
+                totalAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
+            }
             responseBody.setTotalAmountWithoutTax(totalAmountDTO);
 
         } else {
