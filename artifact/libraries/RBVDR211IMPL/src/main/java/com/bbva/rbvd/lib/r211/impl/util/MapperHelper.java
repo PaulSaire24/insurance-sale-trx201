@@ -965,22 +965,38 @@ public class MapperHelper {
             responseBody.setExternalPolicyNumber(rimacResponse.getPayload().getNumeroPoliza());
 
             //added without IGV
-            PaymentAmountDTO paymentAmountWithOutIGV = new PaymentAmountDTO();
-            paymentAmountWithOutIGV.setAmount(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMontoSinIgv());
-            paymentAmountWithOutIGV.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
-            responseBody.getInstallmentPlan().setPaymentWithoutTax(paymentAmountWithOutIGV);
-
-            TotalAmountDTO totalAmountDTO = new TotalAmountDTO();
-            totalAmountDTO.setAmount(
-                    Objects.nonNull(rimacResponse.getPayload().getPrimaBrutaSinIgv()) ? rimacResponse.getPayload().getPrimaBrutaSinIgv()
-                            : 0.0);
-            totalAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
-            responseBody.setTotalAmountWithoutTax(totalAmountDTO);
+            responseBody.getInstallmentPlan().setPaymentWithoutTax(getAmountWithoutIgvInResponseRimac(rimacResponse));
+            responseBody.setTotalAmountWithoutTax(getTotalAmountWithoutTaxInResponseRimac(rimacResponse));
 
         } else {
             responseBody.getValidityPeriod().setEndDate(responseBody.getInstallmentPlan().getMaturityDate());
             responseBody.getInsuranceCompany().setProductId("");
         }
+    }
+
+    private PaymentAmountDTO getAmountWithoutIgvInResponseRimac(EmisionBO rimacResponse){
+        PaymentAmountDTO paymentAmountDTO = null;
+
+        if(Objects.nonNull(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMontoSinIgv()) &&
+                Objects.nonNull(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda())){
+            paymentAmountDTO = new PaymentAmountDTO();
+            paymentAmountDTO.setAmount(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMontoSinIgv());
+            paymentAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
+        }
+
+        return paymentAmountDTO;
+    }
+
+    private TotalAmountDTO getTotalAmountWithoutTaxInResponseRimac(EmisionBO rimacResponse){
+        TotalAmountDTO totalAmountDTO = null;
+
+        if(Objects.nonNull(rimacResponse.getPayload().getPrimaBrutaSinIgv()) &&
+                Objects.nonNull(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda())){
+            totalAmountDTO = new TotalAmountDTO();
+            totalAmountDTO.setAmount(rimacResponse.getPayload().getPrimaBrutaSinIgv());
+            totalAmountDTO.setCurrency(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getMoneda());
+        }
+        return totalAmountDTO;
     }
 
     public CreatedInsrcEventDTO buildCreatedInsuranceEventObject(PolicyDTO policy) {
