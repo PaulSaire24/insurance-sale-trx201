@@ -4,7 +4,6 @@
 	<bean id="rbvdR211" class="com.bbva.rbvd.lib.r211.impl.RBVDR211Impl" parent="rbvdR211Abstract">
 		<property name="rbvdR201" ref="rbvdR201"/>
 		<property name="mapperHelper" ref="mapperHelper"/>
-		<property name="pisdR021" ref="pisdR021"/>
 		<property name="pisdR012" ref="pisdR012"/>
 		<property name="ksmkR002" ref="ksmkR002"/>
 	</bean>

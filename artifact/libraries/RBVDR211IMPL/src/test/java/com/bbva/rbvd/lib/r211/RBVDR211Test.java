@@ -17,7 +17,6 @@ import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 import com.bbva.pisd.lib.r012.PISDR012;
-import com.bbva.pisd.lib.r021.PISDR021;
 
 import com.bbva.rbvd.dto.insrncsale.aso.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -82,7 +81,6 @@ public class RBVDR211Test {
 	private ApplicationConfigurationService applicationConfigurationService;
 	private RBVDR201 rbvdr201;
 	private PISDR012 pisdR012;
-	private PISDR021 pisdR021;
 	private KSMKR002 ksmkr002;
 	private MapperHelper mapperHelper;
 
@@ -113,14 +111,12 @@ public class RBVDR211Test {
 		applicationConfigurationService = mock(ApplicationConfigurationService.class);
 		rbvdr201 = mock(RBVDR201.class);
 		pisdR012 = mock(PISDR012.class);
-		pisdR021 = mock(PISDR021.class);
 		ksmkr002 = mock(KSMKR002.class);
 		mapperHelper = mock(MapperHelper.class);
 
 		rbvdr211.setApplicationConfigurationService(applicationConfigurationService);
 		rbvdr211.setRbvdR201(rbvdr201);
 		rbvdr211.setPisdR012(pisdR012);
-		rbvdr211.setPisdR021(pisdR021);
 		rbvdr211.setKsmkR002(ksmkr002);
 		rbvdr211.setMapperHelper(mapperHelper);
 
@@ -492,10 +488,6 @@ public class RBVDR211Test {
 		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
 		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
 
-		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
-
-		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(responseGetHomeRiskDirectionService);
-
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
@@ -531,10 +523,6 @@ public class RBVDR211Test {
 		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
 
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
-
-		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
-
-		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(responseGetHomeRiskDirectionService);
 
 		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(null);
 
@@ -594,10 +582,6 @@ public class RBVDR211Test {
 
 		customerList.setData(new ArrayList<>());
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
-
-		when(pisdR021.executeGetHomeInfoForEmissionService(any())).thenReturn(responseGetHomeInfoForEmissionService);
-
-		when(pisdR021.executeGetHomeRiskDirection(anyString())).thenReturn(responseGetHomeRiskDirectionService);
 
 		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(null);
 
