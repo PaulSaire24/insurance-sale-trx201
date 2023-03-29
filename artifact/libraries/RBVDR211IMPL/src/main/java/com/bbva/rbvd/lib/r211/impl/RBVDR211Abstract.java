@@ -4,7 +4,6 @@ import com.bbva.elara.configuration.manager.application.ApplicationConfiguration
 import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.ksmk.lib.r002.KSMKR002;
 import com.bbva.pisd.lib.r012.PISDR012;
-import com.bbva.pisd.lib.r021.PISDR021;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.RBVDR211;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
@@ -17,8 +16,6 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 	protected ApplicationConfigurationService applicationConfigurationService;
 
 	protected RBVDR201 rbvdR201;
-
-	protected PISDR021 pisdR021;
 
 	protected PISDR012 pisdR012;
 
@@ -39,13 +36,6 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 	*/
 	public void setRbvdR201(RBVDR201 rbvdR201) {
 		this.rbvdR201 = rbvdR201;
-	}
-
-	/**
-	* @param pisdR021 the this.pisdR021 to set
-	*/
-	public void setPisdR021(PISDR021 pisdR021) {
-		this.pisdR021 = pisdR021;
 	}
 
 	/**

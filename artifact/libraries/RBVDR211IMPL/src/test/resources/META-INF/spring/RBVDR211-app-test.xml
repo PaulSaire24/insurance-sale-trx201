@@ -17,9 +17,6 @@
 	<bean id="mapperHelper" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.rbvd.lib.r211.impl.util.MapperHelper"/>
 	</bean>
-	<bean id="pisdR021" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="com.bbva.pisd.lib.r021.PISDR021"/>
-	</bean>
 	<bean id="pisdR012" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.pisd.lib.r012.PISDR012"/>
 	</bean>
