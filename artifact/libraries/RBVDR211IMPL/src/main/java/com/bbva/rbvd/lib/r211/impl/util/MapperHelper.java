@@ -16,7 +16,6 @@ import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
 import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
 import com.bbva.rbvd.dto.insrncsale.aso.IdentityDocumentASO;
 
-import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
 import com.bbva.rbvd.dto.insrncsale.aso.PaymentAmountASO;
@@ -1165,21 +1164,6 @@ public class MapperHelper {
         return contactDetailForEventInspection;
     }
 
-    public CreateEmailASO buildCreateEmailRequestFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection, String legalName){
-        ContactDetailsBO emailContact = customerInfo.getData().get(0).getContactDetails()
-                .stream().filter(p -> EMAIL_VALUE.equalsIgnoreCase(p.getContactType().getId())).findFirst().orElse(new ContactDetailsBO());
-        String recipientAddress = BooleanUtils.toString(StringUtils.isEmpty(emailContact.getContact())
-                , responseBody.getHolder().getContactDetails().get(0).getContact().getAddress()
-                , emailContact.getContact());
-        CreateEmailASO email = new CreateEmailASO();
-        email.setApplicationId(TEMPLATE_EMAIL_CODE_FLEXIPYME.concat(format.format(new Date())));
-        email.setRecipient("0,".concat(recipientAddress));
-        email.setSubject(applicationConfigurationService.getProperty(MAIL_SUBJECT_FLEXIPYME));
-        String[] data = getMailBodyDataFlexipyme(emissionDao, responseBody, policyNumber, customerInfo, homeInfo, riskDirection, legalName);
-        email.setBody(getEmailBodySructure2(data,TEMPLATE_EMAIL_CODE_FLEXIPYME));
-        email.setSender(applicationConfigurationService.getProperty(MAIL_SENDER_FLEXIPYME));
-        return email;
-    }
 
     private ExchangeRateDTO validateExchangeRate(ExchangeRateASO exchangeRateASO) {
         ExchangeRateDTO exchangeRate = null;
@@ -1203,80 +1187,7 @@ public class MapperHelper {
         return exchangeRate;
     }
 
-    private String[] getMailBodyDataFlexipyme(RequiredFieldsEmissionDAO emissionDao, PolicyDTO responseBody, String policyNumber, CustomerListASO customerInfo, SimltInsuredHousingDAO homeInfo, String riskDirection, String legalName) {
-        String[] bodyData = new String[13];
 
-        if("P".equals(homeInfo.getHousingType())) {
-            bodyData[0] = ObjectUtils.defaultIfNull(legalName, setName(customerInfo)) ;
-            bodyData[2] = HolderTypeEnum.OWNER.getName();
-        }else{
-            bodyData[0] = setName(customerInfo);
-            bodyData[2] = HolderTypeEnum.TENANT.getName();
-        }
-        bodyData[1] = responseBody.getProductPlan().getDescription();
-        bodyData[3] = riskDirection;
-        bodyData[4] = homeInfo.getPropSeniorityYearsNumber().toString();
-        bodyData[5] = homeInfo.getFloorNumber().toString();
-        bodyData[6] = getContractNumber(responseBody.getId());
-        bodyData[7] = policyNumber;
-        Locale locale = new Locale ("en", "UK");
-        NumberFormat numberFormat = NumberFormat.getInstance (locale);
-        bodyData[8] = Objects.nonNull(responseBody.getInsuredAmount().getAmount()) ? numberFormat.format((responseBody.getInsuredAmount().getAmount())) : "";
-        bodyData[9] = emissionDao.getPaymentFrequencyName();
-        bodyData[10] = numberFormat.format(responseBody.getFirstInstallment().getPaymentAmount().getAmount());
-        if (responseBody.getParticipants() != null) {
-            ParticipantDTO legalRepre = responseBody.getParticipants().stream().filter(
-                            p -> TAG_LEGAL_REPRESENTATIVE.equalsIgnoreCase(p.getParticipantType().getId()))
-                    .findFirst().orElse(null);
-            if (legalRepre != null && legalRepre.getIdentityDocument() != null){
-                bodyData[11] = legalRepre.getIdentityDocument().getDocumentType().getId();
-                bodyData[12] = legalRepre.getIdentityDocument().getNumber();
-            }else {
-                bodyData[11] = NONE;
-                bodyData[12] = NONE;
-            }
-        }
-
-        return bodyData;
-    }
-
-    private String getContractNumber(String id) {
-        StringBuilder contract = new StringBuilder();
-        contract.append(id, 0, 4).append("-")
-                .append(id, 4, 8).append("-")
-                .append(id, 8, 10).append("-")
-                .append(id.substring(10));
-        return contract.toString();
-    }
-
-    private String setName(CustomerListASO responseListCustomers){
-        StringBuilder name = new StringBuilder();
-        if(Objects.nonNull(responseListCustomers)) {
-            name.append(responseListCustomers.getData().get(0).getFirstName()).append(" ").append(Strings.nullToEmpty( responseListCustomers.getData().get(0).getLastName())).append(" ")
-                    .append(Strings.nullToEmpty( responseListCustomers.getData().get(0).getSecondLastName())).toString();
-            return validateSN(name.toString());
-        }
-        return "";
-    }
-
-    private String getEmailBodySructure2(String[] data, String emailCode) {
-        StringBuilder body = new StringBuilder();
-        for(int i = 0; i < data.length; i++) {
-            body.append(generateCode(String.valueOf(i+1))).append(data[i]).append("|");
-        }
-        body.append(emailCode);
-        return body.toString();
-    }
-
-    private String generateCode(String index) {
-        StringBuilder code = new StringBuilder();
-        int length = 3 - index.length();
-        for (int i = 0; i < length; i++) {
-            code.append("0");
-        }
-        code.append(index);
-        return code.toString();
-    }
 
     private Date convertLocaldateToDate(LocalDate localDate) {
         return localDate.toDateTimeAtStartOfDay().toDate();

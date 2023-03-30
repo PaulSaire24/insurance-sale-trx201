@@ -80,6 +80,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211Impl.class);
 
 	private static final String CHANNEL_GLOMO = "pisd.channel.glomo.aap";
+	private static final String CHANNEL_CONTACT_DETAIL = "pisd.channel.contact.detail.aap";
 	private static final String BASE64_URL = "B64URL";
 	private static final String APPNAME = "apx-pe";
 	private static final String INPUT_CONTEXT_CRYPTO_CONTACTDETAIL = "operation=DO;type=contactDetailId;origin=ASO;endpoint=ASO;securityLevel=5";
@@ -391,10 +392,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		if( !(picCodeValue.equals(requestBody.getSaleChannelId()) || "TM".equals(requestBody.getSaleChannelId())) ) {
 
 			LOGGER.info("***** It's digital sale!! *****");
+			String appGlomo = this.applicationConfigurationService.getProperty(CHANNEL_GLOMO);
+			String appContactDetail = this.applicationConfigurationService.getProperty(CHANNEL_CONTACT_DETAIL);
+			String[] appSearchContactDetail = Objects.isNull(appContactDetail) ? StringUtils.EMPTY.split(";") : appContactDetail.split(";");
 
-			String glomoAap = this.applicationConfigurationService.getProperty(CHANNEL_GLOMO);
-
-			if(glomoAap.equals(requestBody.getAap())) {
+			if(appGlomo.equalsIgnoreCase(requestBody.getAap()) || Arrays.stream(appSearchContactDetail).anyMatch(value -> value.equalsIgnoreCase(requestBody.getAap()))){
 				LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | It's GLOMO channel!! *****");
 				this.getContactDetails(requestBody);
 			}
