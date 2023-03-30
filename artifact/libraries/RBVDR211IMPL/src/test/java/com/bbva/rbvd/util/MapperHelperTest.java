@@ -15,7 +15,6 @@ import com.bbva.pisd.dto.insurance.mock.MockDTO;
 
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
-import com.bbva.rbvd.dto.homeinsrc.dao.SimltInsuredHousingDAO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 
@@ -1346,51 +1345,6 @@ public class MapperHelperTest {
 
     }
 
-    @Test
-    public void buildCreateEmailRequestFlexipyme_OK() {
-        apxRequest.setId("00110057794000023694");
-        apxRequest.getProductPlan().setDescription("PLAN BASICO");
-
-        when(requiredFieldsEmissionDao.getVehicleLicenseId()).thenReturn(null);
-        when(requiredFieldsEmissionDao.getGasConversionType()).thenReturn("N");
-        when(requiredFieldsEmissionDao.getVehicleCirculationType()).thenReturn("P");
-
-        SimltInsuredHousingDAO emissionDAO = new SimltInsuredHousingDAO();
-        emissionDAO.setDepartmentName("LIMA");
-        emissionDAO.setProvinceName("LIMA");
-        emissionDAO.setDistrictName("LINCE");
-        emissionDAO.setHousingType("P");
-        emissionDAO.setAreaPropertyNumber(new BigDecimal(100));
-        emissionDAO.setPropSeniorityYearsNumber(new BigDecimal(10));
-        emissionDAO.setFloorNumber(new BigDecimal(2));
-        apxRequest.getFirstInstallment().getPaymentAmount().setCurrency("PEN");
-        apxRequest.getProductPlan().setDescription("PLAN CONTENIDO");
-        apxRequest.getProductPlan().setId("04");
-        apxRequest.setParticipants(null);
-        CreateEmailASO email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
-                rimacResponse.getPayload().getNumeroPoliza(), customerList,
-                emissionDAO, "riskDirection", "Empresa S.A.");
-        assertNotNull(email.getBody());
-
-        emissionDAO.setHousingType("I");
-        ParticipantDTO legalParticipant = new ParticipantDTO();
-        ParticipantTypeDTO participantType = new ParticipantTypeDTO();
-        participantType.setId("LEGAL_REPRESENTATIVE");
-        legalParticipant.setParticipantType(participantType);
-        apxRequest.setParticipants(Collections.singletonList(legalParticipant));
-        email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
-                rimacResponse.getPayload().getNumeroPoliza(), customerList,
-                emissionDAO, "riskDirection", null);
-        assertNotNull(email.getBody());
-
-        IdentityDocumentDTO document = new IdentityDocumentDTO();
-        document.setDocumentType(new DocumentTypeDTO());
-        legalParticipant.setIdentityDocument(document);
-        email = mapperHelper.buildCreateEmailRequestFlexipyme(requiredFieldsEmissionDao, apxRequest,
-                rimacResponse.getPayload().getNumeroPoliza(), customerList,
-                emissionDAO, "riskDirection", null);
-        assertNotNull(email.getBody());
-    }
 
     @Test
     public void getPersonTypeTest_OK() {

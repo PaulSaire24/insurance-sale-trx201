@@ -149,6 +149,7 @@ public class RBVDR211Test {
 		argumentsUpdateEndorsementTable.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), "957968");
 		argumentsUpdateEndorsementTable.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), "0000001102");
 
+		when(this.applicationConfigurationService.getProperty("pisd.channel.contact.detail.aap")).thenReturn("13000013");
 		when(this.applicationConfigurationService.getProperty("pisd.channel.glomo.aap")).thenReturn("13000013");
 		when(this.applicationConfigurationService.getProperty("telemarketing.code")).thenReturn("7794");
 		when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
@@ -256,6 +257,7 @@ public class RBVDR211Test {
 		requestBody.getHolder().getContactDetails().get(1).setContact(null);
 		requestBody.setAap("13000013");
 
+		when(applicationConfigurationService.getProperty("pisd.channel.contact.detail.aap")).thenReturn("13000013");
 		when(applicationConfigurationService.getProperty("pisd.channel.glomo.aap")).thenReturn("13000013");
 
 		GetContactDetailsASO contactDetailsResponse = mockDTO.getContactDetailsResponse();
