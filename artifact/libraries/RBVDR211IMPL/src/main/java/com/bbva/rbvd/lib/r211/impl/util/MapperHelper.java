@@ -562,9 +562,9 @@ public class MapperHelper {
         receiptList.add(firstReceipt);
 
         if("MONTHLY".equals(requestBody.getInstallmentPlan().getPeriod().getId()) &&
-                requestBody.getProductId() != RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue() &&
-                requestBody.getProductId() != RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue() &&
-                requestBody.getProductId() != RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue()) {
+                requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue()) &&
+                requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue()) &&
+                requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue())) {
             generateMonthlyReceipts(firstReceipt, receiptList);
         }
 
@@ -902,7 +902,9 @@ public class MapperHelper {
         }else if(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getPeriodicidad().equalsIgnoreCase("MENSUAL")){
             fechanextpago = LocalDate.parse(rimacResponse.getPayload().getFechaInicioVigencia()).plusMonths(1);
         }
-        contractDAO.setPeriodNextPaymentDate(fechanextpago.toString());
+        if (nonNull(fechanextpago)) {
+            contractDAO.setPeriodNextPaymentDate(fechanextpago.toString());
+        }
 
         contractDAO.setInsuranceCompanyProductId(insuranceCompanyProductId);
 
