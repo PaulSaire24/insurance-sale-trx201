@@ -4,6 +4,7 @@ import com.bbva.elara.domain.transaction.RequestHeaderParamsName;
 import com.bbva.elara.domain.transaction.Severity;
 import com.bbva.elara.domain.transaction.response.HttpResponseCode;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r211.RBVDR211;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +77,15 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		requestBody.setHeaderOperationDate(headerOperationDate);
 		requestBody.setHeaderOperationTime(operationTime);
 
-		//product validation to decide flow execution
-		PolicyDTO responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		PolicyDTO responseBody = null;
+
+		if(requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue()) ||
+				requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue()) ||
+				requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_3.getValue())){
+			responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		}else{
+			responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		}
 
 		if(Objects.nonNull(responseBody)) {
 			this.setId(responseBody.getId());

@@ -1574,4 +1574,120 @@ public class MapperHelperTest {
         assertEquals(new Double("757.9424"),apxRequest.getTotalAmountWithoutTax().getAmount());
     }
 
+    @Test
+    public void buildInsuranceCtrReceipt_ProductLife() {
+        apxRequest.setProductId("840");
+        List<InsuranceCtrReceiptsDAO> validation = mapperHelper.buildInsuranceCtrReceipts(asoResponse, apxRequest);
+
+        assertNotNull(validation.get(0).getEntityId());
+        assertNotNull(validation.get(0).getBranchId());
+        assertNotNull(validation.get(0).getIntAccountId());
+        assertNotNull(validation.get(0).getPolicyReceiptId());
+        assertNotNull(validation.get(0).getInsuranceCompanyId());
+        assertNotNull(validation.get(0).getPremiumPaymentReceiptAmount());
+        assertNotNull(validation.get(0).getCurrencyId());
+        assertNotNull(validation.get(0).getReceiptStartDate());
+        assertNotNull(validation.get(0).getReceiptEndDate());
+        assertNotNull(validation.get(0).getReceiptExpirationDate());
+        assertNotNull(validation.get(0).getReceiptCollectionStatusType());
+        assertNotNull(validation.get(0).getPaymentMethodType());
+        assertNotNull(validation.get(0).getDebitAccountId());
+        assertNotNull(validation.get(0).getDebitChannelType());
+        assertNotNull(validation.get(0).getChargeAttemptsNumber());
+        assertNotNull(validation.get(0).getInsrncCoReceiptStatusType());
+        assertNotNull(validation.get(0).getReceiptStatusType());
+        assertNotNull(validation.get(0).getCreationUserId());
+        assertNotNull(validation.get(0).getUserAuditId());
+        assertNotNull(validation.get(0).getManagementBranchId());
+        assertNotNull(validation.get(0).getVariablePremiumAmount());
+        assertNotNull(validation.get(0).getFixPremiumAmount());
+        assertNotNull(validation.get(0).getSettlementVarPremiumAmount());
+        assertNotNull(validation.get(0).getSettlementFixPremiumAmount());
+        assertNotNull(validation.get(0).getLastChangeBranchId());
+        assertNotNull(validation.get(0).getGlBranchId());
+
+        assertEquals("0011", validation.get(0).getEntityId());
+        assertEquals("0241", validation.get(0).getBranchId());
+        assertEquals("0000001102", validation.get(0).getIntAccountId());
+        assertEquals(BigDecimal.valueOf(1), validation.get(0).getPolicyReceiptId());
+        assertEquals(BigDecimal.valueOf(1), validation.get(0).getInsuranceCompanyId());
+        assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.get(0).getPremiumPaymentReceiptAmount());
+        assertEquals(BigDecimal.valueOf(asoResponse.getData()
+                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getRatio()), validation.get(0).getFixingExchangeRateAmount());
+        assertEquals(BigDecimal.valueOf(asoResponse.getData()
+                .getFirstInstallment().getExchangeRate().getDetail().getFactor().getValue()), validation.get(0).getPremiumCurrencyExchAmount());
+        assertEquals(apxRequest.getFirstInstallment().getPaymentAmount().getCurrency(), validation.get(0).getCurrencyId());
+        assertEquals("01/01/0001", validation.get(0).getReceiptStartDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptEndDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptIssueDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptCollectionDate());
+        assertEquals("01/01/0001", validation.get(0).getReceiptsTransmissionDate());
+        //assertEquals("02/06/2021", validation.get(0).getReceiptExpirationDate());
+        assertEquals("00", validation.get(0).getReceiptCollectionStatusType());
+        assertEquals("T", validation.get(0).getPaymentMethodType());
+        assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId(), validation.get(0).getDebitAccountId());
+        assertEquals(apxRequest.getSaleChannelId(), validation.get(0).getDebitChannelType());
+        assertEquals(BigDecimal.valueOf(0), validation.get(0).getChargeAttemptsNumber());
+        assertEquals("INC", validation.get(0).getInsrncCoReceiptStatusType());
+        assertEquals("INC", validation.get(0).getReceiptStatusType());
+        assertEquals(apxRequest.getCreationUser(), validation.get(0).getCreationUserId());
+        assertEquals(apxRequest.getUserAudit(), validation.get(0).getUserAuditId());
+        assertEquals(apxRequest.getBank().getBranch().getId(), validation.get(0).getManagementBranchId());
+        assertEquals(BigDecimal.valueOf(0), validation.get(0).getVariablePremiumAmount());
+        assertEquals(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()), validation.get(0).getFixPremiumAmount());
+        assertEquals(BigDecimal.valueOf(0), validation.get(0).getSettlementVarPremiumAmount());
+        assertEquals(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()), validation.get(0).getSettlementFixPremiumAmount());
+        assertEquals(apxRequest.getBank().getBranch().getId(), validation.get(0).getLastChangeBranchId());
+        assertEquals("0241", validation.get(0).getGlBranchId());
+        assertEquals(1,validation.size());
+
+    }
+    @Test
+    public void testGenerateRequestAddParticipants(){
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+        AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, customerList, requiredFieldsEmisionBDResponse);
+        assertNotNull(validation);
+        assertEquals(3, validation.getPayload().getPersona().size());
+    }
+
+    @Test
+    public void testGenerateRimacRequestLife(){
+        EmisionBO validation = this.mapperHelper.generateRimacRequestLife("EASYYES",
+                "TARJETA||****************1234||PEN", apxRequest.getSaleChannelId(), asoResponse.getData().getId(),
+                apxRequest.getBank().getBranch().getId());
+        assertNotNull(validation);
+        assertNotNull(validation.getPayload().getProducto());
+        assertNotNull(validation.getPayload().getDatosParticulares());
+        assertEquals(4, validation.getPayload().getDatosParticulares().size());
+        assertEquals(apxRequest.getSaleChannelId(), validation.getPayload().getDatosParticulares().get(0).getValor());
+        assertEquals("TARJETA||****************1234||PEN", validation.getPayload().getDatosParticulares().get(1).getValor());
+        assertEquals(asoResponse.getData().getId(), validation.getPayload().getDatosParticulares().get(2).getValor());
+        assertEquals(apxRequest.getBank().getBranch().getId(), validation.getPayload().getDatosParticulares().get(3).getValor());
+    }
+
+    @Test
+    public void testGetRimacContractInformationLifeEasyYes() throws IOException{
+        EmisionBO rimacResponseLife = mockData.getEmissionRimacResponseLife();
+        rimacResponseLife.getPayload().getCuotasFinanciamiento().get(0).setPeriodicidad("Mensual");
+        rimacResponseLife.getPayload().setCodProducto("1234");
+        Map<String, Object> validation = this.mapperHelper.getRimacContractInformationLifeEasyYes(rimacResponseLife,
+                asoResponse.getData().getId(), rimacResponseLife.getPayload().getCodProducto());
+        assertNotNull(validation);
+        assertEquals(rimacResponseLife.getPayload().getNumeroPoliza(),validation.get(RBVDProperties.FIELD_POLICY_ID.getValue()));
+        assertEquals(rimacResponseLife.getPayload().getFechaFinVigencia(),validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue()));
+        assertEquals(rimacResponseLife.getPayload().getFechaFinVigencia(),validation.get(RBVDProperties.FIELD_INSURANCE_POLICY_END_DATE.getValue()));
+        assertEquals(rimacResponseLife.getPayload().getFechaFinVigencia(),validation.get(RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue()));
+        assertEquals("2023-05-25", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
+        assertEquals("PEN", validation.get(RBVDProperties.FIELD_INSRNC_CO_CONTRACT_STATUS_TYPE.getValue()));
+        assertEquals(rimacResponseLife.getPayload().getCodProducto(), validation.get(RBVDProperties.FIELD_INSURANCE_COMPANY_PRODUCT_ID.getValue()));
+        assertEquals(rimacResponseLife.getPayload().getCodProducto(), validation.get(RBVDProperties.FIELD_INSURANCE_COMPANY_PRODUCT_ID.getValue()));
+
+        rimacResponseLife.getPayload().getCuotasFinanciamiento().get(0).setPeriodicidad("Anual");
+        validation = this.mapperHelper.getRimacContractInformationLifeEasyYes(rimacResponseLife,
+                asoResponse.getData().getId(), rimacResponseLife.getPayload().getCodProducto());
+        assertEquals("2024-04-25", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
+    }
+
 }

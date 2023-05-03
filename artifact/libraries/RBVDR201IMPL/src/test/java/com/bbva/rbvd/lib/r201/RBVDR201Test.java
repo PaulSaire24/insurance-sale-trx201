@@ -25,6 +25,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
@@ -89,7 +90,7 @@ public class RBVDR201Test {
 	private RimacUrlForker rimacUrlForker;
 	private CustomerListASO customerList;
 	private MockDTO mockDTO;
-	
+
 	@Before
 	public void setUp() throws Exception{
 		ThreadContext.set(new Context());
@@ -395,5 +396,55 @@ public class RBVDR201Test {
 		assertNotNull(validation);
 		assertEquals(0, validation.intValue());
 	}
+
+	@Test
+	public void testExecuteAddParticipantsService_OK() throws IOException{
+
+		AgregarTerceroBO request = mockData.getAddParticipantsRimacRequest();
+		AgregarTerceroBO response = mockData.getAddParticipantsRimacResponse();
+
+		when(this.rimacUrlForker.generateKeyAddParticipants(anyString())).thenReturn("key.property");
+		when(this.rimacUrlForker.generateUriAddParticipants(anyString(),anyString())).thenReturn("value-key-1");
+		when(this.externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenReturn(response);
+
+		AgregarTerceroBO validation = this.rbvdR201.executeAddParticipantsService(request,"quotationId","840","traceId");
+
+		assertNotNull(validation);
+		assertNotNull(validation.getPayload());
+		assertNotNull(validation.getPayload().getStatus());
+		assertNotNull(validation.getPayload().getMensaje());
+		assertEquals("1",validation.getPayload().getStatus());
+		assertNotNull(validation.getPayload().getTerceros());
+		assertEquals(3,validation.getPayload().getTerceros().size());
+		assertNotNull(validation.getPayload().getTerceros().get(0));
+		assertNotNull(validation.getPayload().getTerceros().get(1));
+		assertNotNull(validation.getPayload().getTerceros().get(2));
+		assertEquals(request.getPayload().getPersona().get(0).getNombreVia(),validation.getPayload().getTerceros().get(0).getNombreVia());
+		assertEquals(request.getPayload().getPersona().get(0).getTipoDocumento(),validation.getPayload().getTerceros().get(0).getTipoDocumento());
+		assertEquals(request.getPayload().getPersona().get(0).getNroDocumento(),validation.getPayload().getTerceros().get(0).getNumeroDocumento());
+		assertEquals(request.getPayload().getPersona().get(0).getRol(),validation.getPayload().getTerceros().get(0).getRol());
+		assertEquals(request.getPayload().getPersona().get(1).getNombreVia(),validation.getPayload().getTerceros().get(1).getNombreVia());
+		assertEquals(request.getPayload().getPersona().get(1).getTipoDocumento(),validation.getPayload().getTerceros().get(1).getTipoDocumento());
+		assertEquals(request.getPayload().getPersona().get(1).getNroDocumento(),validation.getPayload().getTerceros().get(1).getNumeroDocumento());
+		assertEquals(request.getPayload().getPersona().get(1).getRol(),validation.getPayload().getTerceros().get(1).getRol());
+		assertEquals(request.getPayload().getPersona().get(2).getNombreVia(),validation.getPayload().getTerceros().get(2).getNombreVia());
+		assertEquals(request.getPayload().getPersona().get(2).getTipoDocumento(),validation.getPayload().getTerceros().get(2).getTipoDocumento());
+		assertEquals(request.getPayload().getPersona().get(2).getNroDocumento(),validation.getPayload().getTerceros().get(2).getNumeroDocumento());
+		assertEquals(request.getPayload().getPersona().get(2).getRol(),validation.getPayload().getTerceros().get(2).getRol());
+		assertEquals(0,validation.getPayload().getBeneficiario().size());
+	}
+	@Test
+	public void testExecuteAddParticipantsServiceWithRestClientException() {
+		LOGGER.info("RBVDR201Test - Executing testExecuteAddParticipantsServiceWithRestClientException...");
+
+		String responseBody = "{\"error\":{\"code\":\"VIDA001\",\"message\":\"ErroralValidarDatos.\",\"details\":[\"\\\"persona[0].celular\\\"esrequerido\"],\"httpStatus\":400}}";
+		when(rimacUrlForker.generateUriAddParticipants(anyString(),anyString())).thenReturn("any-value");
+		when(rimacUrlForker.generateKeyAddParticipants(anyString())).thenReturn("any-value");
+		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
+
+		AgregarTerceroBO validation = this.rbvdR201.executeAddParticipantsService(new AgregarTerceroBO(),"quotationId","productId","traceId");
+		assertNull(validation);
+	}
+
 
 }

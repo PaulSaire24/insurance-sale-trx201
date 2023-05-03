@@ -86,8 +86,10 @@ public class RBVDT20101PETransactionTest {
 
 		this.addParameter("isDataTreatment", true);
 		this.addParameter("hasAcceptedContract", true);
+		this.addParameter("productId", "830");
 
 		mockData = MockData.getInstance();
+
 	}
 
 	@Test
@@ -124,6 +126,23 @@ public class RBVDT20101PETransactionTest {
 	private void addParameter(final String parameter, final Object value) {
 		final TransactionParameter tParameter = new TransactionParameter(parameter, value);
 		transaction.getContext().getParameterList().put(parameter, tParameter);
+	}
+
+	@Test
+	public void executeEasyLife() throws IOException {
+		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
+		this.addParameter("productId", "840");
+		simulateResponse.setOperationDate(new Date());
+
+		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(anyObject())).thenReturn(simulateResponse);
+
+		this.transaction.getContext().getParameterList().forEach(
+				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)
+		);
+
+		this.transaction.execute();
+
+		assertTrue(this.transaction.getAdviceList().isEmpty());
 	}
 
 }

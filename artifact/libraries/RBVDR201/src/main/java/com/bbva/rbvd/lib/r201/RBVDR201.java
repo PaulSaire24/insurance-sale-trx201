@@ -10,6 +10,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
@@ -23,5 +24,6 @@ public interface RBVDR201 {
 	ListBusinessesASO executeGetListBusinesses(String customerId, String expands);
 	String executeCypherService(CypherASO input);
 	Integer executePutEventUpsilonService(CreatedInsrcEventDTO createdInsuranceEvent);
+	public AgregarTerceroBO executeAddParticipantsService(AgregarTerceroBO requestBody, String quotationId, String productId, String traceId);
 
 }

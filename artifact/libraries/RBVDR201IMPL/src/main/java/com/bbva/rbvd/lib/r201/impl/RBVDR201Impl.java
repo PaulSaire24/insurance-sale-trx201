@@ -14,6 +14,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
@@ -216,6 +217,36 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			return 0;
 		}
 
+	}
+
+	@Override
+	public AgregarTerceroBO executeAddParticipantsService(AgregarTerceroBO requestBody, String quotationId, String productId, String traceId) {
+		LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService START *****");
+		String jsonString = this.getRequestBodyAsJsonFormat(requestBody);
+
+		LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Param: {}", jsonString);
+
+		AgregarTerceroBO responseBody = null;
+
+		SignatureAWS signature = this.pisdR014.executeSignatureConstruction(jsonString, HttpMethod.PATCH.toString(),
+				this.rimacUrlForker.generateUriAddParticipants(quotationId,productId), null, traceId);
+
+		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeadersAWS(signature));
+
+		Map<String, String> uriParam = new HashMap<>();
+		uriParam.put("cotizacion", quotationId);
+
+		try {
+			responseBody = this.externalApiConnector.postForObject(this.rimacUrlForker.generateKeyAddParticipants(productId), entity,
+					AgregarTerceroBO.class, uriParam);
+			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Response: {}", this.getRequestBodyAsJsonFormat(responseBody));
+			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService END *****");
+		} catch (RestClientException ex) {
+			this.addAdviceWithDescription("RBVD10094933",ex.getMessage());
+			this.addAdviceWithDescription("RBVD10094944","Error al devolver informacion del Servicio de Agregar Terceros de Rimac");
+			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Exception: {}", ex.getMessage());
+		}
+		return responseBody;
 	}
 
 	private String getRequestBodyAsJsonFormat(Object requestBody) {
