@@ -76,6 +76,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		requestBody.setHeaderOperationDate(headerOperationDate);
 		requestBody.setHeaderOperationTime(operationTime);
 
+		//product validation to decide flow execution
 		PolicyDTO responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		if(Objects.nonNull(responseBody)) {
