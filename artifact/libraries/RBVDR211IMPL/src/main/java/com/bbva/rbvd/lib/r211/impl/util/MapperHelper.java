@@ -564,7 +564,7 @@ public class MapperHelper {
         if("MONTHLY".equals(requestBody.getInstallmentPlan().getPeriod().getId()) &&
                 requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue()) &&
                 requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue()) &&
-                requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue())) {
+                requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_3.getValue())) {
             generateMonthlyReceipts(firstReceipt, receiptList);
         }
 
