@@ -320,8 +320,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 		PolicyDTO responseBody;
 
-		String policyNumber = this.applicationConfigurationService.getProperty("policyWithoutNumber");
-
 		CustomerListASO customerList = null;
 
 		try {
@@ -366,8 +364,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes | Building Rimac request *****");
 			String insuranceBusinessName = (String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue());
 			EmisionBO requestEmisionLife = this.mapperHelper.generateRimacRequestLife(insuranceBusinessName,createSecondDataValue(asoResponse), requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
+			LOGGER.info("***** RBVDR211Impl - generateRimacRequestLife | Emission Life Rimac request : {} *****",requestEmisionLife);
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(requestBody, emissionDao, asoResponse.getData().getId(), false);
+			LOGGER.info("***** RBVDR211Impl - buildInsuranceContract | Mapping to save contract life : {} *****",contractDao);
 
 			Map<String, Object> argumentsForSaveContract = this.mapperHelper.createSaveContractArguments(contractDao);
 			argumentsForSaveContract.forEach(
@@ -428,22 +428,21 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			//setOrganization(requestEmisionLife, requestBody.getHolder().getId(), customerList);
 
 			//llamada a add participants
-
 			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,requestBody,customerList,responseQueryGetRequiredFields);
+			LOGGER.info("***** RBVDR211Impl - generateRequestAddParticipants | Request add Participants Rimac Service : {} *****",requestAddParticipants);
 
 			AgregarTerceroBO responseAddParticipants = rbvdR201.executeAddParticipantsService(requestAddParticipants, emissionDao.getInsuranceCompanyQuotaId(),requestBody.getProductId(),requestBody.getTraceId());
-
-			LOGGER.info("responseAddParticipants => {}",responseAddParticipants);
+			LOGGER.info("**** RBVDR211Impl - executeAddParticipantsService | responseAddParticipants => {} ****",responseAddParticipants);
 
 			validateResponseAddParticipantsService(responseAddParticipants);
 
 			//llamada a emision
 			rimacResponse = rbvdR201.executePrePolicyEmissionService(requestEmisionLife,emissionDao.getInsuranceCompanyQuotaId(),requestBody.getTraceId(),requestBody.getProductId());
 
-			LOGGER.info("rimacResponse => {}",rimacResponse);
+			LOGGER.info("**** RBVDR211Impl - executePrePolicyEmissionService | rimacResponse => {} ****",rimacResponse);
 
 			if(nonNull(rimacResponse)) {
-				LOGGER.info("RBVDR211 rimacResponse cuotasFinanciamiento => {}",rimacResponse.getPayload().getCuotasFinanciamiento());
+				LOGGER.info("**** RBVDR211  PolicyEmissionService | rimacResponse cuotasFinanciamiento => {} ****",rimacResponse.getPayload().getCuotasFinanciamiento());
 
 				Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformationLifeEasyYes(rimacResponse, asoResponse.getData().getId(), rimacResponse.getPayload().getCodProducto());
 				argumentsRimacContractInformation.forEach(
@@ -454,11 +453,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 						RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue(), RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue());
 
 				validateInsertion(updatedContract, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
-
-				policyNumber = rimacResponse.getPayload().getNumeroPoliza();
-
-				String intAccountId = asoResponse.getData().getId().substring(10);
-
 			}
 
 			responseBody = requestBody;
