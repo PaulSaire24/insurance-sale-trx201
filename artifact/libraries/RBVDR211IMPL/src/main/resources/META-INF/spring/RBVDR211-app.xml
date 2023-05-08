@@ -6,7 +6,6 @@
 		<property name="mapperHelper" ref="mapperHelper"/>
 		<property name="pisdR012" ref="pisdR012"/>
 		<property name="ksmkR002" ref="ksmkR002"/>
-		<property name="pisdR014" ref="pisdR014"/>
 	</bean>
 	<bean id="mapperHelper" class="com.bbva.rbvd.lib.r211.impl.util.MapperHelper">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
