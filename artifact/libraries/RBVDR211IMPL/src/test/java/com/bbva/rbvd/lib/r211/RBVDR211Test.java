@@ -611,6 +611,24 @@ public class RBVDR211Test {
 	}
 
 	@Test
+	public void executeBusinessLogicEmissionPrePolicyEasyYesWithAmountQuotationMonthlyError() {
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyEasyYesWithAmountQuotationMonthlyError...");
+
+		Map<String,Object> responseBD = new HashMap<>();
+		responseBD.put("PREMIUM_AMOUNT", new BigDecimal(130.00));
+		responseBD.put("PREMIUM_CURRENCY_ID", "PEN");
+		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		requestBody.getTotalAmount().setAmount(1560d);
+		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
+				thenReturn(responseBD);
+		requestBody.setSaleChannelId("NN");
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		assertNull(validation);
+		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+	}
+
+
+	@Test
 	public void executeBusinessLogicEmissionPrePolicyWithAmountTotalAmountMonthlyError() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAmountQuotationError...");
 
@@ -839,6 +857,22 @@ public class RBVDR211Test {
 	}
 
 	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithAddParticipantsResponseNull() throws  IOException{
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithAddParticipantsResponseNull...");
+		EmisionBO responseEmission = mockData.getEmissionRimacResponseLife();
+
+		requestBody.setProductId("840");
+		requestBody.setSaleChannelId("PC");
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(null);
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+
+		assertNull(validation);
+	}
+
+	@Test
 	public void executeBusinessLogicEmissionPrePolicyLifeEasyYesWithPolicyAlreadyExistsError() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyLifeEasyYesWithPolicyAlreadyExistsError...");
 
@@ -957,6 +991,44 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
 
 		assertNull(validation);
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithLifeEasyYesOK_ChannelTM() throws  IOException{
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithLifeEasyYesOK...");
+		AgregarTerceroBO responseAddParticipants = mockData.getAddParticipantsRimacResponse();
+		EmisionBO responseEmission = mockData.getEmissionRimacResponseLife();
+
+		requestBody.setProductId("840");
+		requestBody.setSaleChannelId("PC");
+		requestBody.getBank().getBranch().setId("7794");
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+
+		assertNotNull(validation);
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithLifeEasyYesOK_DigitalChannel() throws  IOException{
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithLifeEasyYesOK...");
+		AgregarTerceroBO responseAddParticipants = mockData.getAddParticipantsRimacResponse();
+		EmisionBO responseEmission = mockData.getEmissionRimacResponseLife();
+
+		requestBody.setProductId("840");
+		requestBody.setSaleChannelId("BI");
+		requestBody.setPromoter(null);
+
+		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.840.BI", "0")).thenReturn("0");
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+
+		assertNotNull(validation);
 	}
 
 }

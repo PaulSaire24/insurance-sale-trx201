@@ -4,16 +4,10 @@ import com.bbva.elara.configuration.manager.application.ApplicationConfiguration
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
-
-import com.bbva.pisd.dto.insurance.bo.ContactDetailsBO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 
-import com.bbva.pisd.dto.insurance.dao.ProductInformationDAO;
-import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
-import com.bbva.pisd.dto.insurance.utils.PISDValidation;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
 import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
@@ -87,23 +81,17 @@ import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
-import com.bbva.rbvd.dto.insrncsale.utils.HolderTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
-import com.google.common.base.Strings;
 
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
-import org.springframework.cglib.core.Local;
 
 import java.math.BigDecimal;
 
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 
 import java.time.ZoneOffset;
@@ -117,14 +105,12 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Calendar;
-import java.util.Locale;
 
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class MapperHelper {
     private static final String EMAIL_VALUE = "EMAIL";
