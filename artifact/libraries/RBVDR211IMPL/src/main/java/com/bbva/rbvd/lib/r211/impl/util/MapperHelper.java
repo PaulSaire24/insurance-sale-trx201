@@ -817,10 +817,15 @@ public class MapperHelper {
 
         payload.setProducto(businessName);
         this.constructListPersons(this.constructPerson(requestBody,customerList.getData().get(0),responseQueryGetRequiredFields),personasList);
+        personasList.stream().map(persona -> fillAddress(customerList, persona, new StringBuilder()));
         payload.setPersona(personasList);
 
         request.setPayload(payload);
         return request;
+    }
+
+    private void updateUbigeoPerson(){
+
     }
 
     public EmisionBO generateRimacRequestLife(String insuranceBusinessName, String secondParticularDataValue, String channelCode, String dataId, String saleOffice){

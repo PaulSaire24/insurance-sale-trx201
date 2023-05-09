@@ -423,8 +423,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				return null;
 			}
 
-			//terminar de armar distrito, provincia,departamento
-
 			//llamada a add participants
 			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,requestBody,customerList,responseQueryGetRequiredFields);
 			LOGGER.info("***** RBVDR211Impl - generateRequestAddParticipants | Request add Participants Rimac Service : {} *****",requestAddParticipants);
