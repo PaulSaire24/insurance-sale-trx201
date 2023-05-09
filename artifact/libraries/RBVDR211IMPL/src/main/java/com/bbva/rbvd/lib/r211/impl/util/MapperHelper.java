@@ -137,13 +137,9 @@ public class MapperHelper {
     private static final String TAG_ENDORSEE = "ENDORSEE";
     private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
 
-    private static final String MAIL_SUBJECT_FLEXIPYME = "mail.subject.flexipyme";
-    private static final String MAIL_SENDER_FLEXIPYME = "mail.sender.flexipyme";
 
     private static final String GMT_TIME_ZONE = "GMT";
 
-    private static final String TEMPLATE_EMAIL_CODE_FLEXIPYME = "PLT00991";
-    private static final String NONE = "none";
 
     private static final String RUC_ID = "R";
 
@@ -822,10 +818,6 @@ public class MapperHelper {
 
         request.setPayload(payload);
         return request;
-    }
-
-    private void updateUbigeoPerson(){
-
     }
 
     public EmisionBO generateRimacRequestLife(String insuranceBusinessName, String secondParticularDataValue, String channelCode, String dataId, String saleOffice){
