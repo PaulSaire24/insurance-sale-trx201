@@ -40,6 +40,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Collections.singletonMap;
+
 public class RBVDR201Impl extends RBVDR201Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR201Impl.class);
@@ -226,27 +228,27 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 		LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Param: {}", jsonString);
 
-		AgregarTerceroBO responseBody = null;
+		AgregarTerceroBO output = null;
 
 		SignatureAWS signature = this.pisdR014.executeSignatureConstruction(jsonString, HttpMethod.PATCH.toString(),
 				this.rimacUrlForker.generateUriAddParticipants(quotationId,productId), null, traceId);
 
 		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeadersAWS(signature));
 
-		Map<String, String> uriParam = new HashMap<>();
-		uriParam.put("cotizacion", quotationId);
-
 		try {
-			responseBody = this.externalApiConnector.postForObject(this.rimacUrlForker.generateKeyAddParticipants(productId), entity,
-					AgregarTerceroBO.class, uriParam);
-			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Response: {}", this.getRequestBodyAsJsonFormat(responseBody));
+			ResponseEntity<AgregarTerceroBO> response = this.externalApiConnector.exchange(this.rimacUrlForker.generateKeyAddParticipants(productId),HttpMethod.PATCH, entity,
+					AgregarTerceroBO.class, singletonMap("cotizacion",quotationId));
+			output = response.getBody();
+			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Response: {}", this.getRequestBodyAsJsonFormat(output));
 			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService END *****");
+			return output;
 		} catch (RestClientException ex) {
 			this.addAdviceWithDescription("RBVD10094933",ex.getMessage());
 			this.addAdviceWithDescription("RBVD10094944","Error al devolver informacion del Servicio de Agregar Terceros de Rimac");
 			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Exception: {}", ex.getMessage());
+			return null;
 		}
-		return responseBody;
+
 	}
 
 	private String getRequestBodyAsJsonFormat(Object requestBody) {

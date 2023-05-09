@@ -423,7 +423,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				return null;
 			}
 
-			//setOrganization(requestEmisionLife, requestBody.getHolder().getId(), customerList);
+			//terminar de armar distrito, provincia,departamento
 
 			//llamada a add participants
 			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,requestBody,customerList,responseQueryGetRequiredFields);
