@@ -813,7 +813,9 @@ public class MapperHelper {
 
         payload.setProducto(businessName);
         this.constructListPersons(this.constructPerson(requestBody,customerList.getData().get(0),responseQueryGetRequiredFields),personasList);
-        personasList.stream().map(persona -> fillAddress(customerList, persona, new StringBuilder()));
+        personasList.stream().forEach(persona ->{
+            fillAddress(customerList, persona, new StringBuilder());
+        });
         payload.setPersona(personasList);
 
         request.setPayload(payload);
