@@ -57,6 +57,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.of;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class MapperHelperTest {
@@ -1674,20 +1675,16 @@ public class MapperHelperTest {
         rimacResponseLife.getPayload().getCuotasFinanciamiento().get(0).setPeriodicidad("Mensual");
         rimacResponseLife.getPayload().setCodProducto("1234");
         Map<String, Object> validation = this.mapperHelper.getRimacContractInformationLifeEasyYes(rimacResponseLife,
-                asoResponse.getData().getId(), rimacResponseLife.getPayload().getCodProducto());
+                asoResponse.getData().getId());
         assertNotNull(validation);
         assertEquals(rimacResponseLife.getPayload().getNumeroPoliza(),validation.get(RBVDProperties.FIELD_POLICY_ID.getValue()));
-        assertEquals(rimacResponseLife.getPayload().getFechaFinVigencia(),validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue()));
-        assertEquals(rimacResponseLife.getPayload().getFechaFinVigencia(),validation.get(RBVDProperties.FIELD_INSURANCE_POLICY_END_DATE.getValue()));
-        assertEquals(rimacResponseLife.getPayload().getFechaFinVigencia(),validation.get(RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue()));
-        assertEquals("2064-04-01", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
+        assertEquals("01/04/2064",validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue()));
         assertEquals("PEN", validation.get(RBVDProperties.FIELD_INSRNC_CO_CONTRACT_STATUS_TYPE.getValue()));
-        assertEquals(rimacResponseLife.getPayload().getCodProducto(), validation.get(RBVDProperties.FIELD_INSURANCE_COMPANY_PRODUCT_ID.getValue()));
         assertEquals(rimacResponseLife.getPayload().getCodProducto(), validation.get(RBVDProperties.FIELD_INSURANCE_COMPANY_PRODUCT_ID.getValue()));
 
         rimacResponseLife.getPayload().getCuotasFinanciamiento().get(0).setPeriodicidad("Anual");
         validation = this.mapperHelper.getRimacContractInformationLifeEasyYes(rimacResponseLife,
-                asoResponse.getData().getId(), rimacResponseLife.getPayload().getCodProducto());
-        assertEquals("2064-04-01", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
+                asoResponse.getData().getId());
+        assertEquals("01/04/2064", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
     }
 }

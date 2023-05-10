@@ -911,19 +911,19 @@ public class MapperHelper {
         return rimacContractInformation;
     }
 
-    public Map<String, Object> getRimacContractInformationLifeEasyYes(EmisionBO rimacResponse, String contractNumber, String insuranceCompanyProductId) {
+    public Map<String, Object> getRimacContractInformationLifeEasyYes(EmisionBO rimacResponse, String contractNumber) {
         InsuranceContractDAO contractDAO = new InsuranceContractDAO();
         contractDAO.setPolicyId(rimacResponse.getPayload().getNumeroPoliza());
 
         if(nonNull(rimacResponse.getPayload().getFechaFinVigencia())) {
-            String policyExpiration = rimacResponse.getPayload().getFechaFinVigencia();
+            String policyExpiration = generateCorrectDateFormat(rimacResponse.getPayload().getFechaFinVigencia());
             contractDAO.setInsuranceContractEndDate(policyExpiration);
             contractDAO.setInsurancePolicyEndDate(policyExpiration);
             contractDAO.setLastInstallmentDate(policyExpiration);
+            contractDAO.setPeriodNextPaymentDate(policyExpiration);
         }
 
-        contractDAO.setPeriodNextPaymentDate(Objects.nonNull(rimacResponse.getPayload().getFechaFinVigencia()) ? rimacResponse.getPayload().getFechaFinVigencia() : null);
-        contractDAO.setInsuranceCompanyProductId(insuranceCompanyProductId);
+        contractDAO.setInsuranceCompanyProductId(rimacResponse.getPayload().getCodProducto());
 
         Map<String, Object> rimacContractInformation = new HashMap<>();
         rimacContractInformation.put(RBVDProperties.FIELD_POLICY_ID.getValue(), contractDAO.getPolicyId());
@@ -1057,7 +1057,7 @@ public class MapperHelper {
 
         if(nonNull(rimacResponse)) {
             LocalDate endDate = Objects.nonNull(rimacResponse.getPayload().getFechaFinal()) ? rimacResponse.getPayload().getFechaFinal()
-                    : LocalDate.parse(rimacResponse.getPayload().getFechaFinVigencia());
+                    : rimacResponse.getPayload().getFechaFinVigencia();
             responseBody.getValidityPeriod().setEndDate(convertLocaldateToDate(endDate));
             responseBody.getInsuranceCompany().setProductId(rimacResponse.getPayload().getCodProducto());
             responseBody.setExternalPolicyNumber(rimacResponse.getPayload().getNumeroPoliza());

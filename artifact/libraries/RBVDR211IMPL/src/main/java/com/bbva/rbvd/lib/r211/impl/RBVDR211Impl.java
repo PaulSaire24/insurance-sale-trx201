@@ -445,7 +445,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			if(nonNull(rimacResponse)) {
 				LOGGER.info("**** RBVDR211  PolicyEmissionService | rimacResponse cuotasFinanciamiento => {} ****",rimacResponse.getPayload().getCuotasFinanciamiento());
 
-				Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformationLifeEasyYes(rimacResponse, asoResponse.getData().getId(), rimacResponse.getPayload().getCodProducto());
+				Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformationLifeEasyYes(rimacResponse, asoResponse.getData().getId());
 				argumentsRimacContractInformation.forEach(
 						(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicyLifeEasyYes - UpdateContract parameter {} with value: {} *****", key, value));
 
