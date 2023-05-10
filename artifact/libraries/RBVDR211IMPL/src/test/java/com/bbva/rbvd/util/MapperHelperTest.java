@@ -42,6 +42,7 @@ import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -1654,17 +1655,17 @@ public class MapperHelperTest {
 
     @Test
     public void testGenerateRimacRequestLife(){
-        EmisionBO validation = this.mapperHelper.generateRimacRequestLife("EASYYES",
-                "TARJETA||****************1234||PEN", apxRequest.getSaleChannelId(), asoResponse.getData().getId(),
-                apxRequest.getBank().getBranch().getId());
+        EmisionBO validation = this.mapperHelper.generateRimacRequestLife("EASYYES", apxRequest.getSaleChannelId(),
+                asoResponse.getData().getId(), apxRequest.getBank().getBranch().getId(),"CUENTA","***6997");
         assertNotNull(validation);
         assertNotNull(validation.getPayload().getProducto());
         assertNotNull(validation.getPayload().getDatosParticulares());
-        assertEquals(4, validation.getPayload().getDatosParticulares().size());
+        assertEquals(5, validation.getPayload().getDatosParticulares().size());
         assertEquals(apxRequest.getSaleChannelId(), validation.getPayload().getDatosParticulares().get(0).getValor());
-        assertEquals("TARJETA||****************1234||PEN", validation.getPayload().getDatosParticulares().get(1).getValor());
-        assertEquals(asoResponse.getData().getId(), validation.getPayload().getDatosParticulares().get(2).getValor());
-        assertEquals(apxRequest.getBank().getBranch().getId(), validation.getPayload().getDatosParticulares().get(3).getValor());
+        assertEquals(asoResponse.getData().getId(), validation.getPayload().getDatosParticulares().get(1).getValor());
+        assertEquals(apxRequest.getBank().getBranch().getId(), validation.getPayload().getDatosParticulares().get(2).getValor());
+        assertEquals("CUENTA", validation.getPayload().getDatosParticulares().get(3).getValor());
+        assertEquals("***6997", validation.getPayload().getDatosParticulares().get(4).getValor());
     }
 
     @Test
@@ -1689,5 +1690,4 @@ public class MapperHelperTest {
                 asoResponse.getData().getId(), rimacResponseLife.getPayload().getCodProducto());
         assertEquals("2024-04-25", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
     }
-
 }

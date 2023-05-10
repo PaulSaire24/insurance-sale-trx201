@@ -361,7 +361,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes | Building Rimac request *****");
 			String insuranceBusinessName = (String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue());
-			EmisionBO requestEmisionLife = this.mapperHelper.generateRimacRequestLife(insuranceBusinessName,createSecondDataValue(asoResponse), requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
+			String branchRequest = requestBody.getBank().getBranch().getId();
+			RelatedContractASO relatedContractASO = asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0);
+
+			EmisionBO requestEmisionLife = this.mapperHelper.generateRimacRequestLife(
+					insuranceBusinessName, requestBody.getSaleChannelId(), asoResponse.getData().getId(), branchRequest	,
+					this.getKindOfAccount(relatedContractASO),this.getAccountNumberInDatoParticular(relatedContractASO));
 			LOGGER.info("***** RBVDR211Impl - generateRimacRequestLife | Emission Life Rimac request : {} *****",requestEmisionLife);
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(requestBody, emissionDao, asoResponse.getData().getId(), false);
@@ -622,12 +627,29 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private String createSecondDataValue(PolicyASO asoResponse) {
 		RelatedContractASO relatedContract = asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0);
-		String kindOfAccount = relatedContract.getProduct().getId().equals("CARD") ? "TARJETA" : "CUENTA";
-		int beginIndex = relatedContract.getNumber().length() - 4;
-		String accountNumber = "***".concat(relatedContract.getNumber().substring(beginIndex));
+		String kindOfAccount = getKindOfAccount(relatedContract);
+		String accountNumber = getAccountNumberInDatoParticular(relatedContract);
 		String accountCurrency = asoResponse.getData().getTotalAmount().getExchangeRate().getTargetCurrency();
 		return kindOfAccount.concat("||").concat(accountNumber).concat("||").concat(accountCurrency);
 	}
+
+	private String getKindOfAccount(RelatedContractASO relatedContract){
+		if(relatedContract != null && relatedContract.getProduct() != null && Objects.nonNull(relatedContract.getProduct().getId())){
+			return relatedContract.getProduct().getId().equals("CARD") ? "TARJETA" : "CUENTA";
+		}else{
+			return "";
+		}
+	}
+
+	private String getAccountNumberInDatoParticular(RelatedContractASO relatedContract){
+		if(relatedContract != null && Objects.nonNull(relatedContract.getNumber())){
+			int beginIndex = relatedContract.getNumber().length() - 4;
+			return "***".concat(relatedContract.getNumber().substring(beginIndex));
+		}else{
+			return "";
+		}
+	}
+
 
 	private boolean validateEndorsement(PolicyDTO requestBody) {
 		if(requestBody.getParticipants() != null && requestBody.getParticipants().size() > 1) {

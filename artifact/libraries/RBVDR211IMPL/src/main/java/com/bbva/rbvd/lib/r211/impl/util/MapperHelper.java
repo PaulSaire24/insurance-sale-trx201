@@ -120,6 +120,8 @@ public class MapperHelper {
     private static final String PARTICULAR_DATA_ACCOUNT_DATA = "DATOS_DE_CUENTA";
     private static final String PARTICULAR_DATA_CERT_BANCO = "NRO_CERT_BANCO";
     private static final String PARTICULAR_DATA_SALE_OFFICE = "OFICINA_VENTA";
+    private static final String PARTICULAR_DATA_TYPE_PAYMENT_METHOD = "TIPO_MEDIO_PAGO";
+    private static final String PARTICULAR_DATA_AVERAGE_PAYMENT_NUMBER = "NUMERO_MEDIO_PAGO";
     private static final String S_VALUE = "S";
     private static final String N_VALUE = "N";
     private static final Long INDICATOR_INSPECTION_NOT_REQUIRED_VALUE = 0L;
@@ -348,6 +350,45 @@ public class MapperHelper {
         cuartoDatoParticular.setCodigo("");
         cuartoDatoParticular.setValor(saleOffice);
         datosParticulares.add(cuartoDatoParticular);
+        return datosParticulares;
+    }
+
+    private static List<DatoParticularBO> getDatoParticularBOLifeEasyYes(String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber) {
+        List<DatoParticularBO> datosParticulares = new ArrayList<>();
+        String[] datos = new String[]{
+                PARTICULAR_DATA_THIRD_CHANNEL, PARTICULAR_DATA_CERT_BANCO, PARTICULAR_DATA_SALE_OFFICE,
+                PARTICULAR_DATA_TYPE_PAYMENT_METHOD, PARTICULAR_DATA_AVERAGE_PAYMENT_NUMBER
+        };
+
+        for (String dato: datos){
+            DatoParticularBO datoParticular = new DatoParticularBO();
+            datoParticular.setEtiqueta(dato);
+            datoParticular.setCodigo("");
+
+            switch (dato){
+                case PARTICULAR_DATA_THIRD_CHANNEL:
+                    datoParticular.setValor(channelCode);
+                    break;
+                case PARTICULAR_DATA_CERT_BANCO:
+                    datoParticular.setValor(dataId);
+                    break;
+                case PARTICULAR_DATA_SALE_OFFICE:
+                    datoParticular.setValor(saleOffice);
+                    break;
+                case PARTICULAR_DATA_TYPE_PAYMENT_METHOD:
+                    datoParticular.setValor(paymentType);
+                    break;
+                case PARTICULAR_DATA_AVERAGE_PAYMENT_NUMBER:
+                    datoParticular.setValor(paymentNumber);
+                    break;
+                default:
+                    break;
+            }
+
+            if(Objects.nonNull(datoParticular.getValor())) { datosParticulares.add(datoParticular); }
+
+        }
+
         return datosParticulares;
     }
 
@@ -822,12 +863,12 @@ public class MapperHelper {
         return request;
     }
 
-    public EmisionBO generateRimacRequestLife(String insuranceBusinessName, String secondParticularDataValue, String channelCode, String dataId, String saleOffice){
+    public EmisionBO generateRimacRequestLife(String insuranceBusinessName, String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber){
         EmisionBO request = new EmisionBO();
         PayloadEmisionBO payload = new PayloadEmisionBO();
 
         payload.setProducto(insuranceBusinessName);
-        payload.setDatosParticulares(getDatoParticularBO(secondParticularDataValue, channelCode, dataId, saleOffice));
+        payload.setDatosParticulares(getDatoParticularBOLifeEasyYes(channelCode, dataId, saleOffice,paymentType,paymentNumber));
 
         request.setPayload(payload);
 
