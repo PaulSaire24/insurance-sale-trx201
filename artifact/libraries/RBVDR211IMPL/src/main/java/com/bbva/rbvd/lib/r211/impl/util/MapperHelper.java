@@ -922,16 +922,7 @@ public class MapperHelper {
             contractDAO.setLastInstallmentDate(policyExpiration);
         }
 
-        LocalDate fechanextpago = null;
-        if(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getPeriodicidad().equalsIgnoreCase("ANUAL")){
-            fechanextpago = LocalDate.parse(rimacResponse.getPayload().getFechaInicioVigencia()).plusYears(1);
-        }else if(rimacResponse.getPayload().getCuotasFinanciamiento().get(0).getPeriodicidad().equalsIgnoreCase("MENSUAL")){
-            fechanextpago = LocalDate.parse(rimacResponse.getPayload().getFechaInicioVigencia()).plusMonths(1);
-        }
-        if (nonNull(fechanextpago)) {
-            contractDAO.setPeriodNextPaymentDate(fechanextpago.toString());
-        }
-
+        contractDAO.setPeriodNextPaymentDate(Objects.nonNull(rimacResponse.getPayload().getFechaFinVigencia()) ? rimacResponse.getPayload().getFechaFinVigencia() : null);
         contractDAO.setInsuranceCompanyProductId(insuranceCompanyProductId);
 
         Map<String, Object> rimacContractInformation = new HashMap<>();

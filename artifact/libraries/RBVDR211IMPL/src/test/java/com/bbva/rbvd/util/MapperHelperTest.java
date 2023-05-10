@@ -1680,7 +1680,7 @@ public class MapperHelperTest {
         assertEquals(rimacResponseLife.getPayload().getFechaFinVigencia(),validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue()));
         assertEquals(rimacResponseLife.getPayload().getFechaFinVigencia(),validation.get(RBVDProperties.FIELD_INSURANCE_POLICY_END_DATE.getValue()));
         assertEquals(rimacResponseLife.getPayload().getFechaFinVigencia(),validation.get(RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue()));
-        assertEquals("2023-05-25", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
+        assertEquals("2064-04-01", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
         assertEquals("PEN", validation.get(RBVDProperties.FIELD_INSRNC_CO_CONTRACT_STATUS_TYPE.getValue()));
         assertEquals(rimacResponseLife.getPayload().getCodProducto(), validation.get(RBVDProperties.FIELD_INSURANCE_COMPANY_PRODUCT_ID.getValue()));
         assertEquals(rimacResponseLife.getPayload().getCodProducto(), validation.get(RBVDProperties.FIELD_INSURANCE_COMPANY_PRODUCT_ID.getValue()));
@@ -1688,6 +1688,6 @@ public class MapperHelperTest {
         rimacResponseLife.getPayload().getCuotasFinanciamiento().get(0).setPeriodicidad("Anual");
         validation = this.mapperHelper.getRimacContractInformationLifeEasyYes(rimacResponseLife,
                 asoResponse.getData().getId(), rimacResponseLife.getPayload().getCodProducto());
-        assertEquals("2024-04-25", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
+        assertEquals("2064-04-01", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
     }
 }
