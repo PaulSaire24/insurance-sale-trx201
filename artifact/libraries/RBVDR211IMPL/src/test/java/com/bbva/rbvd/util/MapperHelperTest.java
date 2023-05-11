@@ -1521,6 +1521,144 @@ public class MapperHelperTest {
     }
 
     @Test
+    public void buildCreatedInsuranceEventObjectInLifeProduct_OK() {
+        apxRequest.getHolder().setId("90008603");
+        apxRequest.getHolder().getIdentityDocument().setDocumentNumber("04040005");
+        apxRequest.getValidityPeriod().setEndDate(new Date());
+        apxRequest.setOperationDate(new Date());
+        apxRequest.setTraceId("traceId");
+        apxRequest.setIpv4("192.168.124.134");
+        apxRequest.setEnvironmentCode("01");
+        apxRequest.setProductCode("0001");
+        apxRequest.setHeaderOperationDate("20160101");
+        apxRequest.setHeaderOperationTime("103051");
+        apxRequest.setInspection(null);
+        apxRequest.setProductId("840");
+
+        CreatedInsrcEventDTO validation = this.mapperHelper.buildCreatedInsuranceEventObject(apxRequest);
+
+        assertNotNull(validation.getCreatedInsurance());
+        assertNotNull(validation.getCreatedInsurance().getQuotationId());
+        assertNotNull(validation.getCreatedInsurance().getOperationDate());
+
+        assertNotNull(validation.getCreatedInsurance().getHolder());
+        assertNotNull(validation.getCreatedInsurance().getHolder().getId());
+        assertNotNull(validation.getCreatedInsurance().getHolder().getIdentityDocument());
+        assertNotNull(validation.getCreatedInsurance().getHolder().getIdentityDocument().getDocumentType());
+        assertNotNull(validation.getCreatedInsurance().getHolder().getIdentityDocument().getDocumentType().getId());
+        assertNotNull(validation.getCreatedInsurance().getHolder().getIdentityDocument().getDocumentNumber());
+        assertNotNull(validation.getCreatedInsurance().getHolder().getContactDetails());
+        assertFalse(validation.getCreatedInsurance().getHolder().getContactDetails().isEmpty());
+        assertEquals(2, validation.getCreatedInsurance().getHolder().getContactDetails().size());
+
+        assertNotNull(validation.getCreatedInsurance().getProduct());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getId());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getId());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans());
+        assertFalse(validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().isEmpty());
+        assertEquals(1, validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().size());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().get(0).getPaymentAmount());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().get(0).getPaymentAmount()
+                .getAmount());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().get(0).getPaymentAmount()
+                .getCurrency());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().get(0).getPaymentsTotalNumber());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().get(0).getPeriod());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().get(0).getPeriod().getId());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getTotalInstallment());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getTotalInstallment().getAmount());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getTotalInstallment().getCurrency());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getTotalInstallment().getPeriod());
+        assertNotNull(validation.getCreatedInsurance().getProduct().getPlan().getTotalInstallment().getPeriod().getId());
+
+        assertNotNull(validation.getCreatedInsurance().getValidityPeriod());
+        assertNotNull(validation.getCreatedInsurance().getValidityPeriod().getStartDate());
+        assertNotNull(validation.getCreatedInsurance().getValidityPeriod().getEndDate());
+
+        assertNotNull(validation.getCreatedInsurance().getPaymentMethod());
+        assertNotNull(validation.getCreatedInsurance().getPaymentMethod().getPaymentType());
+        assertFalse(validation.getCreatedInsurance().getPaymentMethod().getRelatedContracts().isEmpty());
+        assertNotNull(validation.getCreatedInsurance().getPaymentMethod().getRelatedContracts().get(0).getContractId());
+        assertNotNull(validation.getCreatedInsurance().getPaymentMethod().getRelatedContracts().get(0).getNumber());
+
+        assertNotNull(validation.getHeader().getOrigin().getAap());
+        assertNotNull(validation.getHeader().getOrigin().getBank());
+        assertNotNull(validation.getHeader().getOrigin().getBank().getBankId());
+        assertNotNull(validation.getHeader().getOrigin().getBank().getBranch());
+        assertNotNull(validation.getHeader().getOrigin().getBank().getBranch().getBranchId());
+        assertNotNull(validation.getHeader().getOrigin().getChannelCode());
+        assertNotNull(validation.getHeader().getOrigin().getEnvironCode());
+        assertNotNull(validation.getHeader().getOrigin().getIpv4());
+        assertNotNull(validation.getHeader().getOrigin().getProductCode());
+        assertNotNull(validation.getHeader().getOrigin().getTimestamp());
+        assertNotNull(validation.getHeader().getOrigin().getUser());
+
+        assertNotNull(validation.getHeader().getTraces().getTraceId());
+        assertNotNull(validation.getHeader().getTraces().getParentSpanId());
+
+        assertEquals(apxRequest.getQuotationId(), validation.getCreatedInsurance().getQuotationId());
+
+        assertEquals(apxRequest.getValidityPeriod().getEndDate(),
+                validation.getCreatedInsurance().getValidityPeriod().getEndDate());
+
+        assertEquals(apxRequest.getHolder().getId(),
+                validation.getCreatedInsurance().getHolder().getId());
+        assertEquals(apxRequest.getHolder().getIdentityDocument().getDocumentNumber(),
+                validation.getCreatedInsurance().getHolder().getIdentityDocument().getDocumentNumber());
+        assertEquals(apxRequest.getHolder().getIdentityDocument().getDocumentType().getId(),
+                validation.getCreatedInsurance().getHolder().getIdentityDocument().getDocumentType().getId());
+        assertEquals(apxRequest.getHolder().getContactDetails().get(0).getContact().getContactDetailType(),
+                validation.getCreatedInsurance().getHolder().getContactDetails().get(0).getContact().getContactType());
+        assertEquals(apxRequest.getHolder().getContactDetails().get(0).getContact().getAddress(),
+                validation.getCreatedInsurance().getHolder().getContactDetails().get(0).getContact().getValue());
+        assertEquals("MOBILE",
+                validation.getCreatedInsurance().getHolder().getContactDetails().get(1).getContact().getContactType());
+        assertEquals(apxRequest.getHolder().getContactDetails().get(1).getContact().getPhoneNumber(),
+                validation.getCreatedInsurance().getHolder().getContactDetails().get(1).getContact().getValue());
+
+        assertEquals(apxRequest.getProductId(), validation.getCreatedInsurance().getProduct().getId());
+        assertEquals(apxRequest.getProductPlan().getId(), validation.getCreatedInsurance().getProduct().getPlan().getId());
+        assertEquals(apxRequest.getTotalAmount().getAmount(),
+                validation.getCreatedInsurance().getProduct().getPlan().getTotalInstallment().getAmount());
+        assertEquals(apxRequest.getTotalAmount().getCurrency(),
+                validation.getCreatedInsurance().getProduct().getPlan().getTotalInstallment().getCurrency());
+        assertEquals("ANNUAL",
+                validation.getCreatedInsurance().getProduct().getPlan().getTotalInstallment().getPeriod().getId());
+        assertEquals(apxRequest.getInstallmentPlan().getTotalNumberInstallments().longValue(),
+                validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().get(0).getPaymentsTotalNumber().longValue());
+        assertEquals(apxRequest.getInstallmentPlan().getPaymentAmount().getAmount(),
+                validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().get(0).getPaymentAmount().getAmount());
+        assertEquals(apxRequest.getInstallmentPlan().getPaymentAmount().getCurrency(),
+                validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().get(0).getPaymentAmount().getCurrency());
+        assertEquals(apxRequest.getInstallmentPlan().getPeriod().getId(),
+                validation.getCreatedInsurance().getProduct().getPlan().getInstallmentPlans().get(0).getPeriod().getId());
+
+        assertEquals(apxRequest.getAap(), validation.getHeader().getOrigin().getAap());
+        assertEquals(apxRequest.getBank().getId(), validation.getHeader().getOrigin().getBank().getBankId());
+        assertEquals(apxRequest.getBank().getBranch().getId(), validation.getHeader().getOrigin().getBank().getBranch().getBranchId());
+        assertEquals(apxRequest.getSaleChannelId(), validation.getHeader().getOrigin().getChannelCode());
+        assertEquals(apxRequest.getEnvironmentCode(), validation.getHeader().getOrigin().getEnvironCode());
+        assertEquals(apxRequest.getIpv4(), validation.getHeader().getOrigin().getIpv4());
+        assertEquals("APX_RBVDT211_CreatedInsurance", validation.getHeader().getOrigin().getOperation());
+        assertEquals(apxRequest.getProductCode(), validation.getHeader().getOrigin().getProductCode());
+
+        assertEquals(apxRequest.getPaymentMethod().getPaymentType(),
+                validation.getCreatedInsurance().getPaymentMethod().getPaymentType());
+
+        assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getContractId(),
+                validation.getCreatedInsurance().getPaymentMethod().getRelatedContracts().get(0).getContractId());
+
+        assertEquals(apxRequest.getPaymentMethod().getRelatedContracts().get(0).getNumber(),
+                validation.getCreatedInsurance().getPaymentMethod().getRelatedContracts().get(0).getNumber());
+
+        String timestamp = apxRequest.getHeaderOperationDate().concat(" ").concat(apxRequest.getHeaderOperationTime());
+        assertEquals(timestamp, validation.getHeader().getOrigin().getTimestamp());
+
+        assertEquals(apxRequest.getCreationUser(), validation.getHeader().getOrigin().getUser());
+    }
+
+    @Test
     public void testMontoSinIGVNullInInstallmentPlanPaymentWithoutTax(){
         apxRequest.getFirstInstallment().setIsPaymentRequired(true);
 

@@ -1011,8 +1011,11 @@ public class MapperHelper {
         }
 
         progressiveId = 0;
-        for(ContactDetailDTO contactDetail : responseBody.getInspection().getContactDetails()) {
-            contactDetail.setId(String.valueOf(++progressiveId));
+
+        if(responseBody.getInspection() != null){
+            for(ContactDetailDTO contactDetail : responseBody.getInspection().getContactDetails()) {
+                contactDetail.setId(String.valueOf(++progressiveId));
+            }
         }
 
         responseBody.getFirstInstallment().setFirstPaymentDate(convertLocaldateToDate(data.getFirstInstallment().getFirstPaymentDate()));
@@ -1187,15 +1190,16 @@ public class MapperHelper {
 
         createdInsurance.setPaymentMethod(paymentMethod);
 
-        PolicyInspectionDTO inspection = new PolicyInspectionDTO();
-        inspection.setIsRequired(policy.getInspection().getIsRequired());
-        inspection.setFullName(policy.getInspection().getFullName());
+        PolicyInspectionDTO inspection = null;
 
-        List<ContactDetailDTO> contactDetailsForInspection = policy.getInspection().getContactDetails().
-                stream().map(this::createContactDetailForInspection).collect(toList());
-
-        inspection.setContactDetails(contactDetailsForInspection);
-
+        if(policy.getInspection() != null){
+            inspection = new PolicyInspectionDTO();
+            inspection.setIsRequired(policy.getInspection().getIsRequired());
+            inspection.setFullName(policy.getInspection().getFullName());
+            List<ContactDetailDTO> contactDetailsForInspection = policy.getInspection().getContactDetails().
+                    stream().map(this::createContactDetailForInspection).collect(toList());
+            inspection.setContactDetails(contactDetailsForInspection);
+        }
         createdInsurance.setInspection(inspection);
 
         createdInsuranceEvent.setCreatedInsurance(createdInsurance);
