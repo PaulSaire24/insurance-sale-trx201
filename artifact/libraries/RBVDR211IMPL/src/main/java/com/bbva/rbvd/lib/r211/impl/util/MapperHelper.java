@@ -1012,11 +1012,7 @@ public class MapperHelper {
 
         progressiveId = 0;
 
-        if(responseBody.getInspection() != null){
-            for(ContactDetailDTO contactDetail : responseBody.getInspection().getContactDetails()) {
-                contactDetail.setId(String.valueOf(++progressiveId));
-            }
-        }
+        validateInspectionAndIncreaseProgressiveId(responseBody, progressiveId);
 
         responseBody.getFirstInstallment().setFirstPaymentDate(convertLocaldateToDate(data.getFirstInstallment().getFirstPaymentDate()));
 
@@ -1072,6 +1068,14 @@ public class MapperHelper {
         } else {
             responseBody.getValidityPeriod().setEndDate(responseBody.getInstallmentPlan().getMaturityDate());
             responseBody.getInsuranceCompany().setProductId("");
+        }
+    }
+
+    private static void validateInspectionAndIncreaseProgressiveId(PolicyDTO responseBody, int progressiveId) {
+        if(responseBody.getInspection() != null){
+            for(ContactDetailDTO contactDetail : responseBody.getInspection().getContactDetails()) {
+                contactDetail.setId(String.valueOf(++progressiveId));
+            }
         }
     }
 
