@@ -8,6 +8,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 public class RimacUrlForkerTest {
@@ -22,6 +24,7 @@ public class RimacUrlForkerTest {
 
 		rimacUrlForker.setApplicationConfigurationService(applicationConfigurationService);
         when(this.applicationConfigurationService.getProperty("api.connector.emission.rimac.830.url")).thenReturn("https://apitest.rimac.com/vehicular/V1/cotizacion/{ideCotizacion}/emitir");
+        when(this.applicationConfigurationService.getProperty("api.connector.add.participants.rimac.840.url")).thenReturn("https://apitest.rimac.com/api-vida/V1/cotizaciones/{{cotizacion}}/persona-agregar");
 	}
 
     @Test
@@ -29,5 +32,15 @@ public class RimacUrlForkerTest {
         LOGGER.info("RimacUrlForkerTest - Executing rimacUrlForkerTest_OK   ");
         rimacUrlForker.generateUriForSignatureAWS("830", "quotationId");
         rimacUrlForker.generatePropertyKeyName("830");
+    }
+
+    @Test
+    public void generateUriAddParticipants_OK() {
+        LOGGER.info("RimacUrlForkerTest - Executing generateUriAddParticipants_OK   ");
+        String validationUri = rimacUrlForker.generateUriAddParticipants("quotationId", "840");
+        String validationKey = rimacUrlForker.generateKeyAddParticipants("840");
+
+        assertNotNull(validationUri);
+        assertNotNull(validationKey);
     }
 }

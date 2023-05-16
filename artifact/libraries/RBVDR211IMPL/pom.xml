@@ -91,7 +91,7 @@
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR012</artifactId>
-			<version>0.27.4</version>
+			<version>0.28.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.ksmk</groupId>
@@ -114,9 +114,6 @@
 							!*;version="${osgi.version.manifest}"
 						</Export-Package>
 						<Import-Package>
-							com.bbva.pisd.lib.r012.*;version="${osgi.version.manifest}",
-							com.bbva.rbvd.lib.r201.*;version="${osgi.version.manifest}",
-							com.bbva.rbvd.lib.r211.*;version="${osgi.version.manifest}",
 							com.bbva.elara.aspect;version="${osgi.version.manifest}",
 							com.bbva.elara.*;version="${osgi.version.manifest}",
 							org.aopalliance.aop;version="${osgi.version.manifest}",

@@ -14,6 +14,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
@@ -38,6 +39,8 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.util.Collections.singletonMap;
 
 public class RBVDR201Impl extends RBVDR201Abstract {
 
@@ -214,6 +217,36 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		} catch(RestClientException ex) {
 			LOGGER.info("***** RBVDR201Impl - executePutEventUpsilonService ***** Exception: {}", ex.getMessage());
 			return 0;
+		}
+
+	}
+
+	@Override
+	public AgregarTerceroBO executeAddParticipantsService(AgregarTerceroBO requestBody, String quotationId, String productId, String traceId) {
+		LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService START *****");
+		String jsonString = this.getRequestBodyAsJsonFormat(requestBody);
+
+		LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Param: {}", jsonString);
+
+		AgregarTerceroBO output = null;
+
+		SignatureAWS signature = this.pisdR014.executeSignatureConstruction(jsonString, HttpMethod.PATCH.toString(),
+				this.rimacUrlForker.generateUriAddParticipants(quotationId,productId), null, traceId);
+
+		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeadersAWS(signature));
+
+		try {
+			ResponseEntity<AgregarTerceroBO> response = this.externalApiConnector.exchange(this.rimacUrlForker.generateKeyAddParticipants(productId),HttpMethod.PATCH, entity,
+					AgregarTerceroBO.class, singletonMap("cotizacion",quotationId));
+			output = response.getBody();
+			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Response: {}", this.getRequestBodyAsJsonFormat(output));
+			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService END *****");
+			return output;
+		} catch (RestClientException ex) {
+			this.addAdviceWithDescription("RBVD10094933",ex.getMessage());
+			this.addAdviceWithDescription("RBVD10094944","Error al devolver informacion del Servicio de Agregar Terceros de Rimac");
+			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Exception: {}", ex.getMessage());
+			return null;
 		}
 
 	}

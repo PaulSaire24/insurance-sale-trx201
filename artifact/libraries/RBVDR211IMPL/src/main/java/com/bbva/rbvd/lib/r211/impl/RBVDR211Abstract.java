@@ -20,7 +20,6 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 	protected PISDR012 pisdR012;
 
 	protected KSMKR002 ksmkR002;
-
 	protected MapperHelper mapperHelper;
 
 
@@ -52,6 +51,7 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 		this.ksmkR002 = ksmkR002;
 	}
 
-	public void setMapperHelper(MapperHelper mapperHelper) {this.mapperHelper = mapperHelper;}
-
+	public void setMapperHelper(MapperHelper mapperHelper) {
+		this.mapperHelper = mapperHelper;
+	}
 }
