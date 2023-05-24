@@ -446,9 +446,7 @@ public class MapperHelper {
         contractDao.setTotalDebtAmount((apxRequest.getFirstInstallment().getIsPaymentRequired())
                 ? BigDecimal.ZERO : BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()));
 
-        contractDao.setPrevPendBillRcptsNumber((apxRequest.getFirstInstallment().getIsPaymentRequired())
-                ? BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1)
-                : BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()));
+        validatePrevPendBillRcptsNumber(apxRequest, emissionDao, contractDao);
 
         contractDao.setSettlementFixPremiumAmount(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()));
         contractDao.setAutomaticDebitIndicatorType((apxRequest.getPaymentMethod().getPaymentType().equals(PAYMENT_METHOD_VALUE))
@@ -456,6 +454,16 @@ public class MapperHelper {
         contractDao.setBiometryTransactionId(apxRequest.getIdentityVerificationCode());
 
         return contractDao;
+    }
+
+    private static void validatePrevPendBillRcptsNumber(PolicyDTO apxRequest, RequiredFieldsEmissionDAO emissionDao, InsuranceContractDAO contractDao) {
+        if(apxRequest.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue())){
+            contractDao.setPrevPendBillRcptsNumber(emissionDao.getContractDurationNumber());
+        }else{
+            contractDao.setPrevPendBillRcptsNumber((apxRequest.getFirstInstallment().getIsPaymentRequired())
+                    ? BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments() - 1)
+                    : BigDecimal.valueOf(apxRequest.getInstallmentPlan().getTotalNumberInstallments()));
+        }
     }
 
     private String getNextPaymentDate(EmisionBO rimacResponse) {
