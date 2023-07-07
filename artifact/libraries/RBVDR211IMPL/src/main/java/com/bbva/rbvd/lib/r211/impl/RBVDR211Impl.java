@@ -24,6 +24,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
@@ -42,6 +43,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.logging.log4j.util.Strings;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -242,7 +244,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
 				LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****",generalEmisionRequest);
 
-				setOrganization(generalEmisionRequest, requestBody.getHolder().getId(), customerList);
+				setOrganization(generalEmisionRequest,  requestBody, customerList);
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(generalEmisionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			} else {
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
@@ -700,14 +702,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		}
 	}
 
-	private void setOrganization(EmisionBO emision, String customerId, CustomerListASO customerList){
+	private void setOrganization(EmisionBO emision, PolicyDTO requestBody, CustomerListASO customerList){
 		PersonaBO persona = emision.getPayload().getAgregarPersona().getPersona().get(0);
 		CustomerBO customer = customerList.getData().get(0);
 		String tipoDoc = customer.getIdentityDocuments().get(0).getDocumentType().getId();
 		String nroDoc = customer.getIdentityDocuments().get(0).getDocumentNumber();
 		if (RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20")){
 
-			String xcustomerId = this.rbvdR201.executeCypherService(new CypherASO(customerId, KEY_CYPHER_CODE));
+			String xcustomerId = this.rbvdR201.executeCypherService(new CypherASO(requestBody.getHolder().getId(), KEY_CYPHER_CODE));
 			if (xcustomerId == null){
 				BusinessException except = RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
 				except.setMessage("ERROR AL ENCRIPTAR EL IDENTIFICADOR DEL CLIENTE");
@@ -718,14 +720,21 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			if (listBussinesses == null) {
 				throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
 			}
-			List<OrganizacionBO> organizaciones = mapOrganizations(listBussinesses.getData().get(0), persona, customer);
+			List<OrganizacionBO> organizaciones = mapOrganizations(listBussinesses.getData().get(0), persona, customer, requestBody);
 			emision.getPayload().getAgregarPersona().setOrganizacion(organizaciones);
 			emision.getPayload().getAgregarPersona().setPersona(null);
 		}
 	}
 
-	private List<OrganizacionBO> mapOrganizations(final BusinessASO business, PersonaBO persona, CustomerBO customer) {
+	private List<OrganizacionBO> mapOrganizations(final BusinessASO business, PersonaBO persona, CustomerBO customer,PolicyDTO requestBody) {
 		List<OrganizacionBO> organizaciones = new ArrayList<>();
+
+		ContactDetailDTO correoSelect= requestBody.getHolder().getContactDetails().stream().
+				filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals("EMAIL")).findFirst().orElse(new ContactDetailDTO());
+
+		ContactDetailDTO celularSelect= requestBody.getHolder().getContactDetails().stream().
+				filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals("PHONE")).findFirst().orElse(new ContactDetailDTO());
+
 
 		String fijo = customer.getContactDetails().stream().filter(
 						d -> ContactTypeEnum.PHONE_NUMBER.getValue().equals(d.getContactType().getId())).findFirst().
@@ -736,6 +745,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		String correo = customer.getContactDetails().stream().filter(
 						d -> ContactTypeEnum.EMAIL.getValue().equals(d.getContactType().getId())).findFirst().
 				orElse(new ContactDetailsBO()).getContact();
+
+		correo = StringUtils.isNotBlank(correoSelect.getContact().getAddress()) ?correoSelect.getContact().getAddress() : correo;
+		celular = StringUtils.isNotBlank(celularSelect.getContact().getPhoneNumber()) ? celularSelect.getContact().getPhoneNumber() : celular;
 
 		int[] intArray = new int[]{8, 9, 23};
 		for (int i = 0; i < intArray.length; i++) {
