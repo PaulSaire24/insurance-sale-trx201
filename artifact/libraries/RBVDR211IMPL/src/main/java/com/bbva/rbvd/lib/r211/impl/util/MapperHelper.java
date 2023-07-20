@@ -839,9 +839,9 @@ public class MapperHelper {
         ContactDetailDTO celularSelect=new ContactDetailDTO();
         if(!Objects.isNull(requestBody.getHolder())){
             correoSelect= requestBody.getHolder().getContactDetails().stream().
-                    filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals("EMAIL")).findFirst().orElse(new ContactDetailDTO());
+                    filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(EMAIL_VALUE)).findFirst().orElse(new ContactDetailDTO());
             celularSelect= requestBody.getHolder().getContactDetails().stream().
-                    filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals("PHONE")).findFirst().orElse(new ContactDetailDTO());
+                    filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(PHONE_NUMBER_VALUE)).findFirst().orElse(new ContactDetailDTO());
         }
         persona.setTipoDocumento(this.applicationConfigurationService.getProperty(Objects.isNull(requestBody.getHolder())?
                 customer.getIdentityDocuments().get(0).getDocumentType().getId()
