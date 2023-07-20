@@ -836,6 +836,11 @@ public class MapperHelper {
     private PersonaBO constructPerson(PolicyDTO requestBody,CustomerBO customer,Map<String, Object> responseQueryGetRequiredFields){
         PersonaBO persona = new PersonaBO();
 
+        ContactDetailDTO correoSelect= requestBody.getHolder().getContactDetails().stream().
+                filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals("EMAIL")).findFirst().orElse(new ContactDetailDTO());
+        ContactDetailDTO celularSelect= requestBody.getHolder().getContactDetails().stream().
+                filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals("PHONE")).findFirst().orElse(new ContactDetailDTO());
+
         persona.setTipoDocumento(this.applicationConfigurationService.getProperty(Objects.isNull(requestBody.getHolder())?
                 customer.getIdentityDocuments().get(0).getDocumentType().getId()
                 : requestBody.getHolder().getIdentityDocument().getDocumentType().getId()));
@@ -844,17 +849,14 @@ public class MapperHelper {
         persona.setApeMaterno(customer.getSecondLastName());
         persona.setNombres(customer.getFirstName());
         persona.setFechaNacimiento(customer.getBirthData().getBirthDate());
+
         if(Objects.nonNull(customer.getGender())) persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
-        persona.setCorreoElectronico(Objects.isNull(
-                responseQueryGetRequiredFields.get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()))
-                ? requestBody.getHolder().getContactDetails().get(0).getContact().getAddress()
-                : (String) responseQueryGetRequiredFields
-                .get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()));
-        persona.setCelular(Objects.isNull(
-                responseQueryGetRequiredFields.get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()))
-                ? requestBody.getHolder().getContactDetails().get(1).getContact().getPhoneNumber()
-                : (String) responseQueryGetRequiredFields
-                .get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()));
+
+        persona.setCorreoElectronico(Objects.isNull(correoSelect.getContact()) ? (String) responseQueryGetRequiredFields
+                .get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()) : correoSelect.getContact().getAddress());
+
+        persona.setCelular(Objects.isNull(correoSelect.getContact()) ? (String) responseQueryGetRequiredFields
+                .get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()) : celularSelect.getContact().getPhoneNumber());
         persona.setTipoPersona(getPersonType(persona).getCode());
 
         return persona;
