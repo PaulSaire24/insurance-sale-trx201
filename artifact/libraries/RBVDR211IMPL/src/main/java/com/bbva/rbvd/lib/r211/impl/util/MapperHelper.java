@@ -835,12 +835,14 @@ public class MapperHelper {
 
     private PersonaBO constructPerson(PolicyDTO requestBody,CustomerBO customer,Map<String, Object> responseQueryGetRequiredFields){
         PersonaBO persona = new PersonaBO();
-
-        ContactDetailDTO correoSelect= requestBody.getHolder().getContactDetails().stream().
-                filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals("EMAIL")).findFirst().orElse(new ContactDetailDTO());
-        ContactDetailDTO celularSelect= requestBody.getHolder().getContactDetails().stream().
-                filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals("PHONE")).findFirst().orElse(new ContactDetailDTO());
-
+        ContactDetailDTO correoSelect=new ContactDetailDTO();
+        ContactDetailDTO celularSelect=new ContactDetailDTO();
+        if(!Objects.isNull(requestBody.getHolder())){
+            correoSelect= requestBody.getHolder().getContactDetails().stream().
+                    filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals("EMAIL")).findFirst().orElse(new ContactDetailDTO());
+            celularSelect= requestBody.getHolder().getContactDetails().stream().
+                    filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals("PHONE")).findFirst().orElse(new ContactDetailDTO());
+        }
         persona.setTipoDocumento(this.applicationConfigurationService.getProperty(Objects.isNull(requestBody.getHolder())?
                 customer.getIdentityDocuments().get(0).getDocumentType().getId()
                 : requestBody.getHolder().getIdentityDocument().getDocumentType().getId()));
