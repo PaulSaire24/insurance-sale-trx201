@@ -1348,6 +1348,7 @@ public class MapperHelper {
         persons.setDireccion(validateSN(persona.getDireccion()));
         persons.setDistrito(validateSN(persona.getDistrito()));
         persons.setProvincia(validateSN(persona.getProvincia()));
+        persons.setUbigeo(validateSN(persona.getUbigeo()));
         persons.setDepartamento(validateSN(persona.getDepartamento()));
         persons.setTipoVia(validateSN(persona.getTipoVia()));
         persons.setNombreVia(validateSN(persona.getNombreVia()));
@@ -1358,7 +1359,7 @@ public class MapperHelper {
 
     private String validateSN(String name) {
         if(Objects.isNull(name) || "null".equals(name) || " ".equals(name)){
-            return "N/A";
+            return "N.A";
         }else{
             name = name.replace("#","Ñ");
             return name;
