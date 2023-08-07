@@ -1339,6 +1339,7 @@ public class MapperHelper {
         persons.setDireccion(validateSN(persona.getDireccion()));
         persons.setDistrito(validateSN(persona.getDistrito()));
         persons.setProvincia(validateSN(persona.getProvincia()));
+        persons.setUbigeo(validateSN(persona.getUbigeo()));
         persons.setDepartamento(validateSN(persona.getDepartamento()));
         persons.setTipoVia(validateSN(persona.getTipoVia()));
         persons.setNombreVia(validateSN(persona.getNombreVia()));
@@ -1361,18 +1362,24 @@ public class MapperHelper {
         String viaTipoNombre = null;
         StringBuilder additionalAddress2  = new StringBuilder();
         StringBuilder additionalAddress3  = new StringBuilder();
+        String districtCode = "";
+        String provinceCode = "";
+        String departmentCode = "";
         CustomerBO customer = customerList.getData().get(0);
         for (int j = 0; j < customer.getAddresses().get(0).getLocation().getGeographicGroups().size(); j++) {
             String id = customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
                     .getGeographicGroupType().getId();
             if ("DISTRICT".equals(id)) {
                 persona.setDistrito(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getName());
+                districtCode = customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getCode();
             }
             if ("PROVINCE".equals(id)) {
                 persona.setProvincia(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getName());
+                provinceCode = customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getCode();
             }
             if ("DEPARTMENT".equals(id)) {
                 persona.setDepartamento(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getName());
+                departmentCode = customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j).getCode();
             }
             Map<String, String> map = tipeViaList();
             for (String clave:map.keySet()) {
@@ -1391,6 +1398,7 @@ public class MapperHelper {
         persona.setDireccion(getFullDirectionFromCustomer(viaTipoNombre, additionalAddress2,
                 additionalAddress3, addressExtra, persona).trim());
 
+        persona.setUbigeo(departmentCode.concat(provinceCode).concat(districtCode));
         return viaTipoNombre;
     }
 
