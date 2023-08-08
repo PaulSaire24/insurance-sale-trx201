@@ -328,7 +328,6 @@ public class MapperHelperTest {
         assertNotNull(validation.getSettlementFixPremiumAmount());
         assertNotNull(validation.getAutomaticDebitIndicatorType());
         assertNotNull(validation.getBiometryTransactionId());
-        assertNotNull(validation.getCouponCode());
 
         assertEquals("0011", validation.getEntityId());
         assertEquals("0241", validation.getBranchId());
@@ -368,7 +367,6 @@ public class MapperHelperTest {
         assertEquals(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()), validation.getSettlementFixPremiumAmount());
         assertEquals(S_VALUE, validation.getAutomaticDebitIndicatorType());
         assertEquals(apxRequest.getIdentityVerificationCode(), validation.getBiometryTransactionId());
-        assertEquals(apxRequest.getCouponCode(), validation.getCouponCode());
 
         CuotaFinancimientoBO cuota = new CuotaFinancimientoBO();
         cuota.setCuota(1L);
@@ -386,7 +384,6 @@ public class MapperHelperTest {
 
         apxRequest.setBusinessAgent(null);
         apxRequest.setPromoter(null);
-        apxRequest.setCouponCode(null);
 
         validation = mapperHelper.buildInsuranceContract(apxRequest, requiredFieldsEmissionDao, "00110241400000001102", true);
 
@@ -450,7 +447,6 @@ public class MapperHelperTest {
         when(contractDao.getAutomaticDebitIndicatorType()).thenReturn(S_VALUE);
         when(contractDao.getBiometryTransactionId()).thenReturn("transactionId");
         when(contractDao.getTelemarketingTransactionId()).thenReturn("transactionId");
-        when(contractDao.getCouponCode()).thenReturn("couponCode");
 
         Map<String, Object> validation = mapperHelper.createSaveContractArguments(contractDao);
 
@@ -501,7 +497,6 @@ public class MapperHelperTest {
         assertNotNull(validation.get(RBVDProperties.FIELD_AUTOMATIC_DEBIT_INDICATOR_TYPE.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_BIOMETRY_TRANSACTION_ID.getValue()));
         assertNotNull(validation.get(RBVDProperties.FIELD_TELEMARKETING_TRANSACTION_ID.getValue()));
-        assertNotNull(validation.get(RBVDProperties.FIELD_POLICY_DISCOUNT_COUPON_ID.getValue()));
 
         assertEquals(contractDao.getEntityId(), validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue()));
         assertEquals(contractDao.getBranchId(), validation.get(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue()));
@@ -549,7 +544,6 @@ public class MapperHelperTest {
         assertEquals(contractDao.getAutomaticDebitIndicatorType(), validation.get(RBVDProperties.FIELD_AUTOMATIC_DEBIT_INDICATOR_TYPE.getValue()));
         assertEquals(contractDao.getBiometryTransactionId(), validation.get(RBVDProperties.FIELD_BIOMETRY_TRANSACTION_ID.getValue()));
         assertEquals(contractDao.getTelemarketingTransactionId(), validation.get(RBVDProperties.FIELD_TELEMARKETING_TRANSACTION_ID.getValue()));
-        assertEquals(contractDao.getCouponCode(), validation.get(RBVDProperties.FIELD_POLICY_DISCOUNT_COUPON_ID.getValue()));
     }
 
     @Test

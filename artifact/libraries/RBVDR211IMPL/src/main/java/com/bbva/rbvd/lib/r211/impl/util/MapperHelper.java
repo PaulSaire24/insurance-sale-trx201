@@ -413,10 +413,6 @@ public class MapperHelper {
             contractDao.setInsurancePromoterId(apxRequest.getPromoter().getId());
         }
 
-        if(nonNull(apxRequest.getCouponCode())){
-            contractDao.setCouponCode(apxRequest.getCouponCode());
-        }
-
         contractDao.setContractManagerBranchId(apxRequest.getBank().getBranch().getId());
         contractDao.setContractInceptionDate(currentDate);
 
@@ -494,7 +490,6 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_POLICY_ID.getValue(), contractDao.getPolicyId());
         arguments.put(RBVDProperties.FIELD_INSURANCE_MANAGER_ID.getValue(), contractDao.getInsuranceManagerId());
         arguments.put(RBVDProperties.FIELD_INSURANCE_PROMOTER_ID.getValue(), contractDao.getInsurancePromoterId());
-        arguments.put(RBVDProperties.FIELD_POLICY_DISCOUNT_COUPON_ID.getValue(), contractDao.getCouponCode());
         arguments.put(RBVDProperties.FIELD_CONTRACT_MANAGER_BRANCH_ID.getValue(), contractDao.getContractManagerBranchId());
         arguments.put(RBVDProperties.FIELD_CONTRACT_INCEPTION_DATE.getValue(), contractDao.getContractInceptionDate());
         arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_START_DATE.getValue(), contractDao.getInsuranceContractStartDate());
