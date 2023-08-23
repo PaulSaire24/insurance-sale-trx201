@@ -84,6 +84,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String INPUT_CONTEXT_CRYPTO_CONTACTDETAIL = "operation=DO;type=contactDetailId;origin=ASO;endpoint=ASO;securityLevel=5";
 	private static final String CRED_EXTRA_PARAMS = "user=KSMK;country=PE";
 	private static final String KEY_PIC_CODE = "pic.code";
+	private static final String KEY_CONTACT_CENTER_CODE = "cc.code";
 	private static final String KEY_AGENT_PROMOTER_CODE = "agent.and.promoter.code";
 	private static final String KEY_TLMKT_CODE = "telemarketing.code";
 	private static final String KEY_CYPHER_CODE = "apx-pe-fpextff1-do";
@@ -558,7 +559,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private void validateDigitalSale(PolicyDTO requestBody) {
 		String picCodeValue = this.applicationConfigurationService.getProperty(KEY_PIC_CODE);
-		if( !(picCodeValue.equals(requestBody.getSaleChannelId()) || "TM".equals(requestBody.getSaleChannelId())) ) {
+		String contactCenterCodeValue = this.applicationConfigurationService.getProperty(KEY_CONTACT_CENTER_CODE);
+		if( !(picCodeValue.equals(requestBody.getSaleChannelId()) || "TM".equals(requestBody.getSaleChannelId()) || contactCenterCodeValue.equals(requestBody.getSaleChannelId())) ) {
 
 			LOGGER.info("***** It's digital sale!! *****");
 			String appGlomo = this.applicationConfigurationService.getProperty(CHANNEL_GLOMO);

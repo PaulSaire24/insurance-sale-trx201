@@ -19,6 +19,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyProductPlan;
 import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.SaleSupplierDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.TotalAmountDTO;
 import java.util.Calendar;
 import java.util.List;
@@ -184,6 +185,13 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	 */
 	protected List<DeliveryDTO> getDeliveries(){
 		return (List<DeliveryDTO>)this.getParameter("deliveries");
+	}
+
+	/**
+	 * Return value for input parameter saleSupplier
+	 */
+	protected SaleSupplierDTO getSalesupplier(){
+		return (SaleSupplierDTO)this.getParameter("saleSupplier");
 	}
 
 	/**
@@ -408,5 +416,12 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	 */
 	protected void setDeliveries(final List<DeliveryDTO> field){
 		this.addParameter("deliveries", field);
+	}
+
+	/**
+	 * Set value for SaleSupplierDTO output parameter saleSupplier
+	 */
+	protected void setSalesupplier(final SaleSupplierDTO field){
+		this.addParameter("saleSupplier", field);
 	}
 }

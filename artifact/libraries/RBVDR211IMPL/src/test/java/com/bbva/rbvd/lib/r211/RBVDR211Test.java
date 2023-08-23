@@ -153,6 +153,7 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getProperty("pisd.channel.glomo.aap")).thenReturn("13000013");
 		when(this.applicationConfigurationService.getProperty("telemarketing.code")).thenReturn("7794");
 		when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
+		when(this.applicationConfigurationService.getProperty("cc.code")).thenReturn("CC");
 		when(this.applicationConfigurationService.getProperty("agent.and.promoter.code")).thenReturn(AGENT_AND_PROMOTER_DEFAULT_CODE);
 		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_RUC")).thenReturn("00000000000");
 		when(this.applicationConfigurationService.getProperty("ENDOSATARIO_PORCENTAJE")).thenReturn("40");
@@ -285,7 +286,6 @@ public class RBVDR211Test {
 	@Test
 	public void executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError() {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithReceiptsInsertionError...");
-
 		when(pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue(), argumentsForMultipleInsertion)).
 				thenReturn(new int[0]);
 
