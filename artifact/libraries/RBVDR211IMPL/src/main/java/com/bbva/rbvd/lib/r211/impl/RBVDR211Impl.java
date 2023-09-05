@@ -770,6 +770,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			organizacion.setDistrito(persona.getDistrito());
 			organizacion.setProvincia(persona.getProvincia());
 			organizacion.setDepartamento(persona.getDepartamento());
+			organizacion.setUbigeo(persona.getUbigeo());
 			organizacion.setNombreVia(persona.getNombreVia());
 			organizacion.setTipoVia(persona.getTipoVia());
 			organizacion.setNumeroVia(persona.getNumeroVia());
