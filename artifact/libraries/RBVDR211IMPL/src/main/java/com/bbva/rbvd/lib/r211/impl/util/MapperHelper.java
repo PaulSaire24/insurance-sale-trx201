@@ -32,6 +32,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.ParticipantASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.ParticipantTypeASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BusinessAgentASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PromoterASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.SalesSupplierASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuranceCompanyASO;
@@ -248,6 +249,12 @@ public class MapperHelper {
             requestAso.setPromoter(promoter);
         }
 
+        if(Objects.nonNull(apxRequest.getSaleSupplier())) {
+            SalesSupplierASO salesSupplier = new SalesSupplierASO();
+            salesSupplier.setId(apxRequest.getSaleSupplier().getId());
+            requestAso.setSalesSupplier(salesSupplier);
+        }
+
         BankASO bank = new BankASO();
 
         BranchASO branch = new BranchASO();
@@ -413,6 +420,10 @@ public class MapperHelper {
             contractDao.setInsurancePromoterId(apxRequest.getPromoter().getId());
         }
 
+        if(nonNull(apxRequest.getSaleSupplier())){
+            contractDao.setOriginalPaymentSubchannelId(apxRequest.getSaleSupplier().getId());
+        }
+
         contractDao.setContractManagerBranchId(apxRequest.getBank().getBranch().getId());
         contractDao.setContractInceptionDate(currentDate);
 
@@ -525,6 +536,7 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_AUTOMATIC_DEBIT_INDICATOR_TYPE.getValue(), contractDao.getAutomaticDebitIndicatorType());
         arguments.put(RBVDProperties.FIELD_BIOMETRY_TRANSACTION_ID.getValue(), contractDao.getBiometryTransactionId());
         arguments.put(RBVDProperties.FIELD_TELEMARKETING_TRANSACTION_ID.getValue(), contractDao.getTelemarketingTransactionId());
+        arguments.put(RBVDProperties.FIELD_ORIGINAL_PAYMENT_SUBCHANNEL_ID.getValue(), contractDao.getOriginalPaymentSubchannelId());
         return arguments;
     }
 
@@ -846,7 +858,6 @@ public class MapperHelper {
         persona.setApeMaterno(customer.getSecondLastName());
         persona.setNombres(customer.getFirstName());
         persona.setFechaNacimiento(customer.getBirthData().getBirthDate());
-
         if(Objects.nonNull(customer.getGender())) persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
 
         persona.setCorreoElectronico(Objects.isNull(correoSelect.getContact()) ? (String) responseQueryGetRequiredFields

@@ -148,6 +148,9 @@
 				<parameter order="2" name="method" mandatory="1" type="String" size="20"/>
 			</dto>
 		</list>
+		<dto order="23" name="saleSupplier" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.SaleSupplierDTO" artifactId="RBVDC201">
+			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+		</dto>
 	</paramsIn>
 	<paramsOut>
 		<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
@@ -414,6 +417,9 @@
 				<parameter order="2" name="method" mandatory="1" type="String" size="20"/>
 			</dto>
 		</list>
+		<dto order="33" name="saleSupplier" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.SaleSupplierDTO" artifactId="RBVDC201">
+			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
+		</dto>
 	</paramsOut>
 	<description>Trx to create a policy</description>
 </transaction>
