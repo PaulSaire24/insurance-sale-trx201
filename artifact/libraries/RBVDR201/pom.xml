@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>com.bbva.rbvd</groupId>
 		<artifactId>LIBRARIES-insurance-sale-trx201</artifactId>
-		<version>0.14.2</version>
+		<version>0.14.3</version>
 	</parent>
 	<groupId>com.bbva.rbvd</groupId>
 	<artifactId>RBVDR201</artifactId>
 	<name>RBVDR201</name>
-	<version>0.14.2</version>
+	<version>0.14.3</version>
 	<packaging>bundle</packaging>
 	<description>Library to call internal and external services</description>
 	<properties>
