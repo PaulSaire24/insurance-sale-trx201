@@ -560,7 +560,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private void validateDigitalSale(PolicyDTO requestBody) {
 		String picCodeValue = this.applicationConfigurationService.getProperty(KEY_PIC_CODE);
 		String contactCenterCodeValue = this.applicationConfigurationService.getProperty(KEY_CONTACT_CENTER_CODE);
-		if( !(picCodeValue.equals(requestBody.getSaleChannelId()) || "TM".equals(requestBody.getSaleChannelId()) || contactCenterCodeValue.equals(requestBody.getSaleChannelId())) ) {
+		if( !(picCodeValue.equals(requestBody.getSaleChannelId()) || "TM".equals(requestBody.getSaleChannelId()) || requestBody.getSaleChannelId().equals(contactCenterCodeValue)) ) {
 
 			LOGGER.info("***** It's digital sale!! *****");
 			String appGlomo = this.applicationConfigurationService.getProperty(CHANNEL_GLOMO);
