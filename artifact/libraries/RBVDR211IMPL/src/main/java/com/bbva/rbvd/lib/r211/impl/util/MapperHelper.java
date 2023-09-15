@@ -863,7 +863,7 @@ public class MapperHelper {
         persona.setCorreoElectronico(Objects.isNull(correoSelect.getContact()) ? (String) responseQueryGetRequiredFields
                 .get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()) : correoSelect.getContact().getAddress());
 
-        persona.setCelular(Objects.isNull(correoSelect.getContact()) ? (String) responseQueryGetRequiredFields
+        persona.setCelular(Objects.isNull(celularSelect.getContact()) ? (String) responseQueryGetRequiredFields
                 .get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()) : celularSelect.getContact().getPhoneNumber());
         persona.setTipoPersona(getPersonType(persona).getCode());
 
@@ -1365,7 +1365,7 @@ public class MapperHelper {
 
     private String validateSN(String name) {
         if(Objects.isNull(name) || "null".equals(name) || " ".equals(name)){
-            return "N.A";
+            return "N/A";
         }else{
             name = name.replace("#","Ñ");
             return name;
