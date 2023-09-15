@@ -857,7 +857,7 @@ public class MapperHelper {
         persona.setCorreoElectronico(Objects.isNull(correoSelect.getContact()) ? (String) responseQueryGetRequiredFields
                 .get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()) : correoSelect.getContact().getAddress());
 
-        persona.setCelular(Objects.isNull(correoSelect.getContact()) ? (String) responseQueryGetRequiredFields
+        persona.setCelular(Objects.isNull(celularSelect.getContact()) ? (String) responseQueryGetRequiredFields
                 .get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()) : celularSelect.getContact().getPhoneNumber());
         persona.setTipoPersona(getPersonType(persona).getCode());
 
