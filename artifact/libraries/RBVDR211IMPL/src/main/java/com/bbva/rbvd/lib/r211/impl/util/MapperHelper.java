@@ -1522,4 +1522,20 @@ public class MapperHelper {
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;
     }
+    public Map<String,Object> createSaveInsuranceContractDetailsArguments(PolicyDTO requestBody, InsuranceContractDAO contractDao,String linkedContracId){
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(),contractDao.getEntityId());
+        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(),contractDao.getBranchId());
+        arguments.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(),contractDao.getIntAccountId());
+        arguments.put(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue(),linkedContracId);
+        arguments.put(RBVDProperties.FIELD_PRODUCT_ID.getValue(),requestBody.getRelatedContracts().get(0).getContractDetails().getContractType());
+        arguments.put(RBVDProperties.FIELD_START_LINKAGE_DATE.getValue(),null);
+        arguments.put(RBVDProperties.FIELD_LINKAGE_END_DATE.getValue(),null);
+        arguments.put(RBVDProperties.FIELD_CONTRACT_LINKED_STATUS_TYPE.getValue(),"01");
+        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(),contractDao.getCreationUserId());
+        arguments.put(RBVDProperties.FIELD_CREATION_DATE.getValue(),"SYSTEM");
+        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(),contractDao.getUserAuditId());
+        arguments.put(RBVDProperties.FIELD_AUDIT_DATE.getValue(),"SYSTEM");
+        return arguments;
+    }
 }

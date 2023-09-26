@@ -36,6 +36,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
 
+import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.ContactTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
@@ -70,6 +71,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
+import org.springframework.util.CollectionUtils;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -216,6 +218,21 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 				validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSRNC_CTR_PARTICIPANT.getValue(),
 						participantsArguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
+			}
+
+			if(!CollectionUtils.isEmpty(requestBody.getRelatedContracts())){
+
+				for(RelatedContractDTO relatedContractDTO : requestBody.getRelatedContracts()){
+					String linkedContracId="";
+					if(relatedContractDTO.getContractDetails().getContractType().equals("INTERNAL_CONTRACT")){
+						linkedContracId = relatedContractDTO.getContractDetails().getContractId();
+					} else if (relatedContractDTO.getContractDetails().getContractType().equals("EXTERNAL_CONTRACT")) {
+						linkedContracId = relatedContractDTO.getContractDetails().getNumber();
+					}
+					Map<String,Object> argumentsForSaveInsuranceContractDetails= this.mapperHelper.createSaveInsuranceContractDetailsArguments(requestBody, contractDao,linkedContracId);
+					int insertedInsuranceContractDetails = this.pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(),argumentsForSaveInsuranceContractDetails);
+					validateInsertion(insertedInsuranceContractDetails, RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
+				}
 			}
 
 			if(isEndorsement){
