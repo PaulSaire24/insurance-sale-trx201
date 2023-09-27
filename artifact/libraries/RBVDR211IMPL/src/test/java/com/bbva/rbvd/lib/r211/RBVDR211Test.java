@@ -380,6 +380,9 @@ public class RBVDR211Test {
 				RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue(), RBVDProperties.FIELD_INSURANCE_POLICY_END_DATE.getValue(),
 				RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue(), RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue())).thenReturn(0);
 
+		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
+				thenReturn(1);
+
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNull(validation);
@@ -392,6 +395,8 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS", argumentsForMultipleInsertion)).
 				thenReturn(null);
+		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
+				thenReturn(1);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -463,6 +468,8 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_POLICY_ENDORSEMENT.getValue(), new HashMap<>())).
 				thenReturn(1);
+		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
+				thenReturn(1);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -476,6 +483,8 @@ public class RBVDR211Test {
 		requestBody.setProductId("832");
 
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
+				thenReturn(1);
 
 		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
 		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
@@ -493,7 +502,12 @@ public class RBVDR211Test {
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
+
 		assertNotNull(validation);
+		requestBody.setRelatedContracts(null);
+		PolicyDTO validation2 = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNotNull(validation2);
 	}
 
 	@Test
@@ -528,6 +542,9 @@ public class RBVDR211Test {
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
 
 		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(null);
+
+		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
+				thenReturn(1);
 
 		customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("RUC");
 		customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("20999999991");
@@ -834,6 +851,9 @@ public class RBVDR211Test {
 		requestBody.getInstallmentPlan().getPaymentAmount().setAmount(100d);
 		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
 				thenReturn(responseBD);
+		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
+				thenReturn(1);
+
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertNotNull(validation);

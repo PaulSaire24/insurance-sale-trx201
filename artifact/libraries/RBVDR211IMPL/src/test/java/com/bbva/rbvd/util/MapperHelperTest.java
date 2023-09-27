@@ -1831,4 +1831,21 @@ public class MapperHelperTest {
                 asoResponse.getData().getId());
         assertEquals("01/04/2064", validation.get(RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue()));
     }
+
+    @Test
+    public void testcreateSaveInsuranceContractDetailsArguments() throws IOException{
+        FinancialProductDTO financialProductDTO = new FinancialProductDTO();
+        NumberTypeDTO numberTypeDTO = new NumberTypeDTO();
+        financialProductDTO.setId("01");
+        numberTypeDTO.setId("01");
+        apxRequest.getRelatedContracts().get(0).getContractDetails().setProduct(financialProductDTO);
+        apxRequest.getRelatedContracts().get(1).getContractDetails().setNumberType( numberTypeDTO );
+        Map<String, Object> validation = this.mapperHelper.createSaveInsuranceContractDetailsArguments( apxRequest,apxRequest.getRelatedContracts().get(0),
+                contractDao);
+        assertEquals("01", validation.get(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue()));
+        assertEquals("01", validation.get(RBVDProperties.FIELD_CONTRACT_LINKED_STATUS_TYPE.getValue()));
+        Map<String, Object> validation2 = this.mapperHelper.createSaveInsuranceContractDetailsArguments( apxRequest,apxRequest.getRelatedContracts().get(1),
+                contractDao);
+        assertEquals("02", validation2.get(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue()));
+    }
 }
