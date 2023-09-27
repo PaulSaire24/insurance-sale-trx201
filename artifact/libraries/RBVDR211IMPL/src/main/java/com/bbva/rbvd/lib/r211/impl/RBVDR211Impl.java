@@ -223,13 +223,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			if(!CollectionUtils.isEmpty(requestBody.getRelatedContracts())){
 
 				for(RelatedContractDTO relatedContractDTO : requestBody.getRelatedContracts()){
-					String linkedContracId="";
-					if(relatedContractDTO.getContractDetails().getContractType().equals("INTERNAL_CONTRACT")){
-						linkedContracId = relatedContractDTO.getContractDetails().getContractId();
-					} else if (relatedContractDTO.getContractDetails().getContractType().equals("EXTERNAL_CONTRACT")) {
-						linkedContracId = relatedContractDTO.getContractDetails().getNumber();
-					}
-					Map<String,Object> argumentsForSaveInsuranceContractDetails= this.mapperHelper.createSaveInsuranceContractDetailsArguments(requestBody, contractDao,linkedContracId);
+					Map<String,Object> argumentsForSaveInsuranceContractDetails= this.mapperHelper.createSaveInsuranceContractDetailsArguments(requestBody, relatedContractDTO, contractDao);
 					int insertedInsuranceContractDetails = this.pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(),argumentsForSaveInsuranceContractDetails);
 					validateInsertion(insertedInsuranceContractDetails, RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
 				}
