@@ -138,7 +138,7 @@ public class MapperHelper {
     private static final String RECEIPT_DEFAULT_DATE_VALUE = "01/01/0001";
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
     private static final String TAG_ENDORSEE = "ENDORSEE";
-    private static final String FIELD_SYSTIMESTAMP = "SYSTEM";
+    private static final String FIELD_SYSTEM = "SYSTEM";
     private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
     private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
 
@@ -789,8 +789,8 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_ENDORSEMENT_EFF_END_DATE.getValue(), contractDao.getInsuranceContractEndDate());
         arguments.put(RBVDProperties.FIELD_POLICY_ENDORSEMENT_PER.getValue(), endosatarioPorcentaje);
         arguments.put(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue(), "01");
-        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), FIELD_SYSTIMESTAMP);
-        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), FIELD_SYSTIMESTAMP);
+        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), FIELD_SYSTEM);
+        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), FIELD_SYSTEM);
 
         return arguments;
     }
@@ -1539,9 +1539,7 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_LINKAGE_END_DATE.getValue(),convertDateToLocalDate(requestBody.getInstallmentPlan().getMaturityDate()));
         arguments.put(RBVDProperties.FIELD_CONTRACT_LINKED_STATUS_TYPE.getValue(),"01");
         arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(),requestBody.getCreationUser());
-        arguments.put(RBVDProperties.FIELD_CREATION_DATE.getValue(),FIELD_SYSTIMESTAMP);
         arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(),requestBody.getUserAudit());
-        arguments.put(RBVDProperties.FIELD_AUDIT_DATE.getValue(),FIELD_SYSTIMESTAMP);
         return arguments;
     }
 }
