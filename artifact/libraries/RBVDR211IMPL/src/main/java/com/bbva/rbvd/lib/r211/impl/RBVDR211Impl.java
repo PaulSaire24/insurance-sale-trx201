@@ -21,8 +21,12 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 
-import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
-
+import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.OrganizacionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
@@ -32,7 +36,12 @@ import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.*;
+
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.ContactTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
@@ -524,11 +533,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	}
 
 	private boolean validateParticipantTypeIfExist(List<ParticipantDTO> participants,String tagParticipantType){
-		if(!org.springframework.util.StringUtils.isEmpty(participants) &&
-			participants.stream().anyMatch(participant -> participant.getParticipantType().getId().equals(tagParticipantType))){
-			return true;
-		}
-		return false;
+		return (!org.springframework.util.StringUtils.isEmpty(participants) &&
+			participants.stream().anyMatch(participant -> participant.getParticipantType().getId().equals(tagParticipantType)));
 	}
 
 	private Map<String, Object> createSingleArgument(String argument, String parameterName) {
