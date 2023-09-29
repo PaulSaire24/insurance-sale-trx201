@@ -58,10 +58,14 @@
 				<dto order="2" name="contractDetails" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.ContractDetailsDTO" artifactId="RBVDC201">
 					<parameter order="1" name="contractType" mandatory="1" type="String" size="50"/>
 					<parameter order="2" name="contractId" mandatory="1" type="String" size="30"/>
-					<dto order="3" name="numberType" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.NumberTypeDTO" artifactId="RBVDC201">
+					<dto order="3" name="numberType" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.NumberTypeDTO" artifactId="RBVDC201">
 						<parameter order="1" name="id" mandatory="1" type="String" size="30"/>
 					</dto>
-					<parameter order="4" name="number" mandatory="1" type="String" size="30"/>
+					<parameter order="4" name="number" mandatory="0" type="String" size="30"/>
+					<dto order="5" name="product" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.FinancialProductDTO" artifactId="RBVDC201">
+						<parameter order="1" name="id" mandatory="1" type="String" size="10"/>
+						<parameter order="2" name="name" mandatory="0" type="String" size="100"/>
+					</dto>
 				</dto>
 			</dto>
 		</list>
@@ -240,16 +244,16 @@
 						<parameter order="1" name="id" mandatory="1" type="String" size="10"/>
 						<parameter order="2" name="name" mandatory="0" type="String" size="100"/>
 					</dto>
-					<dto order="2" name="numberType" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.NumberTypeDTO" artifactId="RBVDC201">
+					<dto order="2" name="numberType" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.NumberTypeDTO" artifactId="RBVDC201">
 						<parameter order="1" name="id" mandatory="1" type="String" size="30"/>
 						<parameter order="2" name="description" mandatory="0" type="String" size="100"/>
 					</dto>
 					<parameter order="3" name="contractType" mandatory="1" type="String" size="50"/>
-					<parameter order="4" name="description" mandatory="1" type="String" size="100"/>
-					<parameter order="5" name="contractId" mandatory="1" type="String" size="20"/>
-					<parameter order="6" name="number" mandatory="1" type="String" size="20"/>
+					<parameter order="4" name="description" mandatory="0" type="String" size="100"/>
+					<parameter order="5" name="contractId" mandatory="0" type="String" size="20"/>
+					<parameter order="6" name="number" mandatory="0" type="String" size="20"/>
 				</dto>
-				<parameter order="3" name="id" mandatory="1" type="String" size="20"/>
+				<parameter order="3" name="id" mandatory="0" type="String" size="20"/>
 			</dto>
 		</list>
 		<dto order="16" name="installmentPlan" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.PolicyInstallmentPlanDTO" artifactId="RBVDC201">
