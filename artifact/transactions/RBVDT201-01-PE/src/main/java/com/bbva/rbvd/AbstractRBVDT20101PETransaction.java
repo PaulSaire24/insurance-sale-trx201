@@ -6,7 +6,6 @@ import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.LinkDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.TotalAmountDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ValidityPeriodDTO;
 import com.bbva.rbvd.dto.insrncsale.offer.PolicyDurationDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
@@ -406,7 +405,7 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	}
 
 	/**
-	 * Set value for TotalAmountDTO output parameter totalAmountWithoutTax
+	 * Set value for PaymentAmountDTO output parameter totalAmountWithoutTax
 	 */
 	protected void setTotalamountwithouttax(final TotalAmountDTO field){
 		this.addParameter("totalAmountWithoutTax", field);
