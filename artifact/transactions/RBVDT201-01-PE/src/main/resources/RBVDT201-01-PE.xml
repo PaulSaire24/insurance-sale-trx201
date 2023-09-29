@@ -57,7 +57,7 @@
 				</dto>
 				<dto order="2" name="contractDetails" mandatory="1" package="com.bbva.rbvd.dto.insrncsale.policy.ContractDetailsDTO" artifactId="RBVDC201">
 					<parameter order="1" name="contractType" mandatory="1" type="String" size="50"/>
-					<parameter order="2" name="contractId" mandatory="1" type="String" size="30"/>
+					<parameter order="2" name="contractId" mandatory="0" type="String" size="30"/>
 					<dto order="3" name="numberType" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.NumberTypeDTO" artifactId="RBVDC201">
 						<parameter order="1" name="id" mandatory="1" type="String" size="30"/>
 					</dto>
