@@ -28,6 +28,8 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
@@ -162,6 +164,7 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.832.XX", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.833.BI", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.840.PC", "0")).thenReturn("0");
+		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.841.PC", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.range.payment.amount.insurance", "5")).thenReturn("5");
 
 		asoResponse = mockData.getEmisionASOResponse();
@@ -178,6 +181,7 @@ public class RBVDR211Test {
 		payload.setAgregarPersona(agregarPersona);
 		generalEmisionRequest.setPayload(payload);
 		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(), anyObject())).thenReturn(generalEmisionRequest);
+		when(mapperHelper.generateRimacRequestLife(anyString(),anyString(),anyString(),anyString(),anyString(),anyString())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.getPersonType(anyObject())).thenReturn(PersonTypeEnum.NATURAL);
 
 		when(rbvdr201.executeCypherService(anyObject())).thenReturn("");
@@ -217,6 +221,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", argumentsUpdateEndorsementTable,
 				RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue())).thenReturn(1);
+		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", new HashMap<>())).thenReturn(1);
 		/* P030557 */
 	}
 
@@ -874,6 +879,50 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
 
 		assertNotNull(validation);
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyWithLifeDynamic_WithEndorse() throws  IOException{
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithLifeDynamic_WithEndorse...");
+		AgregarTerceroBO responseAddParticipants = mockData.getAddParticipantsRimacResponse();
+		EmisionBO responseEmission = mockData.getEmissionRimacResponseLife();
+		Map<String, Object> filters = new HashMap<>();
+		filters.put(RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue(), "1300009671");
+		filters.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), "0000001102");
+
+		requestBody.setProductId("841");
+		requestBody.setSaleChannelId("PC");
+		requestBody.getParticipants().add(getParticipantEndorse());
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
+		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_POLICY_ENDORSEMENT.getValue(), new HashMap<>())).thenReturn(1);
+		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", filters, RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue())).thenReturn(1);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+
+		assertNotNull(validation);
+
+		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", filters, RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue())).thenReturn(0);
+
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+
+		assertNull(validation);
+	}
+
+	private static ParticipantDTO getParticipantEndorse() {
+		ParticipantDTO participantEndorse = new ParticipantDTO();
+		participantEndorse.setBenefitPercentage(new Double(100));
+		ParticipantTypeDTO participantType = new ParticipantTypeDTO();
+		participantType.setId("ENDORSEE");
+		participantEndorse.setParticipantType(participantType);
+		IdentityDocumentDTO identityDocument = new IdentityDocumentDTO();
+		identityDocument.setNumber("20100130204");
+		DocumentTypeDTO documentType = new DocumentTypeDTO();
+		documentType.setId("RUC");
+		identityDocument.setDocumentType(documentType);
+		participantEndorse.setIdentityDocument(identityDocument);
+		return participantEndorse;
 	}
 
 	@Test
