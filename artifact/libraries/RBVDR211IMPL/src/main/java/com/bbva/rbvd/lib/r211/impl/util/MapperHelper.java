@@ -1535,8 +1535,8 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue(),relatedContractDTO.getContractDetails().getContractType().equals(FIELD_INTERNAL_CONTRACT) ?
                 relatedContractDTO.getContractDetails().getContractId() :
                 relatedContractDTO.getContractDetails().getNumber());
-        arguments.put(RBVDProperties.FIELD_START_LINKAGE_DATE.getValue(),requestBody.getValidityPeriod().getStartDate());
-        arguments.put(RBVDProperties.FIELD_LINKAGE_END_DATE.getValue(),requestBody.getInstallmentPlan().getMaturityDate());
+        arguments.put(RBVDProperties.FIELD_START_LINKAGE_DATE.getValue(), generateCorrectDateFormat(convertDateToLocalDate(requestBody.getValidityPeriod().getStartDate())));
+        arguments.put(RBVDProperties.FIELD_LINKAGE_END_DATE.getValue(),convertDateToLocalDate(requestBody.getInstallmentPlan().getMaturityDate()));
         arguments.put(RBVDProperties.FIELD_CONTRACT_LINKED_STATUS_TYPE.getValue(),"01");
         arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(),requestBody.getCreationUser());
         arguments.put(RBVDProperties.FIELD_CREATION_DATE.getValue(),FIELD_SYSTIMESTAMP);
