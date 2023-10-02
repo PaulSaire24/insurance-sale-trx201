@@ -1558,11 +1558,7 @@ public class MapperHelper {
     }
 
     public Map<String, Object>[] createSaveRelatedContractsArguments(List<RelatedContractDAO> contracts) {
-        Map<String, Object>[] receiptsArguments = new HashMap[contracts.size()];
-        for(int i = 0; i < contracts.size(); i++) {
-            receiptsArguments[i] = createRelatedContractArgument(contracts.get(i));
-        }
-        return receiptsArguments;
+        return contracts.stream().map(this::createRelatedContractArgument).toArray(HashMap[]::new);
     }
     private Map<String,Object> createRelatedContractArgument(RelatedContractDAO contract){
         Map<String, Object> arguments = new HashMap<>();
