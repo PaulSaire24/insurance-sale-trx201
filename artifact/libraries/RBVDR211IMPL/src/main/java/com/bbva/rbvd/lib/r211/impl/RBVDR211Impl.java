@@ -25,11 +25,7 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.*;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
@@ -103,6 +99,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String FIELD_POLICY_PAYMENT_FREQUENCY_TYPE = "POLICY_PAYMENT_FREQUENCY_TYPE";
 	private static final String PROPERTY_RANGE_PAYMENT_AMOUNT = "property.range.payment.amount.insurance";
 	private static final String PROPERTY_VALIDATION_RANGE = "property.validation.range.";
+
+	private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
+	private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -219,16 +218,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSRNC_CTR_PARTICIPANT.getValue(),
 						participantsArguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
 			}
-
-			if(!CollectionUtils.isEmpty(requestBody.getRelatedContracts())){
-
-				for(RelatedContractDTO relatedContractDTO : requestBody.getRelatedContracts()){
-					Map<String,Object> argumentsForSaveInsuranceContractDetails= this.mapperHelper.createSaveInsuranceContractDetailsArguments(requestBody, relatedContractDTO, contractDao);
-					int insertedInsuranceContractDetails = this.pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(),argumentsForSaveInsuranceContractDetails);
-					validateInsertion(insertedInsuranceContractDetails, RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
-				}
+			if(isEmpty(requestBody.getRelatedContracts())) {
+				List<RelatedContractDAO> relatedContractsDao = this.mapperHelper.buildRelatedContractsWithInsurance(requestBody, contractDao);
+				Map<String, Object>[] relatedContractsArguments = this.mapperHelper.createSaveRelatedContractsArguments(relatedContractsDao);
+				Arrays.stream(relatedContractsArguments).
+						forEach(receipt -> receipt.
+								forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveRelatedContractsArguments parameter {} with value: {} *****", key, value)));
+				this.pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), relatedContractsArguments);
 			}
-
 			if(isEndorsement){
 				endosatarioRuc = requestBody.getParticipants().get(1).getIdentityDocument().getNumber();
 				endosatarioPorcentaje = requestBody.getParticipants().get(1).getBenefitPercentage();

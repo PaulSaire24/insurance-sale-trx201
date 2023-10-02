@@ -1840,12 +1840,23 @@ public class MapperHelperTest {
         numberTypeDTO.setId("01");
         apxRequest.getRelatedContracts().get(0).getContractDetails().setProduct(financialProductDTO);
         apxRequest.getRelatedContracts().get(1).getContractDetails().setNumberType( numberTypeDTO );
-        Map<String, Object> validation = this.mapperHelper.createSaveInsuranceContractDetailsArguments( apxRequest,apxRequest.getRelatedContracts().get(0),
-                contractDao);
-        assertEquals("01", validation.get(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue()));
-        assertEquals("01", validation.get(RBVDProperties.FIELD_CONTRACT_LINKED_STATUS_TYPE.getValue()));
-        Map<String, Object> validation2 = this.mapperHelper.createSaveInsuranceContractDetailsArguments( apxRequest,apxRequest.getRelatedContracts().get(1),
-                contractDao);
-        assertEquals("02", validation2.get(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue()));
+        List<RelatedContractDAO> relatedContractDAOS = this.mapperHelper.buildRelatedContractsWithInsurance( apxRequest, contractDao);
+        assertEquals("01", relatedContractDAOS.get(0).getContractLinkedStatusType());
+        List<RelatedContractDAO> relatedContractDAO2 = this.mapperHelper.buildRelatedContractsWithInsurance( apxRequest, contractDao);
+        assertEquals("01", relatedContractDAO2.get(1).getContractLinkedStatusType());
+        List<RelatedContractDAO> listContract = new ArrayList<>();
+        RelatedContractDAO contract = new RelatedContractDAO();
+        contract.setEntityId(contractDao.getEntityId());
+        contract.setBranchId(contractDao.getBranchId());
+        contract.setIntAccountId(contractDao.getIntAccountId());
+        contract.setRelatedContractProductId("01234567890123456789");
+        contract.setLinkedContractId("01234567890123456789");
+        contract.setStartLinkageDate(contractDao.getInsuranceContractStartDate());
+        contract.setEndLinkageDate(contractDao.getEndLinkageDate());
+        contract.setContractLinkedStatusType("01");
+        contract.setCreationUserId(contractDao.getCreationUserId());
+        contract.setCreationUserId(contractDao.getUserAuditId());
+        listContract.add(contract);
+        this.mapperHelper.createSaveRelatedContractsArguments(listContract);
     }
 }
