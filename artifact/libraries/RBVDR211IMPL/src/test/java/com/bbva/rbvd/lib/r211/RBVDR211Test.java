@@ -502,9 +502,7 @@ public class RBVDR211Test {
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
-
 		assertNotNull(validation);
-		requestBody.setRelatedContracts(null);
 		PolicyDTO validation2 = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation2);
