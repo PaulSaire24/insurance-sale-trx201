@@ -54,6 +54,7 @@ import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RelatedContractDAO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsuranceDTO;
@@ -138,8 +139,9 @@ public class MapperHelper {
     private static final String RECEIPT_DEFAULT_DATE_VALUE = "01/01/0001";
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
     private static final String TAG_ENDORSEE = "ENDORSEE";
-    private static final String FIELD_SYSTIMESTAMP = "SYSTEM";
+    private static final String FIELD_SYSTEM = "SYSTEM";
     private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
+    private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
     private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
 
 
@@ -431,6 +433,9 @@ public class MapperHelper {
 
         contractDao.setInsuranceContractStartDate(generateCorrectDateFormat(
                 convertDateToLocalDate(apxRequest.getValidityPeriod().getStartDate())));
+
+        contractDao.setEndLinkageDate(generateCorrectDateFormat(
+                convertDateToLocalDate(apxRequest.getInstallmentPlan().getEndDate())));
 
         contractDao.setValidityMonthsNumber(emissionDao.getContractDurationType().equals("A")
                 ? emissionDao.getContractDurationNumber().multiply(BigDecimal.valueOf(12))
@@ -789,8 +794,8 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_ENDORSEMENT_EFF_END_DATE.getValue(), contractDao.getInsuranceContractEndDate());
         arguments.put(RBVDProperties.FIELD_POLICY_ENDORSEMENT_PER.getValue(), endosatarioPorcentaje);
         arguments.put(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue(), "01");
-        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), FIELD_SYSTIMESTAMP);
-        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), FIELD_SYSTIMESTAMP);
+        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), FIELD_SYSTEM);
+        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), FIELD_SYSTEM);
 
         return arguments;
     }
@@ -1524,24 +1529,49 @@ public class MapperHelper {
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;
     }
-    public Map<String,Object> createSaveInsuranceContractDetailsArguments( PolicyDTO requestBody,RelatedContractDTO relatedContractDTO, InsuranceContractDAO contractDao){
+
+    public List<RelatedContractDAO> buildRelatedContractsWithInsurance (PolicyDTO requestBody, InsuranceContractDAO contractDao) {
+        return requestBody.getRelatedContracts().stream().map(contract -> createRelatedContract(contract, contractDao)).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    private RelatedContractDAO createRelatedContract(RelatedContractDTO relatedContractDTO, InsuranceContractDAO contractDao) {
+        RelatedContractDAO relatedContract = new RelatedContractDAO();
+        if(FIELD_INTERNAL_CONTRACT.equals(relatedContractDTO.getContractDetails().getContractType())) {
+            relatedContract.setRelatedContractProductId(relatedContractDTO.getContractDetails().getProduct().getId());
+            relatedContract.setLinkedContractId(relatedContractDTO.getContractDetails().getContractId());
+        }
+        else if (FIELD_EXTERNAL_CONTRACT.equals(relatedContractDTO.getContractDetails().getContractType())){
+            relatedContract.setRelatedContractProductId(relatedContractDTO.getContractDetails().getNumberType().getId());
+            relatedContract.setLinkedContractId(relatedContractDTO.getContractDetails().getNumber());
+        } else {
+            return null;
+        }
+        relatedContract.setEntityId(contractDao.getEntityId());
+        relatedContract.setBranchId(contractDao.getBranchId());
+        relatedContract.setIntAccountId(contractDao.getIntAccountId());
+        relatedContract.setStartLinkageDate(contractDao.getInsuranceContractStartDate());
+        relatedContract.setEndLinkageDate(contractDao.getEndLinkageDate());
+        relatedContract.setContractLinkedStatusType("01");
+        relatedContract.setCreationUserId(contractDao.getCreationUserId());
+        relatedContract.setUserAuditId(contractDao.getUserAuditId());
+        return relatedContract;
+    }
+
+    public Map<String, Object>[] createSaveRelatedContractsArguments(List<RelatedContractDAO> contracts) {
+        return contracts.stream().map(this::createRelatedContractArgument).toArray(HashMap[]::new);
+    }
+    private Map<String,Object> createRelatedContractArgument(RelatedContractDAO contract){
         Map<String, Object> arguments = new HashMap<>();
-        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(),contractDao.getEntityId());
-        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(),contractDao.getBranchId());
-        arguments.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(),contractDao.getIntAccountId());
-        arguments.put(RBVDProperties.FIELD_PRODUCT_ID.getValue(),relatedContractDTO.getContractDetails().getContractType().equals(FIELD_INTERNAL_CONTRACT) ?
-                relatedContractDTO.getContractDetails().getProduct().getId() :
-                relatedContractDTO.getContractDetails().getNumberType().getId());
-        arguments.put(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue(),relatedContractDTO.getContractDetails().getContractType().equals(FIELD_INTERNAL_CONTRACT) ?
-                relatedContractDTO.getContractDetails().getContractId() :
-                relatedContractDTO.getContractDetails().getNumber());
-        arguments.put(RBVDProperties.FIELD_START_LINKAGE_DATE.getValue(),requestBody.getValidityPeriod().getStartDate());
-        arguments.put(RBVDProperties.FIELD_LINKAGE_END_DATE.getValue(),requestBody.getInstallmentPlan().getMaturityDate());
-        arguments.put(RBVDProperties.FIELD_CONTRACT_LINKED_STATUS_TYPE.getValue(),"01");
-        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(),requestBody.getCreationUser());
-        arguments.put(RBVDProperties.FIELD_CREATION_DATE.getValue(),FIELD_SYSTIMESTAMP);
-        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(),requestBody.getUserAudit());
-        arguments.put(RBVDProperties.FIELD_AUDIT_DATE.getValue(),FIELD_SYSTIMESTAMP);
+        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(),contract.getEntityId());
+        arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(),contract.getBranchId());
+        arguments.put(RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(),contract.getIntAccountId());
+        arguments.put(RBVDProperties.FIELD_PRODUCT_ID.getValue(), contract.getRelatedContractProductId());
+        arguments.put(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue(), contract.getLinkedContractId());
+        arguments.put(RBVDProperties.FIELD_START_LINKAGE_DATE.getValue(), contract.getStartLinkageDate());
+        arguments.put(RBVDProperties.FIELD_LINKAGE_END_DATE.getValue(), contract.getEndLinkageDate());
+        arguments.put(RBVDProperties.FIELD_CONTRACT_LINKED_STATUS_TYPE.getValue(), contract.getContractLinkedStatusType());
+        arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), contract.getCreationUserId());
+        arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), contract.getUserAuditId());
         return arguments;
     }
 }
