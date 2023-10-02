@@ -21,26 +21,34 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 
-import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
-
+import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.OrganizacionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
-import com.bbva.rbvd.dto.insrncsale.dao.*;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RelatedContractDAO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
+
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
 
-import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.ContactTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
 import org.apache.commons.lang3.StringUtils;
-
-import org.apache.logging.log4j.util.Strings;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -67,7 +75,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
-import org.springframework.util.CollectionUtils;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -328,6 +335,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		EmisionBO rimacResponse = null;
 
 		PolicyDTO responseBody;
+		Boolean isEndorsement;
+		String endosatarioRuc;
+		Double endosatarioPorcentaje;
 
 		CustomerListASO customerList = null;
 
@@ -380,7 +390,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					this.getKindOfAccount(relatedContractASO),this.getAccountNumberInDatoParticular(relatedContractASO));
 			LOGGER.info("***** RBVDR211Impl - generateRimacRequestLife | Emission Life Rimac request : {} *****",requestEmisionLife);
 
-			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(requestBody, emissionDao, asoResponse.getData().getId(), false);
+			isEndorsement = validateParticipantTypeIfExist(requestBody.getParticipants(),TAG_ENDORSEE);
+
+			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(requestBody, emissionDao, asoResponse.getData().getId(), isEndorsement);
 			LOGGER.info("***** RBVDR211Impl - buildInsuranceContract | Mapping to save contract life : {} *****",contractDao);
 
 			Map<String, Object> argumentsForSaveContract = this.mapperHelper.createSaveContractArguments(contractDao);
@@ -439,6 +451,24 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				return null;
 			}
 
+			if(isEndorsement){
+				ParticipantDTO participantEndorse = filterParticipantByType(requestBody.getParticipants(),TAG_ENDORSEE);
+				endosatarioRuc = participantEndorse.getIdentityDocument().getNumber();
+				endosatarioPorcentaje = participantEndorse.getBenefitPercentage();
+
+				List<EndosatarioBO> endosatarios = new ArrayList<>();
+				EndosatarioBO endosatario = new EndosatarioBO(endosatarioRuc,endosatarioPorcentaje.intValue());
+				endosatarios.add(endosatario);
+				requestEmisionLife.getPayload().setEndosatarios(endosatarios);
+
+				Map<String, Object> argumentsForSaveEndorsement = this.mapperHelper.createSaveEndorsementArguments(contractDao, endosatarioRuc, endosatarioPorcentaje);
+				argumentsForSaveEndorsement.forEach(
+						(key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicyLifeEasyYes - SaveContractEndorsement key {} with value: {} *****", key, value));
+
+				int insertedContractEndorsement = this.pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_POLICY_ENDORSEMENT.getValue(), argumentsForSaveEndorsement);
+				validateInsertion(insertedContractEndorsement, RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
+			}
+
 			//llamada a add participants
 			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,requestBody,customerList,responseQueryGetRequiredFields);
 			LOGGER.info("***** RBVDR211Impl - generateRequestAddParticipants | Request add Participants Rimac Service : {} *****",requestAddParticipants);
@@ -465,6 +495,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 						RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue(), RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue());
 
 				validateInsertion(updatedContract, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
+
+				String policyNumber = rimacResponse.getPayload().getNumeroPoliza();
+				String intAccountId = asoResponse.getData().getId().substring(10);
+
+				isItNecessaryUpdateEndorsementRow(isEndorsement, policyNumber, intAccountId);
 			}
 
 			responseBody = requestBody;
@@ -490,6 +525,15 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			this.addAdviceWithDescription(ex.getAdviceCode(), ex.getMessage());
 			return null;
 		}
+	}
+
+	private static ParticipantDTO filterParticipantByType(List<ParticipantDTO> participants,String participantType) {
+		return participants.stream().filter(participantDTO -> participantDTO.getParticipantType().getId().equals(participantType)).collect(toList()).get(0);
+	}
+
+	private boolean validateParticipantTypeIfExist(List<ParticipantDTO> participants,String tagParticipantType){
+		return (!org.springframework.util.StringUtils.isEmpty(participants) &&
+			participants.stream().anyMatch(participant -> participant.getParticipantType().getId().equals(tagParticipantType)));
 	}
 
 	private Map<String, Object> createSingleArgument(String argument, String parameterName) {
