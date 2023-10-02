@@ -346,6 +346,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSRNC_CTR_PARTICIPANT.getValue(), argumentsForMultipleInsertion)).
 				thenReturn(new int[2]);
+		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 
 		ParticipantDTO secondParticipant = new ParticipantDTO();
 
@@ -379,9 +380,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT", new HashMap<>(),
 				RBVDProperties.FIELD_INSURANCE_CONTRACT_END_DATE.getValue(), RBVDProperties.FIELD_INSURANCE_POLICY_END_DATE.getValue(),
 				RBVDProperties.FIELD_LAST_INSTALLMENT_DATE.getValue(), RBVDProperties.FIELD_PERIOD_NEXT_PAYMENT_DATE.getValue())).thenReturn(0);
-
-		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
-				thenReturn(1);
+		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -395,8 +394,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS", argumentsForMultipleInsertion)).
 				thenReturn(null);
-		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
-				thenReturn(1);
+		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -436,6 +434,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", filters,
 				RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue())).thenReturn(0);
+		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -468,8 +467,7 @@ public class RBVDR211Test {
 
 		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_POLICY_ENDORSEMENT.getValue(), new HashMap<>())).
 				thenReturn(1);
-		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
-				thenReturn(1);
+		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -483,8 +481,6 @@ public class RBVDR211Test {
 		requestBody.setProductId("832");
 
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
-		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
-				thenReturn(1);
 
 		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
 		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
@@ -499,7 +495,7 @@ public class RBVDR211Test {
 
 		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
 		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
-
+		requestBody.setRelatedContracts(null);
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
 		assertNotNull(validation);
@@ -541,8 +537,7 @@ public class RBVDR211Test {
 
 		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(null);
 
-		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
-				thenReturn(1);
+		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 
 		customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("RUC");
 		customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("20999999991");
@@ -597,7 +592,7 @@ public class RBVDR211Test {
 
 		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
 		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
-
+		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 		customerList.setData(new ArrayList<>());
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
 
@@ -849,8 +844,7 @@ public class RBVDR211Test {
 		requestBody.getInstallmentPlan().getPaymentAmount().setAmount(100d);
 		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
 				thenReturn(responseBD);
-		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), new HashMap<>())).
-				thenReturn(1);
+		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);

@@ -218,7 +218,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSRNC_CTR_PARTICIPANT.getValue(),
 						participantsArguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
 			}
-			if(isEmpty(requestBody.getRelatedContracts())) {
+			if(!isEmpty(requestBody.getRelatedContracts())) {
 				List<RelatedContractDAO> relatedContractsDao = this.mapperHelper.buildRelatedContractsWithInsurance(requestBody, contractDao);
 				Map<String, Object>[] relatedContractsArguments = this.mapperHelper.createSaveRelatedContractsArguments(relatedContractsDao);
 				Arrays.stream(relatedContractsArguments).
