@@ -1553,7 +1553,7 @@ public class MapperHelper {
         relatedContract.setEndLinkageDate(contractDao.getEndLinkageDate());
         relatedContract.setContractLinkedStatusType("01");
         relatedContract.setCreationUserId(contractDao.getCreationUserId());
-        relatedContract.setCreationUserId(contractDao.getUserAuditId());
+        relatedContract.setUserAuditId(contractDao.getUserAuditId());
         return relatedContract;
     }
 
