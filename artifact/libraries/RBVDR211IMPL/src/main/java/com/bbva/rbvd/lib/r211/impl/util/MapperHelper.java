@@ -606,8 +606,8 @@ public class MapperHelper {
 
         if("MONTHLY".equals(requestBody.getInstallmentPlan().getPeriod().getId()) &&
                 !(requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue()) ||
-                requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue()) ||
-                requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_3.getValue()))) {
+                        requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue()) ||
+                        requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_3.getValue()))) {
             generateMonthlyReceipts(firstReceipt, receiptList);
         }
 
@@ -1376,7 +1376,7 @@ public class MapperHelper {
         boolean viaFull = false;
         String viaTipoNombre = null;
         StringBuilder additionalAddress2  = new StringBuilder();
-        StringBuilder additionalAddress3  = new StringBuilder();
+//        StringBuilder additionalAddress3  = new StringBuilder();
         String districtCode = "";
         String provinceCode = "";
         String departmentCode = "";
@@ -1406,28 +1406,26 @@ public class MapperHelper {
                     viaTipoNombre = persona.getTipoVia().concat(" ").concat(persona.getNombreVia());
                 }
             }
-            fillAddress2(persona,customer,j,viaFull,id, additionalAddress2, additionalAddress3);
+            fillAddress2(persona,customer,j,viaFull,id, additionalAddress2);
             fillAddressExtra(addressExtra,customer,j);
         }
 
-        persona.setDireccion(getFullDirectionFromCustomer(viaTipoNombre, additionalAddress2,
-                additionalAddress3, addressExtra, persona).trim());
+        persona.setDireccion(getFullDirectionFromCustomer(viaTipoNombre, additionalAddress2, addressExtra, persona).trim());
 
         persona.setUbigeo(departmentCode.concat(provinceCode).concat(districtCode));
         return viaTipoNombre;
     }
 
     private String getFullDirectionFromCustomer(String viaTipoNombre,
-                                                StringBuilder additionalAddress2, StringBuilder additionalAddress3, StringBuilder addressExtra,
+                                                StringBuilder additionalAddress2, StringBuilder addressExtra,
                                                 PersonaBO persona) {
         return (Objects.nonNull(viaTipoNombre) ? viaTipoNombre.concat(" ") : "")
                 .concat(Objects.nonNull(persona.getNumeroVia()) ? persona.getNumeroVia().concat(" ") : "")
                 .concat(additionalAddress2.length() != 0 ? additionalAddress2.toString().concat(" ") : "")
-                .concat(additionalAddress3.length() != 0 ? additionalAddress3.toString().concat(" ") : "")
                 .concat(addressExtra.length() != 0 ? addressExtra.toString() : "");
     }
 
-    private void fillAddress2(PersonaBO persona, CustomerBO customer,int j,boolean viaFull,String id, StringBuilder additionalAddress2, StringBuilder additionalAddress3){
+    private void fillAddress2(PersonaBO persona, CustomerBO customer,int j,boolean viaFull,String id, StringBuilder additionalAddress2){
         if(Objects.nonNull(persona.getTipoVia())&&viaFull){
             Map<String, String> map = tipeViaList();
             map.forEach((key, value) -> {
@@ -1440,10 +1438,10 @@ public class MapperHelper {
             });
         }
 
-        String direction3 = fillAddress3(persona,customer,j,id);
-        if(Objects.nonNull(direction3)){
-            additionalAddress3.append(direction3);
-        }
+//        String direction3 = fillAddress3(persona,customer,j,id);
+//        if(Objects.nonNull(direction3)){
+//            additionalAddress3.append(direction3);
+//        }
 
         if ("EXTERIOR_NUMBER".equals(customer.getAddresses().get(0).getLocation().getGeographicGroups().get(j)
                 .getGeographicGroupType().getId())) {
