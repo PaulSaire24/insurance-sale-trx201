@@ -370,7 +370,6 @@ public class MapperHelper {
             quintoDatoParticular.setCodigo("");
             quintoDatoParticular.setValor(String.valueOf(getMonthsOfValidity(maturityDate)));
             datosParticulares.add(cuartoDatoParticular);
-            System.out.println(quintoDatoParticular);
         }
 
         return datosParticulares;
