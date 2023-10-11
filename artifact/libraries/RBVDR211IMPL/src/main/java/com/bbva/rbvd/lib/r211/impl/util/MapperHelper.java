@@ -302,12 +302,12 @@ public class MapperHelper {
     }
 
     public EmisionBO buildRequestBodyRimac(PolicyInspectionDTO inspection, String secondParticularDataValue, String channelCode,
-                                           String dataId, String saleOffice, Date maturityDate,String OperacionGlossaryDesc) {
+                                           String dataId, String saleOffice, Date maturityDate,String operacionGlossaryDesc) {
         EmisionBO rimacRequest = new EmisionBO();
 
         PayloadEmisionBO payload = new PayloadEmisionBO();
 
-        List<DatoParticularBO> datosParticulares = getDatoParticularBO(secondParticularDataValue, channelCode, dataId, saleOffice,maturityDate,OperacionGlossaryDesc);
+        List<DatoParticularBO> datosParticulares = getDatoParticularBO(secondParticularDataValue, channelCode, dataId, saleOffice,maturityDate,operacionGlossaryDesc);
 
         payload.setDatosParticulares(datosParticulares);
         payload.setEnvioElectronico(N_VALUE);
@@ -337,7 +337,7 @@ public class MapperHelper {
         return rimacRequest;
     }
 
-    private List<DatoParticularBO> getDatoParticularBO(String secondParticularDataValue, String channelCode, String dataId, String saleOffice,Date maturityDate,String OperacionGlossaryDesc) {
+    private List<DatoParticularBO> getDatoParticularBO(String secondParticularDataValue, String channelCode, String dataId, String saleOffice,Date maturityDate,String operacionGlossaryDesc) {
         List<DatoParticularBO> datosParticulares = new ArrayList<>();
         String productsCalculateValidityMonths = this.applicationConfigurationService.getProperty("products.modalities.only.first.receipt");
 
@@ -364,7 +364,7 @@ public class MapperHelper {
         cuartoDatoParticular.setCodigo("");
         cuartoDatoParticular.setValor(saleOffice);
         datosParticulares.add(cuartoDatoParticular);
-        if(productsCalculateValidityMonths.contains(OperacionGlossaryDesc)){
+        if(productsCalculateValidityMonths.contains(operacionGlossaryDesc)){
             DatoParticularBO quintoDatoParticular = new DatoParticularBO();
             quintoDatoParticular.setEtiqueta(PARTICULAR_DATA_MESES_DE_VIGENCIA);
             quintoDatoParticular.setCodigo("");
