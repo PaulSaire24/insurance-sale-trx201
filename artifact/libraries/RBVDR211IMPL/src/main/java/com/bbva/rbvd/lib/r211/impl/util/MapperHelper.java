@@ -122,6 +122,7 @@ public class MapperHelper {
     private static final String PARTICULAR_DATA_ACCOUNT_DATA = "DATOS_DE_CUENTA";
     private static final String PARTICULAR_DATA_CERT_BANCO = "NRO_CERT_BANCO";
     private static final String PARTICULAR_DATA_SALE_OFFICE = "OFICINA_VENTA";
+    private static final String PARTICULAR_DATA_MESES_DE_VIGENCIA = "MESES DE VIGENCIA";
     private static final String PARTICULAR_DATA_TYPE_PAYMENT_METHOD = "TIPO_MEDIO_PAGO";
     private static final String PARTICULAR_DATA_AVERAGE_PAYMENT_NUMBER = "NUMERO_MEDIO_PAGO";
     private static final String S_VALUE = "S";
@@ -300,12 +301,12 @@ public class MapperHelper {
     }
 
     public EmisionBO buildRequestBodyRimac(PolicyInspectionDTO inspection, String secondParticularDataValue, String channelCode,
-                                           String dataId, String saleOffice) {
+                                           String dataId, String saleOffice, Date maturityDate,String OperacionGlossaryDesc) {
         EmisionBO rimacRequest = new EmisionBO();
 
         PayloadEmisionBO payload = new PayloadEmisionBO();
 
-        List<DatoParticularBO> datosParticulares = getDatoParticularBO(secondParticularDataValue, channelCode, dataId, saleOffice);
+        List<DatoParticularBO> datosParticulares = getDatoParticularBO(secondParticularDataValue, channelCode, dataId, saleOffice,maturityDate,OperacionGlossaryDesc);
 
         payload.setDatosParticulares(datosParticulares);
         payload.setEnvioElectronico(N_VALUE);
@@ -335,8 +336,9 @@ public class MapperHelper {
         return rimacRequest;
     }
 
-    private static List<DatoParticularBO> getDatoParticularBO(String secondParticularDataValue, String channelCode, String dataId, String saleOffice) {
+    private List<DatoParticularBO> getDatoParticularBO(String secondParticularDataValue, String channelCode, String dataId, String saleOffice,Date maturityDate,String OperacionGlossaryDesc) {
         List<DatoParticularBO> datosParticulares = new ArrayList<>();
+        String productsCalculateValidityMonths = this.applicationConfigurationService.getProperty("products.modalities.only.first.receipt");
 
         DatoParticularBO primerDatoParticular = new DatoParticularBO();
         primerDatoParticular.setEtiqueta(PARTICULAR_DATA_THIRD_CHANNEL);
@@ -361,7 +363,23 @@ public class MapperHelper {
         cuartoDatoParticular.setCodigo("");
         cuartoDatoParticular.setValor(saleOffice);
         datosParticulares.add(cuartoDatoParticular);
+
+        if(productsCalculateValidityMonths.contains(OperacionGlossaryDesc)){
+            DatoParticularBO quintoDatoParticular = new DatoParticularBO();
+            quintoDatoParticular.setEtiqueta(PARTICULAR_DATA_MESES_DE_VIGENCIA);
+            quintoDatoParticular.setCodigo("");
+            quintoDatoParticular.setValor(String.valueOf(getMonthsOfValidity(maturityDate)));
+            datosParticulares.add(cuartoDatoParticular);
+            System.out.println(quintoDatoParticular);
+        }
+
         return datosParticulares;
+    }
+    private static int getMonthsOfValidity(Date maturityDate){
+        Date todayDate = new Date();
+        int difYear = maturityDate.getYear() - todayDate.getYear();
+        int difMonth = difYear*12 + maturityDate.getMonth() - todayDate.getMonth() + 1;
+        return difMonth >=0 ? difMonth : 0;
     }
 
     private static List<DatoParticularBO> getDatoParticularBOLifeEasyYes(String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber) {

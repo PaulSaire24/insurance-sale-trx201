@@ -142,6 +142,7 @@ public class RBVDR211Test {
 		when(responseQueryGetRequiredFields.get(RBVDProperties.FIELD_CONTRACT_DURATION_NUMBER.getValue())).thenReturn(BigDecimal.valueOf(12));
 		when(responseQueryGetRequiredFields.get(RBVDProperties.FIELD_PAYMENT_FREQUENCY_ID.getValue())).thenReturn(BigDecimal.valueOf(1));
 		when(responseQueryGetRequiredFields.get(RBVDProperties.FIELD_INSURANCE_COMPANY_QUOTA_ID.getValue())).thenReturn("rimacQuotation");
+		when(responseQueryGetRequiredFields.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue())).thenReturn("DESEMPLEO_PRESTAMO");
 
 		responseQueryRoles = mock(Map.class);
 		roles = mock(List.class);
@@ -171,7 +172,7 @@ public class RBVDR211Test {
 		rimacResponse = mockData.getEmisionRimacResponse();
 		EmisionBO emision = new EmisionBO();
 		emision.setPayload(new PayloadEmisionBO());
-		when(this.mapperHelper.buildRequestBodyRimac(anyObject(), anyString(), anyString(), anyString(), anyString())).thenReturn(emision);
+		when(this.mapperHelper.buildRequestBodyRimac(anyObject(), anyString(), anyString(), anyString(), anyString(),anyObject(),anyString())).thenReturn(emision);
 
 		EmisionBO generalEmisionRequest = new EmisionBO();
 		PayloadEmisionBO payload = new PayloadEmisionBO();
@@ -844,6 +845,7 @@ public class RBVDR211Test {
 		responseBD.put("PREMIUM_AMOUNT",  new BigDecimal(100));
 		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
 		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		responseBD.put("OPERATION_GLOSSARY_DESC", "DESEMPLEO_PRESTAMO");
 		requestBody.getFirstInstallment().getPaymentAmount().setAmount(100d);
 		requestBody.getTotalAmount().setAmount(1200d);
 		requestBody.getInstallmentPlan().getPaymentAmount().setAmount(100d);
