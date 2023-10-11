@@ -216,7 +216,7 @@ public class MapperHelperTest {
     @Test
     public void buildRequestBodyRimac_OK() {
         PolicyInspectionDTO inspection = apxRequest.getInspection();
-        when(applicationConfigurationService.getProperty("products.modalities.only.first.receipt")).thenReturn("DESEMPLEO_PRESTAMO");
+        when(applicationConfigurationService.getProperty(anyString())).thenReturn("DESEMPLEO_PRESTAMO");
         EmisionBO validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode",
                 "dataId", "saleOffice", new Date(123,8,3),"DESEMPLEO_PRESTAMO");
 
@@ -235,6 +235,9 @@ public class MapperHelperTest {
         assertNotNull(validation.getPayload().getDatosParticulares().get(3).getEtiqueta());
         assertNotNull(validation.getPayload().getDatosParticulares().get(3).getCodigo());
         assertNotNull(validation.getPayload().getDatosParticulares().get(3).getValor());
+        assertNotNull(validation.getPayload().getDatosParticulares().get(4).getEtiqueta());
+        assertNotNull(validation.getPayload().getDatosParticulares().get(4).getCodigo());
+        assertNotNull(validation.getPayload().getDatosParticulares().get(4).getValor());
 
 
         assertNotNull(validation.getPayload().getEnvioElectronico());

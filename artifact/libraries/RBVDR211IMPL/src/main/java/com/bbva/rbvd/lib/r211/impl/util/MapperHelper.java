@@ -112,6 +112,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.toList;
 
 public class MapperHelper {
@@ -363,13 +364,12 @@ public class MapperHelper {
         cuartoDatoParticular.setCodigo("");
         cuartoDatoParticular.setValor(saleOffice);
         datosParticulares.add(cuartoDatoParticular);
-
         if(productsCalculateValidityMonths.contains(OperacionGlossaryDesc)){
             DatoParticularBO quintoDatoParticular = new DatoParticularBO();
             quintoDatoParticular.setEtiqueta(PARTICULAR_DATA_MESES_DE_VIGENCIA);
             quintoDatoParticular.setCodigo("");
             quintoDatoParticular.setValor(String.valueOf(getMonthsOfValidity(maturityDate)));
-            datosParticulares.add(cuartoDatoParticular);
+            datosParticulares.add(quintoDatoParticular);
         }
 
         return datosParticulares;
