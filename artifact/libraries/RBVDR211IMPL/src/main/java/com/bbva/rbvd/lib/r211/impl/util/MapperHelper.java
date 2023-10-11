@@ -374,10 +374,12 @@ public class MapperHelper {
 
         return datosParticulares;
     }
-    private static int getMonthsOfValidity(Date maturityDate){
-        Date todayDate = new Date();
-        int difYear = maturityDate.getYear() - todayDate.getYear();
-        int difMonth = difYear*12 + maturityDate.getMonth() - todayDate.getMonth() + 1;
+    private static int getMonthsOfValidity(Date maturity){
+        Calendar todayDate = Calendar.getInstance();
+        Calendar maturityDate = Calendar.getInstance();
+        maturityDate.setTime(maturity);
+        int difYear = maturityDate.get(Calendar.YEAR) - todayDate.get(Calendar.YEAR);
+        int difMonth = difYear*12 + maturityDate.get(Calendar.MONTH) - todayDate.get(Calendar.MONTH) + 1;
         return difMonth >=0 ? difMonth : 0;
     }
 
