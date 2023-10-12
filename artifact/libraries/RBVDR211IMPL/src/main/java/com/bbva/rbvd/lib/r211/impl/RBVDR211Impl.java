@@ -106,6 +106,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String FIELD_POLICY_PAYMENT_FREQUENCY_TYPE = "POLICY_PAYMENT_FREQUENCY_TYPE";
 	private static final String PROPERTY_RANGE_PAYMENT_AMOUNT = "property.range.payment.amount.insurance";
 	private static final String PROPERTY_VALIDATION_RANGE = "property.validation.range.";
+	private static final String PROPERTY_ONLY_FIRST_RECEIPT = "products.modalities.only.first.receipt";
 
 	private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
 	private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
@@ -170,10 +171,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			validateDigitalSale(requestBody);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building Rimac request *****");
-			String  operacionGlossaryDesc = responseQueryGetRequiredFields.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString();
+
 
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
-					requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId(),requestBody.getInstallmentPlan().getMaturityDate(),operacionGlossaryDesc);
+					requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | AreThereMoreThanOneParticipant validation *****");
 			isEndorsement = validateEndorsement(requestBody);
@@ -283,18 +284,23 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 				validateInsertion(updatedContract, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
 
-				List<InsuranceCtrReceiptsDAO> otherReceipts = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
-						filter(cuota -> cuota.getCuota().compareTo(1L) > 0).map(cuota -> this.generateNextReceipt(asoResponse, cuota)).
-						collect(toList());
+				String productsCalculateValidityMonths = this.applicationConfigurationService.getDefaultProperty(PROPERTY_ONLY_FIRST_RECEIPT,"");
+				String operacionGlossaryDesc = responseQueryGetRequiredFields.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString();
 
-				Map<String, Object>[] receiptUpdateArguments = this.mapperHelper.createSaveReceiptsArguments(otherReceipts);
+				if (!Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)) {
+					List<InsuranceCtrReceiptsDAO> otherReceipts = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
+							filter(cuota -> cuota.getCuota().compareTo(1L) > 0).map(cuota -> this.generateNextReceipt(asoResponse, cuota)).
+							collect(toList());
 
-				Arrays.stream(receiptUpdateArguments).
-						forEach(receiptUpdated -> receiptUpdated.
-								forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value)));
+					Map<String, Object>[] receiptUpdateArguments = this.mapperHelper.createSaveReceiptsArguments(otherReceipts);
 
-				validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS",
-						receiptUpdateArguments), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
+					Arrays.stream(receiptUpdateArguments).
+							forEach(receiptUpdated -> receiptUpdated.
+									forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value)));
+
+					validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS",
+							receiptUpdateArguments), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
+				}
 
 				policyNumber = rimacResponse.getPayload().getNumeroPoliza();
 

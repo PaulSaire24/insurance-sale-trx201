@@ -107,6 +107,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Calendar;
+import java.util.Arrays;
 
 import java.util.stream.Collectors;
 
@@ -302,12 +303,12 @@ public class MapperHelper {
     }
 
     public EmisionBO buildRequestBodyRimac(PolicyInspectionDTO inspection, String secondParticularDataValue, String channelCode,
-                                           String dataId, String saleOffice, Date maturityDate,String operacionGlossaryDesc) {
+                                           String dataId, String saleOffice) {
         EmisionBO rimacRequest = new EmisionBO();
 
         PayloadEmisionBO payload = new PayloadEmisionBO();
 
-        List<DatoParticularBO> datosParticulares = getDatoParticularBO(secondParticularDataValue, channelCode, dataId, saleOffice,maturityDate,operacionGlossaryDesc);
+        List<DatoParticularBO> datosParticulares = getDatoParticularBO(secondParticularDataValue, channelCode, dataId, saleOffice);
 
         payload.setDatosParticulares(datosParticulares);
         payload.setEnvioElectronico(N_VALUE);
@@ -337,9 +338,8 @@ public class MapperHelper {
         return rimacRequest;
     }
 
-    private List<DatoParticularBO> getDatoParticularBO(String secondParticularDataValue, String channelCode, String dataId, String saleOffice,Date maturityDate,String operacionGlossaryDesc) {
+    private List<DatoParticularBO> getDatoParticularBO(String secondParticularDataValue, String channelCode, String dataId, String saleOffice) {
         List<DatoParticularBO> datosParticulares = new ArrayList<>();
-        String productsCalculateValidityMonths = this.applicationConfigurationService.getProperty("products.modalities.only.first.receipt");
 
         DatoParticularBO primerDatoParticular = new DatoParticularBO();
         primerDatoParticular.setEtiqueta(PARTICULAR_DATA_THIRD_CHANNEL);
@@ -364,13 +364,6 @@ public class MapperHelper {
         cuartoDatoParticular.setCodigo("");
         cuartoDatoParticular.setValor(saleOffice);
         datosParticulares.add(cuartoDatoParticular);
-        if(productsCalculateValidityMonths.contains(operacionGlossaryDesc)){
-            DatoParticularBO quintoDatoParticular = new DatoParticularBO();
-            quintoDatoParticular.setEtiqueta(PARTICULAR_DATA_MESES_DE_VIGENCIA);
-            quintoDatoParticular.setCodigo("");
-            quintoDatoParticular.setValor(String.valueOf(getMonthsOfValidity(maturityDate)));
-            datosParticulares.add(quintoDatoParticular);
-        }
 
         return datosParticulares;
     }
@@ -823,6 +816,7 @@ public class MapperHelper {
         EmisionBO generalEmisionRimacRequest = new EmisionBO();
         PayloadEmisionBO emisionBO = new PayloadEmisionBO();
         emisionBO.setEmision(rimacRequest.getPayload());
+        String productsCalculateValidityMonths = this.applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","");
         emisionBO.getEmision().setProducto((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue()));
         generalEmisionRimacRequest.setPayload(emisionBO);
 
@@ -854,6 +848,14 @@ public class MapperHelper {
         agregarPersonaBO.setPersona(personasList);
 
         generalEmisionRimacRequest.getPayload().setAgregarPersona(agregarPersonaBO);
+        String  operacionGlossaryDesc = responseQueryGetRequiredFields.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString();
+        if(Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)){
+            DatoParticularBO quintoDatoParticular = new DatoParticularBO();
+            quintoDatoParticular.setEtiqueta(PARTICULAR_DATA_MESES_DE_VIGENCIA);
+            quintoDatoParticular.setCodigo("");
+            quintoDatoParticular.setValor(String.valueOf(getMonthsOfValidity(requestBody.getInstallmentPlan().getMaturityDate())));
+            generalEmisionRimacRequest.getPayload().getEmision().getDatosParticulares().add(quintoDatoParticular);
+        }
         return generalEmisionRimacRequest;
     }
 
