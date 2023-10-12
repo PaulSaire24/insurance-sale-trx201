@@ -124,7 +124,7 @@ public class MapperHelper {
     private static final String PARTICULAR_DATA_ACCOUNT_DATA = "DATOS_DE_CUENTA";
     private static final String PARTICULAR_DATA_CERT_BANCO = "NRO_CERT_BANCO";
     private static final String PARTICULAR_DATA_SALE_OFFICE = "OFICINA_VENTA";
-    private static final String PARTICULAR_DATA_MESES_DE_VIGENCIA = "MESES DE VIGENCIA";
+    private static final String PARTICULAR_DATA_MESES_DE_VIGENCIA = "MESES_DE_VIGENCIA";
     private static final String PARTICULAR_DATA_TYPE_PAYMENT_METHOD = "TIPO_MEDIO_PAGO";
     private static final String PARTICULAR_DATA_AVERAGE_PAYMENT_NUMBER = "NUMERO_MEDIO_PAGO";
     private static final String S_VALUE = "S";
