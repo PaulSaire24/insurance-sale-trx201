@@ -367,14 +367,6 @@ public class MapperHelper {
 
         return datosParticulares;
     }
-    private static int getMonthsOfValidity(Date maturity){
-        Calendar todayDate = Calendar.getInstance();
-        Calendar maturityDate = Calendar.getInstance();
-        maturityDate.setTime(maturity);
-        int difYear = maturityDate.get(Calendar.YEAR) - todayDate.get(Calendar.YEAR);
-        int difMonth = difYear*12 + maturityDate.get(Calendar.MONTH) - todayDate.get(Calendar.MONTH) + 1;
-        return difMonth >=0 ? difMonth : 0;
-    }
 
     private static List<DatoParticularBO> getDatoParticularBOLifeEasyYes(String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber) {
         List<DatoParticularBO> datosParticulares = new ArrayList<>();
@@ -857,6 +849,14 @@ public class MapperHelper {
             generalEmisionRimacRequest.getPayload().getEmision().getDatosParticulares().add(quintoDatoParticular);
         }
         return generalEmisionRimacRequest;
+    }
+    private static int getMonthsOfValidity(Date maturity){
+        LocalDate todayDate = LocalDate.now();
+        LocalDate maturityDate = convertDateToLocalDate(maturity);
+        int difYear = maturityDate.getYear() - todayDate.getYear();
+        int difMonth = difYear*12 + maturityDate.getMonthOfYear() - todayDate.getMonthOfYear() + 1;
+
+        return difMonth >= 0 ? difMonth : 0;
     }
 
     private void constructListPersons(PersonaBO persona, List<PersonaBO> personasList) {
@@ -1351,7 +1351,7 @@ public class MapperHelper {
         return localDate.toDateTimeAtStartOfDay().toDate();
     }
 
-    private LocalDate convertDateToLocalDate(Date date) {
+    private static LocalDate convertDateToLocalDate(Date date) {
         return new LocalDate(date, DateTimeZone.forID(GMT_TIME_ZONE));
     }
 
