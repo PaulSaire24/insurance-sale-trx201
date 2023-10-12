@@ -216,9 +216,9 @@ public class MapperHelperTest {
     @Test
     public void buildRequestBodyRimac_OK() {
         PolicyInspectionDTO inspection = apxRequest.getInspection();
-        when(applicationConfigurationService.getProperty(anyString())).thenReturn("DESEMPLEO_PRESTAMO");
+        when(applicationConfigurationService.getDefaultProperty(anyString(),anyString())).thenReturn("DESEMPLEO_PRESTAMO");
         EmisionBO validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode",
-                "dataId", "saleOffice", new Date(123,8,3),"DESEMPLEO_PRESTAMO");
+                "dataId", "saleOffice");
 
         assertNull(validation.getPayload().getContactoInspeccion());
 
@@ -235,10 +235,6 @@ public class MapperHelperTest {
         assertNotNull(validation.getPayload().getDatosParticulares().get(3).getEtiqueta());
         assertNotNull(validation.getPayload().getDatosParticulares().get(3).getCodigo());
         assertNotNull(validation.getPayload().getDatosParticulares().get(3).getValor());
-        assertNotNull(validation.getPayload().getDatosParticulares().get(4).getEtiqueta());
-        assertNotNull(validation.getPayload().getDatosParticulares().get(4).getCodigo());
-        assertNotNull(validation.getPayload().getDatosParticulares().get(4).getValor());
-
 
         assertNotNull(validation.getPayload().getEnvioElectronico());
         assertNotNull(validation.getPayload().getIndCobro());
@@ -262,7 +258,7 @@ public class MapperHelperTest {
         apxRequest.getInspection().setIsRequired(true);
 
         validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode",
-                "dataId", "saleOffice", new Date(123,9,3),"DESEMPLEO_PRESTAMO");
+                "dataId", "saleOffice");
 
         assertNotNull(validation.getPayload().getContactoInspeccion());
         assertNotNull(validation.getPayload().getContactoInspeccion().getNombre());
@@ -278,7 +274,7 @@ public class MapperHelperTest {
         inspectionDTO.setFullName("Luis Estrada");
         inspectionDTO.setContactDetails(new ArrayList<ContactDetailDTO>());
         validation = mapperHelper.buildRequestBodyRimac(inspectionDTO, "secondValue", "channelCode",
-                "dataId", "saleOffice", new Date(123,10,3), "DESEMPLEO_PRESTAMO");
+                "dataId", "saleOffice");
 
         assertNotNull(validation.getPayload().getContactoInspeccion());
         assertNotNull(validation.getPayload().getContactoInspeccion().getNombre());
@@ -908,11 +904,13 @@ public class MapperHelperTest {
         when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("R");
         when(this.applicationConfigurationService.getProperty("DNI")).thenReturn("L");
         when(this.applicationConfigurationService.getProperty("MONTHLY")).thenReturn("M");
+        when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","")).thenReturn("DESEMPLEO_PRESTAMO");
         Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue(), "33556255");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue(), "HOGAR_TOTAL");
+        requiredFieldsEmisionBDResponse.put(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue(), "DESEMPLEO_PRESTAMO");
         EmisionBO emisionInput = new EmisionBO();
         DatoParticularBO datoParticular1 = new DatoParticularBO();
         datoParticular1.setCodigo("");

@@ -172,7 +172,7 @@ public class RBVDR211Test {
 		rimacResponse = mockData.getEmisionRimacResponse();
 		EmisionBO emision = new EmisionBO();
 		emision.setPayload(new PayloadEmisionBO());
-		when(this.mapperHelper.buildRequestBodyRimac(anyObject(), anyString(), anyString(), anyString(), anyString(),anyObject(),anyString())).thenReturn(emision);
+		when(this.mapperHelper.buildRequestBodyRimac(anyObject(), anyString(), anyString(), anyString(), anyString())).thenReturn(emision);
 
 		EmisionBO generalEmisionRequest = new EmisionBO();
 		PayloadEmisionBO payload = new PayloadEmisionBO();
