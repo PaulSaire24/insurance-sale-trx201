@@ -28,8 +28,6 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
@@ -401,6 +399,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS", argumentsForMultipleInsertion)).
 				thenReturn(null);
 		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
+		when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt", "")).thenReturn("");
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -441,6 +440,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", filters,
 				RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue())).thenReturn(0);
 		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
+		when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt", "")).thenReturn("");
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -474,6 +474,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_POLICY_ENDORSEMENT.getValue(), new HashMap<>())).
 				thenReturn(1);
 		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
+		when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt", "")).thenReturn("");
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -487,6 +488,7 @@ public class RBVDR211Test {
 		requestBody.setProductId("832");
 
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt", "")).thenReturn("");
 
 		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
 		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
@@ -564,6 +566,7 @@ public class RBVDR211Test {
 		businesses.setData(Collections.singletonList(business));
 
 		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(businesses);
+		when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt", "")).thenReturn("");
 
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -852,6 +855,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
 				thenReturn(responseBD);
 		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
+		when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt", "")).thenReturn("");
 
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
