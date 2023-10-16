@@ -1603,7 +1603,6 @@ public class MapperHelper {
         tipeListDir2Map.put("NEIGHBORHOOD", "SEC");
         tipeListDir2Map.put("NEIGHBORHOOD_UNIT", "UV.");
         tipeListDir2Map.put("URBANIZATION", "URB");
-        tipeListDir2Map.put("NEIGHBORHOOD_UNIT", "UV.");
         tipeListDir2Map.put("ZONE", "ZNA");
         tipeListDir2Map.put("ASSOCIATION", "ASC");
         tipeListDir2Map.put("FUNDO", "FUN");
