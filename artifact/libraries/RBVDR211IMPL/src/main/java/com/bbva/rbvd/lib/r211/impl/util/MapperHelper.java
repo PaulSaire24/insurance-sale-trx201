@@ -824,9 +824,9 @@ public class MapperHelper {
         List<PersonaBO> personasList = new ArrayList<>();
         PersonaBO persona = this.constructPerson(requestBody,customer,responseQueryGetRequiredFields);
 
-        StringBuilder addressExtra  = new StringBuilder();
+        StringBuilder stringAddress  = new StringBuilder();
 
-        fillAddress(customerList, persona, addressExtra);
+        fillAddress(customerList, persona, stringAddress);
 
         constructListPersons(persona, personasList);
 
@@ -939,7 +939,6 @@ public class MapperHelper {
 
         return rimacContractInformation;
     }
-
     public Map<String, Object> getRimacContractInformationLifeEasyYes(EmisionBO rimacResponse, String contractNumber) {
         InsuranceContractDAO contractDAO = new InsuranceContractDAO();
         contractDAO.setPolicyId(rimacResponse.getPayload().getNumeroPoliza());
@@ -1346,7 +1345,6 @@ public class MapperHelper {
         }
         return PersonTypeEnum.NATURAL;
     }
-
     private PersonaBO getFillFieldsPerson(PersonaBO persona) {
         PersonaBO persons = new PersonaBO();
         persons.setTipoDocumento(persona.getTipoDocumento());
@@ -1368,7 +1366,6 @@ public class MapperHelper {
         persons.setCelular(persona.getCelular());
         return persons;
     }
-
     private String validateSN(String name) {
         if(Objects.isNull(name) || "null".equals(name) || " ".equals(name)){
             return "N/A";
@@ -1403,6 +1400,7 @@ public class MapperHelper {
         fillAddressOther(geographicGroupsAddress, stringAddress);
 
         String directionForm = getFullDirectionFrom(addressViaList, addressNumberVia, addressGroupList, stringAddress, persona);
+        persona.setDireccion(directionForm);
 
         return directionForm;
 
@@ -1451,9 +1449,9 @@ public class MapperHelper {
         String separationSymbol = "-";
 
         String dataViaType = geographicGroupsAddress.stream()
-                .filter(element -> this.filterViaType(element.getGeographicGroupType().getId()))
+                .filter(geographicGroupsBO -> this.filterViaType(geographicGroupsBO.getGeographicGroupType().getId()))
                 .findFirst()
-                .map(element -> this.getViaType(element.getGeographicGroupType().getId()) + separationSymbol + element.getName())
+                .map(geographicGroupsBO -> this.getViaType(geographicGroupsBO.getGeographicGroupType().getId()) + separationSymbol + geographicGroupsBO.getName())
                 .orElse(null);
 
         if(nonNull(dataViaType)) {
@@ -1473,17 +1471,13 @@ public class MapperHelper {
         return nombreDir1;
 
     }
-    private boolean filterViaType(final String geographicGroupTyeId) {
+    private boolean filterViaType(final String geographicGroupTypeId) {
         Map<String, String> mapTypeListDir1 = this.tipeListDir1();
-        return mapTypeListDir1.entrySet().stream().anyMatch(element -> element.equals(geographicGroupTyeId));
+        return mapTypeListDir1.containsKey(geographicGroupTypeId);
     }
     private String getViaType(final String geographicGroupTypeId) {
         Map<String, String> mapTypeListDir1 = this.tipeListDir1();
-        return mapTypeListDir1.entrySet().stream()
-                .filter(element -> element.getKey().equals(geographicGroupTypeId))
-                .findFirst()
-                .map(Map.Entry::getValue)
-                .orElse(null);
+        return mapTypeListDir1.getOrDefault(geographicGroupTypeId, null);
     }
     private String fillAddressGroupList(List<GeographicGroupsBO> geographicGroupsAddress) {
 
@@ -1493,45 +1487,43 @@ public class MapperHelper {
         String separationSymbol = "-";
 
         String dataGroupType = geographicGroupsAddress.stream()
-                .filter(element -> this.filterGroupType(element.getGeographicGroupType().getId()))
+                .filter(geographicGroupsBO -> this.filterGroupType(geographicGroupsBO.getGeographicGroupType().getId()))
                 .findFirst()
-                .map(element -> this.getGroupType(element.getGeographicGroupType().getId()) + separationSymbol + element.getName())
+                .map(geographicGroupsBO -> this.getGroupType(geographicGroupsBO.getGeographicGroupType().getId()) + separationSymbol + geographicGroupsBO.getName())
                 .orElse(null);
 
         if(nonNull(dataGroupType)) {
             String[] arrayGroupType = dataGroupType.split(separationSymbol);
             groupType = arrayGroupType[0];
             groupName = arrayGroupType[1];
-            nombreDir2 = groupType.concat(groupName);
+            nombreDir2 = groupType.concat(" "+groupName);
         }
 
         return nombreDir2;
 
     }
     private String fillAddressNumberVia(List<GeographicGroupsBO> geographicGroupsAddress, String addressViaList, PersonaBO persona) {
-
         String numberVia = geographicGroupsAddress.stream()
-                .filter(geographicGroupsBO -> geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase("exterior_number")).findAny()
-                .map(geographicGroupsBO -> geographicGroupsBO.getName()).orElse(null);
+                .filter(geographicGroupsBO -> geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase("EXTERIOR_NUMBER"))
+                .findAny()
+                .map(geographicGroupsBO -> geographicGroupsBO.getName())
+                .orElse(null);
 
-        if(Objects.isNull(numberVia) || Objects.isNull(addressViaList)) {
+        if (Objects.isNull(numberVia) || Objects.isNull(addressViaList)) {
             persona.setNumeroVia(SIN_ESPECIFICAR);
+        } else {
+            persona.setNumeroVia(numberVia);
         }
 
         return numberVia;
-
     }
-    private boolean filterGroupType(final String geographicGroupTyeId) {
+    private boolean filterGroupType(final String geographicGroupTypeId) {
         Map<String, String> mapTypeListDir2 = this.tipeListDir2();
-        return mapTypeListDir2.entrySet().stream().anyMatch(element -> element.equals(geographicGroupTyeId));
+        return mapTypeListDir2.containsKey(geographicGroupTypeId);
     }
-    private String getGroupType(final String geographicGroupTyeId) {
+    private String getGroupType(final String geographicGroupTypeId) {
         Map<String, String> mapTypeListDir2 = this.tipeListDir2();
-        return mapTypeListDir2.entrySet().stream()
-                .filter(element -> element.getKey().equals(geographicGroupTyeId))
-                .findFirst()
-                .map(Map.Entry::getValue)
-                .orElse(null);
+        return mapTypeListDir2.getOrDefault(geographicGroupTypeId, null);
     }
     private void fillAddressOther(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
 
