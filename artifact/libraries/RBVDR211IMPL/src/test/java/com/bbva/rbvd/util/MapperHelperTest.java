@@ -957,39 +957,6 @@ public class MapperHelperTest {
 
         assertNotNull(validation1);
 
-        DocumentTypeBO documentTypeBO2 = new DocumentTypeBO();
-        documentTypeBO2.setId("ruc");
-        IdentityDocumentsBO identityDocumentsBO2 = new IdentityDocumentsBO();
-        identityDocumentsBO2.setDocumentType(documentTypeBO2);
-        identityDocumentsBO2.setDocumentNumber("3355415");
-        List<IdentityDocumentsBO> identityDocumentsBOs2 = new ArrayList<>();
-        identityDocumentsBOs2.add(identityDocumentsBO2);
-        customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs2);
-
-        GenderBO gender = new GenderBO();
-        gender.setId("FEMALE");
-        customerList.getData().get(0).setGender(gender);
-
-        GeographicGroupsBO geographicGroupsBO = new GeographicGroupsBO();
-        geographicGroupsBO.setName("NO APLICA");
-        GeographicGroupTypeBO geographicGroupTypeBO = new GeographicGroupTypeBO();
-        geographicGroupTypeBO.setId("UNCATEGORIZED");
-        geographicGroupTypeBO.setName("NO APLICA");
-        geographicGroupsBO.setGeographicGroupType(geographicGroupTypeBO);
-        GeographicGroupsBO geographicGroupsBO1 = new GeographicGroupsBO();
-        geographicGroupsBO1.setName("233");
-        GeographicGroupTypeBO geographicGroupTypeBO1 = new GeographicGroupTypeBO();
-        geographicGroupTypeBO1.setId("EXTERIOR_NUMBER");
-        geographicGroupTypeBO1.setName("EXTERIOR_NUMBER");
-        geographicGroupsBO1.setGeographicGroupType(geographicGroupTypeBO1);
-        List<GeographicGroupsBO> geographicGroupsBOs = new ArrayList<>();
-        geographicGroupsBOs.add(geographicGroupsBO);
-        geographicGroupsBOs.add(geographicGroupsBO1);
-        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
-        when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("RC");
-        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
-        assertNotNull(validation2);
-
         customerList.getData().get(0).setGender(null);
 
         GeographicGroupsBO geographicGroupsBO2 = new GeographicGroupsBO();

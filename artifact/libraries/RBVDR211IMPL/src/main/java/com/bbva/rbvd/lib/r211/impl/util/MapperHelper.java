@@ -109,11 +109,14 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Calendar;
 
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 public class MapperHelper {
     private static final String EMAIL_VALUE = "EMAIL";
@@ -1374,90 +1377,95 @@ public class MapperHelper {
             return name;
         }
     }
-    private String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder stringAddress) {
+    public String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder stringAddress) {
+
         CustomerBO customer = customerList.getData().get(0);
         LocationBO customerLocation = customer.getAddresses().get(0).getLocation();
-        final String uncategorized = "uncategorized";
-        final String notProvided = "not_provided";
 
         List<GeographicGroupsBO> geographicGroups = customerLocation.getGeographicGroups().stream()
-                .filter(geographicGroupsBO -> !geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase(uncategorized)
-                        || !geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase(notProvided))
-                .collect(Collectors.toList());
+                .filter(element -> !this.filterUbicationAddress(element.getGeographicGroupType().getId()))
+                .collect(toList());
 
         fillAddressUbigeo(geographicGroups, persona);
 
         List<GeographicGroupsBO> geographicGroupsAddress = geographicGroups.stream()
-                .filter(geographicGroupsBO -> !geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase("department")
-                        || !geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase("province")
-                        || !geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase("district")
-                        || !geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase("ubigeo"))
-                .collect(Collectors.toList());
+                .filter(element -> !this.filterUbicationCode(element.getGeographicGroupType().getId()))
+                .collect(toList());
 
         String addressViaList = fillAddressViaList(geographicGroupsAddress, persona);
         String addressNumberVia = fillAddressNumberVia(geographicGroupsAddress, addressViaList, persona);
-        String addressGroupList = fillAddressGroupList(geographicGroupsAddress, persona);
+        String addressGroupList = fillAddressGroupList(geographicGroupsAddress);
 
-        if (Objects.isNull(addressGroupList) && Objects.isNull(addressViaList)) {
+        if(Objects.isNull(addressGroupList) && Objects.isNull(addressViaList)) {
             return null;
         }
 
         fillAddressOther(geographicGroupsAddress, stringAddress);
 
-        String directionForm = getFullDirectionFrom(addressViaList, addressNumberVia, addressGroupList, stringAddress);
+        String directionForm = getFullDirectionFrom(addressViaList, addressNumberVia, addressGroupList, stringAddress, persona);
 
         return directionForm;
+
     }
-    private void fillAddressUbigeo(List<GeographicGroupsBO> geographicGroups, PersonaBO persona) {
+    private void fillAddressUbigeo(final List<GeographicGroupsBO> geographicGroups, final PersonaBO persona) {
 
-        List<GeographicGroupsBO> geographicGroupsDepartment = geographicGroups.stream()
-                .filter(geographicGroupsBO -> geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase("department"))
-                .collect(Collectors.toList());
+        String separationSymbol = "-";
+        String department = "";
+        String province = "";
+        String district = "";
+        String ubigeo = "";
 
-        String department = geographicGroupsDepartment.get(0).getGeographicGroupType().getName();
-        String codeDepartment = geographicGroupsDepartment.get(0).getCode();
+        Map<String, String> mapUbication = geographicGroups.stream().
+                filter(element -> this.filterUbicationCode(element.getGeographicGroupType().getId())).
+                collect(groupingBy(element -> element.getGeographicGroupType().getId(),
+                        mapping(element -> element.getCode().concat(separationSymbol).concat(element.getName()), toSingleton())));
 
-        List<GeographicGroupsBO> geographicGroupsProvince = geographicGroups.stream()
-                .filter(geographicGroupsBO -> geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase("province"))
-                .collect(Collectors.toList());
+        String[] arrayDepartment = mapUbication.get("DEPARTMENT").split(separationSymbol);
+        String[] arrayProvince = mapUbication.get("PROVINCE").split(separationSymbol);
+        String[] arrayDistrict = mapUbication.get("DISTRICT").split(separationSymbol);
 
-        String province = geographicGroupsProvince.get(0).getGeographicGroupType().getName();
-        String codeProvince = geographicGroupsProvince.get(0).getCode();
-
-        List<GeographicGroupsBO> geographicGroupsDistrict = geographicGroups.stream()
-                .filter(geographicGroupsBO -> geographicGroupsBO.getGeographicGroupType().getId().equals("district"))
-                .collect(Collectors.toList());
-
-        String district = geographicGroupsDistrict.get(0).getGeographicGroupType().getName();
-        String codeDistrict = geographicGroupsDistrict.get(0).getCode();
+        ubigeo = arrayDepartment[0].concat(arrayProvince[0]).concat(arrayDistrict[0]);
+        department = arrayDepartment[1];
+        province = arrayProvince[1];
+        district = arrayDistrict[1];
 
         persona.setDepartamento(department);
         persona.setProvincia(province);
         persona.setDistrito(district);
-        persona.setUbigeo(codeDepartment.concat(codeProvince).concat(codeDistrict));
+        persona.setUbigeo(ubigeo);
 
+    }
+    private boolean filterUbicationAddress(final String geographicGroupTypeId) {
+        Stream<String> ubicationAddress = Stream.of("UNCATEGORIZED", "NOT_PROVIDED");
+        return ubicationAddress.anyMatch(element -> element.equals(geographicGroupTypeId));
+    }
+    private boolean filterUbicationCode(final String geographicGroupTypeId) {
+        Stream<String> ubicationCode = Stream.of("DEPARTMENT", "PROVINCE", "DISTRICT");
+        return ubicationCode.anyMatch(element -> element.equalsIgnoreCase(geographicGroupTypeId));
     }
     private String fillAddressViaList(List<GeographicGroupsBO> geographicGroupsAddress, PersonaBO persona) {
 
         String nombreDir1 = null;
+        String viaType = "";
+        String viaName = "";
+        String separationSymbol = "-";
 
-        for(int i=0; i<geographicGroupsAddress.size(); i++) {
+        String dataViaType = geographicGroupsAddress.stream()
+                .filter(element -> this.filterViaType(element.getGeographicGroupType().getId()))
+                .findFirst()
+                .map(element -> this.getViaType(element.getGeographicGroupType().getId()) + separationSymbol + element.getName())
+                .orElse(null);
 
-            String groupTypeDir = geographicGroupsAddress.get(i).getGeographicGroupType().getId();
-
-            Map<String, String> mapTypeListDir1 = tipeViaList1();
-            for(String keyMap : mapTypeListDir1.keySet()) {
-                String valueMap = mapTypeListDir1.get(keyMap);
-                if (valueMap.equals(groupTypeDir)) {
-                    persona.setTipoVia(valueMap);
-                    persona.setNombreVia(geographicGroupsAddress.get(i).getName());
-                    nombreDir1 = valueMap.concat(" ").concat(geographicGroupsAddress.get(i).getName());
-                    break;
-                }
-            }
+        if(nonNull(dataViaType)) {
+            String[] arrayVia = dataViaType.split(separationSymbol);
+            viaType = arrayVia[0];
+            viaName = arrayVia[1];
+            persona.setTipoVia(viaType);
+            persona.setNombreVia(viaName);
+            nombreDir1 = viaType.concat(viaName);
         }
 
-        if(Objects.isNull(nombreDir1)) {
+        if(isNull(nombreDir1)) {
             persona.setTipoVia(SIN_ESPECIFICAR);
             persona.setNombreVia(SIN_ESPECIFICAR);
         }
@@ -1465,22 +1473,36 @@ public class MapperHelper {
         return nombreDir1;
 
     }
-    private String fillAddressGroupList(List<GeographicGroupsBO> geographicGroupsAddress, PersonaBO persona) {
+    private boolean filterViaType(final String geographicGroupTyeId) {
+        Map<String, String> mapTypeListDir1 = this.tipeListDir1();
+        return mapTypeListDir1.entrySet().stream().anyMatch(element -> element.equals(geographicGroupTyeId));
+    }
+    private String getViaType(final String geographicGroupTypeId) {
+        Map<String, String> mapTypeListDir1 = this.tipeListDir1();
+        return mapTypeListDir1.entrySet().stream()
+                .filter(element -> element.getKey().equals(geographicGroupTypeId))
+                .findFirst()
+                .map(Map.Entry::getValue)
+                .orElse(null);
+    }
+    private String fillAddressGroupList(List<GeographicGroupsBO> geographicGroupsAddress) {
 
         String nombreDir2 = null;
+        String groupType = "";
+        String groupName = "";
+        String separationSymbol = "-";
 
-        for(int i=0; i<geographicGroupsAddress.size(); i++) {
+        String dataGroupType = geographicGroupsAddress.stream()
+                .filter(element -> this.filterGroupType(element.getGeographicGroupType().getId()))
+                .findFirst()
+                .map(element -> this.getGroupType(element.getGeographicGroupType().getId()) + separationSymbol + element.getName())
+                .orElse(null);
 
-            String groupTypeDir = geographicGroupsAddress.get(i).getGeographicGroupType().getId();
-
-            Map<String, String> mapTypeListDir2 = tipeViaList2();
-            for(String keyMap : mapTypeListDir2.keySet()) {
-                String valueMap = mapTypeListDir2.get(keyMap);
-                if (valueMap.equals(groupTypeDir)) {
-                    nombreDir2 = valueMap.concat(" ").concat(geographicGroupsAddress.get(i).getName());
-                    break;
-                }
-            }
+        if(nonNull(dataGroupType)) {
+            String[] arrayGroupType = dataGroupType.split(separationSymbol);
+            groupType = arrayGroupType[0];
+            groupName = arrayGroupType[1];
+            nombreDir2 = groupType.concat(groupName);
         }
 
         return nombreDir2;
@@ -1499,71 +1521,57 @@ public class MapperHelper {
         return numberVia;
 
     }
+    private boolean filterGroupType(final String geographicGroupTyeId) {
+        Map<String, String> mapTypeListDir2 = this.tipeListDir2();
+        return mapTypeListDir2.entrySet().stream().anyMatch(element -> element.equals(geographicGroupTyeId));
+    }
+    private String getGroupType(final String geographicGroupTyeId) {
+        Map<String, String> mapTypeListDir2 = this.tipeListDir2();
+        return mapTypeListDir2.entrySet().stream()
+                .filter(element -> element.getKey().equals(geographicGroupTyeId))
+                .findFirst()
+                .map(Map.Entry::getValue)
+                .orElse(null);
+    }
     private void fillAddressOther(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
 
-        for(int i=0; i<geographicGroupsAddress.size(); i++) {
+        String addressOther = geographicGroupsAddress.stream()
+                .filter(element -> this.filterAddressOther(element.getGeographicGroupType().getId()))
+                .findFirst()
+                .map(element -> " " + element.getGeographicGroupType().getId() + " - " + element.getName())
+                .orElse(" ");
 
-            String addressOther = geographicGroupsAddress.get(i).getGeographicGroupType().getId();
-
-            switch (addressOther) {
-                case "QUINTA":
-                    stringAddress.append(" Quinta - ");
-                    stringAddress.append(geographicGroupsAddress.get(i).getName());
-                    break;
-                case "BLOCK":
-                    stringAddress.append(" Block - ");
-                    stringAddress.append(geographicGroupsAddress.get(i).getName());
-                    break;
-                case "INTERIOR_NUMBER":
-                    stringAddress.append(" Numero interior - ");
-                    stringAddress.append(geographicGroupsAddress.get(i).getName());
-                    break;
-                case "DOOR":
-                    stringAddress.append(" Puerta - ");
-                    stringAddress.append(geographicGroupsAddress.get(i).getName());
-                    break;
-                case "FLOOR":
-                    stringAddress.append(" Piso - ");
-                    stringAddress.append(geographicGroupsAddress.get(i).getName());
-                    break;
-                case "COLONY":
-                    stringAddress.append(" Colonia - ");
-                    stringAddress.append(geographicGroupsAddress.get(i).getName());
-                    break;
-                case "DELEGATION":
-                    stringAddress.append(" Delegacion - ");
-                    stringAddress.append(geographicGroupsAddress.get(i).getName());
-                    break;
-                case "MUNICIPALITY":
-                    stringAddress.append(" Municipio - ");
-                    stringAddress.append(geographicGroupsAddress.get(i).getName());
-                    break;
-                default:
-                    stringAddress.append("");
-            }
+        if(!" ".equals(addressOther)) {
+            stringAddress.append(addressOther);
         }
+
     }
-    private String getFullDirectionFrom(String addressViaList, String addressNumberVia, String addressGroupList, StringBuilder stringAddress) {
+    private boolean filterAddressOther(final String geographicGroupTyeId) {
+        Stream<String> addressOther = Stream.of("QUINTA", "BLOCK", "INTERIOR_NUMBER", "DOOR", "FLOOR",
+                "COLONY", "DELEGATION", "MUNICIPALITY");
+        return addressOther.anyMatch(element -> element.equals(geographicGroupTyeId));
+    }
+    private String getFullDirectionFrom(String addressViaList, String addressNumberVia, String addressGroupList, StringBuilder stringAddress, PersonaBO persona) {
 
         String directionForm = null;
 
-        if(Objects.nonNull(addressViaList) && Objects.nonNull(addressNumberVia) && Objects.nonNull(addressGroupList)) {
+        if(nonNull(addressViaList) && nonNull(addressNumberVia) && nonNull(addressGroupList)) {
             directionForm = addressViaList.concat(" ").concat(addressNumberVia).concat(" ").concat(addressGroupList)
                     .concat(" ").concat(stringAddress.toString());
         }
 
-        if(Objects.isNull(addressViaList) && Objects.nonNull(addressGroupList)) {
+        if(isNull(addressViaList) && nonNull(addressGroupList)) {
             directionForm = addressGroupList.concat(" ").concat(stringAddress.toString());
         }
 
         if(Objects.nonNull(directionForm)) {
-
+            persona.setDireccion(directionForm);
         }
 
         return directionForm;
 
     }
-    private Map<String, String> tipeViaList1() {
+    private Map<String, String> tipeListDir1() {
 
         Map<String, String> tipeListDir1Map = new HashMap<>();
 
@@ -1588,7 +1596,7 @@ public class MapperHelper {
         return tipeListDir1Map;
 
     }
-    private Map<String, String> tipeViaList2() {
+    private Map<String, String> tipeListDir2() {
 
         Map<String, String> tipeListDir2Map = new HashMap<>();
 
@@ -1612,6 +1620,16 @@ public class MapperHelper {
 
         return tipeListDir2Map;
 
+    }
+    private static <T> Collector<T, ?, T> toSingleton() {
+
+        return Collectors.collectingAndThen(toList(), list -> {
+
+            if(list.size() != 1) {
+                return null;
+            }
+            return list.get(0);
+        });
     }
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;
