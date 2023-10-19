@@ -439,7 +439,7 @@ public class MapperHelper {
                 convertDateToLocalDate(apxRequest.getValidityPeriod().getStartDate())));
 
         contractDao.setEndLinkageDate(generateCorrectDateFormat(
-                convertDateToLocalDate(apxRequest.getInstallmentPlan().getEndDate())));
+                convertDateToLocalDate(apxRequest.getInstallmentPlan().getMaturityDate())));
 
         contractDao.setValidityMonthsNumber(emissionDao.getContractDurationType().equals("A")
                 ? emissionDao.getContractDurationNumber().multiply(BigDecimal.valueOf(12))
