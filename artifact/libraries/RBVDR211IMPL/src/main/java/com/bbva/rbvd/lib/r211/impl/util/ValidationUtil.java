@@ -6,6 +6,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ValidationUtil {
 
@@ -13,7 +14,8 @@ public class ValidationUtil {
 
     public static ParticipantDTO filterParticipantByType(List<ParticipantDTO> participants, String participantType) {
         if(!CollectionUtils.isEmpty(participants)){
-            return participants.stream().filter(participantDTO -> participantType.equals(participantDTO.getParticipantType().getId())).findFirst().orElse(null);
+            Optional<ParticipantDTO> participant = participants.stream().filter(participantDTO -> participantType.equals(participantDTO.getParticipantType().getId())).findFirst();
+            return participant.isPresent() ? participant.get() : null;
         }else{
             return null;
         }
@@ -31,7 +33,8 @@ public class ValidationUtil {
     public static boolean validateEndorsementInParticipantsRequest(PolicyDTO requestBody) {
         if(Objects.nonNull(filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.PARTICIPANT_TYPE_ENDORSEE))){
             ParticipantDTO endorseParticipant = filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.PARTICIPANT_TYPE_ENDORSEE);
-            return endorseParticipant.getIdentityDocument() != null
+            return  endorseParticipant != null
+                    && endorseParticipant.getIdentityDocument() != null
                     && Objects.nonNull(endorseParticipant.getIdentityDocument().getDocumentType().getId())
                     && ConstantsUtil.DOCUMENT_TYPE_RUC.equals(endorseParticipant.getIdentityDocument().getDocumentType().getId())
                     && Objects.nonNull(endorseParticipant.getIdentityDocument().getNumber())
