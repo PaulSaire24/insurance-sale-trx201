@@ -8,8 +8,14 @@ public class ConstantsUtil {
     public static final String PARTICIPANT_TYPE_PAYMENT_MANAGER = "PAYMENT_MANAGER";
     public static final String PARTICIPANT_TYPE_INSURED = "INSURED";
     public static final String DOCUMENT_TYPE_RUC = "RUC";
-    public static final String DELIMITER = "|";
+
     public static final String QUERY_GET_INSURED_DATA = "PISD.GET_INSURED_DATA_LIFE";
+
+
+    public class Delimites{
+        public static final String VERTICAL_BAR = "|";
+
+    }
 
     public class ParticipantData{
 

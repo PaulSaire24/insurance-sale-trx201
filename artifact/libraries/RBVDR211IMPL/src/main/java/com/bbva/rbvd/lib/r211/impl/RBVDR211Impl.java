@@ -15,6 +15,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.dto.insurance.utils.PISDValidation;
 
+import com.bbva.pisd.lib.r350.PISDR350;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -48,6 +49,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
+import com.bbva.rbvd.lib.r211.impl.util.ConstantsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -72,6 +74,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.bbva.rbvd.lib.r211.impl.util.ValidationUtil.filterParticipantByType;
+import static com.bbva.rbvd.lib.r211.impl.util.ValidationUtil.validateEndorsementInParticipantsRequest;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -392,7 +395,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					this.getKindOfAccount(relatedContractASO),this.getAccountNumberInDatoParticular(relatedContractASO));
 			LOGGER.info("***** RBVDR211Impl - generateRimacRequestLife | Emission Life Rimac request : {} *****",requestEmisionLife);
 
-			isEndorsement = filterParticipantByType(requestBody.getParticipants(),TAG_ENDORSEE) != null;
+			isEndorsement = validateEndorsementInParticipantsRequest(requestBody);
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(requestBody, emissionDao, asoResponse.getData().getId(), isEndorsement);
 			LOGGER.info("***** RBVDR211Impl - buildInsuranceContract | Mapping to save contract life : {} *****",contractDao);
@@ -472,7 +475,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			//llamada a add participants
-			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,requestBody,this.rbvdR201,responseQueryGetRequiredFields,this.pisdR350);
+			Map<String, Object> dataInsuredFromDB = this.getDataInsuredParticipantFromDB(requestBody, responseQueryGetRequiredFields);
+			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,requestBody,this.rbvdR201,responseQueryGetRequiredFields,dataInsuredFromDB);
 			LOGGER.info("***** RBVDR211Impl - generateRequestAddParticipants | Request add Participants Rimac Service : {} *****",requestAddParticipants);
 
 			AgregarTerceroBO responseAddParticipants = rbvdR201.executeAddParticipantsService(requestAddParticipants, emissionDao.getInsuranceCompanyQuotaId(),requestBody.getProductId(),requestBody.getTraceId());
@@ -527,6 +531,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			this.addAdviceWithDescription(ex.getAdviceCode(), ex.getMessage());
 			return null;
 		}
+	}
+
+	private Map<String, Object> getDataInsuredParticipantFromDB(PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields) {
+		Map<String,Object> argumentForGetDataInsured = new HashMap<>();
+		argumentForGetDataInsured.put(RBVDProperties.FIELD_POLICY_QUOTA_INTERNAL_ID.getValue(), requestBody.getQuotationId());
+		argumentForGetDataInsured.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), responseQueryGetRequiredFields.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
+		argumentForGetDataInsured.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), requestBody.getProductPlan().getId());
+		return this.pisdR350.executeGetASingleRow(ConstantsUtil.QUERY_GET_INSURED_DATA,argumentForGetDataInsured);
 	}
 
 	private Map<String, Object> createSingleArgument(String argument, String parameterName) {

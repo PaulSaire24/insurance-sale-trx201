@@ -43,6 +43,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
+import com.bbva.rbvd.lib.r211.impl.util.ConstantsUtil;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 import org.junit.Before;
@@ -882,6 +883,35 @@ public class RBVDR211Test {
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
+		assertNotNull(validation);
+	}
+
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyDynamicLifeProduct_WithInsuredParticipant() throws  IOException{
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyDynamicLifeProduct_WithInsuredParticipant...");
+		AgregarTerceroBO responseAddParticipants = mockData.getAddParticipantsRimacResponse();
+		EmisionBO responseEmission = mockData.getEmissionRimacResponseLife();
+		ParticipantDTO insured = new ParticipantDTO();
+		insured.setCustomerId("84948543");
+		ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
+		participantTypeDTO.setId(ConstantsUtil.PARTICIPANT_TYPE_INSURED);
+		insured.setParticipantType(participantTypeDTO);
+		IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
+		identityDocumentDTO.setNumber("494830484");
+		DocumentTypeDTO documentTypeDTO = new DocumentTypeDTO();
+		documentTypeDTO.setId("DNI");
+		identityDocumentDTO.setDocumentType(documentTypeDTO);
+		insured.setIdentityDocument(identityDocumentDTO);
+		requestBody.getParticipants().add(insured);
+		requestBody.setProductId("841");
+		requestBody.setSaleChannelId("PC");
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 		assertNotNull(validation);
 	}
 

@@ -887,7 +887,7 @@ public class MapperHelper {
     }
 
     public AgregarTerceroBO generateRequestAddParticipants(String businessName, PolicyDTO requestBody, RBVDR201 rbvdr201,
-                                                           Map<String, Object> responseQueryGetRequiredFields, PISDR350 pisdR350){
+                                                           Map<String, Object> responseQueryGetRequiredFields, Map<String,Object> dataInsured){
         PayloadAgregarTerceroBO payload = new PayloadAgregarTerceroBO();
         AgregarTerceroBO request = new AgregarTerceroBO();
         List<PersonaBO> personasList = new ArrayList<>();
@@ -897,30 +897,33 @@ public class MapperHelper {
         if(!CollectionUtils.isEmpty(requestBody.getParticipants())){
             CustomerListASO customerList = rbvdr201.executeGetCustomerInformation(requestBody.getHolder().getId());
 
-            if(validateOtherParticipants(requestBody,ConstantsUtil.PARTICIPANT_TYPE_PAYMENT_MANAGER)){
-                PersonaBO paymentPerson = this.getFillFieldsPerson(this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
-                paymentPerson.setRol(23);
+            requestBody.getParticipants().forEach(participant -> {
+                if(validateOtherParticipants(participant,ConstantsUtil.PARTICIPANT_TYPE_PAYMENT_MANAGER)){
+                    PersonaBO paymentPerson = this.getFillFieldsPerson(this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
+                    paymentPerson.setRol(23);
 
-                //Contratante. Si requiere cambios para este participante, agregar propia validacion
-                PersonaBO contractorPerson = this.getFillFieldsPerson(paymentPerson);
-                contractorPerson.setRol(8);
+                    //Contratante. Si requiere cambios para este participante, agregar propia validacion
+                    PersonaBO contractorPerson = this.getFillFieldsPerson(paymentPerson);
+                    contractorPerson.setRol(8);
 
-                personasList.add(paymentPerson);
-                personasList.add(contractorPerson);
-            }else if(validateOtherParticipants(requestBody,ConstantsUtil.PARTICIPANT_TYPE_INSURED)){
-                ParticipantDTO participantDTO = filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.PARTICIPANT_TYPE_INSURED);
-                Map<String, Object> dataInsured = getDataInsuredParticipantFromDB(requestBody, responseQueryGetRequiredFields, pisdR350);
-                PersonaBO insuredPerson = generateBasicDataInsuredParticipant(participantDTO, dataInsured);
+                    personasList.add(paymentPerson);
+                    personasList.add(contractorPerson);
+                }else if(validateOtherParticipants(participant,ConstantsUtil.PARTICIPANT_TYPE_INSURED)){
+                    ParticipantDTO participantDTO = filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.PARTICIPANT_TYPE_INSURED);
+                    PersonaBO insuredPerson = generateBasicDataInsuredParticipant(participantDTO, dataInsured);
 
-                if(Objects.nonNull(participantDTO.getCustomerId())){
-                    CustomerListASO customerInsured = rbvdr201.executeGetCustomerInformation(participantDTO.getCustomerId());
-                    fillAddress(customerInsured,insuredPerson,new StringBuilder());
-                }else{
-                    fillAddress(customerList,insuredPerson,new StringBuilder());
+                    if(Objects.nonNull(participantDTO.getCustomerId())){
+                        CustomerListASO customerInsured = rbvdr201.executeGetCustomerInformation(participantDTO.getCustomerId());
+                        fillAddress(customerInsured,insuredPerson,new StringBuilder());
+                    }else{
+                        fillAddress(customerList,insuredPerson,new StringBuilder());
+                    }
+
+                    personasList.add(this.getFillFieldsPerson(insuredPerson));
                 }
+            });
 
-                personasList.add(this.getFillFieldsPerson(insuredPerson));
-            }
+
 
             if(personasList.size() != 3){
                 PersonaBO contractorPerson = this.getFillFieldsPerson(this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
@@ -945,7 +948,7 @@ public class MapperHelper {
         insuredPerson.setTipoDocumento(this.applicationConfigurationService.getProperty(participantDTO.getIdentityDocument().getDocumentType().getId()));
         insuredPerson.setNroDocumento(participantDTO.getIdentityDocument().getNumber());
         String apePaterno = (String) dataInsured.get(ConstantsUtil.ParticipantData.FIELD_CLIENT_LAST_NAME);
-        List<String> apellidos = Arrays.asList(apePaterno.split(ConstantsUtil.DELIMITER));
+        List<String> apellidos = Arrays.asList(apePaterno.split(ConstantsUtil.Delimites.VERTICAL_BAR));
         insuredPerson.setApePaterno(apellidos.get(0));
         insuredPerson.setApeMaterno(apellidos.get(1));
         insuredPerson.setNombres((String) dataInsured.get(ConstantsUtil.ParticipantData.FIELD_INSURED_CUSTOMER_NAME));
@@ -955,14 +958,6 @@ public class MapperHelper {
         insuredPerson.setRol(9);
         insuredPerson.setCelular((String) dataInsured.get(ConstantsUtil.ParticipantData.FIELD_PHONE_ID));
         return insuredPerson;
-    }
-
-    private static Map<String, Object> getDataInsuredParticipantFromDB(PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields, PISDR350 pisdR350) {
-        Map<String,Object> argumentForGetDataInsured = new HashMap<>();
-        argumentForGetDataInsured.put(RBVDProperties.FIELD_POLICY_QUOTA_INTERNAL_ID.getValue(), requestBody.getQuotationId());
-        argumentForGetDataInsured.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(), responseQueryGetRequiredFields.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
-        argumentForGetDataInsured.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), requestBody.getProductPlan().getId());
-        return pisdR350.executeGetASingleRow(ConstantsUtil.QUERY_GET_INSURED_DATA,argumentForGetDataInsured);
     }
 
     public EmisionBO generateRimacRequestLife(String insuranceBusinessName, String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber){
