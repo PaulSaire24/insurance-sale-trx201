@@ -1349,32 +1349,24 @@ public class MapperHelper {
         PersonaBO persons = new PersonaBO();
         persons.setTipoDocumento(persona.getTipoDocumento());
         persons.setNroDocumento(persona.getNroDocumento());
-        persons.setApePaterno(validateSN(persona.getApePaterno()));
-        persons.setApeMaterno(validateSN(persona.getApeMaterno()));
-        persons.setNombres(validateSN(persona.getNombres()));
+        persons.setApePaterno(persona.getApePaterno());
+        persons.setApeMaterno(persona.getApeMaterno());
+        persons.setNombres(persona.getNombres());
         persons.setFechaNacimiento(persona.getFechaNacimiento());
         persons.setSexo(persona.getSexo());
         persons.setCorreoElectronico(persona.getCorreoElectronico());
-        persons.setDireccion(validateSN(persona.getDireccion()));
-        persons.setDistrito(validateSN(persona.getDistrito()));
-        persons.setProvincia(validateSN(persona.getProvincia()));
-        persons.setUbigeo(validateSN(persona.getUbigeo()));
-        persons.setDepartamento(validateSN(persona.getDepartamento()));
-        persons.setTipoVia(validateSN(persona.getTipoVia()));
-        persons.setNombreVia(validateSN(persona.getNombreVia()));
-        persons.setNumeroVia(validateSN(persona.getNumeroVia()));
+        persons.setDireccion(persona.getDireccion());
+        persons.setDistrito(persona.getDistrito());
+        persons.setProvincia(persona.getProvincia());
+        persons.setUbigeo(persona.getUbigeo());
+        persons.setDepartamento(persona.getDepartamento());
+        persons.setTipoVia(persona.getTipoVia());
+        persons.setNombreVia(persona.getNombreVia());
+        persons.setNumeroVia(persona.getNumeroVia());
         persons.setCelular(persona.getCelular());
         return persons;
     }
-    private String validateSN(String name) {
-        if(Objects.isNull(name) || "null".equals(name) || " ".equals(name)){
-            return "N/A";
-        }else{
-            name = name.replace("#","Ñ");
-            return name;
-        }
-    }
-    public String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder stringAddress) {
+    private String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder stringAddress) {
 
         CustomerBO customer = customerList.getData().get(0);
         LocationBO customerLocation = customer.getAddresses().get(0).getLocation();
@@ -1391,9 +1383,10 @@ public class MapperHelper {
 
         String addressViaList = fillAddressViaList(geographicGroupsAddress, persona);
         String addressNumberVia = fillAddressNumberVia(geographicGroupsAddress, addressViaList, persona);
-        String addressGroupList = fillAddressGroupList(geographicGroupsAddress);
+        String addressGroupList = fillAddressGroupList(geographicGroupsAddress, addressViaList, persona);
 
         if(Objects.isNull(addressGroupList) && Objects.isNull(addressViaList)) {
+            this.applicationConfigurationService.getProperty("address-message-key");
             return null;
         }
 
@@ -1408,10 +1401,10 @@ public class MapperHelper {
     private void fillAddressUbigeo(final List<GeographicGroupsBO> geographicGroups, final PersonaBO persona) {
 
         String separationSymbol = "-";
-        String department = "";
-        String province = "";
-        String district = "";
-        String ubigeo = "";
+        String department;
+        String province;
+        String district;
+        String ubigeo;
 
         Map<String, String> mapUbication = geographicGroups.stream().
                 filter(element -> this.filterUbicationCode(element.getGeographicGroupType().getId())).
@@ -1444,8 +1437,8 @@ public class MapperHelper {
     private String fillAddressViaList(List<GeographicGroupsBO> geographicGroupsAddress, PersonaBO persona) {
 
         String nombreDir1 = null;
-        String viaType = "";
-        String viaName = "";
+        String viaType;
+        String viaName;
         String separationSymbol = "-";
 
         String dataViaType = geographicGroupsAddress.stream()
@@ -1479,11 +1472,11 @@ public class MapperHelper {
         Map<String, String> mapTypeListDir1 = this.tipeListDir1();
         return mapTypeListDir1.getOrDefault(geographicGroupTypeId, null);
     }
-    private String fillAddressGroupList(List<GeographicGroupsBO> geographicGroupsAddress) {
+    private String fillAddressGroupList(List<GeographicGroupsBO> geographicGroupsAddress, String addressViaList, PersonaBO persona) {
 
         String nombreDir2 = null;
         String groupType = "";
-        String groupName = "";
+        String groupName;
         String separationSymbol = "-";
 
         String dataGroupType = geographicGroupsAddress.stream()
@@ -1497,6 +1490,11 @@ public class MapperHelper {
             groupType = arrayGroupType[0];
             groupName = arrayGroupType[1];
             nombreDir2 = groupType.concat(" "+groupName);
+        }
+
+        if (nonNull(dataGroupType) && isNull(addressViaList)){
+            persona.setTipoVia(groupType);
+            persona.setNumeroVia(groupType);
         }
 
         return nombreDir2;
@@ -1527,21 +1525,32 @@ public class MapperHelper {
     }
     private void fillAddressOther(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
 
+    String typeOther;
+    String nameOther;
+    String separationSymbol = "-";
+
         String addressOther = geographicGroupsAddress.stream()
                 .filter(element -> this.filterAddressOther(element.getGeographicGroupType().getId()))
                 .findFirst()
-                .map(element -> " " + element.getGeographicGroupType().getId() + " - " + element.getName())
+                .map(element -> this.getTypeOther(element.getGeographicGroupType().getId()) + separationSymbol + element.getName())
                 .orElse(" ");
 
         if(!" ".equals(addressOther)) {
-            stringAddress.append(addressOther);
+            String[] arrayGroupType = addressOther.split(separationSymbol);
+            typeOther = arrayGroupType[0];
+            nameOther = arrayGroupType[1];
+            stringAddress.append(typeOther.concat(" ").concat(nameOther));
         }
 
     }
     private boolean filterAddressOther(final String geographicGroupTyeId) {
-        Stream<String> addressOther = Stream.of("QUINTA", "BLOCK", "INTERIOR_NUMBER", "DOOR", "FLOOR",
-                "COLONY", "DELEGATION", "MUNICIPALITY");
-        return addressOther.anyMatch(element -> element.equals(geographicGroupTyeId));
+        Map<String, String> addressOther = this.tipeListOther();
+        return addressOther.entrySet().stream().anyMatch(element -> element.getKey().equals(geographicGroupTyeId));
+    }
+    private String getTypeOther(final String geographicGroupTyeId){
+        Map<String, String> mapTypeTypeOther = this.tipeListOther();
+        return mapTypeTypeOther.entrySet().stream()
+                .filter(element -> element.getKey().equals(geographicGroupTyeId)).findFirst().map(Map.Entry::getValue).orElse(null);
     }
     private String getFullDirectionFrom(String addressViaList, String addressNumberVia, String addressGroupList, StringBuilder stringAddress, PersonaBO persona) {
 
@@ -1610,6 +1619,22 @@ public class MapperHelper {
         tipeListDir2Map.put("RESIDENTIAL", "RES");
 
         return tipeListDir2Map;
+
+    }
+    private Map<String, String> tipeListOther() {
+
+        Map<String, String> tipeListOther = new HashMap<>();
+
+        tipeListOther.put("QUINTA", "QUINTA");
+        tipeListOther.put("BLOCK", "MANZANA");
+        tipeListOther.put("INTERIOR_NUMBER","DPTO.");
+        tipeListOther.put("FLOOR", "PISO");
+        tipeListOther.put("COLONY", "COL.");
+        tipeListOther.put("DELEGATION","OTRO");
+        tipeListOther.put("MUNICIPALITY","MUNI.");
+        tipeListOther.put("DOOR","INT.");
+
+        return tipeListOther;
 
     }
     private static <T> Collector<T, ?, T> toSingleton() {
