@@ -134,7 +134,7 @@ public class RBVDT20101PETransactionTest {
 		this.addParameter("productId", "840");
 		simulateResponse.setOperationDate(new Date());
 
-		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(anyObject())).thenReturn(simulateResponse);
+		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(anyObject())).thenReturn(simulateResponse);
 
 		this.transaction.getContext().getParameterList().forEach(
 				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)

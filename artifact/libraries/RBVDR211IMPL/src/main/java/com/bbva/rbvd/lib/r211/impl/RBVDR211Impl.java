@@ -48,6 +48,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
+import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -71,6 +72,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.bbva.rbvd.lib.r211.impl.util.ValidationUtil.filterParticipantByType;
+import static com.bbva.rbvd.lib.r211.impl.util.ValidationUtil.validateOtherParticipants;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -173,7 +176,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | AreThereMoreThanOneParticipant validation *****");
-			isEndorsement = validateEndorsement(requestBody);
+			isEndorsement = validateOtherParticipants(requestBody,TAG_ENDORSEE);
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(requestBody, emissionDao, asoResponse.getData().getId(), isEndorsement);
 
@@ -329,7 +332,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	}
 	@Override
-	public PolicyDTO executeBusinessLogicEmissionPrePolicyLifeEasyYes(PolicyDTO requestBody){
+	public PolicyDTO executeBusinessLogicEmissionPrePolicyLifeProduct(PolicyDTO requestBody){
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes START *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes ***** Param: {}", requestBody);
 
@@ -391,7 +394,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					this.getKindOfAccount(relatedContractASO),this.getAccountNumberInDatoParticular(relatedContractASO));
 			LOGGER.info("***** RBVDR211Impl - generateRimacRequestLife | Emission Life Rimac request : {} *****",requestEmisionLife);
 
-			isEndorsement = validateParticipantTypeIfExist(requestBody.getParticipants(),TAG_ENDORSEE);
+			isEndorsement = filterParticipantByType(requestBody.getParticipants(),TAG_ENDORSEE) != null;
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(requestBody, emissionDao, asoResponse.getData().getId(), isEndorsement);
 			LOGGER.info("***** RBVDR211Impl - buildInsuranceContract | Mapping to save contract life : {} *****",contractDao);
@@ -471,7 +474,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			//llamada a add participants
-			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,requestBody,customerList,responseQueryGetRequiredFields);
+			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,requestBody,this.rbvdR201,responseQueryGetRequiredFields,this.pisdR350);
 			LOGGER.info("***** RBVDR211Impl - generateRequestAddParticipants | Request add Participants Rimac Service : {} *****",requestAddParticipants);
 
 			AgregarTerceroBO responseAddParticipants = rbvdR201.executeAddParticipantsService(requestAddParticipants, emissionDao.getInsuranceCompanyQuotaId(),requestBody.getProductId(),requestBody.getTraceId());
@@ -526,15 +529,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			this.addAdviceWithDescription(ex.getAdviceCode(), ex.getMessage());
 			return null;
 		}
-	}
-
-	private static ParticipantDTO filterParticipantByType(List<ParticipantDTO> participants,String participantType) {
-		return participants.stream().filter(participantDTO -> participantDTO.getParticipantType().getId().equals(participantType)).collect(toList()).get(0);
-	}
-
-	private boolean validateParticipantTypeIfExist(List<ParticipantDTO> participants,String tagParticipantType){
-		return (!org.springframework.util.StringUtils.isEmpty(participants) &&
-			participants.stream().anyMatch(participant -> participant.getParticipantType().getId().equals(tagParticipantType)));
 	}
 
 	private Map<String, Object> createSingleArgument(String argument, String parameterName) {

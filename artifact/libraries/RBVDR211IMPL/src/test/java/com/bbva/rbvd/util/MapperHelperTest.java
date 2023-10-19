@@ -16,6 +16,7 @@ import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 
+import com.bbva.pisd.lib.r350.PISDR350;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -37,6 +38,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.*;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
+import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 import org.joda.time.DateTimeZone;
@@ -78,6 +80,8 @@ public class MapperHelperTest {
     private PolicyASO asoResponse;
     private EmisionBO rimacResponse;
     private CustomerListASO customerList;
+    private RBVDR201 rbvdr201;
+    private PISDR350 pisdr350;
 
     @Before
     public void setUp() throws IOException {
@@ -148,7 +152,28 @@ public class MapperHelperTest {
         asoResponse = mockData.getEmisionASOResponse();
         rimacResponse = mockData.getEmisionRimacResponse();
         customerList = mockDTO.getCustomerDataResponse();
+        rbvdr201 = mock(RBVDR201.class);
+        pisdr350 = mock(PISDR350.class);
+
+        CustomerListASO customerList = mockDTO.getCustomerDataResponse();
+        when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+
+        Map<String,Object> data = new HashMap<>();
+        data.put("INSURED_ID","894948434");
+        data.put("CUSTOMER_DOCUMENT_TYPE","L");
+        data.put("PERSONAL_ID","489484944");
+        data.put("IS_BBVA_CUSTOMER_TYPE","S");
+        data.put("CUSTOMER_ENTRY_DATE","2019-04-03");
+        data.put("PARTICIPANT_ROLE_ID",2);
+        data.put("INSURED_CUSTOMER_NAME","PETER");
+        data.put("CLIENT_LAST_NAME","PARKER");
+        data.put("USER_EMAIL_PERSONAL_DESC","PETER.PARKER@BBVA.COM");
+        data.put("PHONE_ID","909494944");
+        data.put("CUSTOMER_BIRTH_DATE","1927-04-07");
+        data.put("GENDER_ID","M");
+        when(pisdr350.executeGetASingleRow("query",new HashMap<>())).thenReturn(data);
     }
+
 
     @Test
     public void buildAsoRequest_OK() {
@@ -1788,12 +1813,14 @@ public class MapperHelperTest {
         assertEquals(1,validation.size());
 
     }
+
+
     @Test
     public void testGenerateRequestAddParticipants(){
         Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
-        AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, customerList, requiredFieldsEmisionBDResponse);
+        AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, this.rbvdr201, requiredFieldsEmisionBDResponse,this.pisdr350);
         assertNotNull(validation);
         assertEquals(3, validation.getPayload().getPersona().size());
     }
