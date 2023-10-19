@@ -48,7 +48,6 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
-import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -73,7 +72,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.bbva.rbvd.lib.r211.impl.util.ValidationUtil.filterParticipantByType;
-import static com.bbva.rbvd.lib.r211.impl.util.ValidationUtil.validateOtherParticipants;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -176,7 +174,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | AreThereMoreThanOneParticipant validation *****");
-			isEndorsement = validateOtherParticipants(requestBody,TAG_ENDORSEE);
+			isEndorsement = validateEndorsement(requestBody);
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(requestBody, emissionDao, asoResponse.getData().getId(), isEndorsement);
 

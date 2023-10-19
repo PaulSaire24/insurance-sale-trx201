@@ -39,6 +39,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.bbva.rbvd.lib.r201.RBVDR201;
+import com.bbva.rbvd.lib.r211.impl.util.ConstantsUtil;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 import org.joda.time.DateTimeZone;
@@ -166,7 +167,7 @@ public class MapperHelperTest {
         data.put("CUSTOMER_ENTRY_DATE","2019-04-03");
         data.put("PARTICIPANT_ROLE_ID",2);
         data.put("INSURED_CUSTOMER_NAME","PETER");
-        data.put("CLIENT_LAST_NAME","PARKER");
+        data.put("CLIENT_LAST_NAME","PARKER|POTTER");
         data.put("USER_EMAIL_PERSONAL_DESC","PETER.PARKER@BBVA.COM");
         data.put("PHONE_ID","909494944");
         data.put("CUSTOMER_BIRTH_DATE","1927-04-07");
@@ -1823,6 +1824,42 @@ public class MapperHelperTest {
         AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, this.rbvdr201, requiredFieldsEmisionBDResponse,this.pisdr350);
         assertNotNull(validation);
         assertEquals(3, validation.getPayload().getPersona().size());
+    }
+
+    @Test
+    public void testGenerateRequestAddParticipants_WithInsuredParticipant(){
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "test.344@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+        apxRequest.setProductId("841");
+        ParticipantDTO insured = new ParticipantDTO();
+        insured.setCustomerId("84948543");
+        ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
+        participantTypeDTO.setId(ConstantsUtil.PARTICIPANT_TYPE_INSURED);
+        insured.setParticipantType(participantTypeDTO);
+        IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
+        identityDocumentDTO.setNumber("494830484");
+        DocumentTypeDTO documentTypeDTO = new DocumentTypeDTO();
+        documentTypeDTO.setId("DNI");
+        identityDocumentDTO.setDocumentType(documentTypeDTO);
+        insured.setIdentityDocument(identityDocumentDTO);
+        apxRequest.getParticipants().add(insured);
+
+        AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("VIDADINAMICO", apxRequest, this.rbvdr201, requiredFieldsEmisionBDResponse,this.pisdr350);
+        assertNotNull(validation);
+        assertEquals(3, validation.getPayload().getPersona().size());
+    }
+
+    @Test
+    public void testGenerateRequestAddParticipants_WithParticipantsRequestNull(){
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+        apxRequest.setProductId("841");
+        apxRequest.setParticipants(null);
+        AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("VIDADINAMICO", apxRequest, this.rbvdr201, requiredFieldsEmisionBDResponse,this.pisdr350);
+        assertNotNull(validation);
+        assertEquals(0,validation.getPayload().getPersona().size());
     }
 
     @Test
