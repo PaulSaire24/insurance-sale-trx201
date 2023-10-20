@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl.util;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
@@ -827,6 +828,9 @@ public class MapperHelper {
         StringBuilder stringAddress  = new StringBuilder();
 
         fillAddress(customerList, persona, stringAddress);
+        if (isNull(fillAddress(customerList, persona, stringAddress))){
+            throw new BusinessException("RBVD10094935", false, this.applicationConfigurationService.getProperty("address-message-key"));
+        }
 
         constructListPersons(persona, personasList);
 
@@ -1386,7 +1390,6 @@ public class MapperHelper {
         String addressGroupList = fillAddressGroupList(geographicGroupsAddress, addressViaList, persona);
 
         if(Objects.isNull(addressGroupList) && Objects.isNull(addressViaList)) {
-            this.applicationConfigurationService.getProperty("address-message-key");
             return null;
         }
 
@@ -1562,7 +1565,7 @@ public class MapperHelper {
         }
 
         if(isNull(addressViaList) && nonNull(addressGroupList)) {
-            directionForm = addressGroupList.concat(" ").concat(stringAddress.toString());
+            directionForm = addressGroupList.concat(" ").concat(addressNumberVia).concat(stringAddress.toString());
         }
 
         if(Objects.nonNull(directionForm)) {
