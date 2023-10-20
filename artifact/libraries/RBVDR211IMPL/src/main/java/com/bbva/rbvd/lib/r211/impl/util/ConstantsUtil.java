@@ -4,7 +4,11 @@ public class ConstantsUtil {
 
     private ConstantsUtil(){}
 
-    public static final String PARTICIPANT_TYPE_ENDORSEE = "ENDORSEE";
+    public class Participant{
+        public static final String PARTICIPANT_TYPE_ENDORSEE = "ENDORSEE";
+    }
+
+
     public static final String PARTICIPANT_TYPE_PAYMENT_MANAGER = "PAYMENT_MANAGER";
     public static final String PARTICIPANT_TYPE_INSURED = "INSURED";
     public static final String DOCUMENT_TYPE_RUC = "RUC";
@@ -17,16 +21,26 @@ public class ConstantsUtil {
 
     }
 
-    public class ParticipantData{
+    public class Number{
+        public static final int TRES = 3;
+    }
 
-        private ParticipantData(){}
+    public enum ParticipantRol{
 
-        public static final String FIELD_CLIENT_LAST_NAME = "CLIENT_LAST_NAME";
-        public static final String FIELD_INSURED_CUSTOMER_NAME = "INSURED_CUSTOMER_NAME";
-        public static final String FIELD_CUSTOMER_BIRTH_DATE = "CUSTOMER_BIRTH_DATE";
-        public static final String FIELD_GENDER_ID = "GENDER_ID";
-        public static final String FIELD_USER_EMAIL_PERSONAL_DESC = "USER_EMAIL_PERSONAL_DESC";
-        public static final String FIELD_PHONE_ID = "PHONE_ID";
+        CONTRACTOR(8),
+        INSURED(9),
+        PAYMENT_MANAGER(23);
+
+        private final int rol;
+
+
+        ParticipantRol(int rol) {
+            this.rol = rol;
+        }
+
+        public int getRol() {
+            return rol;
+        }
     }
 
 

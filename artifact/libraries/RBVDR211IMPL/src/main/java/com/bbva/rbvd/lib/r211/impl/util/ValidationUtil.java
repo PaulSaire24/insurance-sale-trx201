@@ -31,8 +31,8 @@ public class ValidationUtil {
     }
 
     public static boolean validateEndorsementInParticipantsRequest(PolicyDTO requestBody) {
-        if(Objects.nonNull(filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.PARTICIPANT_TYPE_ENDORSEE))){
-            ParticipantDTO endorseParticipant = filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.PARTICIPANT_TYPE_ENDORSEE);
+        if(Objects.nonNull(filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.PARTICIPANT_TYPE_ENDORSEE))){
+            ParticipantDTO endorseParticipant = filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.PARTICIPANT_TYPE_ENDORSEE);
             return  endorseParticipant != null
                     && endorseParticipant.getIdentityDocument() != null
                     && Objects.nonNull(endorseParticipant.getIdentityDocument().getDocumentType().getId())
