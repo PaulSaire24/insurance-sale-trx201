@@ -78,6 +78,8 @@ public class MapperHelperTest {
     private PolicyASO asoResponse;
     private EmisionBO rimacResponse;
     private CustomerListASO customerList;
+    private Map<String,Object> responseQueryGetProductById;
+
 
     @Before
     public void setUp() throws IOException {
@@ -148,7 +150,12 @@ public class MapperHelperTest {
         asoResponse = mockData.getEmisionASOResponse();
         rimacResponse = mockData.getEmisionRimacResponse();
         customerList = mockDTO.getCustomerDataResponse();
+
+        responseQueryGetProductById = new HashMap<>();
+        responseQueryGetProductById.put("INSURANCE_BUSINESS_NAME","VIDA");
+        responseQueryGetProductById.put("PRODUCT_SHORT_DESC","VIDADINAMICO");
     }
+
 
     @Test
     public void buildAsoRequest_OK() {
@@ -953,7 +960,7 @@ public class MapperHelperTest {
         identityDocumentsBOs1.add(identityDocumentsBO1);
         customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs1);
 
-        EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
 
         assertNotNull(validation1);
 
@@ -987,7 +994,8 @@ public class MapperHelperTest {
         geographicGroupsBOs.add(geographicGroupsBO1);
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
         when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("RC");
-        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        responseQueryGetProductById.put("PRODUCT_SHORT_DESC",null);
+        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation2);
 
         customerList.getData().get(0).setGender(null);
@@ -1008,7 +1016,7 @@ public class MapperHelperTest {
         geographicGroupsBOs2.add(geographicGroupsBO2);
         geographicGroupsBOs2.add(geographicGroupsBO3);
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs2);
-        EmisionBO validation3 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        EmisionBO validation3 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation3);
 
         GeographicGroupsBO geographicGroupsBO4 = new GeographicGroupsBO();
@@ -1020,11 +1028,11 @@ public class MapperHelperTest {
         List<GeographicGroupsBO> geographicGroupsBOs4 = new ArrayList<>();
         geographicGroupsBOs4.add(geographicGroupsBO4);
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
-        EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation4);
 
         apxRequest.setHolder(null);
-        EmisionBO validation5 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        EmisionBO validation5 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation5);
     }
 

@@ -18,6 +18,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 import com.bbva.pisd.lib.r012.PISDR012;
 
+import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.rbvd.dto.insrncsale.aso.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
@@ -62,6 +63,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -85,6 +87,7 @@ public class RBVDR211Test {
 	private PISDR012 pisdR012;
 	private KSMKR002 ksmkr002;
 	private MapperHelper mapperHelper;
+	private PISDR401 pisdr401;
 
 	private PolicyDTO requestBody;
 
@@ -103,6 +106,7 @@ public class RBVDR211Test {
 	private EmisionBO rimacResponse;
 
 	private CustomerListASO customerList;
+	private Map<String,Object> responseQueryGetProductById;
 
 	@Before
 	public void setUp() throws IOException {
@@ -115,12 +119,14 @@ public class RBVDR211Test {
 		pisdR012 = mock(PISDR012.class);
 		ksmkr002 = mock(KSMKR002.class);
 		mapperHelper = mock(MapperHelper.class);
+		pisdr401 = mock(PISDR401.class);
 
 		rbvdr211.setApplicationConfigurationService(applicationConfigurationService);
 		rbvdr211.setRbvdR201(rbvdr201);
 		rbvdr211.setPisdR012(pisdR012);
 		rbvdr211.setKsmkR002(ksmkr002);
 		rbvdr211.setMapperHelper(mapperHelper);
+		rbvdr211.setPisdR401(pisdr401);
 
 		requestBody = mockData.getCreateInsuranceRequestBody();
 		requestBody.setSaleChannelId("XX");
@@ -180,7 +186,7 @@ public class RBVDR211Test {
 		agregarPersona.setOrganizacion(Collections.singletonList(new OrganizacionBO()));
 		payload.setAgregarPersona(agregarPersona);
 		generalEmisionRequest.setPayload(payload);
-		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(), anyObject())).thenReturn(generalEmisionRequest);
+		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(),anyMap(), anyObject())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.generateRimacRequestLife(anyString(),anyString(),anyString(),anyString(),anyString(),anyString())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.getPersonType(anyObject())).thenReturn(PersonTypeEnum.NATURAL);
 
@@ -222,6 +228,15 @@ public class RBVDR211Test {
 		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", argumentsUpdateEndorsementTable,
 				RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue())).thenReturn(1);
 		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", new HashMap<>())).thenReturn(1);
+
+		responseQueryGetProductById = new HashMap<>();
+		responseQueryGetProductById.put("INSURANCE_BUSINESS_NAME","VIDA");
+		responseQueryGetProductById.put("PRODUCT_SHORT_DESC","VIDADINAMICO");
+
+		when(pisdr401.executeGetProductById("PISD.SELECT_PRODUCT_BY_PRODUCT_TYPE",
+				singletonMap(RBVDProperties.FIELD_INSURANCE_PRODUCT_TYPE.getValue(),requestBody.getProductId())))
+				.thenReturn(responseQueryGetProductById);
+
 		/* P030557 */
 	}
 

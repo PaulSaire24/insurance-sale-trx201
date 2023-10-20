@@ -72,6 +72,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
@@ -147,6 +148,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			Map<String, Object> responseQueryGetPaymentPeriod = pisdR012.executeGetASingleRow(RBVDProperties.QUERY_SELECT_PAYMENT_PERIOD.getValue(),
 					frequencyTypeArgument);
+
+			Map<String,Object> responseQueryGetProductById = (Map<String,Object>) this.pisdR401.executeGetProductById("PISD.SELECT_PRODUCT_BY_PRODUCT_TYPE",
+					singletonMap(RBVDProperties.FIELD_INSURANCE_PRODUCT_TYPE.getValue(), requestBody.getProductId()));
 
 			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields, responseQueryGetPaymentPeriod);
 
@@ -258,7 +262,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					LOGGER.info("***** PISDR0019Impl - executeListCustomerResponse {} *****", ex.getMessage());
 					return null;
 				}
-				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
+				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody,
+						responseQueryGetRequiredFields,responseQueryGetProductById, customerList);
 				LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****",generalEmisionRequest);
 
 				setOrganization(generalEmisionRequest,  requestBody, customerList);
@@ -361,6 +366,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Map<String, Object> responseQueryGetPaymentPeriod = pisdR012.executeGetASingleRow(RBVDProperties.QUERY_SELECT_PAYMENT_PERIOD.getValue(),
 					frequencyTypeArgument);
 
+			Map<String,Object> responseQueryGetProductById = (Map<String,Object>) this.pisdR401.executeGetProductById("PISD.SELECT_PRODUCT_BY_PRODUCT_TYPE",
+					singletonMap(RBVDProperties.FIELD_INSURANCE_PRODUCT_TYPE.getValue(), requestBody.getProductId()));
+
 			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields, responseQueryGetPaymentPeriod);
 
 			if(this.applicationConfigurationService.getDefaultProperty(PROPERTY_VALIDATION_RANGE + requestBody.getProductId() + "." + requestBody.getSaleChannelId(), "0").equals("1"))
@@ -382,7 +390,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			validateDigitalSale(requestBody);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes | Building Rimac request *****");
-			String insuranceBusinessName = (String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue());
+			String insuranceBusinessName = this.mapperHelper.getInsuranceBusinessNameFromDB(responseQueryGetProductById);
 			String branchRequest = requestBody.getBank().getBranch().getId();
 			RelatedContractASO relatedContractASO = asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0);
 

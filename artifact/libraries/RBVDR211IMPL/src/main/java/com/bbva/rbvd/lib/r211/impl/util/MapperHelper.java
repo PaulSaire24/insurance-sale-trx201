@@ -795,11 +795,12 @@ public class MapperHelper {
         return arguments;
     }
 
-    public EmisionBO mapRimacEmisionRequest(EmisionBO rimacRequest,PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields, CustomerListASO customerList){
+    public EmisionBO mapRimacEmisionRequest(EmisionBO rimacRequest,PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields,
+                                            Map<String, Object> responseQueryGetProductById,CustomerListASO customerList){
         EmisionBO generalEmisionRimacRequest = new EmisionBO();
         PayloadEmisionBO emisionBO = new PayloadEmisionBO();
         emisionBO.setEmision(rimacRequest.getPayload());
-        emisionBO.getEmision().setProducto((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue()));
+        emisionBO.getEmision().setProducto(this.getInsuranceBusinessNameFromDB(responseQueryGetProductById));
         generalEmisionRimacRequest.setPayload(emisionBO);
 
         FinanciamientoBO financiamiento = new FinanciamientoBO();
@@ -1373,6 +1374,13 @@ public class MapperHelper {
             return name;
         }
     }
+
+    public String getInsuranceBusinessNameFromDB(Map<String, Object> responseQueryGetProductById) {
+        return (String) (responseQueryGetProductById.get("PRODUCT_SHORT_DESC") != null
+                ? responseQueryGetProductById.get("PRODUCT_SHORT_DESC")
+                : responseQueryGetProductById.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue()));
+    }
+
 
     private String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder addressExtra){
         boolean viaFull = false;
