@@ -12,8 +12,6 @@ import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
 import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
 import com.bbva.rbvd.dto.insrncsale.aso.IdentityDocumentASO;
-
-
 import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
 import com.bbva.rbvd.dto.insrncsale.aso.PaymentAmountASO;
 import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
@@ -36,8 +34,19 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.SalesSupplierASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuranceCompanyASO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EntidadBO;
 
-import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.CrearCronogramaBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.FinanciamientoBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadAgregarTerceroBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarPersonaBO;
 
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
@@ -82,31 +91,28 @@ import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
 
+import com.bbva.rbvd.dto.insrncsale.utils.LifeInsuranceInsuredData;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 
+import com.bbva.rbvd.lib.r201.RBVDR201;
 import org.apache.commons.lang3.StringUtils;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.Objects;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Calendar;
-
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
@@ -362,7 +368,7 @@ public class MapperHelper {
         return datosParticulares;
     }
 
-    private static List<DatoParticularBO> getDatoParticularBOLifeEasyYes(String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber) {
+    private static List<DatoParticularBO> getParticularDataBOLife(String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber) {
         List<DatoParticularBO> datosParticulares = new ArrayList<>();
         String[] datos = new String[]{
                 PARTICULAR_DATA_THIRD_CHANNEL, PARTICULAR_DATA_CERT_BANCO, PARTICULAR_DATA_SALE_OFFICE,
@@ -470,7 +476,8 @@ public class MapperHelper {
     }
 
     private static void validatePrevPendBillRcptsNumber(PolicyDTO apxRequest, RequiredFieldsEmissionDAO emissionDao, InsuranceContractDAO contractDao) {
-        if(apxRequest.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue())){
+        if(apxRequest.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue())
+                || apxRequest.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue())){
             contractDao.setPrevPendBillRcptsNumber(emissionDao.getContractDurationNumber());
         }else{
             contractDao.setPrevPendBillRcptsNumber((apxRequest.getFirstInstallment().getIsPaymentRequired())
@@ -872,28 +879,85 @@ public class MapperHelper {
         return persona;
     }
 
-    public AgregarTerceroBO generateRequestAddParticipants(String businessName, PolicyDTO requestBody, CustomerListASO customerList, Map<String, Object> responseQueryGetRequiredFields){
+    public AgregarTerceroBO generateRequestAddParticipants(String businessName, PolicyDTO requestBody, RBVDR201 rbvdr201,
+                                                           Map<String, Object> responseQueryGetRequiredFields, Map<String,Object> dataInsured){
         PayloadAgregarTerceroBO payload = new PayloadAgregarTerceroBO();
         AgregarTerceroBO request = new AgregarTerceroBO();
         List<PersonaBO> personasList = new ArrayList<>();
 
         payload.setProducto(businessName);
-        this.constructListPersons(this.constructPerson(requestBody,customerList.getData().get(0),responseQueryGetRequiredFields),personasList);
-        personasList.stream().forEach(persona ->{
-            fillAddress(customerList, persona, new StringBuilder());
-        });
+
+        if(!CollectionUtils.isEmpty(requestBody.getParticipants())){
+            CustomerListASO customerList = rbvdr201.executeGetCustomerInformation(requestBody.getHolder().getId());
+
+            requestBody.getParticipants().forEach(participant -> {
+                if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.PARTICIPANT_TYPE_PAYMENT_MANAGER)){
+                    PersonaBO paymentPerson = this.getFillFieldsPerson(
+                            this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
+                    paymentPerson.setRol(ConstantsUtil.ParticipantRol.PAYMENT_MANAGER.getRol());
+
+                    //Contratante. Si requiere cambios para este participante, agregar propia validacion
+                    PersonaBO contractorPerson = this.getFillFieldsPerson(paymentPerson);
+                    contractorPerson.setRol(ConstantsUtil.ParticipantRol.CONTRACTOR.getRol());
+
+                    personasList.add(paymentPerson);
+                    personasList.add(contractorPerson);
+                }else if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.PARTICIPANT_TYPE_INSURED)){
+                    ParticipantDTO participantDTO = ValidationUtil.filterParticipantByType(
+                            requestBody.getParticipants(),ConstantsUtil.PARTICIPANT_TYPE_INSURED);
+                    PersonaBO insuredPerson = generateBasicDataInsuredParticipant(participantDTO, dataInsured);
+
+                    if(Objects.nonNull(participantDTO.getCustomerId())){
+                        CustomerListASO customerInsured = rbvdr201.executeGetCustomerInformation(participantDTO.getCustomerId());
+                        fillAddress(customerInsured,insuredPerson,new StringBuilder());
+                    }else{
+                        fillAddress(customerList,insuredPerson,new StringBuilder());
+                    }
+
+                    personasList.add(this.getFillFieldsPerson(insuredPerson));
+                }
+            });
+
+            if(personasList.size() != ConstantsUtil.Number.TRES){
+                PersonaBO contractorPerson = this.getFillFieldsPerson(
+                        this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
+                contractorPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
+                personasList.add(contractorPerson);
+            }
+
+        }
+
         payload.setPersona(personasList);
 
         request.setPayload(payload);
         return request;
     }
 
+    private PersonaBO generateBasicDataInsuredParticipant(ParticipantDTO participantDTO, Map<String, Object> dataInsured) {
+        PersonaBO insuredPerson = new PersonaBO();
+        String apePaterno = (String) dataInsured.get(LifeInsuranceInsuredData.FIELD_CLIENT_LAST_NAME);
+        List<String> apellidos = Arrays.asList(apePaterno.split(ConstantsUtil.Delimites.VERTICAL_BAR));
+
+        insuredPerson.setTipoDocumento(this.applicationConfigurationService.getProperty(participantDTO.getIdentityDocument().getDocumentType().getId()));
+        insuredPerson.setNroDocumento(participantDTO.getIdentityDocument().getNumber());
+        insuredPerson.setApePaterno(apellidos.get(0));
+        insuredPerson.setApeMaterno(apellidos.get(1));
+        insuredPerson.setNombres((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_INSURED_CUSTOMER_NAME));
+        insuredPerson.setFechaNacimiento(String.valueOf(dataInsured.get(LifeInsuranceInsuredData.FIELD_CUSTOMER_BIRTH_DATE)));
+        insuredPerson.setSexo((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_GENDER_ID));
+        insuredPerson.setCorreoElectronico((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_USER_EMAIL_PERSONAL_DESC));
+        insuredPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
+        insuredPerson.setCelular((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_PHONE_ID));
+        return insuredPerson;
+    }
+
+
     public EmisionBO generateRimacRequestLife(String insuranceBusinessName, String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber){
         EmisionBO request = new EmisionBO();
         PayloadEmisionBO payload = new PayloadEmisionBO();
 
         payload.setProducto(insuranceBusinessName);
-        payload.setDatosParticulares(getDatoParticularBOLifeEasyYes(channelCode, dataId, saleOffice,paymentType,paymentNumber));
+        payload.setDatosParticulares(getParticularDataBOLife(channelCode, dataId, saleOffice,paymentType,paymentNumber));
 
         request.setPayload(payload);
 

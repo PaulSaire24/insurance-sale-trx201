@@ -98,6 +98,11 @@
 			<artifactId>KSMKR002</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.bbva.pisd</groupId>
+			<artifactId>PISDR350</artifactId>
+			<version>0.2.6</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>

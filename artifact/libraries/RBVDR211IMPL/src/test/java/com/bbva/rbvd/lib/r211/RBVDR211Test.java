@@ -18,6 +18,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 import com.bbva.pisd.lib.r012.PISDR012;
 
+import com.bbva.pisd.lib.r350.PISDR350;
 import com.bbva.rbvd.dto.insrncsale.aso.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
@@ -42,6 +43,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
+import com.bbva.rbvd.lib.r211.impl.util.ConstantsUtil;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 import org.junit.Before;
@@ -85,6 +87,7 @@ public class RBVDR211Test {
 	private PISDR012 pisdR012;
 	private KSMKR002 ksmkr002;
 	private MapperHelper mapperHelper;
+	private PISDR350 pisdr350;
 
 	private PolicyDTO requestBody;
 
@@ -115,12 +118,14 @@ public class RBVDR211Test {
 		pisdR012 = mock(PISDR012.class);
 		ksmkr002 = mock(KSMKR002.class);
 		mapperHelper = mock(MapperHelper.class);
+		pisdr350 = mock(PISDR350.class);
 
 		rbvdr211.setApplicationConfigurationService(applicationConfigurationService);
 		rbvdr211.setRbvdR201(rbvdr201);
 		rbvdr211.setPisdR012(pisdR012);
 		rbvdr211.setKsmkR002(ksmkr002);
 		rbvdr211.setMapperHelper(mapperHelper);
+		rbvdr211.setPisdR350(pisdr350);
 
 		requestBody = mockData.getCreateInsuranceRequestBody();
 		requestBody.setSaleChannelId("XX");
@@ -644,7 +649,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
 				thenReturn(responseBD);
 		requestBody.setSaleChannelId("NN");
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
@@ -876,8 +881,37 @@ public class RBVDR211Test {
 		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
+		assertNotNull(validation);
+	}
+
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyDynamicLifeProduct_WithInsuredParticipant() throws  IOException{
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyDynamicLifeProduct_WithInsuredParticipant...");
+		AgregarTerceroBO responseAddParticipants = mockData.getAddParticipantsRimacResponse();
+		EmisionBO responseEmission = mockData.getEmissionRimacResponseLife();
+		ParticipantDTO insured = new ParticipantDTO();
+		insured.setCustomerId("84948543");
+		ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
+		participantTypeDTO.setId(ConstantsUtil.PARTICIPANT_TYPE_INSURED);
+		insured.setParticipantType(participantTypeDTO);
+		IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
+		identityDocumentDTO.setNumber("494830484");
+		DocumentTypeDTO documentTypeDTO = new DocumentTypeDTO();
+		documentTypeDTO.setId("DNI");
+		identityDocumentDTO.setDocumentType(documentTypeDTO);
+		insured.setIdentityDocument(identityDocumentDTO);
+		requestBody.getParticipants().add(insured);
+		requestBody.setProductId("841");
+		requestBody.setSaleChannelId("PC");
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 		assertNotNull(validation);
 	}
 
@@ -899,13 +933,13 @@ public class RBVDR211Test {
 		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_POLICY_ENDORSEMENT.getValue(), new HashMap<>())).thenReturn(1);
 		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", filters, RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue())).thenReturn(1);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNotNull(validation);
 
 		when(pisdR012.executeInsertSingleRow("PISD.UPDATE_CONTRACT_ENDORSEMENT", filters, RBVDProperties.FIELD_ENDORSEMENT_POLICY_ID.getValue())).thenReturn(0);
 
-		validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNull(validation);
 	}
@@ -936,7 +970,7 @@ public class RBVDR211Test {
 		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(null);
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNull(validation);
 	}
@@ -951,7 +985,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeGetASingleRow(RBVDProperties.QUERY_VALIDATE_IF_POLICY_EXISTS.getValue(), argumentValidateIfPolicyExists)).
 				thenReturn(policiesNumber);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.POLICY_ALREADY_EXISTS.getAdviceCode());
@@ -969,7 +1003,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSRNC_CTR_PARTICIPANT.getValue(), argumentsForMultipleInsertion)).
 				thenReturn(new int[0]);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE.getAdviceCode());
@@ -982,7 +1016,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeGetASingleRow(RBVDProperties.DYNAMIC_QUERY_FOR_INSURANCE_CONTRACT.getValue(), argumentValidateIfPolicyExists)).
 				thenReturn(null);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
@@ -1015,7 +1049,7 @@ public class RBVDR211Test {
 				RBVDProperties.FIELD_CUSTOMER_ID.getValue(), RBVDProperties.FIELD_INSRNC_CO_CONTRACT_STATUS_TYPE.getValue(),
 				RBVDProperties.FIELD_INSRC_CONTRACT_INT_ACCOUNT_ID.getValue(), RBVDProperties.FIELD_USER_AUDIT_ID.getValue())).thenReturn(0);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
@@ -1028,7 +1062,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue(), argumentsForMultipleInsertion)).
 				thenReturn(new int[0]);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
@@ -1041,7 +1075,7 @@ public class RBVDR211Test {
 		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSRNC_CONTRACT_MOV.getValue(), new HashMap<>())).
 				thenReturn(0);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNull(validation);
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_MOV_TABLE.getAdviceCode());
@@ -1057,7 +1091,7 @@ public class RBVDR211Test {
 		customerList.setData(new ArrayList<>());
 		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNull(validation);
 	}
@@ -1075,7 +1109,7 @@ public class RBVDR211Test {
 		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNotNull(validation);
 	}
@@ -1095,7 +1129,7 @@ public class RBVDR211Test {
 		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
 
-		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(requestBody);
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNotNull(validation);
 	}
