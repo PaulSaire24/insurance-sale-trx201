@@ -910,7 +910,7 @@ public class RBVDR211Test {
 		ParticipantDTO insured = new ParticipantDTO();
 		insured.setCustomerId("84948543");
 		ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
-		participantTypeDTO.setId(ConstantsUtil.PARTICIPANT_TYPE_INSURED);
+		participantTypeDTO.setId(ConstantsUtil.Participant.INSURED);
 		insured.setParticipantType(participantTypeDTO);
 		IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
 		identityDocumentDTO.setNumber("494830484");

@@ -5,15 +5,22 @@ public class ConstantsUtil {
     private ConstantsUtil(){}
 
     public class Participant{
-        public static final String PARTICIPANT_TYPE_ENDORSEE = "ENDORSEE";
+        public static final String ENDORSEE = "ENDORSEE";
+        public static final String PAYMENT_MANAGER = "PAYMENT_MANAGER";
+        public static final String INSURED = "INSURED";
     }
 
+    public static final String FIELD_PRODUCT_SHORT_DESC = "PRODUCT_SHORT_DESC";
 
-    public static final String PARTICIPANT_TYPE_PAYMENT_MANAGER = "PAYMENT_MANAGER";
-    public static final String PARTICIPANT_TYPE_INSURED = "INSURED";
-    public static final String DOCUMENT_TYPE_RUC = "RUC";
 
-    public static final String QUERY_GET_INSURED_DATA = "PISD.GET_INSURED_DATA_LIFE";
+    public class DocumentType{
+        public static final String RUC = "RUC";
+    }
+
+    public class Queries{
+        public static final String QUERY_SELECT_PRODUCT_BY_PRODUCT_TYPE = "PISD.SELECT_PRODUCT_BY_PRODUCT_TYPE";
+        public static final String QUERY_GET_INSURED_DATA_LIFE = "PISD.GET_INSURED_DATA_LIFE";
+    }
 
 
     public class Delimites{

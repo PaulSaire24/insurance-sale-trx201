@@ -1827,11 +1827,11 @@ public class MapperHelperTest {
 		requiredFieldsEmisionBDResponse.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(),9);
 		apxRequest.setProductId("841");
         apxRequest.setSaleChannelId("PC");
-		apxRequest.getParticipants().get(0).getParticipantType().setId(ConstantsUtil.PARTICIPANT_TYPE_PAYMENT_MANAGER);
+		apxRequest.getParticipants().get(0).getParticipantType().setId(ConstantsUtil.Participant.PAYMENT_MANAGER);
 		ParticipantDTO insured = new ParticipantDTO();
 		insured.setCustomerId("84948543");
 		ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
-		participantTypeDTO.setId(ConstantsUtil.PARTICIPANT_TYPE_INSURED);
+		participantTypeDTO.setId(ConstantsUtil.Participant.INSURED);
 		insured.setParticipantType(participantTypeDTO);
 		IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
 		identityDocumentDTO.setNumber("494830484");

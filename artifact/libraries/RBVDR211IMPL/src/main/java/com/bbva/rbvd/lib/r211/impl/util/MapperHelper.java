@@ -105,15 +105,21 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
@@ -892,7 +898,7 @@ public class MapperHelper {
             CustomerListASO customerList = rbvdr201.executeGetCustomerInformation(requestBody.getHolder().getId());
 
             requestBody.getParticipants().forEach(participant -> {
-                if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.PARTICIPANT_TYPE_PAYMENT_MANAGER)){
+                if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.Participant.PAYMENT_MANAGER)){
                     PersonaBO paymentPerson = this.getFillFieldsPerson(
                             this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
                     paymentPerson.setRol(ConstantsUtil.ParticipantRol.PAYMENT_MANAGER.getRol());
@@ -903,9 +909,9 @@ public class MapperHelper {
 
                     personasList.add(paymentPerson);
                     personasList.add(contractorPerson);
-                }else if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.PARTICIPANT_TYPE_INSURED)){
+                }else if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.Participant.INSURED)){
                     ParticipantDTO participantDTO = ValidationUtil.filterParticipantByType(
-                            requestBody.getParticipants(),ConstantsUtil.PARTICIPANT_TYPE_INSURED);
+                            requestBody.getParticipants(),ConstantsUtil.Participant.INSURED);
                     PersonaBO insuredPerson = generateBasicDataInsuredParticipant(participantDTO, dataInsured);
 
                     if(Objects.nonNull(participantDTO.getCustomerId())){
@@ -1440,8 +1446,8 @@ public class MapperHelper {
     }
 
     public String getInsuranceBusinessNameFromDB(Map<String, Object> responseQueryGetProductById) {
-        return (String) (responseQueryGetProductById.get("PRODUCT_SHORT_DESC") != null
-                ? responseQueryGetProductById.get("PRODUCT_SHORT_DESC")
+        return (String) (responseQueryGetProductById.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC) != null
+                ? responseQueryGetProductById.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC)
                 : responseQueryGetProductById.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue()));
     }
 

@@ -14,7 +14,8 @@ public class ValidationUtil {
 
     public static ParticipantDTO filterParticipantByType(List<ParticipantDTO> participants, String participantType) {
         if(!CollectionUtils.isEmpty(participants)){
-            Optional<ParticipantDTO> participant = participants.stream().filter(participantDTO -> participantType.equals(participantDTO.getParticipantType().getId())).findFirst();
+            Optional<ParticipantDTO> participant = participants.stream()
+                    .filter(participantDTO -> participantType.equals(participantDTO.getParticipantType().getId())).findFirst();
             return participant.isPresent() ? participant.get() : null;
         }else{
             return null;
@@ -31,12 +32,12 @@ public class ValidationUtil {
     }
 
     public static boolean validateEndorsementInParticipantsRequest(PolicyDTO requestBody) {
-        if(Objects.nonNull(filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.PARTICIPANT_TYPE_ENDORSEE))){
-            ParticipantDTO endorseParticipant = filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.PARTICIPANT_TYPE_ENDORSEE);
+        if(Objects.nonNull(filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.ENDORSEE))){
+            ParticipantDTO endorseParticipant = filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.ENDORSEE);
             return  endorseParticipant != null
                     && endorseParticipant.getIdentityDocument() != null
                     && Objects.nonNull(endorseParticipant.getIdentityDocument().getDocumentType().getId())
-                    && ConstantsUtil.DOCUMENT_TYPE_RUC.equals(endorseParticipant.getIdentityDocument().getDocumentType().getId())
+                    && ConstantsUtil.DocumentType.RUC.equals(endorseParticipant.getIdentityDocument().getDocumentType().getId())
                     && Objects.nonNull(endorseParticipant.getIdentityDocument().getNumber())
                     && Objects.nonNull(endorseParticipant.getBenefitPercentage());
         }
