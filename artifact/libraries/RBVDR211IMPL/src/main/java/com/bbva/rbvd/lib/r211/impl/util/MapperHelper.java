@@ -851,10 +851,12 @@ public class MapperHelper {
         return generalEmisionRimacRequest;
     }
     private static int getMonthsOfValidity(Date maturity){
+
         LocalDate todayDate = new LocalDate();
         LocalDate maturityDate = convertDateToLocalDate(maturity);
         int difYear = maturityDate.getYear() - todayDate.getYear();
-        int difMonth = difYear*12 + maturityDate.getMonthOfYear() - todayDate.getMonthOfYear() + 1;
+        int difDate = maturityDate.getDayOfMonth() > todayDate.getDayOfMonth() ? 1 : 0 ;
+        int difMonth = difYear*12 + maturityDate.getMonthOfYear() - todayDate.getMonthOfYear() + difDate;
 
         return difMonth >= 0 ? difMonth : 0;
     }
