@@ -1028,6 +1028,11 @@ public class MapperHelperTest {
         apxRequest.setHolder(null);
         EmisionBO validation5 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation5);
+        Date maturityDate = new Date();
+        maturityDate.setDate(maturityDate.getDate() + 2);
+        apxRequest.getInstallmentPlan().setMaturityDate(maturityDate);
+        EmisionBO validation6 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        assertNotNull(validation6);
     }
 
     @Test
