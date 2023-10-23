@@ -857,6 +857,63 @@ public class MapperHelperTest {
     }
 
     @Test
+    public void buildIsrcContractParticipants_WithInsuredParticipant_OK() {
+        List<Map<String, Object>> responseQueryRoles = new ArrayList<>();
+        Map<String, Object> firstRole = new HashMap<>();
+        firstRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(1));
+        responseQueryRoles.add(firstRole);
+        Map<String, Object> secondRole = new HashMap<>();
+        secondRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(2));
+        responseQueryRoles.add(secondRole);
+        Map<String, Object> response = new HashMap<>();
+        response.put(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue(), responseQueryRoles);
+
+        apxRequest.getParticipants().add(dataInsuredParticipant());
+
+        when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
+        when(applicationConfigurationService.getProperty("PASSPORT")).thenReturn("P");
+
+        List<IsrcContractParticipantDAO> validation = mapperHelper.buildIsrcContractParticipants(apxRequest, response, "00110251094000294053");
+
+        assertEquals(2,validation.size());
+
+        assertNotNull(validation.get(0).getEntityId());
+        assertNotNull(validation.get(0).getEntityId());
+        assertNotNull(validation.get(0).getIntAccountId());
+        assertNotNull(validation.get(0).getParticipantRoleId());
+        assertNotNull(validation.get(0).getPartyOrderNumber());
+        assertNotNull(validation.get(0).getPersonalDocType());
+        assertNotNull(validation.get(0).getParticipantPersonalId());
+        assertNotNull(validation.get(0).getCustomerId());
+        assertNotNull(validation.get(0).getCustomerRelationshipType());
+        assertNotNull(validation.get(0).getRegistrySituationType());
+        assertNotNull(validation.get(0).getCreationUserId());
+        assertNotNull(validation.get(0).getUserAuditId());
+
+        assertNotNull(validation.get(1).getEntityId());
+        assertNotNull(validation.get(1).getEntityId());
+        assertNotNull(validation.get(1).getIntAccountId());
+        assertNotNull(validation.get(1).getParticipantRoleId());
+        assertNotNull(validation.get(1).getPartyOrderNumber());
+        assertNotNull(validation.get(1).getPersonalDocType());
+        assertNotNull(validation.get(1).getParticipantPersonalId());
+        assertNotNull(validation.get(1).getCustomerId());
+        assertNotNull(validation.get(1).getCustomerRelationshipType());
+        assertNotNull(validation.get(1).getRegistrySituationType());
+        assertNotNull(validation.get(1).getCreationUserId());
+        assertNotNull(validation.get(1).getUserAuditId());
+
+
+        ParticipantDTO participantInsured = apxRequest.getParticipants().get(1);
+
+        assertEquals(participantInsured.getCustomerId(),validation.get(1).getCustomerId());
+        assertEquals("P", validation.get(1).getPersonalDocType());
+        assertEquals(participantInsured.getIdentityDocument().getNumber(),validation.get(1).getParticipantPersonalId());
+
+
+    }
+
+    @Test
     public void createSaveParticipantArguments_OK() {
         when(participantDao.getEntityId()).thenReturn("entityId");
         when(participantDao.getBranchId()).thenReturn("branchId");
@@ -1988,4 +2045,41 @@ public class MapperHelperTest {
                 contractDao);
         assertEquals("02", validation2.get(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue()));
     }
+
+    @Test
+    public void testxd(){
+        List<Map<String,Object>> list = new ArrayList<>();
+        Map<String,Object> rol1 = new HashMap<>();
+        rol1.put("PARTICIPANT",new BigDecimal(1));
+        Map<String,Object> rol2 = new HashMap<>();
+        rol2.put("PARTICIPANT",new BigDecimal(2));
+        Map<String,Object> rol3 = new HashMap<>();
+        rol3.put("PARTICIPANT",new BigDecimal(3));
+        list.add(rol1);
+        list.add(rol2);
+        list.add(rol3);
+
+        List<BigDecimal> rolesnum = new ArrayList<>();
+        boolean flag = false;
+
+        list.forEach(rol -> {
+            rolesnum.add((BigDecimal) rol.get("PARTICIPANT"));
+        });
+
+
+
+        System.out.println(rolesnum);
+
+        if(flag){
+            rolesnum.removeIf(n -> n.compareTo(new BigDecimal(2)) == 0);
+        }
+
+        System.out.println(list);
+        System.out.println(rolesnum);
+
+        rolesnum.removeIf(n -> n.compareTo(new BigDecimal(3)) == 0);
+        System.out.println(rolesnum);
+
+    }
+
 }

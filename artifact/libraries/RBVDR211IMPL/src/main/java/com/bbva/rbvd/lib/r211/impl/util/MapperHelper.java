@@ -97,6 +97,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 
 import com.bbva.rbvd.lib.r201.RBVDR201;
+import oracle.jdbc.driver.Const;
 import org.apache.commons.lang3.StringUtils;
 
 import org.joda.time.DateTimeZone;
@@ -152,7 +153,7 @@ public class MapperHelper {
     private static final String TAG_ENDORSEE = "ENDORSEE";
     private static final String FIELD_SYSTIMESTAMP = "SYSTEM";
     private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
-    private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
+
 
 
     private static final String GMT_TIME_ZONE = "GMT";
@@ -160,7 +161,7 @@ public class MapperHelper {
 
     private static final String RUC_ID = "R";
 
-    private static final BigDecimal LEGAL_REPRESENTATIVE_ID = new BigDecimal(3);
+
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -764,29 +765,54 @@ public class MapperHelper {
 
     public List<IsrcContractParticipantDAO> buildIsrcContractParticipants(PolicyDTO requestBody, Map<String, Object> responseQueryRoles, String id) {
         ParticipantDTO participant = requestBody.getParticipants().get(0);
-        ParticipantDTO legarlRepre = requestBody.getParticipants().stream()
-                .filter(p -> TAG_LEGAL_REPRESENTATIVE.equals(p.getParticipantType().getId())).findFirst().orElse(null);
+        ParticipantDTO legalRepre = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),
+                ConstantsUtil.Participant.LEGAL_REPRESENTATIVE);
+        List<Map<String, Object>> rolesFromDB = (List<Map<String, Object>>) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
+        ParticipantDTO insured = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),
+                ConstantsUtil.Participant.INSURED);
 
-        List<Map<String, Object>> roles = (List<Map<String, Object>>) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
-        List<IsrcContractParticipantDAO> listaParticipants = roles.stream()
-                .filter(r -> LEGAL_REPRESENTATIVE_ID.compareTo((BigDecimal) r.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())) != 0 )
-                .map(rol -> createParticipantDao(id, rol, participant, requestBody)).collect(Collectors.toList());
-        if (legarlRepre != null) {
-            Map rolLegal = Collections.singletonMap(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), LEGAL_REPRESENTATIVE_ID);
-            listaParticipants.add(createParticipantDao(id, rolLegal, legarlRepre, requestBody));
+        //De listado de mapas a arraylist
+        List<BigDecimal> participantRoles = new ArrayList<>();
+
+        rolesFromDB.forEach(rol -> {
+            participantRoles.add((BigDecimal) rol.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
+        });
+
+        if(legalRepre != null){
+            participantRoles.removeIf(rol -> rol.compareTo(new BigDecimal(ConstantsUtil.Number.TRES)) == 0);
         }
-        return listaParticipants;
+
+        if(insured != null){
+            participantRoles.removeIf(rol -> rol.compareTo(new BigDecimal(ConstantsUtil.Number.DOS)) == 0);
+        }
+
+        List<IsrcContractParticipantDAO> listParticipants = participantRoles.stream()
+                .map(rol -> createParticipantDao(id,rol,participant,requestBody))
+                .collect(toList());
+
+        if(legalRepre != null){
+            listParticipants.add(
+                    createParticipantDao(id,new BigDecimal(ConstantsUtil.Number.TRES),legalRepre,requestBody));
+        }
+
+        if(insured != null){
+            listParticipants.add(
+                    createParticipantDao(id,new BigDecimal(ConstantsUtil.Number.DOS),insured,requestBody));
+        }
+
+        return listParticipants;
+
     }
 
-    private IsrcContractParticipantDAO createParticipantDao(String id, Map<String, Object> rol, ParticipantDTO participant, PolicyDTO requestBody) {
+    private IsrcContractParticipantDAO createParticipantDao(String id, BigDecimal rol, ParticipantDTO participant, PolicyDTO requestBody) {
         IsrcContractParticipantDAO participantDao = new IsrcContractParticipantDAO();
         participantDao.setEntityId(id.substring(0,4));
         participantDao.setBranchId(id.substring(4, 8));
         participantDao.setIntAccountId(id.substring(10));
-        participantDao.setParticipantRoleId((BigDecimal) rol.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
+        participantDao.setParticipantRoleId(rol);
         participantDao.setPersonalDocType(this.applicationConfigurationService.getProperty(participant.getIdentityDocument().getDocumentType().getId()));
         participantDao.setParticipantPersonalId(participant.getIdentityDocument().getNumber());
-        participantDao.setCustomerId(participant.getCustomerId());
+        participantDao.setCustomerId(Objects.nonNull(participant.getCustomerId()) ? participant.getCustomerId() : null);
         participantDao.setCreationUserId(requestBody.getCreationUser());
         participantDao.setUserAuditId(requestBody.getUserAudit());
         return participantDao;
