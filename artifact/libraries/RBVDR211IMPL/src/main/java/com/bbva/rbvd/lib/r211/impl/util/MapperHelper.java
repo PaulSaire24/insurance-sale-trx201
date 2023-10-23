@@ -854,10 +854,13 @@ public class MapperHelper {
 
         LocalDate todayDate = new LocalDate();
         LocalDate maturityDate = convertDateToLocalDate(maturity);
+        System.out.println("todayDate: {} "+todayDate);
+        System.out.println("maturityDate: {} "+maturityDate);
         int difYear = maturityDate.getYear() - todayDate.getYear();
         int difDate = maturityDate.getDayOfMonth() > todayDate.getDayOfMonth() ? 1 : 0 ;
+        System.out.println(difDate);
         int difMonth = difYear*12 + maturityDate.getMonthOfYear() - todayDate.getMonthOfYear() + difDate;
-
+        System.out.println(difMonth);
         return difMonth >= 0 ? difMonth : 0;
     }
 
