@@ -230,6 +230,72 @@ public class MapperHelperTest {
         /*Faltan escenarios null con BA y PROMOTER*/
     }
 
+    private static ParticipantDTO dataInsuredParticipant(){
+        ParticipantDTO participantDTO = new ParticipantDTO();
+
+        participantDTO.setCustomerId("74857594");
+
+        ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
+        participantTypeDTO.setId("INSURED");
+        participantDTO.setParticipantType(participantTypeDTO);
+
+        DocumentTypeDTO documentTypeDTO = new DocumentTypeDTO();
+        documentTypeDTO.setId("PASSPORT");
+        IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
+        identityDocumentDTO.setDocumentType(documentTypeDTO);
+        identityDocumentDTO.setNumber("39400943");
+        participantDTO.setIdentityDocument(identityDocumentDTO);
+
+        return participantDTO;
+    }
+
+    @Test
+    public void buildAsoRequest_WithInsuredParticipant_OK() {
+
+        apxRequest.getParticipants().add(dataInsuredParticipant());
+
+        DataASO validation = mapperHelper.buildAsoRequest(apxRequest);
+
+        assertNotNull(validation.getQuotationId());
+        assertNotNull(validation.getProductId());
+        assertNotNull(validation.getHolder());
+        assertNotNull(validation.getHolder().getIdentityDocument());
+        assertNotNull(validation.getHolder().getIdentityDocument().getDocumentType());
+        assertNotNull(validation.getHolder().getIdentityDocument().getDocumentType().getId());
+        assertNotNull(validation.getHolder().getIdentityDocument().getNumber());
+        assertFalse(validation.getParticipants().isEmpty());
+        assertEquals(2,validation.getParticipants().size());
+        assertNotNull(validation.getParticipants().get(0).getParticipantType());
+        assertNotNull(validation.getParticipants().get(0).getParticipantType().getId());
+        assertNotNull(validation.getParticipants().get(0).getCustomerId());
+        assertNotNull(validation.getParticipants().get(0).getIdentityDocument());
+        assertNotNull(validation.getParticipants().get(0).getIdentityDocument().getDocumentType());
+        assertNotNull(validation.getParticipants().get(0).getIdentityDocument().getDocumentType().getId());
+        assertNotNull(validation.getParticipants().get(0).getIdentityDocument().getNumber());
+        assertNotNull(validation.getParticipants().get(1).getParticipantType());
+        assertNotNull(validation.getParticipants().get(1).getParticipantType().getId());
+        assertNotNull(validation.getParticipants().get(1).getCustomerId());
+        assertNotNull(validation.getParticipants().get(1).getIdentityDocument());
+        assertNotNull(validation.getParticipants().get(1).getIdentityDocument().getDocumentType());
+        assertNotNull(validation.getParticipants().get(1).getIdentityDocument().getDocumentType().getId());
+        assertNotNull(validation.getParticipants().get(1).getIdentityDocument().getNumber());
+
+
+        //CUSTOMER_ID NULL
+        apxRequest.getParticipants().get(1).setCustomerId(null);
+        validation = mapperHelper.buildAsoRequest(apxRequest);
+
+        assertNotNull(validation.getHolder());
+        assertNotNull(validation.getHolder().getIdentityDocument());
+        assertNotNull(validation.getHolder().getIdentityDocument().getDocumentType());
+        assertNotNull(validation.getHolder().getIdentityDocument().getDocumentType().getId());
+        assertNotNull(validation.getHolder().getIdentityDocument().getNumber());
+        assertNull(validation.getHolder().getId());
+        assertFalse(validation.getParticipants().isEmpty());
+        assertEquals(2,validation.getParticipants().size());
+
+    }
+
     @Test
     public void buildRequestBodyRimac_OK() {
         PolicyInspectionDTO inspection = apxRequest.getInspection();

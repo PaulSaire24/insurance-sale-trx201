@@ -213,16 +213,7 @@ public class MapperHelper {
 
         requestAso.setInsuredAmount(insuredAmount);
 
-        HolderASO holder = new HolderASO();
-
-        IdentityDocumentASO identityDocument = new IdentityDocumentASO();
-        DocumentTypeASO documentType = new DocumentTypeASO();
-        documentType.setId(apxRequest.getHolder().getIdentityDocument().getDocumentType().getId());
-        identityDocument.setDocumentType(documentType);
-        identityDocument.setNumber(apxRequest.getHolder().getIdentityDocument().getNumber());
-
-        holder.setIdentityDocument(identityDocument);
-        holder.setId(apxRequest.getHolder().getId());
+        HolderASO holder = getHolderASO(apxRequest);
 
         requestAso.setHolder(holder);
 
@@ -284,6 +275,43 @@ public class MapperHelper {
         requestAso.setInsuranceCompany(insuranceCompany);
 
         return requestAso;
+    }
+
+    private static HolderASO getHolderASO(PolicyDTO apxRequest) {
+        HolderASO holder = new HolderASO();
+
+        IdentityDocumentASO identityDocument = new IdentityDocumentASO();
+        DocumentTypeASO documentType = new DocumentTypeASO();
+        String customerId = null;
+        String documentTypeId = null;
+        String documentNumber = null;
+
+        if(ValidationUtil.filterParticipantByType(apxRequest.getParticipants(),ConstantsUtil.Participant.INSURED) != null){
+            ParticipantDTO participantInsured = ValidationUtil.filterParticipantByType(
+                    apxRequest.getParticipants(),ConstantsUtil.Participant.INSURED);
+
+            if(participantInsured != null &&
+                    ValidationUtil.validateOtherParticipants(participantInsured,ConstantsUtil.Participant.INSURED)){
+                customerId = Objects.nonNull(participantInsured.getCustomerId())
+                        ? participantInsured.getCustomerId()
+                        : null;
+                documentTypeId = participantInsured.getIdentityDocument().getDocumentType().getId();
+                documentNumber = participantInsured.getIdentityDocument().getNumber();
+            }
+        }else{
+            customerId = apxRequest.getHolder().getId();
+            documentTypeId = apxRequest.getHolder().getIdentityDocument().getDocumentType().getId();
+            documentNumber = apxRequest.getHolder().getIdentityDocument().getNumber();
+        }
+
+        documentType.setId(documentTypeId);
+        identityDocument.setDocumentType(documentType);
+        identityDocument.setNumber(documentNumber);
+
+        holder.setIdentityDocument(identityDocument);
+        holder.setId(customerId);
+
+        return holder;
     }
 
     private List<ParticipantASO> getParticipantASO(List<ParticipantDTO> participants) {
