@@ -1432,10 +1432,6 @@ public class MapperHelper {
         Stream<String> ubicationAddress = Stream.of("UNCATEGORIZED", "NOT_PROVIDED");
         return ubicationAddress.anyMatch(element -> element.equals(geographicGroupTypeId));
     }
-    private boolean filterUbicationAddress(final String geographicGroupTypeId) {
-        Stream<String> ubicationAddress = Stream.of("UNCATEGORIZED", "NOT_PROVIDED");
-        return ubicationAddress.anyMatch(element -> element.equals(geographicGroupTypeId));
-    }
     private boolean filterUbicationCode(final String geographicGroupTypeId) {
         Stream<String> ubicationCode = Stream.of("DEPARTMENT", "PROVINCE", "DISTRICT");
         return ubicationCode.anyMatch(element -> element.equalsIgnoreCase(geographicGroupTypeId));
