@@ -1,5 +1,6 @@
 package com.bbva.rbvd.util;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
@@ -1034,9 +1035,74 @@ public class MapperHelperTest {
         assertNotNull(validation2);
         customerList.getData().get(0).setGender(null);
 
+        GeographicGroupsBO geographicGroupsBO3 = new GeographicGroupsBO();
+        geographicGroupsBO3.setName("FONAVI UNO");
+        GeographicGroupTypeBO geographicGroupTypeBO3 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO3.setId("STREET");
+        geographicGroupTypeBO3.setName("CAL");
+        geographicGroupsBO3.setGeographicGroupType(geographicGroupTypeBO3);
+
+        GeographicGroupsBO geographicGroupsBO4 = new GeographicGroupsBO();
+        geographicGroupsBO4.setName("UNCATEGORIZED");
+        GeographicGroupTypeBO geographicGroupTypeBO4 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO4.setId("UNCATEGORIZED");
+        geographicGroupTypeBO4.setName("UNCATEGORIZED");
+        geographicGroupsBO4.setGeographicGroupType(geographicGroupTypeBO4);
+
+        GeographicGroupsBO geographicGroupsDepartment1 = new GeographicGroupsBO();
+        geographicGroupsDepartment1.setName("HUANUCO");
+        GeographicGroupTypeBO geographicGroupTypeDepartment1 = new GeographicGroupTypeBO();
+        geographicGroupTypeDepartment1.setId("DEPARTMENT");
+        geographicGroupTypeDepartment1.setName("DEPARTMENT");
+        geographicGroupsDepartment1.setGeographicGroupType(geographicGroupTypeDepartment1);
+        geographicGroupsDepartment1.setCode("01");
+
+        GeographicGroupsBO geographicGroupsProvince1 = new GeographicGroupsBO();
+        geographicGroupsProvince1.setName("HUANUCO");
+        GeographicGroupTypeBO geographicGroupTypeProvince1 = new GeographicGroupTypeBO();
+        geographicGroupTypeProvince1.setId("PROVINCE");
+        geographicGroupTypeProvince1.setName("PROVINCE");
+        geographicGroupsProvince1.setGeographicGroupType(geographicGroupTypeProvince1);
+        geographicGroupsProvince1.setCode("01");
+
+        GeographicGroupsBO geographicGroupsDistrict1 = new GeographicGroupsBO();
+        geographicGroupsDistrict1.setName("HUANUCO");
+        GeographicGroupTypeBO geographicGroupTypeDistrict1 = new GeographicGroupTypeBO();
+        geographicGroupTypeDistrict1.setId("DISTRICT");
+        geographicGroupTypeDistrict1.setName("DISTRICT");
+        geographicGroupsDistrict1.setGeographicGroupType(geographicGroupTypeDistrict1);
+        geographicGroupsDistrict1.setCode("103");
+
+        GeographicGroupsBO geographicGroupsUbigeo1 = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupTypeUbigeo1 = new GeographicGroupTypeBO();
+        geographicGroupTypeUbigeo1.setId("UBIGEO");
+        geographicGroupTypeUbigeo1.setName("UBIGEO");
+        geographicGroupsUbigeo1.setGeographicGroupType(geographicGroupTypeUbigeo1);
+        geographicGroupsUbigeo1.setCode("0101103");
+
+        GeographicGroupsBO geographicGroupsExteriorNumber1 = new GeographicGroupsBO();
+        geographicGroupsExteriorNumber1.setName("52");
+        GeographicGroupTypeBO geographicGroupTypeExteriorNumber1 = new GeographicGroupTypeBO();
+        geographicGroupTypeExteriorNumber1.setId("EXTERIOR_NUMBER");
+        geographicGroupTypeExteriorNumber1.setName("EXTERIOR_NUMBER");
+        geographicGroupsExteriorNumber1.setGeographicGroupType(geographicGroupTypeExteriorNumber1);
+
+        List<GeographicGroupsBO> geographicGroupsBOs1 = new ArrayList<>();
+        geographicGroupsBOs1.add(geographicGroupsBO3);
+        geographicGroupsBOs1.add(geographicGroupsBO4);
+        geographicGroupsBOs1.add(geographicGroupsDepartment1);
+        geographicGroupsBOs1.add(geographicGroupsProvince1);
+        geographicGroupsBOs1.add(geographicGroupsDistrict1);
+        geographicGroupsBOs1.add(geographicGroupsUbigeo1);
+        geographicGroupsBOs1.add(geographicGroupsExteriorNumber1);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs1);
+        EmisionBO validation3 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        assertNotNull(validation3);
+
         apxRequest.setHolder(null);
-        EmisionBO validation5 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
-        assertNotNull(validation5);
+        EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        assertNotNull(validation4);
     }
 
     @Test

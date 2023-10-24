@@ -122,6 +122,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		} catch (RestClientException ex) {
 			this.addAdviceWithDescription("RBVD10094932",ex.getMessage());
 			this.addAdviceWithDescription("RBVD10094943","Error al devolver informacion de Rimac en Alta de Poliza");
+			this.addAdviceWithDescription("RBVD10094935",ex.getMessage());
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
 		}
 		return responseBody;
