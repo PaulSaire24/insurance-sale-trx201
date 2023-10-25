@@ -4,7 +4,7 @@ public class ConstantsUtil {
 
     private ConstantsUtil(){}
 
-    public class Participant{
+    public static class Participant{
         public static final String ENDORSEE = "ENDORSEE";
         public static final String PAYMENT_MANAGER = "PAYMENT_MANAGER";
         public static final String INSURED = "INSURED";
@@ -14,22 +14,22 @@ public class ConstantsUtil {
     public static final String FIELD_PRODUCT_SHORT_DESC = "PRODUCT_SHORT_DESC";
 
 
-    public class DocumentType{
+    public static final class DocumentType{
         public static final String RUC = "RUC";
     }
 
-    public class Queries{
+    public static final class Queries{
         public static final String QUERY_SELECT_PRODUCT_BY_PRODUCT_TYPE = "PISD.SELECT_PRODUCT_BY_PRODUCT_TYPE";
         public static final String QUERY_GET_INSURED_DATA_LIFE = "PISD.GET_INSURED_DATA_LIFE";
     }
 
 
-    public class Delimites{
+    public static final class Delimites{
         public static final String VERTICAL_BAR = "|";
 
     }
 
-    public class Number{
+    public final class Number{
         public static final int TRES = 3;
         public static final int DOS = 2;
     }

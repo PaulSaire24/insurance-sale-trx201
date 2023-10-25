@@ -16,7 +16,7 @@ public class ValidationUtil {
         if(!CollectionUtils.isEmpty(participants)){
             Optional<ParticipantDTO> participant = participants.stream()
                     .filter(participantDTO -> participantType.equals(participantDTO.getParticipantType().getId())).findFirst();
-            return participant.isPresent() ? participant.get() : null;
+            return participant.orElse(null);
         }else{
             return null;
         }
@@ -45,7 +45,7 @@ public class ValidationUtil {
     }
 
     public static boolean validateisNotEmptyOrNull(String parameter){
-        return (parameter != null && parameter != "");
+        return (parameter != null && !parameter.equals(""));
     }
 
 }

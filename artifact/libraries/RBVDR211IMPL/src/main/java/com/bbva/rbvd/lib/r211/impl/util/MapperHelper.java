@@ -95,9 +95,8 @@ import com.bbva.rbvd.dto.insrncsale.utils.LifeInsuranceInsuredData;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
-
 import com.bbva.rbvd.lib.r201.RBVDR201;
-;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.joda.time.DateTimeZone;
@@ -106,12 +105,10 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 
-
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
