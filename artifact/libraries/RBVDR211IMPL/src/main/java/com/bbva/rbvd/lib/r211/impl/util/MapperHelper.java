@@ -956,10 +956,12 @@ public class MapperHelper {
                     PersonaBO paymentPerson = this.getFillFieldsPerson(
                             this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
                     paymentPerson.setRol(ConstantsUtil.ParticipantRol.PAYMENT_MANAGER.getRol());
+                    fillAddress(customerList,paymentPerson,new StringBuilder());
 
                     //Contratante. Si requiere cambios para este participante, agregar propia validacion
                     PersonaBO contractorPerson = this.getFillFieldsPerson(paymentPerson);
                     contractorPerson.setRol(ConstantsUtil.ParticipantRol.CONTRACTOR.getRol());
+                    fillAddress(customerList,contractorPerson,new StringBuilder());
 
                     personasList.add(paymentPerson);
                     personasList.add(contractorPerson);
@@ -975,7 +977,7 @@ public class MapperHelper {
                         fillAddress(customerList,insuredPerson,new StringBuilder());
                     }
 
-                    personasList.add(this.getFillFieldsPerson(insuredPerson));
+                    personasList.add(insuredPerson);
                 }
             });
 

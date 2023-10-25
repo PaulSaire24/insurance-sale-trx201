@@ -1978,9 +1978,69 @@ public class MapperHelperTest {
         data.put("CUSTOMER_BIRTH_DATE","1927-04-07");
         data.put("GENDER_ID","M");
 
+        when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
+
 		AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("VIDADINAMICO", apxRequest, rbvdr201, requiredFieldsEmisionBDResponse,data);
 		assertNotNull(validation);
 		assertEquals(3, validation.getPayload().getPersona().size());
+
+        assertNotNull(validation.getPayload().getPersona().get(0).getApeMaterno());
+        assertNotNull(validation.getPayload().getPersona().get(0).getApePaterno());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNombres());
+        assertNotNull(validation.getPayload().getPersona().get(0).getFechaNacimiento());
+        assertNotNull(validation.getPayload().getPersona().get(0).getSexo());
+        assertNotNull(validation.getPayload().getPersona().get(0).getCelular());
+        assertNotNull(validation.getPayload().getPersona().get(0).getRol());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNroDocumento());
+        assertNotNull(validation.getPayload().getPersona().get(0).getCorreoElectronico());
+        assertNotNull(validation.getPayload().getPersona().get(0).getDireccion());
+        assertNotNull(validation.getPayload().getPersona().get(0).getDistrito());
+        assertNotNull(validation.getPayload().getPersona().get(0).getProvincia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getDepartamento());
+        assertNotNull(validation.getPayload().getPersona().get(0).getUbigeo());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNombreVia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getTipoVia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNumeroVia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getTipoDocumento());
+
+        assertNotNull(validation.getPayload().getPersona().get(1).getApeMaterno());
+        assertNotNull(validation.getPayload().getPersona().get(1).getApePaterno());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNombres());
+        assertNotNull(validation.getPayload().getPersona().get(1).getFechaNacimiento());
+        assertNotNull(validation.getPayload().getPersona().get(1).getSexo());
+        assertNotNull(validation.getPayload().getPersona().get(1).getCelular());
+        assertNotNull(validation.getPayload().getPersona().get(1).getRol());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNroDocumento());
+        assertNotNull(validation.getPayload().getPersona().get(1).getCorreoElectronico());
+        assertNotNull(validation.getPayload().getPersona().get(1).getDireccion());
+        assertNotNull(validation.getPayload().getPersona().get(1).getDistrito());
+        assertNotNull(validation.getPayload().getPersona().get(1).getProvincia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getDepartamento());
+        assertNotNull(validation.getPayload().getPersona().get(1).getUbigeo());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNombreVia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getTipoVia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNumeroVia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getTipoDocumento());
+
+        assertNotNull(validation.getPayload().getPersona().get(2).getApeMaterno());
+        assertNotNull(validation.getPayload().getPersona().get(2).getApePaterno());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNombres());
+        assertNotNull(validation.getPayload().getPersona().get(2).getFechaNacimiento());
+        assertNotNull(validation.getPayload().getPersona().get(2).getSexo());
+        assertNotNull(validation.getPayload().getPersona().get(2).getCelular());
+        assertNotNull(validation.getPayload().getPersona().get(2).getRol());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNroDocumento());
+        assertNotNull(validation.getPayload().getPersona().get(2).getCorreoElectronico());
+        assertNotNull(validation.getPayload().getPersona().get(2).getDireccion());
+        assertNotNull(validation.getPayload().getPersona().get(2).getDistrito());
+        assertNotNull(validation.getPayload().getPersona().get(2).getProvincia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getDepartamento());
+        assertNotNull(validation.getPayload().getPersona().get(2).getUbigeo());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNombreVia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getTipoVia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNumeroVia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getTipoDocumento());
+
 	}
 
     @Test

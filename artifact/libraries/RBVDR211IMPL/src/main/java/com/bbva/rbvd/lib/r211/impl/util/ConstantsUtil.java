@@ -40,14 +40,14 @@ public class ConstantsUtil {
         INSURED(9),
         PAYMENT_MANAGER(23);
 
-        private final int rol;
+        private final Integer rol;
 
 
-        ParticipantRol(int rol) {
+        ParticipantRol(Integer rol) {
             this.rol = rol;
         }
 
-        public int getRol() {
+        public Integer getRol() {
             return rol;
         }
     }
