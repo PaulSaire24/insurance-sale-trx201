@@ -97,7 +97,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 
 import com.bbva.rbvd.lib.r201.RBVDR201;
-import oracle.jdbc.driver.Const;
+;
 import org.apache.commons.lang3.StringUtils;
 
 import org.joda.time.DateTimeZone;
@@ -106,7 +106,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 
-import java.text.SimpleDateFormat;
 
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -154,16 +153,10 @@ public class MapperHelper {
     private static final String FIELD_SYSTIMESTAMP = "SYSTEM";
     private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
 
-
-
     private static final String GMT_TIME_ZONE = "GMT";
-
 
     private static final String RUC_ID = "R";
 
-
-
-    private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
     private ApplicationConfigurationService applicationConfigurationService;
 
@@ -771,7 +764,6 @@ public class MapperHelper {
         ParticipantDTO insured = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),
                 ConstantsUtil.Participant.INSURED);
 
-        //De listado de mapas a arraylist
         List<BigDecimal> participantRoles = new ArrayList<>();
 
         rolesFromDB.forEach(rol -> {
@@ -969,13 +961,7 @@ public class MapperHelper {
                     ParticipantDTO participantDTO = ValidationUtil.filterParticipantByType(
                             requestBody.getParticipants(),ConstantsUtil.Participant.INSURED);
                     PersonaBO insuredPerson = generateBasicDataInsuredParticipant(participantDTO, dataInsured);
-
-                    if(Objects.nonNull(participantDTO.getCustomerId())){
-                        CustomerListASO customerInsured = rbvdr201.executeGetCustomerInformation(participantDTO.getCustomerId());
-                        fillAddress(customerInsured,insuredPerson,new StringBuilder());
-                    }else{
-                        fillAddress(customerList,insuredPerson,new StringBuilder());
-                    }
+                    fillAddressInsuredParticipant(rbvdr201, customerList, participantDTO, insuredPerson);
 
                     personasList.add(insuredPerson);
                 }
@@ -996,17 +982,38 @@ public class MapperHelper {
         return request;
     }
 
+    private void fillAddressInsuredParticipant(RBVDR201 rbvdr201, CustomerListASO customerList, ParticipantDTO participantDTO, PersonaBO insuredPerson) {
+        if(Objects.nonNull(participantDTO.getCustomerId())){
+            CustomerListASO customerInsured = rbvdr201.executeGetCustomerInformation(participantDTO.getCustomerId());
+            fillAddress(customerInsured, insuredPerson,new StringBuilder());
+        }else{
+            fillAddress(customerList, insuredPerson,new StringBuilder());
+        }
+    }
+
     private PersonaBO generateBasicDataInsuredParticipant(ParticipantDTO participantDTO, Map<String, Object> dataInsured) {
         PersonaBO insuredPerson = new PersonaBO();
-        String apePaterno = (String) dataInsured.get(LifeInsuranceInsuredData.FIELD_CLIENT_LAST_NAME);
-        List<String> apellidos = Arrays.asList(apePaterno.split(ConstantsUtil.Delimites.VERTICAL_BAR));
+        String apellidos = (String) dataInsured.get(LifeInsuranceInsuredData.FIELD_CLIENT_LAST_NAME);
+        String apPaterno="";
+        String apMaterno="";
+
+        if(ValidationUtil.validateisNotEmptyOrNull(apellidos)){
+            int index = apellidos.indexOf(ConstantsUtil.Delimites.VERTICAL_BAR);
+            apPaterno = apellidos.substring(0,index);
+            apMaterno = apellidos.substring(index+1);
+        }
+
+        String fechaNacimiento = String.valueOf(dataInsured.get(LifeInsuranceInsuredData.FIELD_CUSTOMER_BIRTH_DATE));
+        if(ValidationUtil.validateisNotEmptyOrNull(fechaNacimiento)){
+            fechaNacimiento = fechaNacimiento.substring(0,10);
+        }
 
         insuredPerson.setTipoDocumento(this.applicationConfigurationService.getProperty(participantDTO.getIdentityDocument().getDocumentType().getId()));
         insuredPerson.setNroDocumento(participantDTO.getIdentityDocument().getNumber());
-        insuredPerson.setApePaterno(apellidos.get(0));
-        insuredPerson.setApeMaterno(apellidos.get(1));
+        insuredPerson.setApePaterno(apPaterno);
+        insuredPerson.setApeMaterno(apMaterno);
         insuredPerson.setNombres((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_INSURED_CUSTOMER_NAME));
-        insuredPerson.setFechaNacimiento(String.valueOf(dataInsured.get(LifeInsuranceInsuredData.FIELD_CUSTOMER_BIRTH_DATE)));
+        insuredPerson.setFechaNacimiento(fechaNacimiento);
         insuredPerson.setSexo((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_GENDER_ID));
         insuredPerson.setCorreoElectronico((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_USER_EMAIL_PERSONAL_DESC));
         insuredPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());

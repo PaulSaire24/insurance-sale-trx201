@@ -3,7 +3,6 @@ package com.bbva.rbvd.util;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 
 import com.bbva.pisd.dto.insurance.bo.DocumentTypeBO;
 import com.bbva.pisd.dto.insurance.bo.GenderBO;
@@ -42,10 +41,10 @@ import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.util.ConstantsUtil;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,6 +52,9 @@ import java.io.IOException;
 
 import java.math.BigDecimal;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.util.Collections.singletonList;
@@ -1975,7 +1977,7 @@ public class MapperHelperTest {
         data.put("CLIENT_LAST_NAME","PARKER|POTTER");
         data.put("USER_EMAIL_PERSONAL_DESC","PETER.PARKER@BBVA.COM");
         data.put("PHONE_ID","909494944");
-        data.put("CUSTOMER_BIRTH_DATE","1927-04-07");
+        data.put("CUSTOMER_BIRTH_DATE","1927-04-07T00:00:00");
         data.put("GENDER_ID","M");
 
         when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
@@ -2104,42 +2106,6 @@ public class MapperHelperTest {
         Map<String, Object> validation2 = this.mapperHelper.createSaveInsuranceContractDetailsArguments( apxRequest,apxRequest.getRelatedContracts().get(1),
                 contractDao);
         assertEquals("02", validation2.get(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue()));
-    }
-
-    @Test
-    public void testxd(){
-        List<Map<String,Object>> list = new ArrayList<>();
-        Map<String,Object> rol1 = new HashMap<>();
-        rol1.put("PARTICIPANT",new BigDecimal(1));
-        Map<String,Object> rol2 = new HashMap<>();
-        rol2.put("PARTICIPANT",new BigDecimal(2));
-        Map<String,Object> rol3 = new HashMap<>();
-        rol3.put("PARTICIPANT",new BigDecimal(3));
-        list.add(rol1);
-        list.add(rol2);
-        list.add(rol3);
-
-        List<BigDecimal> rolesnum = new ArrayList<>();
-        boolean flag = false;
-
-        list.forEach(rol -> {
-            rolesnum.add((BigDecimal) rol.get("PARTICIPANT"));
-        });
-
-
-
-        System.out.println(rolesnum);
-
-        if(flag){
-            rolesnum.removeIf(n -> n.compareTo(new BigDecimal(2)) == 0);
-        }
-
-        System.out.println(list);
-        System.out.println(rolesnum);
-
-        rolesnum.removeIf(n -> n.compareTo(new BigDecimal(3)) == 0);
-        System.out.println(rolesnum);
-
     }
 
 }

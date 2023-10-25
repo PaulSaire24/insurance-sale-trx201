@@ -44,4 +44,8 @@ public class ValidationUtil {
         return false;
     }
 
+    public static boolean validateisNotEmptyOrNull(String parameter){
+        return (parameter != null && parameter != "");
+    }
+
 }
