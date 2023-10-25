@@ -1394,30 +1394,36 @@ public class MapperHelper {
         }
 
         String addressNumberVia = fillAddressNumberVia(geographicGroupsAddress, addressViaList, persona);
-        fillAddressOther(geographicGroupsAddress, stringAddress);
+
+        String fullNameOther = fillAddressOther(geographicGroupsAddress, stringAddress);
+
+        if (NO_EXIST.equals(addressNumberVia) && NO_EXIST.equals(fullNameOther)){
+            fillAddressAditional(geographicGroupsAddress, stringAddress);
+        }
+
         String directionForm = getFullDirectionFrom(addressViaList, addressGroupList, addressNumberVia, stringAddress, persona);
 
         return directionForm;
 
     }
     private void fillAddressUbigeo(final List<GeographicGroupsBO> geographicGroups, final PersonaBO persona) {
-
         String department = "";
         String province = "";
         String district = "";
         String ubigeo = "";
         String separationSymbol = "-";
 
-        Map<String, String> mapUbication = geographicGroups.stream().
-                filter(element -> this.filterUbicationCode(element.getGeographicGroupType().getId())).
-                collect(groupingBy(element -> element.getGeographicGroupType().getId(),
-                        mapping(element -> element.getCode().concat(separationSymbol).concat(element.getName()), toSingleton())));
+        Map<String, String> mapUbication = geographicGroups.stream()
+                .filter(element -> filterUbicationCode(element.getGeographicGroupType().getId()))
+                .collect(Collectors.toMap(
+                        element -> element.getGeographicGroupType().getId(),
+                        element -> element.getCode() + separationSymbol + element.getName()));
 
         String[] arrayDepartment = mapUbication.get("DEPARTMENT").split(separationSymbol);
         String[] arrayProvince = mapUbication.get("PROVINCE").split(separationSymbol);
         String[] arrayDistrict = mapUbication.get("DISTRICT").split(separationSymbol);
 
-        ubigeo = arrayDepartment[0].concat(arrayProvince[0]).concat(arrayDistrict[0]);
+        ubigeo = arrayDepartment[0] + arrayProvince[0] + arrayDistrict[0];
         department = arrayDepartment[1];
         province = arrayProvince[1];
         district = arrayDistrict[1];
@@ -1426,7 +1432,6 @@ public class MapperHelper {
         persona.setProvincia(province);
         persona.setDistrito(district);
         persona.setUbigeo(ubigeo);
-
     }
     private boolean filterExceptionAddress(final String geographicGroupTypeId) {
         Stream<String> ubicationAddress = Stream.of("UNCATEGORIZED", "NOT_PROVIDED");
@@ -1528,7 +1533,7 @@ public class MapperHelper {
                 .map(Map.Entry::getValue)
                 .orElse(null);
     }
-    private void fillAddressOther(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
+    private String fillAddressOther(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
 
         String typeOther = "";
         String nameOther = "";
@@ -1546,6 +1551,8 @@ public class MapperHelper {
             nameOther = arrayOther[1];
             stringAddress.append(typeOther.concat(" ").concat(nameOther));
         }
+
+        return addressOther;
     }
     private boolean filterAddressOther(final String geographicGroupTyeId) {
         Map<String, String> addressOther = this.tipeListOther();
@@ -1559,12 +1566,40 @@ public class MapperHelper {
                 .map(Map.Entry::getValue)
                 .orElse(null);
     }
+    private void fillAddressAditional(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
+
+        String nameManzana;
+        String nameLote;
+
+        Map<String, String> mapAditional = geographicGroupsAddress.stream()
+                .filter(element -> this.filterAddressAditional(element.getGeographicGroupType().getId()))
+                .collect(groupingBy(element -> element.getGeographicGroupType().getId(), mapping(element -> element.getName(), toSingleton())));
+        String[] arrayAditional = new String[] {mapAditional.get("BLOCK"), mapAditional.get("LOT")};
+        nameManzana = arrayAditional[0];
+        nameLote = arrayAditional[1];
+
+        if (nonNull(nameManzana) && nonNull(nameLote)){
+            stringAddress.append("MZ".concat(" ").concat(nameManzana).concat(" ").concat("LOT").concat(" ").concat(nameLote));
+        }
+        if (nonNull(nameManzana) && isNull(nameLote)){
+            stringAddress.append("MZ".concat(" ").concat(nameManzana));
+        }
+    }
+    private boolean  filterAddressAditional (final String geographicGroupTyeId){
+        Stream<String> aditionalCode = Stream.of("BLOCK","LOT");
+        return aditionalCode.anyMatch(element -> element.equalsIgnoreCase(geographicGroupTyeId));
+    }
     private String getFullDirectionFrom(String addressViaList, String addressGroupList, String addressNumberVia, StringBuilder stringAddress, PersonaBO persona) {
 
         String directionForm = null;
         //Logica del primer Grupo : Ubicacion uno
         if(nonNull(addressViaList) && nonNull(addressGroupList) && !NO_EXIST.equals(addressNumberVia)) {
             directionForm = addressViaList.concat(" ").concat(addressNumberVia).concat(", ").concat(addressGroupList)
+                    .concat(" ").concat(stringAddress.toString());
+        }
+
+        if(nonNull(addressViaList) && nonNull(addressGroupList) && NO_EXIST.equals(addressNumberVia)) {
+            directionForm = addressViaList.concat(" ").concat(", ").concat(addressGroupList)
                     .concat(" ").concat(stringAddress.toString());
         }
 
@@ -1622,22 +1657,22 @@ public class MapperHelper {
 
         Map<String, String> tipeListDir2Map = new HashMap<>();
 
-        tipeListDir2Map.put("GROUP", "AGR.");
-        tipeListDir2Map.put("AAHH", "AHH.");
-        tipeListDir2Map.put("HOUSING_COMPLEX", "CHB.");
-        tipeListDir2Map.put("INDIGENOUS_COMMUNITY", "COM.");
-        tipeListDir2Map.put("PEASANT_COMMUNITY", "CAM.");
-        tipeListDir2Map.put("HOUSING_COOPERATIVE", "COV.");
-        tipeListDir2Map.put("STAGE", "ETP.");
-        tipeListDir2Map.put("SHANTYTOWN", "PJJ.");
-        tipeListDir2Map.put("NEIGHBORHOOD", "SEC.");
-        tipeListDir2Map.put("URBANIZATION", "URB.");
+        tipeListDir2Map.put("GROUP", "AGR");
+        tipeListDir2Map.put("AAHH", "AHH");
+        tipeListDir2Map.put("HOUSING_COMPLEX", "CHB");
+        tipeListDir2Map.put("INDIGENOUS_COMMUNITY", "COM");
+        tipeListDir2Map.put("PEASANT_COMMUNITY", "CAM");
+        tipeListDir2Map.put("HOUSING_COOPERATIVE", "COV");
+        tipeListDir2Map.put("STAGE", "ETP");
+        tipeListDir2Map.put("SHANTYTOWN", "PJJ");
+        tipeListDir2Map.put("NEIGHBORHOOD", "SEC");
+        tipeListDir2Map.put("URBANIZATION", "URB");
         tipeListDir2Map.put("NEIGHBORHOOD_UNIT", "UV.");
-        tipeListDir2Map.put("ZONE", "ZNA.");
-        tipeListDir2Map.put("ASSOCIATION", "ASC.");
-        tipeListDir2Map.put("FUNDO", "FUN.");
-        tipeListDir2Map.put("MINING_CAMP", "MIN.");
-        tipeListDir2Map.put("RESIDENTIAL", "RES.");
+        tipeListDir2Map.put("ZONE", "ZNA");
+        tipeListDir2Map.put("ASSOCIATION", "ASC");
+        tipeListDir2Map.put("FUNDO", "FUN");
+        tipeListDir2Map.put("MINING_CAMP", "MIN");
+        tipeListDir2Map.put("RESIDENTIAL", "RES");
 
         return tipeListDir2Map;
 
