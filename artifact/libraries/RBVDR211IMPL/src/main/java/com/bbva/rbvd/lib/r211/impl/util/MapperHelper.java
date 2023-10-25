@@ -156,11 +156,11 @@ public class MapperHelper {
     private static final String SIN_ESPECIFICAR = "N/A";
     private static final String NO_EXIST = "NotExist";
 
-    private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+    private final SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
     private ApplicationConfigurationService applicationConfigurationService;
 
-    private String currentDate;
+    private final String currentDate;
 
     public MapperHelper() {
         this.currentDate = generateCorrectDateFormat(new LocalDate());
@@ -1397,7 +1397,7 @@ public class MapperHelper {
 
         String fullNameOther = fillAddressOther(geographicGroupsAddress, stringAddress);
 
-        if (NO_EXIST.equals(addressNumberVia) && NO_EXIST.equals(fullNameOther)){
+        if (NO_EXIST.equals(addressNumberVia) || NO_EXIST.equals(fullNameOther)){
             fillAddressAditional(geographicGroupsAddress, stringAddress);
         }
 
@@ -1545,15 +1545,21 @@ public class MapperHelper {
                 .map(element -> this.getTypeOther(element.getGeographicGroupType().getId()) + separationSymbol + element.getName())
                 .orElse(NO_EXIST);
 
-        if(!NO_EXIST.equals(addressOther)) {
+        if (!NO_EXIST.equals(addressOther)) {
             String[] arrayOther = addressOther.split(separationSymbol);
             typeOther = arrayOther[0];
             nameOther = arrayOther[1];
-            stringAddress.append(typeOther.concat(" ").concat(nameOther));
+            if (!stringAddress.toString().contains(nameOther)) {
+                if (stringAddress.length() > 0 && !stringAddress.toString().endsWith(" ")) {
+                    stringAddress.append(" ");
+                }
+                stringAddress.append(typeOther).append(" ").append(nameOther);
+            }
         }
 
         return addressOther;
     }
+
     private boolean filterAddressOther(final String geographicGroupTyeId) {
         Map<String, String> addressOther = this.tipeListOther();
         return addressOther.entrySet().stream().anyMatch(element -> element.getKey().equals(geographicGroupTyeId));
@@ -1568,23 +1574,41 @@ public class MapperHelper {
     }
     private void fillAddressAditional(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
 
-        String nameManzana;
-        String nameLote;
+        String nameManzana = "";
+        String nameLote = "";
 
         Map<String, String> mapAditional = geographicGroupsAddress.stream()
                 .filter(element -> this.filterAddressAditional(element.getGeographicGroupType().getId()))
-                .collect(groupingBy(element -> element.getGeographicGroupType().getId(), mapping(element -> element.getName(), toSingleton())));
-        String[] arrayAditional = new String[] {mapAditional.get("BLOCK"), mapAditional.get("LOT")};
-        nameManzana = arrayAditional[0];
-        nameLote = arrayAditional[1];
+                .collect(groupingBy(element -> element.getGeographicGroupType().getId(), mapping(element -> element.getName(), joining(", "))));
 
-        if (nonNull(nameManzana) && nonNull(nameLote)){
-            stringAddress.append("MZ".concat(" ").concat(nameManzana).concat(" ").concat("LOT").concat(" ").concat(nameLote));
-        }
-        if (nonNull(nameManzana) && isNull(nameLote)){
-            stringAddress.append("MZ".concat(" ").concat(nameManzana));
+        nameManzana = mapAditional.getOrDefault("BLOCK", "");
+        nameLote = mapAditional.getOrDefault("LOT", "");
+
+        if (!nameManzana.isEmpty() && !nameLote.isEmpty()) {
+            if (!stringAddress.toString().contains(nameManzana) || !stringAddress.toString().contains(nameLote)) {
+                if (stringAddress.length() > 0 && !stringAddress.toString().endsWith(" ")) {
+                    stringAddress.append(" ");
+                }
+                stringAddress.append("MZ ").append(nameManzana).append(" LT ").append(nameLote);
+            }
+        } else if (!nameManzana.isEmpty()) {
+            if (!stringAddress.toString().contains(nameManzana)) {
+                if (stringAddress.length() > 0 && !stringAddress.toString().endsWith(" ")) {
+                    stringAddress.append(" ");
+                }
+                stringAddress.append("MZ ").append(nameManzana);
+            }
+        } else if (!nameLote.isEmpty()) {
+            if (!stringAddress.toString().contains(nameLote)) {
+                if (stringAddress.length() > 0 && !stringAddress.toString().endsWith(" ")) {
+                    stringAddress.append(" ");
+                }
+                stringAddress.append("LT ").append(nameLote);
+            }
         }
     }
+
+
     private boolean  filterAddressAditional (final String geographicGroupTyeId){
         Stream<String> aditionalCode = Stream.of("BLOCK","LOT");
         return aditionalCode.anyMatch(element -> element.equalsIgnoreCase(geographicGroupTyeId));
@@ -1682,7 +1706,6 @@ public class MapperHelper {
         Map<String, String> tipeListOther = new HashMap<>();
 
         tipeListOther.put("QUINTA", "QUINTA");
-        tipeListOther.put("BLOCK", "MANZANA");
         tipeListOther.put("INTERIOR_NUMBER","DPTO.");
         tipeListOther.put("FLOOR", "PISO");
         tipeListOther.put("COLONY", "COL.");
