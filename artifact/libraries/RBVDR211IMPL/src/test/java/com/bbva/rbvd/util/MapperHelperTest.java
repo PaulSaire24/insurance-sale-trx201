@@ -1160,22 +1160,17 @@ public class MapperHelperTest {
             assertNotNull(validation5);
 
             GeographicGroupsBO geographicGroupsBO9 = new GeographicGroupsBO();
-            geographicGroupsBO9.setName("xxxxx");
+            geographicGroupsBO9.setName("PLAZA NORTE");
             GeographicGroupTypeBO geographicGroupTypeBO9 = new GeographicGroupTypeBO();
-            geographicGroupTypeBO9.setId("xxxxx");
-            geographicGroupTypeBO9.setName("xxxxx");
+            geographicGroupTypeBO9.setId("SQUARE");
+            geographicGroupTypeBO9.setName("PLZ");
             geographicGroupsBO9.setGeographicGroupType(geographicGroupTypeBO9);
-
-            GeographicGroupsBO geographicGroupsBO10 = new GeographicGroupsBO();
-            geographicGroupsBO10.setName("xxxxx");
-            GeographicGroupTypeBO geographicGroupTypeBO10 = new GeographicGroupTypeBO();
-            geographicGroupTypeBO10.setId("xxxxx");
-            geographicGroupTypeBO10.setName("xxxxx");
-            geographicGroupsBO10.setGeographicGroupType(geographicGroupTypeBO10);
 
             List<GeographicGroupsBO> geographicGroupsBOs3 = new ArrayList<>();
             geographicGroupsBOs3.add(geographicGroupsBO9);
-            geographicGroupsBOs3.add(geographicGroupsBO10);
+            geographicGroupsBOs3.add(geographicGroupsBO4);
+            geographicGroupsBOs3.add(geographicGroupsBO7);
+            geographicGroupsBOs3.add(geographicGroupsBO8);
             geographicGroupsBOs3.add(geographicGroupsExteriorNumber2);
             geographicGroupsBOs3.add(geographicGroupsDepartment1);
             geographicGroupsBOs3.add(geographicGroupsProvince1);
@@ -1183,8 +1178,57 @@ public class MapperHelperTest {
             geographicGroupsBOs3.add(geographicGroupsUbigeo1);
 
             customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs3);
+            EmisionBO validation6 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+            assertNotNull(validation6);
+
+            GeographicGroupsBO geographicGroupsBO10 = new GeographicGroupsBO();
+            geographicGroupsBO10.setName("LOS GIRASOLES");
+            GeographicGroupTypeBO geographicGroupTypeBO10 = new GeographicGroupTypeBO();
+            geographicGroupTypeBO10.setId("URBANIZATION");
+            geographicGroupTypeBO10.setName("URB");
+            geographicGroupsBO10.setGeographicGroupType(geographicGroupTypeBO10);
+
+            List<GeographicGroupsBO> geographicGroupsBOs4 = new ArrayList<>();
+            geographicGroupsBOs4.add(geographicGroupsBO1);
+            geographicGroupsBOs4.add(geographicGroupsBO10);
+            geographicGroupsBOs4.add(geographicGroupsBO7);
+            geographicGroupsBOs4.add(geographicGroupsBO8);
+            geographicGroupsBOs4.add(geographicGroupsExteriorNumber2);
+            geographicGroupsBOs4.add(geographicGroupsDepartment1);
+            geographicGroupsBOs4.add(geographicGroupsProvince1);
+            geographicGroupsBOs4.add(geographicGroupsDistrict1);
+            geographicGroupsBOs4.add(geographicGroupsUbigeo1);
+
+            customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
+            EmisionBO validation7 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+            assertNotNull(validation7);
+
+            GeographicGroupsBO geographicGroupsBONull = new GeographicGroupsBO();
+            geographicGroupsBONull.setName("xxxxx");
+            GeographicGroupTypeBO geographicGroupTypeBONull = new GeographicGroupTypeBO();
+            geographicGroupTypeBONull.setId("xxxxx");
+            geographicGroupTypeBONull.setName("xxxxx");
+            geographicGroupsBONull.setGeographicGroupType(geographicGroupTypeBONull);
+
+            GeographicGroupsBO geographicGroupsBONull1 = new GeographicGroupsBO();
+            geographicGroupsBONull1.setName("xxxxx");
+            GeographicGroupTypeBO geographicGroupTypeBONull1 = new GeographicGroupTypeBO();
+            geographicGroupTypeBONull1.setId("xxxxx");
+            geographicGroupTypeBONull1.setName("xxxxx");
+            geographicGroupsBONull1.setGeographicGroupType(geographicGroupTypeBONull1);
+
+            List<GeographicGroupsBO> geographicGroupsBOsNull = new ArrayList<>();
+            geographicGroupsBOsNull.add(geographicGroupsBONull);
+            geographicGroupsBOsNull.add(geographicGroupsBONull1);
+            geographicGroupsBOsNull.add(geographicGroupsExteriorNumber2);
+            geographicGroupsBOsNull.add(geographicGroupsDepartment1);
+            geographicGroupsBOsNull.add(geographicGroupsProvince1);
+            geographicGroupsBOsNull.add(geographicGroupsDistrict1);
+            geographicGroupsBOsNull.add(geographicGroupsUbigeo1);
+
+            customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOsNull);
             try {
-                EmisionBO validation6 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+                EmisionBO validationNull = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
                 fail("Se esperaba una BusinessException, pero no se lanzó.");
             } catch (BusinessException e) {
                 assertNotNull(e);
@@ -1205,6 +1249,7 @@ public class MapperHelperTest {
             geographicGroupsAddress.add(geographicGroupLot);
             mapperHelper.fillAddressAditional(geographicGroupsAddress, stringAddress);
             assertEquals("MZ 10 LT 2", stringAddress.toString());
+
             stringAddress.setLength(0);
             geographicGroupsAddress.clear();
             GeographicGroupsBO geographicGroupBlock2 = new GeographicGroupsBO();
@@ -1215,6 +1260,17 @@ public class MapperHelperTest {
             geographicGroupsAddress.add(geographicGroupBlock2);
             mapperHelper.fillAddressAditional(geographicGroupsAddress, stringAddress);
             assertEquals("MZ 23", stringAddress.toString());
+
+            stringAddress.setLength(0);
+            geographicGroupsAddress.clear();
+            GeographicGroupsBO geographicGroupLot2 = new GeographicGroupsBO();
+            GeographicGroupTypeBO geographicGroupTypeLot2 = new GeographicGroupTypeBO();
+            geographicGroupTypeLot2.setId("LOT");
+            geographicGroupLot2.setGeographicGroupType(geographicGroupTypeLot2);
+            geographicGroupLot2.setName("52");
+            geographicGroupsAddress.add(geographicGroupLot2);
+            mapperHelper.fillAddressAditional(geographicGroupsAddress, stringAddress);
+            assertEquals("LT 52", stringAddress.toString());
 
             stringAddress.setLength(0);
             geographicGroupsAddress.clear();

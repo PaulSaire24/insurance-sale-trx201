@@ -1549,17 +1549,11 @@ public class MapperHelper {
             String[] arrayOther = addressOther.split(separationSymbol);
             typeOther = arrayOther[0];
             nameOther = arrayOther[1];
-            if (!stringAddress.toString().contains(nameOther)) {
-                if (stringAddress.length() > 0 && !stringAddress.toString().endsWith(" ")) {
-                    stringAddress.append(" ");
-                }
-                stringAddress.append(typeOther).append(" ").append(nameOther);
-            }
+            stringAddress.append(typeOther.concat(" ").concat(nameOther));
         }
 
         return addressOther;
     }
-
     private boolean filterAddressOther(final String geographicGroupTyeId) {
         Map<String, String> addressOther = this.tipeListOther();
         return addressOther.entrySet().stream().anyMatch(element -> element.getKey().equals(geographicGroupTyeId));
