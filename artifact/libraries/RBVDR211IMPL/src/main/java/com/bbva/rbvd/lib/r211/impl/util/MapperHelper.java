@@ -968,6 +968,7 @@ public class MapperHelper {
                 PersonaBO contractorPerson = this.getFillFieldsPerson(
                         this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
                 contractorPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
+                fillAddress(customerList,contractorPerson,new StringBuilder());
                 personasList.add(contractorPerson);
             }
 
