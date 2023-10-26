@@ -828,8 +828,8 @@ public class MapperHelper {
 
         StringBuilder stringAddress  = new StringBuilder();
 
-        fillAddress(customerList, persona, stringAddress);
-        if (isNull(fillAddress(customerList, persona, stringAddress))){
+        String filledAddress = fillAddress(customerList, persona, stringAddress);
+        if (isNull(filledAddress)) {
             throw new BusinessException("RBVD10094935", false, this.applicationConfigurationService.getProperty("address-message-key"));
         }
 
@@ -1533,7 +1533,7 @@ public class MapperHelper {
                 .map(Map.Entry::getValue)
                 .orElse(null);
     }
-    private String fillAddressOther(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
+    public String fillAddressOther(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
 
         String typeOther = "";
         String nameOther = "";
@@ -1572,7 +1572,7 @@ public class MapperHelper {
                 .map(Map.Entry::getValue)
                 .orElse(null);
     }
-    private void fillAddressAditional(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
+    public void fillAddressAditional(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
 
         String nameManzana = "";
         String nameLote = "";
@@ -1715,16 +1715,6 @@ public class MapperHelper {
 
         return tipeListOther;
 
-    }
-    private static <T> Collector<T, ?, T> toSingleton() {
-
-        return Collectors.collectingAndThen(toList(), list -> {
-
-            if(list.size() != 1) {
-                return null;
-            }
-            return list.get(0);
-        });
     }
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;
