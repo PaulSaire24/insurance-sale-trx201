@@ -1567,42 +1567,37 @@ public class MapperHelper {
                 .orElse(null);
     }
     public void fillAddressAditional(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
-
         String nameManzana = "";
         String nameLote = "";
 
         Map<String, String> mapAditional = geographicGroupsAddress.stream()
                 .filter(element -> this.filterAddressAditional(element.getGeographicGroupType().getId()))
-                .collect(groupingBy(element -> element.getGeographicGroupType().getId(), mapping(element -> element.getName(), joining(", "))));
+                .collect(Collectors.groupingBy(
+                        element -> element.getGeographicGroupType().getId(),
+                        Collectors.mapping(GeographicGroupsBO::getName, Collectors.joining(", "))
+                ));
 
         nameManzana = mapAditional.getOrDefault("BLOCK", "");
         nameLote = mapAditional.getOrDefault("LOT", "");
 
+        if (!nameManzana.isEmpty() && !stringAddress.toString().contains(nameManzana)) {
+            appendToAddress(stringAddress, "MZ " + nameManzana);
+        }
+        if (!nameLote.isEmpty() && !stringAddress.toString().contains(nameLote)) {
+            appendToAddress(stringAddress, "LT " + nameLote);
+        }
         if (!nameManzana.isEmpty() && !nameLote.isEmpty()) {
             if (!stringAddress.toString().contains(nameManzana) || !stringAddress.toString().contains(nameLote)) {
-                if (stringAddress.length() > 0 && !stringAddress.toString().endsWith(" ")) {
-                    stringAddress.append(" ");
-                }
-                stringAddress.append("MZ ").append(nameManzana).append(" LT ").append(nameLote);
-            }
-        } else if (!nameManzana.isEmpty()) {
-            if (!stringAddress.toString().contains(nameManzana)) {
-                if (stringAddress.length() > 0 && !stringAddress.toString().endsWith(" ")) {
-                    stringAddress.append(" ");
-                }
-                stringAddress.append("MZ ").append(nameManzana);
-            }
-        } else if (!nameLote.isEmpty()) {
-            if (!stringAddress.toString().contains(nameLote)) {
-                if (stringAddress.length() > 0 && !stringAddress.toString().endsWith(" ")) {
-                    stringAddress.append(" ");
-                }
-                stringAddress.append("LT ").append(nameLote);
+                appendToAddress(stringAddress, "MZ " + nameManzana + " LT " + nameLote);
             }
         }
     }
-
-
+    private void appendToAddress(StringBuilder stringAddress, String toAppend) {
+        if (stringAddress.length() > 0 && !stringAddress.toString().endsWith(" ")) {
+            stringAddress.append(" ");
+        }
+        stringAddress.append(toAppend);
+    }
     private boolean  filterAddressAditional (final String geographicGroupTyeId){
         Stream<String> aditionalCode = Stream.of("BLOCK","LOT");
         return aditionalCode.anyMatch(element -> element.equalsIgnoreCase(geographicGroupTyeId));
