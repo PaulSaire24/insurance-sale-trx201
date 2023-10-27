@@ -830,7 +830,7 @@ public class MapperHelper {
 
         String filledAddress = fillAddress(customerList, persona, stringAddress);
         if (isNull(filledAddress)) {
-            throw new BusinessException("RBVD10094935", false, this.applicationConfigurationService.getProperty("address-message-key"));
+            throw new BusinessException("RBVD10094935", false,"Revisar Datos de Direccion");
         }
 
         constructListPersons(persona, personasList);
@@ -885,11 +885,15 @@ public class MapperHelper {
         PayloadAgregarTerceroBO payload = new PayloadAgregarTerceroBO();
         AgregarTerceroBO request = new AgregarTerceroBO();
         List<PersonaBO> personasList = new ArrayList<>();
+        StringBuilder stringAddress  = new StringBuilder();
 
         payload.setProducto(businessName);
         this.constructListPersons(this.constructPerson(requestBody,customerList.getData().get(0),responseQueryGetRequiredFields),personasList);
         personasList.stream().forEach(persona ->{
-            fillAddress(customerList, persona, new StringBuilder());
+            String filledAddress = fillAddress(customerList, persona, stringAddress);
+            if (isNull(filledAddress)) {
+                throw new BusinessException("RBVD10094935", false,"Revisar Datos de Direccion");
+            }
         });
         payload.setPersona(personasList);
 
