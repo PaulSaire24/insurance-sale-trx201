@@ -2064,6 +2064,12 @@ public class MapperHelperTest {
         Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+        try {
+            AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, customerList, requiredFieldsEmisionBDResponse);
+        } catch (BusinessException e) {
+            assertNotNull(e);
+            assertEquals("RBVD10094935", e.getMessage());
+        }
         AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, customerList, requiredFieldsEmisionBDResponse);
         assertNotNull(validation);
         assertEquals(3, validation.getPayload().getPersona().size());
