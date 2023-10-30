@@ -273,22 +273,19 @@ public class MapperHelper {
 
         IdentityDocumentASO identityDocument = new IdentityDocumentASO();
         DocumentTypeASO documentType = new DocumentTypeASO();
-        String customerId = null;
-        String documentTypeId = null;
-        String documentNumber = null;
+        String customerId;
+        String documentTypeId;
+        String documentNumber;
 
-        if(ValidationUtil.filterParticipantByType(apxRequest.getParticipants(),ConstantsUtil.Participant.INSURED) != null){
-            ParticipantDTO participantInsured = ValidationUtil.filterParticipantByType(
-                    apxRequest.getParticipants(),ConstantsUtil.Participant.INSURED);
-
-            if(participantInsured != null &&
-                    ValidationUtil.validateOtherParticipants(participantInsured,ConstantsUtil.Participant.INSURED)){
-                customerId = Objects.nonNull(participantInsured.getCustomerId())
-                        ? participantInsured.getCustomerId()
-                        : null;
-                documentTypeId = participantInsured.getIdentityDocument().getDocumentType().getId();
-                documentNumber = participantInsured.getIdentityDocument().getNumber();
-            }
+        ParticipantDTO participantInsured = ValidationUtil.filterParticipantByType(
+                apxRequest.getParticipants(),ConstantsUtil.Participant.INSURED);
+        if(participantInsured != null &&
+                ValidationUtil.validateOtherParticipants(participantInsured,ConstantsUtil.Participant.INSURED)){
+            customerId = Objects.nonNull(participantInsured.getCustomerId())
+                    ? participantInsured.getCustomerId()
+                    : null;
+            documentTypeId = participantInsured.getIdentityDocument().getDocumentType().getId();
+            documentNumber = participantInsured.getIdentityDocument().getNumber();
         }else{
             customerId = apxRequest.getHolder().getId();
             documentTypeId = apxRequest.getHolder().getIdentityDocument().getDocumentType().getId();
@@ -763,9 +760,7 @@ public class MapperHelper {
 
         List<BigDecimal> participantRoles = new ArrayList<>();
 
-        rolesFromDB.forEach(rol -> {
-            participantRoles.add((BigDecimal) rol.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
-        });
+        rolesFromDB.forEach(rol -> participantRoles.add((BigDecimal) rol.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())));
 
         if(legalRepre != null){
             participantRoles.removeIf(rol -> rol.compareTo(new BigDecimal(ConstantsUtil.Number.TRES)) == 0);
@@ -997,13 +992,13 @@ public class MapperHelper {
 
         if(ValidationUtil.validateisNotEmptyOrNull(apellidos)){
             int index = apellidos.indexOf(ConstantsUtil.Delimites.VERTICAL_BAR);
-            apPaterno = apellidos.substring(0,index);
-            apMaterno = apellidos.substring(index+1);
+            apPaterno = apellidos.substring(ConstantsUtil.Number.CERO,index);
+            apMaterno = apellidos.substring(index+ConstantsUtil.Number.UNO);
         }
 
         String fechaNacimiento = String.valueOf(dataInsured.get(LifeInsuranceInsuredData.FIELD_CUSTOMER_BIRTH_DATE));
         if(ValidationUtil.validateisNotEmptyOrNull(fechaNacimiento)){
-            fechaNacimiento = fechaNacimiento.substring(0,10);
+            fechaNacimiento = fechaNacimiento.substring(ConstantsUtil.Number.CERO,ConstantsUtil.Number.DIEZ);
         }
 
         insuredPerson.setTipoDocumento(this.applicationConfigurationService.getProperty(participantDTO.getIdentityDocument().getDocumentType().getId()));

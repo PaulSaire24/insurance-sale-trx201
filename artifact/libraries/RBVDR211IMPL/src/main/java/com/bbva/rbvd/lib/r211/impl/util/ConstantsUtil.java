@@ -30,8 +30,11 @@ public class ConstantsUtil {
     }
 
     public final class Number{
+        public static final int DIEZ = 10;
         public static final int TRES = 3;
         public static final int DOS = 2;
+        public static final int UNO = 1;
+        public static final int CERO = 0;
     }
 
     public enum ParticipantRol{
