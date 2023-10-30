@@ -3,7 +3,6 @@ package com.bbva.rbvd.util;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 
 import com.bbva.pisd.dto.insurance.bo.DocumentTypeBO;
 import com.bbva.pisd.dto.insurance.bo.GenderBO;
@@ -42,10 +41,10 @@ import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.util.ConstantsUtil;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,6 +52,9 @@ import java.io.IOException;
 
 import java.math.BigDecimal;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.util.Collections.singletonList;
@@ -81,6 +83,8 @@ public class MapperHelperTest {
     private PolicyASO asoResponse;
     private EmisionBO rimacResponse;
     private CustomerListASO customerList;
+    private Map<String,Object> responseQueryGetProductById;
+
     private RBVDR201 rbvdr201;
     private PISDR350 pisdr350;
 
@@ -158,6 +162,10 @@ public class MapperHelperTest {
 
         CustomerListASO customerList = mockDTO.getCustomerDataResponse();
         when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+
+        responseQueryGetProductById = new HashMap<>();
+        responseQueryGetProductById.put("INSURANCE_BUSINESS_NAME","VIDA");
+        responseQueryGetProductById.put("PRODUCT_SHORT_DESC","VIDADINAMICO");
     }
 
 
@@ -222,6 +230,89 @@ public class MapperHelperTest {
         assertNotNull(validation.getInsuranceCompany().getId());
 
         /*Faltan escenarios null con BA y PROMOTER*/
+    }
+
+    private static ParticipantDTO dataInsuredParticipant(){
+        ParticipantDTO participantDTO = new ParticipantDTO();
+
+        participantDTO.setCustomerId("74857594");
+
+        ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
+        participantTypeDTO.setId("INSURED");
+        participantDTO.setParticipantType(participantTypeDTO);
+
+        DocumentTypeDTO documentTypeDTO = new DocumentTypeDTO();
+        documentTypeDTO.setId("PASSPORT");
+        IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
+        identityDocumentDTO.setDocumentType(documentTypeDTO);
+        identityDocumentDTO.setNumber("39400943");
+        participantDTO.setIdentityDocument(identityDocumentDTO);
+
+        return participantDTO;
+    }
+
+    private static ParticipantDTO dataLegalRepresentativeParticipant(){
+        ParticipantDTO participantDTO = new ParticipantDTO();
+
+        ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
+        participantTypeDTO.setId(ConstantsUtil.Participant.LEGAL_REPRESENTATIVE);
+        participantDTO.setParticipantType(participantTypeDTO);
+
+        DocumentTypeDTO documentTypeDTO = new DocumentTypeDTO();
+        documentTypeDTO.setId("RUC");
+        IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
+        identityDocumentDTO.setDocumentType(documentTypeDTO);
+        identityDocumentDTO.setNumber("3940480943");
+        participantDTO.setIdentityDocument(identityDocumentDTO);
+
+        return participantDTO;
+    }
+
+    @Test
+    public void buildAsoRequest_WithInsuredParticipant_OK() {
+
+        apxRequest.getParticipants().add(dataInsuredParticipant());
+
+        DataASO validation = mapperHelper.buildAsoRequest(apxRequest);
+
+        assertNotNull(validation.getQuotationId());
+        assertNotNull(validation.getProductId());
+        assertNotNull(validation.getHolder());
+        assertNotNull(validation.getHolder().getIdentityDocument());
+        assertNotNull(validation.getHolder().getIdentityDocument().getDocumentType());
+        assertNotNull(validation.getHolder().getIdentityDocument().getDocumentType().getId());
+        assertNotNull(validation.getHolder().getIdentityDocument().getNumber());
+        assertFalse(validation.getParticipants().isEmpty());
+        assertEquals(2,validation.getParticipants().size());
+        assertNotNull(validation.getParticipants().get(0).getParticipantType());
+        assertNotNull(validation.getParticipants().get(0).getParticipantType().getId());
+        assertNotNull(validation.getParticipants().get(0).getCustomerId());
+        assertNotNull(validation.getParticipants().get(0).getIdentityDocument());
+        assertNotNull(validation.getParticipants().get(0).getIdentityDocument().getDocumentType());
+        assertNotNull(validation.getParticipants().get(0).getIdentityDocument().getDocumentType().getId());
+        assertNotNull(validation.getParticipants().get(0).getIdentityDocument().getNumber());
+        assertNotNull(validation.getParticipants().get(1).getParticipantType());
+        assertNotNull(validation.getParticipants().get(1).getParticipantType().getId());
+        assertNotNull(validation.getParticipants().get(1).getCustomerId());
+        assertNotNull(validation.getParticipants().get(1).getIdentityDocument());
+        assertNotNull(validation.getParticipants().get(1).getIdentityDocument().getDocumentType());
+        assertNotNull(validation.getParticipants().get(1).getIdentityDocument().getDocumentType().getId());
+        assertNotNull(validation.getParticipants().get(1).getIdentityDocument().getNumber());
+
+
+        //CUSTOMER_ID NULL
+        apxRequest.getParticipants().get(1).setCustomerId(null);
+        validation = mapperHelper.buildAsoRequest(apxRequest);
+
+        assertNotNull(validation.getHolder());
+        assertNotNull(validation.getHolder().getIdentityDocument());
+        assertNotNull(validation.getHolder().getIdentityDocument().getDocumentType());
+        assertNotNull(validation.getHolder().getIdentityDocument().getDocumentType().getId());
+        assertNotNull(validation.getHolder().getIdentityDocument().getNumber());
+        assertNull(validation.getHolder().getId());
+        assertFalse(validation.getParticipants().isEmpty());
+        assertEquals(2,validation.getParticipants().size());
+
     }
 
     @Test
@@ -785,6 +876,126 @@ public class MapperHelperTest {
     }
 
     @Test
+    public void buildIsrcContractParticipants_WithInsuredParticipant_OK() {
+        List<Map<String, Object>> responseQueryRoles = new ArrayList<>();
+        Map<String, Object> firstRole = new HashMap<>();
+        firstRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(1));
+        responseQueryRoles.add(firstRole);
+        Map<String, Object> secondRole = new HashMap<>();
+        secondRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(2));
+        responseQueryRoles.add(secondRole);
+        Map<String, Object> response = new HashMap<>();
+        response.put(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue(), responseQueryRoles);
+
+        apxRequest.getParticipants().add(dataInsuredParticipant());
+
+        when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
+        when(applicationConfigurationService.getProperty("PASSPORT")).thenReturn("P");
+
+        List<IsrcContractParticipantDAO> validation = mapperHelper.buildIsrcContractParticipants(apxRequest, response, "00110251094000294053");
+
+        assertEquals(2,validation.size());
+
+        assertNotNull(validation.get(0).getEntityId());
+        assertNotNull(validation.get(0).getEntityId());
+        assertNotNull(validation.get(0).getIntAccountId());
+        assertNotNull(validation.get(0).getParticipantRoleId());
+        assertNotNull(validation.get(0).getPartyOrderNumber());
+        assertNotNull(validation.get(0).getPersonalDocType());
+        assertNotNull(validation.get(0).getParticipantPersonalId());
+        assertNotNull(validation.get(0).getCustomerId());
+        assertNotNull(validation.get(0).getCustomerRelationshipType());
+        assertNotNull(validation.get(0).getRegistrySituationType());
+        assertNotNull(validation.get(0).getCreationUserId());
+        assertNotNull(validation.get(0).getUserAuditId());
+
+        assertNotNull(validation.get(1).getEntityId());
+        assertNotNull(validation.get(1).getEntityId());
+        assertNotNull(validation.get(1).getIntAccountId());
+        assertNotNull(validation.get(1).getParticipantRoleId());
+        assertNotNull(validation.get(1).getPartyOrderNumber());
+        assertNotNull(validation.get(1).getPersonalDocType());
+        assertNotNull(validation.get(1).getParticipantPersonalId());
+        assertNotNull(validation.get(1).getCustomerId());
+        assertNotNull(validation.get(1).getCustomerRelationshipType());
+        assertNotNull(validation.get(1).getRegistrySituationType());
+        assertNotNull(validation.get(1).getCreationUserId());
+        assertNotNull(validation.get(1).getUserAuditId());
+
+
+        ParticipantDTO participantInsured = apxRequest.getParticipants().get(1);
+
+        assertEquals(participantInsured.getCustomerId(),validation.get(1).getCustomerId());
+        assertEquals("P", validation.get(1).getPersonalDocType());
+        assertEquals(participantInsured.getIdentityDocument().getNumber(),validation.get(1).getParticipantPersonalId());
+
+    }
+
+    @Test
+    public void buildIsrcContractParticipants_WithLegalRepresentative_OK() {
+        List<Map<String, Object>> responseQueryRoles = new ArrayList<>();
+        Map<String, Object> firstRole = new HashMap<>();
+        firstRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(1));
+        responseQueryRoles.add(firstRole);
+        Map<String, Object> secondRole = new HashMap<>();
+        secondRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(2));
+        responseQueryRoles.add(secondRole);
+        Map<String, Object> thirdRole = new HashMap<>();
+        thirdRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(3));
+        responseQueryRoles.add(thirdRole);
+        Map<String, Object> response = new HashMap<>();
+        response.put(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue(), responseQueryRoles);
+
+        apxRequest.getParticipants().add(dataInsuredParticipant());
+        apxRequest.getParticipants().add(dataLegalRepresentativeParticipant());
+
+        when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
+        when(applicationConfigurationService.getProperty("PASSPORT")).thenReturn("P");
+        when(applicationConfigurationService.getProperty("RUC")).thenReturn("R");
+
+        List<IsrcContractParticipantDAO> validation = mapperHelper.buildIsrcContractParticipants(apxRequest, response, "00110251094000294053");
+
+        assertEquals(3,validation.size());
+
+        assertNotNull(validation.get(0).getEntityId());
+        assertNotNull(validation.get(0).getBranchId());
+        assertNotNull(validation.get(0).getIntAccountId());
+        assertNotNull(validation.get(0).getParticipantRoleId());
+        assertNotNull(validation.get(0).getPartyOrderNumber());
+        assertNotNull(validation.get(0).getPersonalDocType());
+        assertNotNull(validation.get(0).getParticipantPersonalId());
+        assertNotNull(validation.get(0).getCustomerRelationshipType());
+        assertNotNull(validation.get(0).getRegistrySituationType());
+        assertNotNull(validation.get(0).getCreationUserId());
+        assertNotNull(validation.get(0).getUserAuditId());
+
+        assertNotNull(validation.get(1).getEntityId());
+        assertNotNull(validation.get(1).getBranchId());
+        assertNotNull(validation.get(1).getIntAccountId());
+        assertNotNull(validation.get(1).getParticipantRoleId());
+        assertNotNull(validation.get(1).getPartyOrderNumber());
+        assertNotNull(validation.get(1).getPersonalDocType());
+        assertNotNull(validation.get(1).getParticipantPersonalId());
+        assertNotNull(validation.get(1).getCustomerRelationshipType());
+        assertNotNull(validation.get(1).getRegistrySituationType());
+        assertNotNull(validation.get(1).getCreationUserId());
+        assertNotNull(validation.get(1).getUserAuditId());
+
+        assertNotNull(validation.get(2).getEntityId());
+        assertNotNull(validation.get(2).getBranchId());
+        assertNotNull(validation.get(2).getIntAccountId());
+        assertNotNull(validation.get(2).getParticipantRoleId());
+        assertNotNull(validation.get(2).getPartyOrderNumber());
+        assertNotNull(validation.get(2).getPersonalDocType());
+        assertNotNull(validation.get(2).getParticipantPersonalId());
+        assertNotNull(validation.get(2).getCustomerRelationshipType());
+        assertNotNull(validation.get(2).getRegistrySituationType());
+        assertNotNull(validation.get(2).getCreationUserId());
+        assertNotNull(validation.get(2).getUserAuditId());
+
+    }
+
+    @Test
     public void createSaveParticipantArguments_OK() {
         when(participantDao.getEntityId()).thenReturn("entityId");
         when(participantDao.getBranchId()).thenReturn("branchId");
@@ -964,7 +1175,7 @@ public class MapperHelperTest {
         identityDocumentsBOs1.add(identityDocumentsBO1);
         customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs1);
 
-        EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
 
         assertNotNull(validation1);
 
@@ -998,7 +1209,8 @@ public class MapperHelperTest {
         geographicGroupsBOs.add(geographicGroupsBO1);
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
         when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("RC");
-        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        responseQueryGetProductById.put("PRODUCT_SHORT_DESC",null);
+        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation2);
 
         customerList.getData().get(0).setGender(null);
@@ -1019,7 +1231,7 @@ public class MapperHelperTest {
         geographicGroupsBOs2.add(geographicGroupsBO2);
         geographicGroupsBOs2.add(geographicGroupsBO3);
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs2);
-        EmisionBO validation3 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        EmisionBO validation3 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation3);
 
         GeographicGroupsBO geographicGroupsBO4 = new GeographicGroupsBO();
@@ -1031,11 +1243,11 @@ public class MapperHelperTest {
         List<GeographicGroupsBO> geographicGroupsBOs4 = new ArrayList<>();
         geographicGroupsBOs4.add(geographicGroupsBO4);
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
-        EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation4);
 
         apxRequest.setHolder(null);
-        EmisionBO validation5 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+        EmisionBO validation5 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation5);
     }
 
@@ -1820,11 +2032,11 @@ public class MapperHelperTest {
 		requiredFieldsEmisionBDResponse.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(),9);
 		apxRequest.setProductId("841");
         apxRequest.setSaleChannelId("PC");
-		apxRequest.getParticipants().get(0).getParticipantType().setId(ConstantsUtil.PARTICIPANT_TYPE_PAYMENT_MANAGER);
+		apxRequest.getParticipants().get(0).getParticipantType().setId(ConstantsUtil.Participant.PAYMENT_MANAGER);
 		ParticipantDTO insured = new ParticipantDTO();
 		insured.setCustomerId("84948543");
 		ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
-		participantTypeDTO.setId(ConstantsUtil.PARTICIPANT_TYPE_INSURED);
+		participantTypeDTO.setId(ConstantsUtil.Participant.INSURED);
 		insured.setParticipantType(participantTypeDTO);
 		IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
 		identityDocumentDTO.setNumber("494830484");
@@ -1845,12 +2057,72 @@ public class MapperHelperTest {
         data.put("CLIENT_LAST_NAME","PARKER|POTTER");
         data.put("USER_EMAIL_PERSONAL_DESC","PETER.PARKER@BBVA.COM");
         data.put("PHONE_ID","909494944");
-        data.put("CUSTOMER_BIRTH_DATE","1927-04-07");
+        data.put("CUSTOMER_BIRTH_DATE","1927-04-07T00:00:00");
         data.put("GENDER_ID","M");
+
+        when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
 
 		AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("VIDADINAMICO", apxRequest, rbvdr201, requiredFieldsEmisionBDResponse,data);
 		assertNotNull(validation);
 		assertEquals(3, validation.getPayload().getPersona().size());
+
+        assertNotNull(validation.getPayload().getPersona().get(0).getApeMaterno());
+        assertNotNull(validation.getPayload().getPersona().get(0).getApePaterno());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNombres());
+        assertNotNull(validation.getPayload().getPersona().get(0).getFechaNacimiento());
+        assertNotNull(validation.getPayload().getPersona().get(0).getSexo());
+        assertNotNull(validation.getPayload().getPersona().get(0).getCelular());
+        assertNotNull(validation.getPayload().getPersona().get(0).getRol());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNroDocumento());
+        assertNotNull(validation.getPayload().getPersona().get(0).getCorreoElectronico());
+        assertNotNull(validation.getPayload().getPersona().get(0).getDireccion());
+        assertNotNull(validation.getPayload().getPersona().get(0).getDistrito());
+        assertNotNull(validation.getPayload().getPersona().get(0).getProvincia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getDepartamento());
+        assertNotNull(validation.getPayload().getPersona().get(0).getUbigeo());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNombreVia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getTipoVia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNumeroVia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getTipoDocumento());
+
+        assertNotNull(validation.getPayload().getPersona().get(1).getApeMaterno());
+        assertNotNull(validation.getPayload().getPersona().get(1).getApePaterno());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNombres());
+        assertNotNull(validation.getPayload().getPersona().get(1).getFechaNacimiento());
+        assertNotNull(validation.getPayload().getPersona().get(1).getSexo());
+        assertNotNull(validation.getPayload().getPersona().get(1).getCelular());
+        assertNotNull(validation.getPayload().getPersona().get(1).getRol());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNroDocumento());
+        assertNotNull(validation.getPayload().getPersona().get(1).getCorreoElectronico());
+        assertNotNull(validation.getPayload().getPersona().get(1).getDireccion());
+        assertNotNull(validation.getPayload().getPersona().get(1).getDistrito());
+        assertNotNull(validation.getPayload().getPersona().get(1).getProvincia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getDepartamento());
+        assertNotNull(validation.getPayload().getPersona().get(1).getUbigeo());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNombreVia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getTipoVia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNumeroVia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getTipoDocumento());
+
+        assertNotNull(validation.getPayload().getPersona().get(2).getApeMaterno());
+        assertNotNull(validation.getPayload().getPersona().get(2).getApePaterno());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNombres());
+        assertNotNull(validation.getPayload().getPersona().get(2).getFechaNacimiento());
+        assertNotNull(validation.getPayload().getPersona().get(2).getSexo());
+        assertNotNull(validation.getPayload().getPersona().get(2).getCelular());
+        assertNotNull(validation.getPayload().getPersona().get(2).getRol());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNroDocumento());
+        assertNotNull(validation.getPayload().getPersona().get(2).getCorreoElectronico());
+        assertNotNull(validation.getPayload().getPersona().get(2).getDireccion());
+        assertNotNull(validation.getPayload().getPersona().get(2).getDistrito());
+        assertNotNull(validation.getPayload().getPersona().get(2).getProvincia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getDepartamento());
+        assertNotNull(validation.getPayload().getPersona().get(2).getUbigeo());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNombreVia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getTipoVia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNumeroVia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getTipoDocumento());
+
 	}
 
     @Test
@@ -1915,4 +2187,5 @@ public class MapperHelperTest {
                 contractDao);
         assertEquals("02", validation2.get(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue()));
     }
+
 }

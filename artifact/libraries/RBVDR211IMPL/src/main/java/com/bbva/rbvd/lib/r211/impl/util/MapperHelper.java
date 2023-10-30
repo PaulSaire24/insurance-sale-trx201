@@ -95,8 +95,10 @@ import com.bbva.rbvd.dto.insrncsale.utils.LifeInsuranceInsuredData;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
-
 import com.bbva.rbvd.lib.r201.RBVDR201;
+
+import com.bbva.rbvd.lib.r211.impl.transform.bean.HolderBean;
+import com.bbva.rbvd.lib.r211.impl.transform.bean.InsrcContractParticipantBean;
 import org.apache.commons.lang3.StringUtils;
 
 import org.joda.time.DateTimeZone;
@@ -105,15 +107,18 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
-import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
@@ -146,17 +151,11 @@ public class MapperHelper {
     private static final String TAG_ENDORSEE = "ENDORSEE";
     private static final String FIELD_SYSTIMESTAMP = "SYSTEM";
     private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
-    private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
-
 
     private static final String GMT_TIME_ZONE = "GMT";
 
-
     private static final String RUC_ID = "R";
 
-    private static final BigDecimal LEGAL_REPRESENTATIVE_ID = new BigDecimal(3);
-
-    private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
     private ApplicationConfigurationService applicationConfigurationService;
 
@@ -207,16 +206,7 @@ public class MapperHelper {
 
         requestAso.setInsuredAmount(insuredAmount);
 
-        HolderASO holder = new HolderASO();
-
-        IdentityDocumentASO identityDocument = new IdentityDocumentASO();
-        DocumentTypeASO documentType = new DocumentTypeASO();
-        documentType.setId(apxRequest.getHolder().getIdentityDocument().getDocumentType().getId());
-        identityDocument.setDocumentType(documentType);
-        identityDocument.setNumber(apxRequest.getHolder().getIdentityDocument().getNumber());
-
-        holder.setIdentityDocument(identityDocument);
-        holder.setId(apxRequest.getHolder().getId());
+        HolderASO holder = HolderBean.getHolderASO(apxRequest);
 
         requestAso.setHolder(holder);
 
@@ -730,32 +720,43 @@ public class MapperHelper {
 
     public List<IsrcContractParticipantDAO> buildIsrcContractParticipants(PolicyDTO requestBody, Map<String, Object> responseQueryRoles, String id) {
         ParticipantDTO participant = requestBody.getParticipants().get(0);
-        ParticipantDTO legarlRepre = requestBody.getParticipants().stream()
-                .filter(p -> TAG_LEGAL_REPRESENTATIVE.equals(p.getParticipantType().getId())).findFirst().orElse(null);
+        ParticipantDTO legalRepre = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),
+                ConstantsUtil.Participant.LEGAL_REPRESENTATIVE);
+        List<Map<String, Object>> rolesFromDB = (List<Map<String, Object>>) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
+        ParticipantDTO insured = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),
+                ConstantsUtil.Participant.INSURED);
 
-        List<Map<String, Object>> roles = (List<Map<String, Object>>) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
-        List<IsrcContractParticipantDAO> listaParticipants = roles.stream()
-                .filter(r -> LEGAL_REPRESENTATIVE_ID.compareTo((BigDecimal) r.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())) != 0 )
-                .map(rol -> createParticipantDao(id, rol, participant, requestBody)).collect(Collectors.toList());
-        if (legarlRepre != null) {
-            Map rolLegal = Collections.singletonMap(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), LEGAL_REPRESENTATIVE_ID);
-            listaParticipants.add(createParticipantDao(id, rolLegal, legarlRepre, requestBody));
+        List<BigDecimal> participantRoles = new ArrayList<>();
+
+        rolesFromDB.forEach(rol -> participantRoles.add((BigDecimal) rol.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())));
+
+        if(legalRepre != null){
+            participantRoles.removeIf(rol -> rol.compareTo(new BigDecimal(ConstantsUtil.Number.TRES)) == 0);
         }
-        return listaParticipants;
-    }
 
-    private IsrcContractParticipantDAO createParticipantDao(String id, Map<String, Object> rol, ParticipantDTO participant, PolicyDTO requestBody) {
-        IsrcContractParticipantDAO participantDao = new IsrcContractParticipantDAO();
-        participantDao.setEntityId(id.substring(0,4));
-        participantDao.setBranchId(id.substring(4, 8));
-        participantDao.setIntAccountId(id.substring(10));
-        participantDao.setParticipantRoleId((BigDecimal) rol.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue()));
-        participantDao.setPersonalDocType(this.applicationConfigurationService.getProperty(participant.getIdentityDocument().getDocumentType().getId()));
-        participantDao.setParticipantPersonalId(participant.getIdentityDocument().getNumber());
-        participantDao.setCustomerId(participant.getCustomerId());
-        participantDao.setCreationUserId(requestBody.getCreationUser());
-        participantDao.setUserAuditId(requestBody.getUserAudit());
-        return participantDao;
+        if(insured != null){
+            participantRoles.removeIf(rol -> rol.compareTo(new BigDecimal(ConstantsUtil.Number.DOS)) == 0);
+        }
+
+        List<IsrcContractParticipantDAO> listParticipants = participantRoles.stream()
+                .map(rol -> InsrcContractParticipantBean.createParticipantDao(id,rol,participant,requestBody,this.applicationConfigurationService))
+                .collect(toList());
+
+        if(legalRepre != null){
+            listParticipants.add(
+                    InsrcContractParticipantBean.createParticipantDao(id,
+                            new BigDecimal(ConstantsUtil.Number.TRES),
+                            legalRepre,requestBody,this.applicationConfigurationService));
+        }
+
+        if(insured != null){
+            listParticipants.add(
+                    InsrcContractParticipantBean.createParticipantDao(id,new BigDecimal(ConstantsUtil.Number.DOS),
+                            insured,requestBody,this.applicationConfigurationService));
+        }
+
+        return listParticipants;
+
     }
 
     public Map<String, Object>[] createSaveParticipantArguments(List<IsrcContractParticipantDAO> participants) {
@@ -802,11 +803,12 @@ public class MapperHelper {
         return arguments;
     }
 
-    public EmisionBO mapRimacEmisionRequest(EmisionBO rimacRequest,PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields, CustomerListASO customerList){
+    public EmisionBO mapRimacEmisionRequest(EmisionBO rimacRequest,PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields,
+                                            Map<String, Object> responseQueryGetProductById,CustomerListASO customerList){
         EmisionBO generalEmisionRimacRequest = new EmisionBO();
         PayloadEmisionBO emisionBO = new PayloadEmisionBO();
         emisionBO.setEmision(rimacRequest.getPayload());
-        emisionBO.getEmision().setProducto((String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue()));
+        emisionBO.getEmision().setProducto(this.getInsuranceBusinessNameFromDB(responseQueryGetProductById));
         generalEmisionRimacRequest.setPayload(emisionBO);
 
         FinanciamientoBO financiamiento = new FinanciamientoBO();
@@ -891,30 +893,26 @@ public class MapperHelper {
             CustomerListASO customerList = rbvdr201.executeGetCustomerInformation(requestBody.getHolder().getId());
 
             requestBody.getParticipants().forEach(participant -> {
-                if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.PARTICIPANT_TYPE_PAYMENT_MANAGER)){
+                if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.Participant.PAYMENT_MANAGER)){
                     PersonaBO paymentPerson = this.getFillFieldsPerson(
                             this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
                     paymentPerson.setRol(ConstantsUtil.ParticipantRol.PAYMENT_MANAGER.getRol());
+                    fillAddress(customerList,paymentPerson,new StringBuilder());
 
                     //Contratante. Si requiere cambios para este participante, agregar propia validacion
                     PersonaBO contractorPerson = this.getFillFieldsPerson(paymentPerson);
                     contractorPerson.setRol(ConstantsUtil.ParticipantRol.CONTRACTOR.getRol());
+                    fillAddress(customerList,contractorPerson,new StringBuilder());
 
                     personasList.add(paymentPerson);
                     personasList.add(contractorPerson);
-                }else if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.PARTICIPANT_TYPE_INSURED)){
+                }else if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.Participant.INSURED)){
                     ParticipantDTO participantDTO = ValidationUtil.filterParticipantByType(
-                            requestBody.getParticipants(),ConstantsUtil.PARTICIPANT_TYPE_INSURED);
+                            requestBody.getParticipants(),ConstantsUtil.Participant.INSURED);
                     PersonaBO insuredPerson = generateBasicDataInsuredParticipant(participantDTO, dataInsured);
+                    fillAddressInsuredParticipant(rbvdr201, customerList, participantDTO, insuredPerson);
 
-                    if(Objects.nonNull(participantDTO.getCustomerId())){
-                        CustomerListASO customerInsured = rbvdr201.executeGetCustomerInformation(participantDTO.getCustomerId());
-                        fillAddress(customerInsured,insuredPerson,new StringBuilder());
-                    }else{
-                        fillAddress(customerList,insuredPerson,new StringBuilder());
-                    }
-
-                    personasList.add(this.getFillFieldsPerson(insuredPerson));
+                    personasList.add(insuredPerson);
                 }
             });
 
@@ -922,6 +920,7 @@ public class MapperHelper {
                 PersonaBO contractorPerson = this.getFillFieldsPerson(
                         this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
                 contractorPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
+                fillAddress(customerList,contractorPerson,new StringBuilder());
                 personasList.add(contractorPerson);
             }
 
@@ -933,17 +932,38 @@ public class MapperHelper {
         return request;
     }
 
+    private void fillAddressInsuredParticipant(RBVDR201 rbvdr201, CustomerListASO customerList, ParticipantDTO participantDTO, PersonaBO insuredPerson) {
+        if(Objects.nonNull(participantDTO.getCustomerId())){
+            CustomerListASO customerInsured = rbvdr201.executeGetCustomerInformation(participantDTO.getCustomerId());
+            fillAddress(customerInsured, insuredPerson,new StringBuilder());
+        }else{
+            fillAddress(customerList, insuredPerson,new StringBuilder());
+        }
+    }
+
     private PersonaBO generateBasicDataInsuredParticipant(ParticipantDTO participantDTO, Map<String, Object> dataInsured) {
         PersonaBO insuredPerson = new PersonaBO();
-        String apePaterno = (String) dataInsured.get(LifeInsuranceInsuredData.FIELD_CLIENT_LAST_NAME);
-        List<String> apellidos = Arrays.asList(apePaterno.split(ConstantsUtil.Delimites.VERTICAL_BAR));
+        String apellidos = (String) dataInsured.get(LifeInsuranceInsuredData.FIELD_CLIENT_LAST_NAME);
+        String apPaterno="";
+        String apMaterno="";
+
+        if(ValidationUtil.validateisNotEmptyOrNull(apellidos)){
+            int index = apellidos.indexOf(ConstantsUtil.Delimeter.VERTICAL_BAR);
+            apPaterno = apellidos.substring(ConstantsUtil.Number.CERO,index);
+            apMaterno = apellidos.substring(index+ConstantsUtil.Number.UNO);
+        }
+
+        String fechaNacimiento = String.valueOf(dataInsured.get(LifeInsuranceInsuredData.FIELD_CUSTOMER_BIRTH_DATE));
+        if(ValidationUtil.validateisNotEmptyOrNull(fechaNacimiento)){
+            fechaNacimiento = fechaNacimiento.substring(ConstantsUtil.Number.CERO,ConstantsUtil.Number.DIEZ);
+        }
 
         insuredPerson.setTipoDocumento(this.applicationConfigurationService.getProperty(participantDTO.getIdentityDocument().getDocumentType().getId()));
         insuredPerson.setNroDocumento(participantDTO.getIdentityDocument().getNumber());
-        insuredPerson.setApePaterno(apellidos.get(0));
-        insuredPerson.setApeMaterno(apellidos.get(1));
+        insuredPerson.setApePaterno(apPaterno);
+        insuredPerson.setApeMaterno(apMaterno);
         insuredPerson.setNombres((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_INSURED_CUSTOMER_NAME));
-        insuredPerson.setFechaNacimiento(String.valueOf(dataInsured.get(LifeInsuranceInsuredData.FIELD_CUSTOMER_BIRTH_DATE)));
+        insuredPerson.setFechaNacimiento(fechaNacimiento);
         insuredPerson.setSexo((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_GENDER_ID));
         insuredPerson.setCorreoElectronico((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_USER_EMAIL_PERSONAL_DESC));
         insuredPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
@@ -1437,6 +1457,13 @@ public class MapperHelper {
             return name;
         }
     }
+
+    public String getInsuranceBusinessNameFromDB(Map<String, Object> responseQueryGetProductById) {
+        return (String) (responseQueryGetProductById.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC) != null
+                ? responseQueryGetProductById.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC)
+                : responseQueryGetProductById.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue()));
+    }
+
 
     private String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder addressExtra){
         boolean viaFull = false;
