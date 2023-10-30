@@ -1167,10 +1167,8 @@ public class MapperHelperTest {
             geographicGroupsBO9.setGeographicGroupType(geographicGroupTypeBO9);
 
             List<GeographicGroupsBO> geographicGroupsBOs3 = new ArrayList<>();
+            geographicGroupsBOs3.add(geographicGroupsBO1);
             geographicGroupsBOs3.add(geographicGroupsBO9);
-            geographicGroupsBOs3.add(geographicGroupsBO4);
-            geographicGroupsBOs3.add(geographicGroupsBO7);
-            geographicGroupsBOs3.add(geographicGroupsBO8);
             geographicGroupsBOs3.add(geographicGroupsExteriorNumber2);
             geographicGroupsBOs3.add(geographicGroupsDepartment1);
             geographicGroupsBOs3.add(geographicGroupsProvince1);
@@ -1202,6 +1200,34 @@ public class MapperHelperTest {
             customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
             EmisionBO validation7 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
             assertNotNull(validation7);
+
+            List<GeographicGroupsBO> geographicGroupsBOs5 = new ArrayList<>();
+            geographicGroupsBOs5.add(geographicGroupsBO1);
+            geographicGroupsBOs5.add(geographicGroupsBO6);
+            geographicGroupsBOs5.add(geographicGroupsBO7);
+            geographicGroupsBOs5.add(geographicGroupsBO8);
+            geographicGroupsBOs5.add(geographicGroupsExteriorNumber2);
+            geographicGroupsBOs5.add(geographicGroupsDepartment1);
+            geographicGroupsBOs5.add(geographicGroupsProvince1);
+            geographicGroupsBOs5.add(geographicGroupsDistrict1);
+            geographicGroupsBOs5.add(geographicGroupsUbigeo1);
+
+            customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs5);
+            EmisionBO validation8 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+            assertNotNull(validation8);
+
+            List<GeographicGroupsBO> geographicGroupsBOs6 = new ArrayList<>();
+            geographicGroupsBOs6.add(geographicGroupsBO1);
+            geographicGroupsBOs6.add(geographicGroupsBO6);
+            geographicGroupsBOs6.add(geographicGroupsExteriorNumber1);
+            geographicGroupsBOs6.add(geographicGroupsDepartment1);
+            geographicGroupsBOs6.add(geographicGroupsProvince1);
+            geographicGroupsBOs6.add(geographicGroupsDistrict1);
+            geographicGroupsBOs6.add(geographicGroupsUbigeo1);
+
+            customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs6);
+            EmisionBO validation9 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+            assertNotNull(validation9);
 
             GeographicGroupsBO geographicGroupsBONull = new GeographicGroupsBO();
             geographicGroupsBONull.setName("xxxxx");
@@ -2064,15 +2090,84 @@ public class MapperHelperTest {
         Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
-        try {
-            AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, customerList, requiredFieldsEmisionBDResponse);
-        } catch (BusinessException e) {
-            assertNotNull(e);
-            assertEquals("RBVD10094935", e.getMessage());
-        }
         AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, customerList, requiredFieldsEmisionBDResponse);
         assertNotNull(validation);
         assertEquals(3, validation.getPayload().getPersona().size());
+    }
+    @Test
+    public void testGenerateRequestAddParticipantsException() {
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+
+        GeographicGroupsBO geographicGroupsBO1 = new GeographicGroupsBO();
+        geographicGroupsBO1.setName("xxxx");
+        GeographicGroupTypeBO geographicGroupTypeBO1 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO1.setId("xxxx");
+        geographicGroupTypeBO1.setName("xxxx");
+        geographicGroupsBO1.setGeographicGroupType(geographicGroupTypeBO1);
+
+        GeographicGroupsBO geographicGroupsBO2 = new GeographicGroupsBO();
+        geographicGroupsBO2.setName("xxxx");
+        GeographicGroupTypeBO geographicGroupTypeBO2 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO2.setId("xxxx");
+        geographicGroupTypeBO2.setName("xxxx");
+        geographicGroupsBO2.setGeographicGroupType(geographicGroupTypeBO2);
+
+        GeographicGroupsBO geographicGroupsDepartment = new GeographicGroupsBO();
+        geographicGroupsDepartment.setName("LIMA");
+        GeographicGroupTypeBO geographicGroupTypeDepartment = new GeographicGroupTypeBO();
+        geographicGroupTypeDepartment.setId("DEPARTMENT");
+        geographicGroupTypeDepartment.setName("DEPARTMENT");
+        geographicGroupsDepartment.setGeographicGroupType(geographicGroupTypeDepartment);
+        geographicGroupsDepartment.setCode("01");
+
+        GeographicGroupsBO geographicGroupsProvince = new GeographicGroupsBO();
+        geographicGroupsProvince.setName("LIMA");
+        GeographicGroupTypeBO geographicGroupTypeProvince = new GeographicGroupTypeBO();
+        geographicGroupTypeProvince.setId("PROVINCE");
+        geographicGroupTypeProvince.setName("PROVINCE");
+        geographicGroupsProvince.setGeographicGroupType(geographicGroupTypeProvince);
+        geographicGroupsProvince.setCode("01");
+
+        GeographicGroupsBO geographicGroupsDistrict = new GeographicGroupsBO();
+        geographicGroupsDistrict.setName("CHORRILLOS");
+        GeographicGroupTypeBO geographicGroupTypeDistrict = new GeographicGroupTypeBO();
+        geographicGroupTypeDistrict.setId("DISTRICT");
+        geographicGroupTypeDistrict.setName("DISTRICT");
+        geographicGroupsDistrict.setGeographicGroupType(geographicGroupTypeDistrict);
+        geographicGroupsDistrict.setCode("009");
+
+        GeographicGroupsBO geographicGroupsExteriorNumber = new GeographicGroupsBO();
+        geographicGroupsExteriorNumber.setName(NO_EXIST);
+        GeographicGroupTypeBO geographicGroupTypeExteriorNumber = new GeographicGroupTypeBO();
+        geographicGroupTypeExteriorNumber.setId("EXTERIOR_NUMBER");
+        geographicGroupTypeExteriorNumber.setName(NO_EXIST);
+        geographicGroupsExteriorNumber.setGeographicGroupType(geographicGroupTypeExteriorNumber);
+
+        GeographicGroupsBO geographicGroupsUbigeo = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupTypeUbigeo = new GeographicGroupTypeBO();
+        geographicGroupTypeUbigeo.setId("UBIGEO");
+        geographicGroupTypeUbigeo.setName("UBIGEO");
+        geographicGroupsUbigeo.setGeographicGroupType(geographicGroupTypeUbigeo);
+        geographicGroupsUbigeo.setCode("0101009");
+
+        List<GeographicGroupsBO> geographicGroupsBOs = new ArrayList<>();
+        geographicGroupsBOs.add(geographicGroupsBO1);
+        geographicGroupsBOs.add(geographicGroupsBO2);
+        geographicGroupsBOs.add(geographicGroupsDepartment);
+        geographicGroupsBOs.add(geographicGroupsProvince);
+        geographicGroupsBOs.add(geographicGroupsDistrict);
+        geographicGroupsBOs.add(geographicGroupsExteriorNumber);
+        geographicGroupsBOs.add(geographicGroupsUbigeo);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
+        try {
+            AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, customerList, requiredFieldsEmisionBDResponse);
+            fail("Se esperaba una BusinessException, pero no se lanzó.");
+        } catch (BusinessException e) {
+            assertNotNull(e);
+        }
     }
 
     @Test
