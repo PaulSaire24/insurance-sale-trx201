@@ -24,7 +24,7 @@ public class ConstantsUtil {
     }
 
 
-    public static final class Delimites{
+    public static final class Delimeter{
         public static final String VERTICAL_BAR = "|";
 
     }

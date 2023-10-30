@@ -97,6 +97,8 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.bbva.rbvd.lib.r201.RBVDR201;
 
+import com.bbva.rbvd.lib.r211.impl.transform.bean.HolderBean;
+import com.bbva.rbvd.lib.r211.impl.transform.bean.InsrcContractParticipantBean;
 import org.apache.commons.lang3.StringUtils;
 
 import org.joda.time.DateTimeZone;
@@ -204,7 +206,7 @@ public class MapperHelper {
 
         requestAso.setInsuredAmount(insuredAmount);
 
-        HolderASO holder = getHolderASO(apxRequest);
+        HolderASO holder = HolderBean.getHolderASO(apxRequest);
 
         requestAso.setHolder(holder);
 
@@ -266,40 +268,6 @@ public class MapperHelper {
         requestAso.setInsuranceCompany(insuranceCompany);
 
         return requestAso;
-    }
-
-    private static HolderASO getHolderASO(PolicyDTO apxRequest) {
-        HolderASO holder = new HolderASO();
-
-        IdentityDocumentASO identityDocument = new IdentityDocumentASO();
-        DocumentTypeASO documentType = new DocumentTypeASO();
-        String customerId;
-        String documentTypeId;
-        String documentNumber;
-
-        ParticipantDTO participantInsured = ValidationUtil.filterParticipantByType(
-                apxRequest.getParticipants(),ConstantsUtil.Participant.INSURED);
-        if(participantInsured != null &&
-                ValidationUtil.validateOtherParticipants(participantInsured,ConstantsUtil.Participant.INSURED)){
-            customerId = Objects.nonNull(participantInsured.getCustomerId())
-                    ? participantInsured.getCustomerId()
-                    : null;
-            documentTypeId = participantInsured.getIdentityDocument().getDocumentType().getId();
-            documentNumber = participantInsured.getIdentityDocument().getNumber();
-        }else{
-            customerId = apxRequest.getHolder().getId();
-            documentTypeId = apxRequest.getHolder().getIdentityDocument().getDocumentType().getId();
-            documentNumber = apxRequest.getHolder().getIdentityDocument().getNumber();
-        }
-
-        documentType.setId(documentTypeId);
-        identityDocument.setDocumentType(documentType);
-        identityDocument.setNumber(documentNumber);
-
-        holder.setIdentityDocument(identityDocument);
-        holder.setId(customerId);
-
-        return holder;
     }
 
     private List<ParticipantASO> getParticipantASO(List<ParticipantDTO> participants) {
@@ -771,35 +739,24 @@ public class MapperHelper {
         }
 
         List<IsrcContractParticipantDAO> listParticipants = participantRoles.stream()
-                .map(rol -> createParticipantDao(id,rol,participant,requestBody))
+                .map(rol -> InsrcContractParticipantBean.createParticipantDao(id,rol,participant,requestBody,this.applicationConfigurationService))
                 .collect(toList());
 
         if(legalRepre != null){
             listParticipants.add(
-                    createParticipantDao(id,new BigDecimal(ConstantsUtil.Number.TRES),legalRepre,requestBody));
+                    InsrcContractParticipantBean.createParticipantDao(id,
+                            new BigDecimal(ConstantsUtil.Number.TRES),
+                            legalRepre,requestBody,this.applicationConfigurationService));
         }
 
         if(insured != null){
             listParticipants.add(
-                    createParticipantDao(id,new BigDecimal(ConstantsUtil.Number.DOS),insured,requestBody));
+                    InsrcContractParticipantBean.createParticipantDao(id,new BigDecimal(ConstantsUtil.Number.DOS),
+                            insured,requestBody,this.applicationConfigurationService));
         }
 
         return listParticipants;
 
-    }
-
-    private IsrcContractParticipantDAO createParticipantDao(String id, BigDecimal rol, ParticipantDTO participant, PolicyDTO requestBody) {
-        IsrcContractParticipantDAO participantDao = new IsrcContractParticipantDAO();
-        participantDao.setEntityId(id.substring(0,4));
-        participantDao.setBranchId(id.substring(4, 8));
-        participantDao.setIntAccountId(id.substring(10));
-        participantDao.setParticipantRoleId(rol);
-        participantDao.setPersonalDocType(this.applicationConfigurationService.getProperty(participant.getIdentityDocument().getDocumentType().getId()));
-        participantDao.setParticipantPersonalId(participant.getIdentityDocument().getNumber());
-        participantDao.setCustomerId(Objects.nonNull(participant.getCustomerId()) ? participant.getCustomerId() : null);
-        participantDao.setCreationUserId(requestBody.getCreationUser());
-        participantDao.setUserAuditId(requestBody.getUserAudit());
-        return participantDao;
     }
 
     public Map<String, Object>[] createSaveParticipantArguments(List<IsrcContractParticipantDAO> participants) {
@@ -991,7 +948,7 @@ public class MapperHelper {
         String apMaterno="";
 
         if(ValidationUtil.validateisNotEmptyOrNull(apellidos)){
-            int index = apellidos.indexOf(ConstantsUtil.Delimites.VERTICAL_BAR);
+            int index = apellidos.indexOf(ConstantsUtil.Delimeter.VERTICAL_BAR);
             apPaterno = apellidos.substring(ConstantsUtil.Number.CERO,index);
             apMaterno = apellidos.substring(index+ConstantsUtil.Number.UNO);
         }
