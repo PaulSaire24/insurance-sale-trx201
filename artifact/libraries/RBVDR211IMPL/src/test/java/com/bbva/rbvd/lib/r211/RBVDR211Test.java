@@ -180,7 +180,7 @@ public class RBVDR211Test {
 		payload.setAgregarPersona(agregarPersona);
 		generalEmisionRequest.setPayload(payload);
 		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(), anyObject())).thenReturn(generalEmisionRequest);
-		when(mapperHelper.generateRimacRequestLife(anyString(),anyString(),anyString(),anyString(),anyString(),anyString())).thenReturn(generalEmisionRequest);
+		when(mapperHelper.generateRimacRequestLife(anyString(),anyString(),anyString(),anyString(),anyString(),anyString(),anyObject())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.getPersonType(anyObject())).thenReturn(PersonTypeEnum.NATURAL);
 
 		when(rbvdr201.executeCypherService(anyObject())).thenReturn("");

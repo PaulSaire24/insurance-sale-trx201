@@ -572,7 +572,9 @@ public class MapperHelper {
             firstReceipt.setPremiumCurrencyExchAmount(BigDecimal.ZERO);
         }
 
-        firstReceipt.setPremiumChargeOperationId(asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
+        firstReceipt.setPremiumChargeOperationId(
+                RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_4.getValue().equals(requestBody.getProductId()) ? null
+                        : asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
         firstReceipt.setCurrencyId(requestBody.getFirstInstallment().getPaymentAmount().getCurrency());
 
         if(requestBody.getFirstInstallment().getIsPaymentRequired()) {
@@ -914,13 +916,23 @@ public class MapperHelper {
         return request;
     }
 
-    public EmisionBO generateRimacRequestLife(String insuranceBusinessName, String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber){
+    public EmisionBO generateRimacRequestLife(String insuranceBusinessName, String dataId, String saleOffice,String paymentType,String paymentNumber, String subscriptionMovementCode, PolicyDTO requestBody){
         EmisionBO request = new EmisionBO();
         PayloadEmisionBO payload = new PayloadEmisionBO();
 
         payload.setProducto(insuranceBusinessName);
-        payload.setDatosParticulares(getDatoParticularBOLifeEasyYes(channelCode, dataId, saleOffice,paymentType,paymentNumber));
+        payload.setDatosParticulares(getDatoParticularBOLifeEasyYes(requestBody.getSaleChannelId(), dataId, saleOffice,paymentType,paymentNumber));
 
+        FacturacionBO factura = new FacturacionBO();
+        if(requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_4.getValue())){
+            String cuentaAbonoARimac = "00110130270105070516";
+            factura.setNroCuenta(cuentaAbonoARimac.substring(0,10).concat("********").concat(cuentaAbonoARimac.substring(18)));
+            factura.setNroOperacion(subscriptionMovementCode);
+            factura.setMontoPrima(requestBody.getTotalAmount().getAmount());
+            factura.setIgv(0.00);
+            factura.setMoneda(requestBody.getTotalAmount().getCurrency());
+        }
+        payload.setFactura(factura);
         request.setPayload(payload);
 
         return request;

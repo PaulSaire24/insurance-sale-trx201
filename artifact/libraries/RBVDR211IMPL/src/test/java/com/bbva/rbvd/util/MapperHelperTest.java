@@ -1802,8 +1802,8 @@ public class MapperHelperTest {
 
     @Test
     public void testGenerateRimacRequestLife(){
-        EmisionBO validation = this.mapperHelper.generateRimacRequestLife("EASYYES", apxRequest.getSaleChannelId(),
-                asoResponse.getData().getId(), apxRequest.getBank().getBranch().getId(),"CUENTA","***6997");
+        EmisionBO validation = this.mapperHelper.generateRimacRequestLife("EASYYES",
+                asoResponse.getData().getId(), apxRequest.getBank().getBranch().getId(),"CUENTA","***6997", "nroMovAbonoRimac", apxRequest);
         assertNotNull(validation);
         assertNotNull(validation.getPayload().getProducto());
         assertNotNull(validation.getPayload().getDatosParticulares());
@@ -1813,6 +1813,20 @@ public class MapperHelperTest {
         assertEquals(apxRequest.getBank().getBranch().getId(), validation.getPayload().getDatosParticulares().get(2).getValor());
         assertEquals("CUENTA", validation.getPayload().getDatosParticulares().get(3).getValor());
         assertEquals("***6997", validation.getPayload().getDatosParticulares().get(4).getValor());
+
+        //Life Investment Case
+        apxRequest.setProductId("845");
+        EmisionBO validation2 = this.mapperHelper.generateRimacRequestLife("EASYYES",
+        asoResponse.getData().getId(), apxRequest.getBank().getBranch().getId(),"CUENTA","***6997", "nroMovAbonoRimac", apxRequest);
+        assertNotNull(validation2);
+        assertNotNull(validation2.getPayload().getProducto());
+        assertNotNull(validation2.getPayload().getDatosParticulares());
+        assertEquals(5, validation2.getPayload().getDatosParticulares().size());
+        assertEquals(apxRequest.getSaleChannelId(), validation2.getPayload().getDatosParticulares().get(0).getValor());
+        assertEquals(asoResponse.getData().getId(), validation2.getPayload().getDatosParticulares().get(1).getValor());
+        assertEquals(apxRequest.getBank().getBranch().getId(), validation2.getPayload().getDatosParticulares().get(2).getValor());
+        assertEquals("CUENTA", validation2.getPayload().getDatosParticulares().get(3).getValor());
+        assertEquals("***6997", validation2.getPayload().getDatosParticulares().get(4).getValor());
     }
 
     @Test
