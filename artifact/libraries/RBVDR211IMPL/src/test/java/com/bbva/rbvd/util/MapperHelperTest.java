@@ -956,6 +956,7 @@ public class MapperHelperTest {
             identityDocumentsBO1.setDocumentNumber("75485245");
             List<IdentityDocumentsBO> identityDocumentsBOs1 = new ArrayList<>();
             identityDocumentsBOs1.add(identityDocumentsBO1);
+            customerList.getData().get(0).setSecondLastName("An");
             customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs1);
             EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
             when(filledAddress).thenReturn("JR. UNION 233, URB UNION ");
@@ -972,7 +973,7 @@ public class MapperHelperTest {
             GenderBO gender = new GenderBO();
             gender.setId("FEMALE");
             customerList.getData().get(0).setGender(gender);
-
+            customerList.getData().get(0).setSecondLastName("S");
             GeographicGroupsBO geographicGroupsBO1 = new GeographicGroupsBO();
             geographicGroupsBO1.setName("CIRCUNVALACION BRENE");
             GeographicGroupTypeBO geographicGroupTypeBO1 = new GeographicGroupTypeBO();
@@ -1274,7 +1275,7 @@ public class MapperHelperTest {
             geographicGroupsAddress.add(geographicGroupBlock);
             geographicGroupsAddress.add(geographicGroupLot);
             mapperHelper.fillAddressAditional(geographicGroupsAddress, stringAddress);
-            assertEquals("MZ 10 LT 2", stringAddress.toString());
+            assertEquals("10 2", stringAddress.toString());
 
             stringAddress.setLength(0);
             geographicGroupsAddress.clear();
@@ -1285,7 +1286,7 @@ public class MapperHelperTest {
             geographicGroupBlock2.setName("23");
             geographicGroupsAddress.add(geographicGroupBlock2);
             mapperHelper.fillAddressAditional(geographicGroupsAddress, stringAddress);
-            assertEquals("MZ 23", stringAddress.toString());
+            assertEquals("23", stringAddress.toString());
 
             stringAddress.setLength(0);
             geographicGroupsAddress.clear();
@@ -1296,7 +1297,7 @@ public class MapperHelperTest {
             geographicGroupLot2.setName("52");
             geographicGroupsAddress.add(geographicGroupLot2);
             mapperHelper.fillAddressAditional(geographicGroupsAddress, stringAddress);
-            assertEquals("LT 52", stringAddress.toString());
+            assertEquals("52", stringAddress.toString());
 
             stringAddress.setLength(0);
             geographicGroupsAddress.clear();
