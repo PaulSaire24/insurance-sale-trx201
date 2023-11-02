@@ -5,6 +5,7 @@ import com.bbva.elara.configuration.manager.application.ApplicationConfiguration
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 
+import com.bbva.pisd.dto.insurance.bo.CommonBO;
 import com.bbva.pisd.dto.insurance.bo.GeographicGroupsBO;
 import com.bbva.pisd.dto.insurance.bo.LocationBO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
@@ -110,25 +111,24 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 
-import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.*;
+
 
 public class MapperHelper {
     private static final String EMAIL_VALUE = "EMAIL";
@@ -162,15 +162,13 @@ public class MapperHelper {
 
     private static final String RUC_ID = "R";
 
-    private static final BigDecimal LEGAL_REPRESENTATIVE_ID = new BigDecimal(3);
     private static final String SIN_ESPECIFICAR = "N/A";
     private static final String NO_EXIST = "NotExist";
 
-    private final SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
     private ApplicationConfigurationService applicationConfigurationService;
 
-    private String currentDate;
+    private final String currentDate;
 
     public MapperHelper() {
         this.currentDate = generateCorrectDateFormat(new LocalDate());
@@ -751,7 +749,7 @@ public class MapperHelper {
 
         List<IsrcContractParticipantDAO> listParticipants = participantRoles.stream()
                 .map(rol -> InsrcContractParticipantBean.createParticipantDao(id,rol,participant,requestBody,this.applicationConfigurationService))
-                .collect(toList());
+                .collect(Collectors.toList());
 
         if(legalRepre != null){
             listParticipants.add(
@@ -843,9 +841,7 @@ public class MapperHelper {
         StringBuilder stringAddress  = new StringBuilder();
 
         String filledAddress = fillAddress(customerList, persona, stringAddress);
-        if (isNull(filledAddress)) {
-            throw new BusinessException("RBVD10094935", false,"Revisar Datos de Direccion");
-        }
+        validateIfAddressIsNull(filledAddress);
 
         constructListPersons(persona, personasList);
 
@@ -854,6 +850,12 @@ public class MapperHelper {
 
         generalEmisionRimacRequest.getPayload().setAgregarPersona(agregarPersonaBO);
         return generalEmisionRimacRequest;
+    }
+
+    public String getInsuranceBusinessNameFromDB(Map<String, Object> responseQueryGetProductById) {
+        return (String) (responseQueryGetProductById.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC) != null
+                ? responseQueryGetProductById.get(ConstantsUtil.FIELD_PRODUCT_SHORT_DESC)
+                : responseQueryGetProductById.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue()));
     }
 
     private void constructListPersons(PersonaBO persona, List<PersonaBO> personasList) {
@@ -900,20 +902,95 @@ public class MapperHelper {
         PayloadAgregarTerceroBO payload = new PayloadAgregarTerceroBO();
         AgregarTerceroBO request = new AgregarTerceroBO();
         List<PersonaBO> personasList = new ArrayList<>();
-        StringBuilder stringAddress  = new StringBuilder();
 
         payload.setProducto(businessName);
-        this.constructListPersons(this.constructPerson(requestBody,customerList.getData().get(0),responseQueryGetRequiredFields),personasList);
-        personasList.stream().forEach(persona ->{
-            String filledAddress = fillAddress(customerList, persona, stringAddress);
-            if (isNull(filledAddress)) {
-                throw new BusinessException("RBVD10094935", false,"Revisar Datos de Direccion");
-            }
-        });
-        payload.setPersona(personasList);
 
+        if(!CollectionUtils.isEmpty(requestBody.getParticipants())){
+            CustomerListASO customerList = rbvdr201.executeGetCustomerInformation(requestBody.getHolder().getId());
+
+            requestBody.getParticipants().forEach(participant -> {
+                if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.Participant.PAYMENT_MANAGER)){
+                    PersonaBO paymentPerson = this.getFillFieldsPerson(
+                            this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
+                    paymentPerson.setRol(ConstantsUtil.ParticipantRol.PAYMENT_MANAGER.getRol());
+                    validateIfAddressIsNull(fillAddress(customerList,paymentPerson,new StringBuilder()));
+
+                    //Contratante. Si requiere cambios para este participante, agregar propia validacion
+                    PersonaBO contractorPerson = this.getFillFieldsPerson(paymentPerson);
+                    contractorPerson.setRol(ConstantsUtil.ParticipantRol.CONTRACTOR.getRol());
+                    validateIfAddressIsNull(fillAddress(customerList,contractorPerson,new StringBuilder()));
+
+                    personasList.add(paymentPerson);
+                    personasList.add(contractorPerson);
+
+                }else if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.Participant.INSURED)){
+                    ParticipantDTO participantDTO = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.INSURED);
+                    PersonaBO insuredPerson = generateBasicDataInsuredParticipant(participantDTO, dataInsured);
+                    fillAddressInsuredParticipant(rbvdr201, customerList, participantDTO, insuredPerson);
+
+                    personasList.add(insuredPerson);
+                }
+            });
+
+            if(personasList.size() != ConstantsUtil.Number.TRES){
+                PersonaBO contractorPerson = this.getFillFieldsPerson(
+                        this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
+                contractorPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
+                validateIfAddressIsNull(fillAddress(customerList,contractorPerson,new StringBuilder()));
+                personasList.add(contractorPerson);
+            }
+
+        }
+
+        payload.setPersona(personasList);
         request.setPayload(payload);
         return request;
+    }
+
+    private void fillAddressInsuredParticipant(RBVDR201 rbvdr201, CustomerListASO customerList, ParticipantDTO participantDTO, PersonaBO insuredPerson) {
+        if(Objects.nonNull(participantDTO.getCustomerId())){
+            CustomerListASO customerInsured = rbvdr201.executeGetCustomerInformation(participantDTO.getCustomerId());
+            validateIfAddressIsNull(fillAddress(customerInsured, insuredPerson,new StringBuilder()));
+        }else{
+            validateIfAddressIsNull(fillAddress(customerList, insuredPerson,new StringBuilder()));
+        }
+    }
+
+    private PersonaBO generateBasicDataInsuredParticipant(ParticipantDTO participantDTO, Map<String, Object> dataInsured) {
+        PersonaBO insuredPerson = new PersonaBO();
+        String apellidos = (String) dataInsured.get(LifeInsuranceInsuredData.FIELD_CLIENT_LAST_NAME);
+        String apPaterno="";
+        String apMaterno="";
+
+        if(ValidationUtil.validateisNotEmptyOrNull(apellidos)){
+            int index = apellidos.indexOf(ConstantsUtil.Delimeter.VERTICAL_BAR);
+            apPaterno = apellidos.substring(ConstantsUtil.Number.CERO,index);
+            apMaterno = apellidos.substring(index+ConstantsUtil.Number.UNO);
+        }
+
+        String fechaNacimiento = String.valueOf(dataInsured.get(LifeInsuranceInsuredData.FIELD_CUSTOMER_BIRTH_DATE));
+        if(ValidationUtil.validateisNotEmptyOrNull(fechaNacimiento)){
+            fechaNacimiento = fechaNacimiento.substring(ConstantsUtil.Number.CERO,ConstantsUtil.Number.DIEZ);
+        }
+
+        insuredPerson.setTipoDocumento(this.applicationConfigurationService.getProperty(participantDTO.getIdentityDocument().getDocumentType().getId()));
+        insuredPerson.setNroDocumento(participantDTO.getIdentityDocument().getNumber());
+        insuredPerson.setApePaterno(apPaterno);
+        insuredPerson.setApeMaterno(apMaterno);
+        insuredPerson.setNombres((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_INSURED_CUSTOMER_NAME));
+        insuredPerson.setFechaNacimiento(String.valueOf(dataInsured.get(LifeInsuranceInsuredData.FIELD_CUSTOMER_BIRTH_DATE)));
+        insuredPerson.setFechaNacimiento(fechaNacimiento);
+        insuredPerson.setSexo((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_GENDER_ID));
+        insuredPerson.setCorreoElectronico((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_USER_EMAIL_PERSONAL_DESC));
+        insuredPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
+        insuredPerson.setCelular((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_PHONE_ID));
+        return insuredPerson;
+    }
+
+    private static void validateIfAddressIsNull(String filledAddress) {
+        if (isNull(filledAddress)) {
+            throw new BusinessException("RBVD10094935", false,"Revisar Datos de Direccion");
+        }
     }
 
     public EmisionBO generateRimacRequestLife(String insuranceBusinessName, String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber){
@@ -1189,7 +1266,7 @@ public class MapperHelper {
         holder.setIdentityDocument(identityDocument);
 
         List<ContactDetailDTO> contactDetailsForHolder = policy.getHolder().getContactDetails().
-                stream().map(this::createContactDetailForHolder).collect(toList());
+                stream().map(this::createContactDetailForHolder).collect(Collectors.toList());
 
         holder.setContactDetails(contactDetailsForHolder);
 
@@ -1253,7 +1330,7 @@ public class MapperHelper {
             inspection.setIsRequired(policy.getInspection().getIsRequired());
             inspection.setFullName(policy.getInspection().getFullName());
             List<ContactDetailDTO> contactDetailsForInspection = policy.getInspection().getContactDetails().
-                    stream().map(this::createContactDetailForInspection).collect(toList());
+                    stream().map(this::createContactDetailForInspection).collect(Collectors.toList());
             inspection.setContactDetails(contactDetailsForInspection);
         }
         createdInsurance.setInspection(inspection);
@@ -1398,13 +1475,13 @@ public class MapperHelper {
 
         List<GeographicGroupsBO> geographicGroups = customerLocation.getGeographicGroups().stream()
                 .filter(element -> !this.filterExceptionAddress(element.getGeographicGroupType().getId()))
-                .collect(toList());
+                .collect(Collectors.toList());
 
         fillAddressUbigeo(geographicGroups, persona);
 
         List<GeographicGroupsBO> geographicGroupsAddress = geographicGroups.stream()
                 .filter(element -> !this.filterUbicationCode(element.getGeographicGroupType().getId()))
-                .collect(toList());
+                .collect(Collectors.toList());
 
         String addressViaList = fillAddressViaList(geographicGroupsAddress, persona);
         String addressGroupList = fillAddressGroupList(geographicGroupsAddress, addressViaList, persona);
@@ -1413,7 +1490,7 @@ public class MapperHelper {
             return null;
         }
 
-        String addressNumberVia = fillAddressNumberVia(geographicGroupsAddress, addressViaList, persona);
+        String addressNumberVia = fillAddressNumberVia(geographicGroupsAddress, persona);
 
         String fullNameOther = fillAddressOther(geographicGroupsAddress, stringAddress);
 
@@ -1421,11 +1498,10 @@ public class MapperHelper {
             fillAddressAditional(geographicGroupsAddress, stringAddress);
         }
 
-        String directionForm = getFullDirectionFrom(addressViaList, addressGroupList, addressNumberVia, stringAddress, persona);
-
-        return directionForm;
+        return getFullDirectionFrom(addressViaList, addressGroupList, addressNumberVia, stringAddress, persona);
 
     }
+
     private void fillAddressUbigeo(final List<GeographicGroupsBO> geographicGroups, final PersonaBO persona) {
         String department = "";
         String province = "";
@@ -1453,14 +1529,17 @@ public class MapperHelper {
         persona.setDistrito(district);
         persona.setUbigeo(ubigeo);
     }
+
     private boolean filterExceptionAddress(final String geographicGroupTypeId) {
         Stream<String> ubicationAddress = Stream.of("UNCATEGORIZED", "NOT_PROVIDED");
         return ubicationAddress.anyMatch(element -> element.equals(geographicGroupTypeId));
     }
+
     private boolean filterUbicationCode(final String geographicGroupTypeId) {
         Stream<String> ubicationCode = Stream.of("DEPARTMENT", "PROVINCE", "DISTRICT");
         return ubicationCode.anyMatch(element -> element.equalsIgnoreCase(geographicGroupTypeId));
     }
+
     private String fillAddressViaList(List<GeographicGroupsBO> geographicGroupsAddress, PersonaBO persona) {
 
         String nombreDir1 = null;
@@ -1486,10 +1565,12 @@ public class MapperHelper {
         return nombreDir1;
 
     }
+
     private boolean filterViaType(final String geographicGroupTyeId) {
         Map<String, String> mapTypeListDir1 = this.tipeListDir1();
         return mapTypeListDir1.entrySet().stream().anyMatch(element -> element.getKey().equals(geographicGroupTyeId));
     }
+
     private String getViaType(final String geographicGroupTypeId) {
         Map<String, String> mapTypeListDir1 = this.tipeListDir1();
         return mapTypeListDir1.entrySet().stream()
@@ -1498,6 +1579,7 @@ public class MapperHelper {
                 .map(Map.Entry::getValue)
                 .orElse(null);
     }
+
     private String fillAddressGroupList(List<GeographicGroupsBO> geographicGroupsAddress, String addressViaList, PersonaBO persona) {
 
         String nombreDir2 = null;
@@ -1526,11 +1608,12 @@ public class MapperHelper {
         return nombreDir2;
 
     }
-    private String fillAddressNumberVia(List<GeographicGroupsBO> geographicGroupsAddress, String addressViaList, PersonaBO persona) {
+
+    private String fillAddressNumberVia(List<GeographicGroupsBO> geographicGroupsAddress, PersonaBO persona) {
 
         String numberVia = geographicGroupsAddress.stream()
                 .filter(geographicGroupsBO -> geographicGroupsBO.getGeographicGroupType().getId().equalsIgnoreCase("EXTERIOR_NUMBER")).findAny()
-                .map(geographicGroupsBO -> geographicGroupsBO.getName()).orElse(NO_EXIST);
+                .map(CommonBO::getName).orElse(NO_EXIST);
 
         if(!NO_EXIST.equals(numberVia)) {
             persona.setNumeroVia(numberVia);
@@ -1541,10 +1624,12 @@ public class MapperHelper {
         return numberVia;
 
     }
+
     private boolean filterGroupType(final String geographicGroupTyeId) {
         Map<String, String> mapTypeListDir2 = this.tipeListDir2();
         return mapTypeListDir2.entrySet().stream().anyMatch(element -> element.getKey().equals(geographicGroupTyeId));
     }
+
     private String getGroupType(final String geographicGroupTyeId) {
         Map<String, String> mapTypeListDir2 = this.tipeListDir2();
         return mapTypeListDir2.entrySet().stream()
@@ -1553,6 +1638,7 @@ public class MapperHelper {
                 .map(Map.Entry::getValue)
                 .orElse(null);
     }
+
     public String fillAddressOther(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
 
         String typeOther = "";
@@ -1574,10 +1660,12 @@ public class MapperHelper {
 
         return addressOther;
     }
+
     private boolean filterAddressOther(final String geographicGroupTyeId) {
         Map<String, String> addressOther = this.tipeListOther();
         return addressOther.entrySet().stream().anyMatch(element -> element.getKey().equals(geographicGroupTyeId));
     }
+
     private String getTypeOther(final String geographicGroupTypeId) {
         Map<String, String> mapTypeTypeOther = this.tipeListOther();
         return mapTypeTypeOther.entrySet().stream()
@@ -1586,6 +1674,7 @@ public class MapperHelper {
                 .map(Map.Entry::getValue)
                 .orElse(null);
     }
+
     public void fillAddressAditional(List<GeographicGroupsBO> geographicGroupsAddress, StringBuilder stringAddress) {
         String nameManzana = "";
         String nameLote = "";
@@ -1612,16 +1701,19 @@ public class MapperHelper {
             }
         }
     }
+
     private void appendToAddress(StringBuilder stringAddress, String toAppend) {
         if (stringAddress.length() > 0 && !stringAddress.toString().endsWith(" ")) {
             stringAddress.append(" ");
         }
         stringAddress.append(toAppend);
     }
+
     private boolean  filterAddressAditional (final String geographicGroupTyeId){
         Stream<String> aditionalCode = Stream.of("BLOCK","LOT");
         return aditionalCode.anyMatch(element -> element.equalsIgnoreCase(geographicGroupTyeId));
     }
+
     private String getFullDirectionFrom(String addressViaList, String addressGroupList, String addressNumberVia, StringBuilder stringAddress, PersonaBO persona) {
 
         String directionForm = null;
@@ -1661,6 +1753,7 @@ public class MapperHelper {
         return directionForm;
 
     }
+
     private Map<String, String> tipeListDir1() {
 
         Map<String, String> tipeListDir1Map = new HashMap<>();
@@ -1686,6 +1779,7 @@ public class MapperHelper {
         return tipeListDir1Map;
 
     }
+
     private Map<String, String> tipeListDir2() {
 
         Map<String, String> tipeListDir2Map = new HashMap<>();
@@ -1710,6 +1804,7 @@ public class MapperHelper {
         return tipeListDir2Map;
 
     }
+
     private Map<String, String> tipeListOther() {
 
         Map<String, String> tipeListOther = new HashMap<>();
@@ -1725,9 +1820,11 @@ public class MapperHelper {
         return tipeListOther;
 
     }
+
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
         this.applicationConfigurationService = applicationConfigurationService;
     }
+
     public Map<String,Object> createSaveInsuranceContractDetailsArguments( PolicyDTO requestBody,RelatedContractDTO relatedContractDTO, InsuranceContractDAO contractDao){
         Map<String, Object> arguments = new HashMap<>();
         arguments.put(RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(),contractDao.getEntityId());
