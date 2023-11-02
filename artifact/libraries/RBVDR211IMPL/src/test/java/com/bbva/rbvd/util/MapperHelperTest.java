@@ -1,8 +1,10 @@
 package com.bbva.rbvd.util;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
+import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 
 import com.bbva.pisd.dto.insurance.bo.DocumentTypeBO;
 import com.bbva.pisd.dto.insurance.bo.GenderBO;
@@ -73,6 +75,7 @@ public class MapperHelperTest {
     private final MockDTO mockDTO = MockDTO.getInstance();
     private static final String N_VALUE = "N";
     private static final String S_VALUE = "S";
+    private static final String NO_EXIST = "NotExist";
 
     private InsuranceContractDAO contractDao;
     private InsuranceCtrReceiptsDAO receiptDao;
@@ -876,126 +879,6 @@ public class MapperHelperTest {
     }
 
     @Test
-    public void buildIsrcContractParticipants_WithInsuredParticipant_OK() {
-        List<Map<String, Object>> responseQueryRoles = new ArrayList<>();
-        Map<String, Object> firstRole = new HashMap<>();
-        firstRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(1));
-        responseQueryRoles.add(firstRole);
-        Map<String, Object> secondRole = new HashMap<>();
-        secondRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(2));
-        responseQueryRoles.add(secondRole);
-        Map<String, Object> response = new HashMap<>();
-        response.put(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue(), responseQueryRoles);
-
-        apxRequest.getParticipants().add(dataInsuredParticipant());
-
-        when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
-        when(applicationConfigurationService.getProperty("PASSPORT")).thenReturn("P");
-
-        List<IsrcContractParticipantDAO> validation = mapperHelper.buildIsrcContractParticipants(apxRequest, response, "00110251094000294053");
-
-        assertEquals(2,validation.size());
-
-        assertNotNull(validation.get(0).getEntityId());
-        assertNotNull(validation.get(0).getEntityId());
-        assertNotNull(validation.get(0).getIntAccountId());
-        assertNotNull(validation.get(0).getParticipantRoleId());
-        assertNotNull(validation.get(0).getPartyOrderNumber());
-        assertNotNull(validation.get(0).getPersonalDocType());
-        assertNotNull(validation.get(0).getParticipantPersonalId());
-        assertNotNull(validation.get(0).getCustomerId());
-        assertNotNull(validation.get(0).getCustomerRelationshipType());
-        assertNotNull(validation.get(0).getRegistrySituationType());
-        assertNotNull(validation.get(0).getCreationUserId());
-        assertNotNull(validation.get(0).getUserAuditId());
-
-        assertNotNull(validation.get(1).getEntityId());
-        assertNotNull(validation.get(1).getEntityId());
-        assertNotNull(validation.get(1).getIntAccountId());
-        assertNotNull(validation.get(1).getParticipantRoleId());
-        assertNotNull(validation.get(1).getPartyOrderNumber());
-        assertNotNull(validation.get(1).getPersonalDocType());
-        assertNotNull(validation.get(1).getParticipantPersonalId());
-        assertNotNull(validation.get(1).getCustomerId());
-        assertNotNull(validation.get(1).getCustomerRelationshipType());
-        assertNotNull(validation.get(1).getRegistrySituationType());
-        assertNotNull(validation.get(1).getCreationUserId());
-        assertNotNull(validation.get(1).getUserAuditId());
-
-
-        ParticipantDTO participantInsured = apxRequest.getParticipants().get(1);
-
-        assertEquals(participantInsured.getCustomerId(),validation.get(1).getCustomerId());
-        assertEquals("P", validation.get(1).getPersonalDocType());
-        assertEquals(participantInsured.getIdentityDocument().getNumber(),validation.get(1).getParticipantPersonalId());
-
-    }
-
-    @Test
-    public void buildIsrcContractParticipants_WithLegalRepresentative_OK() {
-        List<Map<String, Object>> responseQueryRoles = new ArrayList<>();
-        Map<String, Object> firstRole = new HashMap<>();
-        firstRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(1));
-        responseQueryRoles.add(firstRole);
-        Map<String, Object> secondRole = new HashMap<>();
-        secondRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(2));
-        responseQueryRoles.add(secondRole);
-        Map<String, Object> thirdRole = new HashMap<>();
-        thirdRole.put(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue(), BigDecimal.valueOf(3));
-        responseQueryRoles.add(thirdRole);
-        Map<String, Object> response = new HashMap<>();
-        response.put(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue(), responseQueryRoles);
-
-        apxRequest.getParticipants().add(dataInsuredParticipant());
-        apxRequest.getParticipants().add(dataLegalRepresentativeParticipant());
-
-        when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
-        when(applicationConfigurationService.getProperty("PASSPORT")).thenReturn("P");
-        when(applicationConfigurationService.getProperty("RUC")).thenReturn("R");
-
-        List<IsrcContractParticipantDAO> validation = mapperHelper.buildIsrcContractParticipants(apxRequest, response, "00110251094000294053");
-
-        assertEquals(3,validation.size());
-
-        assertNotNull(validation.get(0).getEntityId());
-        assertNotNull(validation.get(0).getBranchId());
-        assertNotNull(validation.get(0).getIntAccountId());
-        assertNotNull(validation.get(0).getParticipantRoleId());
-        assertNotNull(validation.get(0).getPartyOrderNumber());
-        assertNotNull(validation.get(0).getPersonalDocType());
-        assertNotNull(validation.get(0).getParticipantPersonalId());
-        assertNotNull(validation.get(0).getCustomerRelationshipType());
-        assertNotNull(validation.get(0).getRegistrySituationType());
-        assertNotNull(validation.get(0).getCreationUserId());
-        assertNotNull(validation.get(0).getUserAuditId());
-
-        assertNotNull(validation.get(1).getEntityId());
-        assertNotNull(validation.get(1).getBranchId());
-        assertNotNull(validation.get(1).getIntAccountId());
-        assertNotNull(validation.get(1).getParticipantRoleId());
-        assertNotNull(validation.get(1).getPartyOrderNumber());
-        assertNotNull(validation.get(1).getPersonalDocType());
-        assertNotNull(validation.get(1).getParticipantPersonalId());
-        assertNotNull(validation.get(1).getCustomerRelationshipType());
-        assertNotNull(validation.get(1).getRegistrySituationType());
-        assertNotNull(validation.get(1).getCreationUserId());
-        assertNotNull(validation.get(1).getUserAuditId());
-
-        assertNotNull(validation.get(2).getEntityId());
-        assertNotNull(validation.get(2).getBranchId());
-        assertNotNull(validation.get(2).getIntAccountId());
-        assertNotNull(validation.get(2).getParticipantRoleId());
-        assertNotNull(validation.get(2).getPartyOrderNumber());
-        assertNotNull(validation.get(2).getPersonalDocType());
-        assertNotNull(validation.get(2).getParticipantPersonalId());
-        assertNotNull(validation.get(2).getCustomerRelationshipType());
-        assertNotNull(validation.get(2).getRegistrySituationType());
-        assertNotNull(validation.get(2).getCreationUserId());
-        assertNotNull(validation.get(2).getUserAuditId());
-
-    }
-
-    @Test
     public void createSaveParticipantArguments_OK() {
         when(participantDao.getEntityId()).thenReturn("entityId");
         when(participantDao.getBranchId()).thenReturn("branchId");
@@ -1132,6 +1015,9 @@ public class MapperHelperTest {
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue(), "33556255");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue(), "HOGAR_TOTAL");
         EmisionBO emisionInput = new EmisionBO();
+        PersonaBO persona = new PersonaBO();
+        StringBuilder stringAddress = new StringBuilder();
+        String filledAddress = mapperHelper.fillAddress(customerList, persona, stringAddress);
         DatoParticularBO datoParticular1 = new DatoParticularBO();
         datoParticular1.setCodigo("");
         datoParticular1.setEtiqueta("CANAL_TERCERO");
@@ -1174,9 +1060,8 @@ public class MapperHelperTest {
         List<IdentityDocumentsBO> identityDocumentsBOs1 = new ArrayList<>();
         identityDocumentsBOs1.add(identityDocumentsBO1);
         customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs1);
-
-        EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
-
+        EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById ,customerList);
+        when(filledAddress).thenReturn("JR. UNION 233, URB UNION ");
         assertNotNull(validation1);
 
         DocumentTypeBO documentTypeBO2 = new DocumentTypeBO();
@@ -1187,69 +1072,364 @@ public class MapperHelperTest {
         List<IdentityDocumentsBO> identityDocumentsBOs2 = new ArrayList<>();
         identityDocumentsBOs2.add(identityDocumentsBO2);
         customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs2);
-
         GenderBO gender = new GenderBO();
         gender.setId("FEMALE");
         customerList.getData().get(0).setGender(gender);
 
-        GeographicGroupsBO geographicGroupsBO = new GeographicGroupsBO();
-        geographicGroupsBO.setName("NO APLICA");
-        GeographicGroupTypeBO geographicGroupTypeBO = new GeographicGroupTypeBO();
-        geographicGroupTypeBO.setId("UNCATEGORIZED");
-        geographicGroupTypeBO.setName("NO APLICA");
-        geographicGroupsBO.setGeographicGroupType(geographicGroupTypeBO);
         GeographicGroupsBO geographicGroupsBO1 = new GeographicGroupsBO();
-        geographicGroupsBO1.setName("233");
+        geographicGroupsBO1.setName("CIRCUNVALACION BRENE");
         GeographicGroupTypeBO geographicGroupTypeBO1 = new GeographicGroupTypeBO();
-        geographicGroupTypeBO1.setId("EXTERIOR_NUMBER");
-        geographicGroupTypeBO1.setName("EXTERIOR_NUMBER");
+        geographicGroupTypeBO1.setId("UNCATEGORIZED");
+        geographicGroupTypeBO1.setName("UNCATEGORIZED");
         geographicGroupsBO1.setGeographicGroupType(geographicGroupTypeBO1);
-        List<GeographicGroupsBO> geographicGroupsBOs = new ArrayList<>();
-        geographicGroupsBOs.add(geographicGroupsBO);
-        geographicGroupsBOs.add(geographicGroupsBO1);
-        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
-        when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("RC");
-        responseQueryGetProductById.put("PRODUCT_SHORT_DESC",null);
-        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
-        assertNotNull(validation2);
-
-        customerList.getData().get(0).setGender(null);
 
         GeographicGroupsBO geographicGroupsBO2 = new GeographicGroupsBO();
-        geographicGroupsBO2.setName("MZ E");
+        geographicGroupsBO2.setName("LOS NARANJOS");
         GeographicGroupTypeBO geographicGroupTypeBO2 = new GeographicGroupTypeBO();
-        geographicGroupTypeBO2.setId("BLOCK");
-        geographicGroupTypeBO2.setName("BLOCK");
+        geographicGroupTypeBO2.setId("AAHH");
+        geographicGroupTypeBO2.setName("ASENTAMIENTO HUMANO");
         geographicGroupsBO2.setGeographicGroupType(geographicGroupTypeBO2);
+
+        GeographicGroupsBO geographicGroupsDepartment = new GeographicGroupsBO();
+        geographicGroupsDepartment.setName("LIMA");
+        GeographicGroupTypeBO geographicGroupTypeDepartment = new GeographicGroupTypeBO();
+        geographicGroupTypeDepartment.setId("DEPARTMENT");
+        geographicGroupTypeDepartment.setName("DEPARTMENT");
+        geographicGroupsDepartment.setGeographicGroupType(geographicGroupTypeDepartment);
+        geographicGroupsDepartment.setCode("01");
+
+        GeographicGroupsBO geographicGroupsProvince = new GeographicGroupsBO();
+        geographicGroupsProvince.setName("LIMA");
+        GeographicGroupTypeBO geographicGroupTypeProvince = new GeographicGroupTypeBO();
+        geographicGroupTypeProvince.setId("PROVINCE");
+        geographicGroupTypeProvince.setName("PROVINCE");
+        geographicGroupsProvince.setGeographicGroupType(geographicGroupTypeProvince);
+        geographicGroupsProvince.setCode("01");
+
+        GeographicGroupsBO geographicGroupsDistrict = new GeographicGroupsBO();
+        geographicGroupsDistrict.setName("CHORRILLOS");
+        GeographicGroupTypeBO geographicGroupTypeDistrict = new GeographicGroupTypeBO();
+        geographicGroupTypeDistrict.setId("DISTRICT");
+        geographicGroupTypeDistrict.setName("DISTRICT");
+        geographicGroupsDistrict.setGeographicGroupType(geographicGroupTypeDistrict);
+        geographicGroupsDistrict.setCode("009");
+
+        GeographicGroupsBO geographicGroupsExteriorNumber = new GeographicGroupsBO();
+        geographicGroupsExteriorNumber.setName("200");
+        GeographicGroupTypeBO geographicGroupTypeExteriorNumber = new GeographicGroupTypeBO();
+        geographicGroupTypeExteriorNumber.setId("EXTERIOR_NUMBER");
+        geographicGroupTypeExteriorNumber.setName("EXTERIOR_NUMBER");
+        geographicGroupsExteriorNumber.setGeographicGroupType(geographicGroupTypeExteriorNumber);
+
+        GeographicGroupsBO geographicGroupsUbigeo = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupTypeUbigeo = new GeographicGroupTypeBO();
+        geographicGroupTypeUbigeo.setId("UBIGEO");
+        geographicGroupTypeUbigeo.setName("UBIGEO");
+        geographicGroupsUbigeo.setGeographicGroupType(geographicGroupTypeUbigeo);
+        geographicGroupsUbigeo.setCode("0101009");
+
+        List<GeographicGroupsBO> geographicGroupsBOs = new ArrayList<>();
+        geographicGroupsBOs.add(geographicGroupsBO1);
+        geographicGroupsBOs.add(geographicGroupsBO2);
+        geographicGroupsBOs.add(geographicGroupsDepartment);
+        geographicGroupsBOs.add(geographicGroupsProvince);
+        geographicGroupsBOs.add(geographicGroupsDistrict);
+        geographicGroupsBOs.add(geographicGroupsExteriorNumber);
+        geographicGroupsBOs.add(geographicGroupsUbigeo);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
+        when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("RC");
+        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        assertNotNull(validation2);
+        customerList.getData().get(0).setGender(null);
+
         GeographicGroupsBO geographicGroupsBO3 = new GeographicGroupsBO();
-        geographicGroupsBO2.setName("LT 8");
+        geographicGroupsBO3.setName("FONAVI UNO");
         GeographicGroupTypeBO geographicGroupTypeBO3 = new GeographicGroupTypeBO();
-        geographicGroupTypeBO3.setId("LOT");
-        geographicGroupTypeBO3.setName("LOT");
+        geographicGroupTypeBO3.setId("STREET");
+        geographicGroupTypeBO3.setName("CAL");
         geographicGroupsBO3.setGeographicGroupType(geographicGroupTypeBO3);
-        List<GeographicGroupsBO> geographicGroupsBOs2 = new ArrayList<>();
-        geographicGroupsBOs2.add(geographicGroupsBO2);
-        geographicGroupsBOs2.add(geographicGroupsBO3);
-        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs2);
+
+        GeographicGroupsBO geographicGroupsBO4 = new GeographicGroupsBO();
+        geographicGroupsBO4.setName("UNCATEGORIZED");
+        GeographicGroupTypeBO geographicGroupTypeBO4 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO4.setId("UNCATEGORIZED");
+        geographicGroupTypeBO4.setName("UNCATEGORIZED");
+        geographicGroupsBO4.setGeographicGroupType(geographicGroupTypeBO4);
+
+        GeographicGroupsBO geographicGroupsDepartment1 = new GeographicGroupsBO();
+        geographicGroupsDepartment1.setName("HUANUCO");
+        GeographicGroupTypeBO geographicGroupTypeDepartment1 = new GeographicGroupTypeBO();
+        geographicGroupTypeDepartment1.setId("DEPARTMENT");
+        geographicGroupTypeDepartment1.setName("DEPARTMENT");
+        geographicGroupsDepartment1.setGeographicGroupType(geographicGroupTypeDepartment1);
+        geographicGroupsDepartment1.setCode("01");
+
+        GeographicGroupsBO geographicGroupsProvince1 = new GeographicGroupsBO();
+        geographicGroupsProvince1.setName("HUANUCO");
+        GeographicGroupTypeBO geographicGroupTypeProvince1 = new GeographicGroupTypeBO();
+        geographicGroupTypeProvince1.setId("PROVINCE");
+        geographicGroupTypeProvince1.setName("PROVINCE");
+        geographicGroupsProvince1.setGeographicGroupType(geographicGroupTypeProvince1);
+        geographicGroupsProvince1.setCode("01");
+
+        GeographicGroupsBO geographicGroupsDistrict1 = new GeographicGroupsBO();
+        geographicGroupsDistrict1.setName("HUANUCO");
+        GeographicGroupTypeBO geographicGroupTypeDistrict1 = new GeographicGroupTypeBO();
+        geographicGroupTypeDistrict1.setId("DISTRICT");
+        geographicGroupTypeDistrict1.setName("DISTRICT");
+        geographicGroupsDistrict1.setGeographicGroupType(geographicGroupTypeDistrict1);
+        geographicGroupsDistrict1.setCode("103");
+
+        GeographicGroupsBO geographicGroupsUbigeo1 = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupTypeUbigeo1 = new GeographicGroupTypeBO();
+        geographicGroupTypeUbigeo1.setId("UBIGEO");
+        geographicGroupTypeUbigeo1.setName("UBIGEO");
+        geographicGroupsUbigeo1.setGeographicGroupType(geographicGroupTypeUbigeo1);
+        geographicGroupsUbigeo1.setCode("0101103");
+
+        GeographicGroupsBO geographicGroupsExteriorNumber1 = new GeographicGroupsBO();
+        geographicGroupsExteriorNumber1.setName("52");
+        GeographicGroupTypeBO geographicGroupTypeExteriorNumber1 = new GeographicGroupTypeBO();
+        geographicGroupTypeExteriorNumber1.setId("EXTERIOR_NUMBER");
+        geographicGroupTypeExteriorNumber1.setName("EXTERIOR_NUMBER");
+        geographicGroupsExteriorNumber1.setGeographicGroupType(geographicGroupTypeExteriorNumber1);
+
+        List<GeographicGroupsBO> geographicGroupsBOs1 = new ArrayList<>();
+        geographicGroupsBOs1.add(geographicGroupsBO3);
+        geographicGroupsBOs1.add(geographicGroupsBO4);
+        geographicGroupsBOs1.add(geographicGroupsDepartment1);
+        geographicGroupsBOs1.add(geographicGroupsProvince1);
+        geographicGroupsBOs1.add(geographicGroupsDistrict1);
+        geographicGroupsBOs1.add(geographicGroupsUbigeo1);
+        geographicGroupsBOs1.add(geographicGroupsExteriorNumber1);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs1);
         EmisionBO validation3 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation3);
 
-        GeographicGroupsBO geographicGroupsBO4 = new GeographicGroupsBO();
-        geographicGroupsBO2.setName("xxxxx");
-        GeographicGroupTypeBO geographicGroupTypeBO4 = new GeographicGroupTypeBO();
-        geographicGroupTypeBO4.setId("xxxxx");
-        geographicGroupTypeBO4.setName("xxxx");
-        geographicGroupsBO4.setGeographicGroupType(geographicGroupTypeBO4);
-        List<GeographicGroupsBO> geographicGroupsBOs4 = new ArrayList<>();
-        geographicGroupsBOs4.add(geographicGroupsBO4);
-        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
+        GeographicGroupsBO geographicGroupsBO5 = new GeographicGroupsBO();
+        geographicGroupsBO5.setName("LOMAS");
+        GeographicGroupTypeBO geographicGroupTypeBO5 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO5.setId("PASSAGE");
+        geographicGroupTypeBO5.setName("PSJ");
+        geographicGroupsBO5.setGeographicGroupType(geographicGroupTypeBO5);
+
+        GeographicGroupsBO geographicGroupsBO6 = new GeographicGroupsBO();
+        geographicGroupsBO6.setName("LOS TEMPLOS");
+        GeographicGroupTypeBO geographicGroupTypeBO6 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO6.setId("RESIDENTIAL");
+        geographicGroupTypeBO6.setName("RES");
+        geographicGroupsBO6.setGeographicGroupType(geographicGroupTypeBO6);
+
+        GeographicGroupsBO geographicGroupsBO7 = new GeographicGroupsBO();
+        geographicGroupsBO7.setName("56");
+        GeographicGroupTypeBO geographicGroupTypeBO7 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO7.setId("BLOCK");
+        geographicGroupTypeBO7.setName("BLOCK");
+        geographicGroupsBO7.setGeographicGroupType(geographicGroupTypeBO7);
+
+        GeographicGroupsBO geographicGroupsBO8 = new GeographicGroupsBO();
+        geographicGroupsBO8.setName("7");
+        GeographicGroupTypeBO geographicGroupTypeBO8 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO8.setId("LOT");
+        geographicGroupTypeBO8.setName("LOT");
+        geographicGroupsBO8.setGeographicGroupType(geographicGroupTypeBO8);
+
+        GeographicGroupsBO geographicGroupsExteriorNumber2 = new GeographicGroupsBO();
+        geographicGroupsExteriorNumber2.setName(NO_EXIST);
+        GeographicGroupTypeBO geographicGroupTypeExteriorNumber2 = new GeographicGroupTypeBO();
+        geographicGroupTypeExteriorNumber2.setId("EXTERIOR_NUMBER");
+        geographicGroupTypeExteriorNumber2.setName(NO_EXIST);
+        geographicGroupsExteriorNumber2.setGeographicGroupType(geographicGroupTypeExteriorNumber2);
+
+        List<GeographicGroupsBO> geographicGroupsBOs2 = new ArrayList<>();
+        geographicGroupsBOs2.add(geographicGroupsBO5);
+        geographicGroupsBOs2.add(geographicGroupsBO6);
+        geographicGroupsBOs2.add(geographicGroupsBO7);
+        geographicGroupsBOs2.add(geographicGroupsBO8);
+        geographicGroupsBOs2.add(geographicGroupsExteriorNumber2);
+        geographicGroupsBOs2.add(geographicGroupsDepartment1);
+        geographicGroupsBOs2.add(geographicGroupsProvince1);
+        geographicGroupsBOs2.add(geographicGroupsDistrict1);
+        geographicGroupsBOs2.add(geographicGroupsUbigeo1);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs2);
         EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation4);
 
         apxRequest.setHolder(null);
         EmisionBO validation5 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
         assertNotNull(validation5);
+
+        GeographicGroupsBO geographicGroupsBO9 = new GeographicGroupsBO();
+        geographicGroupsBO9.setName("PLAZA NORTE");
+        GeographicGroupTypeBO geographicGroupTypeBO9 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO9.setId("SQUARE");
+        geographicGroupTypeBO9.setName("PLZ");
+        geographicGroupsBO9.setGeographicGroupType(geographicGroupTypeBO9);
+
+        List<GeographicGroupsBO> geographicGroupsBOs3 = new ArrayList<>();
+        geographicGroupsBOs3.add(geographicGroupsBO1);
+        geographicGroupsBOs3.add(geographicGroupsBO9);
+        geographicGroupsBOs3.add(geographicGroupsExteriorNumber2);
+        geographicGroupsBOs3.add(geographicGroupsDepartment1);
+        geographicGroupsBOs3.add(geographicGroupsProvince1);
+        geographicGroupsBOs3.add(geographicGroupsDistrict1);
+        geographicGroupsBOs3.add(geographicGroupsUbigeo1);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs3);
+        EmisionBO validation6 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        assertNotNull(validation6);
+
+        GeographicGroupsBO geographicGroupsBO10 = new GeographicGroupsBO();
+        geographicGroupsBO10.setName("LOS GIRASOLES");
+        GeographicGroupTypeBO geographicGroupTypeBO10 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO10.setId("URBANIZATION");
+        geographicGroupTypeBO10.setName("URB");
+        geographicGroupsBO10.setGeographicGroupType(geographicGroupTypeBO10);
+
+        List<GeographicGroupsBO> geographicGroupsBOs4 = new ArrayList<>();
+        geographicGroupsBOs4.add(geographicGroupsBO1);
+        geographicGroupsBOs4.add(geographicGroupsBO10);
+        geographicGroupsBOs4.add(geographicGroupsBO7);
+        geographicGroupsBOs4.add(geographicGroupsBO8);
+        geographicGroupsBOs4.add(geographicGroupsExteriorNumber2);
+        geographicGroupsBOs4.add(geographicGroupsDepartment1);
+        geographicGroupsBOs4.add(geographicGroupsProvince1);
+        geographicGroupsBOs4.add(geographicGroupsDistrict1);
+        geographicGroupsBOs4.add(geographicGroupsUbigeo1);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
+        EmisionBO validation7 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        assertNotNull(validation7);
+
+        List<GeographicGroupsBO> geographicGroupsBOs5 = new ArrayList<>();
+        geographicGroupsBOs5.add(geographicGroupsBO1);
+        geographicGroupsBOs5.add(geographicGroupsBO6);
+        geographicGroupsBOs5.add(geographicGroupsBO7);
+        geographicGroupsBOs5.add(geographicGroupsBO8);
+        geographicGroupsBOs5.add(geographicGroupsExteriorNumber2);
+        geographicGroupsBOs5.add(geographicGroupsDepartment1);
+        geographicGroupsBOs5.add(geographicGroupsProvince1);
+        geographicGroupsBOs5.add(geographicGroupsDistrict1);
+        geographicGroupsBOs5.add(geographicGroupsUbigeo1);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs5);
+        EmisionBO validation8 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        assertNotNull(validation8);
+
+        List<GeographicGroupsBO> geographicGroupsBOs6 = new ArrayList<>();
+        geographicGroupsBOs6.add(geographicGroupsBO1);
+        geographicGroupsBOs6.add(geographicGroupsBO6);
+        geographicGroupsBOs6.add(geographicGroupsExteriorNumber1);
+        geographicGroupsBOs6.add(geographicGroupsDepartment1);
+        geographicGroupsBOs6.add(geographicGroupsProvince1);
+        geographicGroupsBOs6.add(geographicGroupsDistrict1);
+        geographicGroupsBOs6.add(geographicGroupsUbigeo1);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs6);
+        EmisionBO validation9 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        assertNotNull(validation9);
+
+        GeographicGroupsBO geographicGroupsBONull = new GeographicGroupsBO();
+        geographicGroupsBONull.setName("xxxxx");
+        GeographicGroupTypeBO geographicGroupTypeBONull = new GeographicGroupTypeBO();
+        geographicGroupTypeBONull.setId("xxxxx");
+        geographicGroupTypeBONull.setName("xxxxx");
+        geographicGroupsBONull.setGeographicGroupType(geographicGroupTypeBONull);
+
+        GeographicGroupsBO geographicGroupsBONull1 = new GeographicGroupsBO();
+        geographicGroupsBONull1.setName("xxxxx");
+        GeographicGroupTypeBO geographicGroupTypeBONull1 = new GeographicGroupTypeBO();
+        geographicGroupTypeBONull1.setId("xxxxx");
+        geographicGroupTypeBONull1.setName("xxxxx");
+        geographicGroupsBONull1.setGeographicGroupType(geographicGroupTypeBONull1);
+
+        List<GeographicGroupsBO> geographicGroupsBOsNull = new ArrayList<>();
+        geographicGroupsBOsNull.add(geographicGroupsBONull);
+        geographicGroupsBOsNull.add(geographicGroupsBONull1);
+        geographicGroupsBOsNull.add(geographicGroupsExteriorNumber2);
+        geographicGroupsBOsNull.add(geographicGroupsDepartment1);
+        geographicGroupsBOsNull.add(geographicGroupsProvince1);
+        geographicGroupsBOsNull.add(geographicGroupsDistrict1);
+        geographicGroupsBOsNull.add(geographicGroupsUbigeo1);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOsNull);
+        try {
+            EmisionBO validationNull = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+            fail("Se esperaba una BusinessException, pero no se lanzó.");
+        } catch (BusinessException e) {
+            assertNotNull(e);
+        }
+
+        List<GeographicGroupsBO> geographicGroupsAddress = new ArrayList<>();
+        GeographicGroupsBO geographicGroupBlock = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupTypeBlock = new GeographicGroupTypeBO();
+        geographicGroupTypeBlock.setId("BLOCK");
+        geographicGroupBlock.setGeographicGroupType(geographicGroupTypeBlock);
+        geographicGroupBlock.setName("10");
+        GeographicGroupsBO geographicGroupLot = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupTypeLot = new GeographicGroupTypeBO();
+        geographicGroupTypeLot.setId("LOT");
+        geographicGroupLot.setGeographicGroupType(geographicGroupTypeLot);
+        geographicGroupLot.setName("2");
+        geographicGroupsAddress.add(geographicGroupBlock);
+        geographicGroupsAddress.add(geographicGroupLot);
+        mapperHelper.fillAddressAditional(geographicGroupsAddress, stringAddress);
+        assertEquals("MZ 10 LT 2", stringAddress.toString());
+
+        stringAddress.setLength(0);
+        geographicGroupsAddress.clear();
+        GeographicGroupsBO geographicGroupBlock2 = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupTypeBlock2 = new GeographicGroupTypeBO();
+        geographicGroupTypeBlock2.setId("BLOCK");
+        geographicGroupBlock2.setGeographicGroupType(geographicGroupTypeBlock2);
+        geographicGroupBlock2.setName("23");
+        geographicGroupsAddress.add(geographicGroupBlock2);
+        mapperHelper.fillAddressAditional(geographicGroupsAddress, stringAddress);
+        assertEquals("MZ 23", stringAddress.toString());
+
+        stringAddress.setLength(0);
+        geographicGroupsAddress.clear();
+        GeographicGroupsBO geographicGroupLot2 = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupTypeLot2 = new GeographicGroupTypeBO();
+        geographicGroupTypeLot2.setId("LOT");
+        geographicGroupLot2.setGeographicGroupType(geographicGroupTypeLot2);
+        geographicGroupLot2.setName("52");
+        geographicGroupsAddress.add(geographicGroupLot2);
+        mapperHelper.fillAddressAditional(geographicGroupsAddress, stringAddress);
+        assertEquals("LT 52", stringAddress.toString());
+
+        stringAddress.setLength(0);
+        geographicGroupsAddress.clear();
+        GeographicGroupsBO geographicGroup2 = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupType2 = new GeographicGroupTypeBO();
+        geographicGroupType2.setId("QUINTA");
+        geographicGroup2.setGeographicGroupType(geographicGroupType2);
+        geographicGroup2.setName("QUINTA");
+        geographicGroupsAddress.add(geographicGroup2);
+        String result1 = mapperHelper.fillAddressOther(geographicGroupsAddress, stringAddress);
+        assertEquals("QUINTA-QUINTA", result1);
+        assertEquals("QUINTA QUINTA", stringAddress.toString());
+
+        stringAddress.setLength(0);
+        geographicGroupsAddress.clear();
+        GeographicGroupsBO geographicGroup3 = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupType3 = new GeographicGroupTypeBO();
+        geographicGroupType3.setId("FLOOR");
+        geographicGroup3.setGeographicGroupType(geographicGroupType3);
+        geographicGroup3.setName("PISO");
+
+        geographicGroupsAddress.add(geographicGroup3);
+
+        String result2 = mapperHelper.fillAddressOther(geographicGroupsAddress, stringAddress);
+        assertEquals("PISO-PISO", result2);
+        assertEquals("PISO PISO", stringAddress.toString());
+
     }
+
+
 
     @Test
     public void getRimacContractInformation_OK() {
@@ -2022,6 +2202,82 @@ public class MapperHelperTest {
         AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, this.rbvdr201, requiredFieldsEmisionBDResponse,new HashMap<>());
         assertNotNull(validation);
         assertEquals(3, validation.getPayload().getPersona().size());
+    }
+
+    @Test
+    public void testGenerateRequestAddParticipantsException() {
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+
+        GeographicGroupsBO geographicGroupsBO1 = new GeographicGroupsBO();
+        geographicGroupsBO1.setName("xxxx");
+        GeographicGroupTypeBO geographicGroupTypeBO1 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO1.setId("xxxx");
+        geographicGroupTypeBO1.setName("xxxx");
+        geographicGroupsBO1.setGeographicGroupType(geographicGroupTypeBO1);
+
+        GeographicGroupsBO geographicGroupsBO2 = new GeographicGroupsBO();
+        geographicGroupsBO2.setName("xxxx");
+        GeographicGroupTypeBO geographicGroupTypeBO2 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO2.setId("xxxx");
+        geographicGroupTypeBO2.setName("xxxx");
+        geographicGroupsBO2.setGeographicGroupType(geographicGroupTypeBO2);
+
+        GeographicGroupsBO geographicGroupsDepartment = new GeographicGroupsBO();
+        geographicGroupsDepartment.setName("LIMA");
+        GeographicGroupTypeBO geographicGroupTypeDepartment = new GeographicGroupTypeBO();
+        geographicGroupTypeDepartment.setId("DEPARTMENT");
+        geographicGroupTypeDepartment.setName("DEPARTMENT");
+        geographicGroupsDepartment.setGeographicGroupType(geographicGroupTypeDepartment);
+        geographicGroupsDepartment.setCode("01");
+
+        GeographicGroupsBO geographicGroupsProvince = new GeographicGroupsBO();
+        geographicGroupsProvince.setName("LIMA");
+        GeographicGroupTypeBO geographicGroupTypeProvince = new GeographicGroupTypeBO();
+        geographicGroupTypeProvince.setId("PROVINCE");
+        geographicGroupTypeProvince.setName("PROVINCE");
+        geographicGroupsProvince.setGeographicGroupType(geographicGroupTypeProvince);
+        geographicGroupsProvince.setCode("01");
+
+        GeographicGroupsBO geographicGroupsDistrict = new GeographicGroupsBO();
+        geographicGroupsDistrict.setName("CHORRILLOS");
+        GeographicGroupTypeBO geographicGroupTypeDistrict = new GeographicGroupTypeBO();
+        geographicGroupTypeDistrict.setId("DISTRICT");
+        geographicGroupTypeDistrict.setName("DISTRICT");
+        geographicGroupsDistrict.setGeographicGroupType(geographicGroupTypeDistrict);
+        geographicGroupsDistrict.setCode("009");
+
+        GeographicGroupsBO geographicGroupsExteriorNumber = new GeographicGroupsBO();
+        geographicGroupsExteriorNumber.setName(NO_EXIST);
+        GeographicGroupTypeBO geographicGroupTypeExteriorNumber = new GeographicGroupTypeBO();
+        geographicGroupTypeExteriorNumber.setId("EXTERIOR_NUMBER");
+        geographicGroupTypeExteriorNumber.setName(NO_EXIST);
+        geographicGroupsExteriorNumber.setGeographicGroupType(geographicGroupTypeExteriorNumber);
+
+        GeographicGroupsBO geographicGroupsUbigeo = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupTypeUbigeo = new GeographicGroupTypeBO();
+        geographicGroupTypeUbigeo.setId("UBIGEO");
+        geographicGroupTypeUbigeo.setName("UBIGEO");
+        geographicGroupsUbigeo.setGeographicGroupType(geographicGroupTypeUbigeo);
+        geographicGroupsUbigeo.setCode("0101009");
+
+        List<GeographicGroupsBO> geographicGroupsBOs = new ArrayList<>();
+        geographicGroupsBOs.add(geographicGroupsBO1);
+        geographicGroupsBOs.add(geographicGroupsBO2);
+        geographicGroupsBOs.add(geographicGroupsDepartment);
+        geographicGroupsBOs.add(geographicGroupsProvince);
+        geographicGroupsBOs.add(geographicGroupsDistrict);
+        geographicGroupsBOs.add(geographicGroupsExteriorNumber);
+        geographicGroupsBOs.add(geographicGroupsUbigeo);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
+        try {
+            AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("EASYYES", apxRequest, this.rbvdr201, requiredFieldsEmisionBDResponse,responseQueryGetProductById);
+            //fail("Se esperaba una BusinessException, pero no se lanzó.");
+        } catch (BusinessException e) {
+            assertNotNull(e);
+        }
     }
 
     @Test

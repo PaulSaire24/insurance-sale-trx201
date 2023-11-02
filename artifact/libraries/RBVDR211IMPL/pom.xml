@@ -100,13 +100,13 @@
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
-			<artifactId>PISDR350</artifactId>
-			<version>0.2.6</version>
+			<artifactId>PISDR401</artifactId>
+			<version>0.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
-			<artifactId>PISDR401</artifactId>
-			<version>0.2.1</version>
+			<artifactId>PISDR350</artifactId>
+			<version>0.2.8</version>
 		</dependency>
 	</dependencies>
 	<build>

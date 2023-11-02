@@ -4,8 +4,8 @@ import com.bbva.elara.configuration.manager.application.ApplicationConfiguration
 import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.ksmk.lib.r002.KSMKR002;
 import com.bbva.pisd.lib.r012.PISDR012;
-import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.pisd.lib.r350.PISDR350;
+import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.RBVDR211;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
@@ -23,9 +23,9 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 
 	protected KSMKR002 ksmkR002;
 
-	protected PISDR401 pisdR401;
-
 	protected PISDR350 pisdR350;
+
+	protected PISDR401 pisdR401;
 	protected MapperHelper mapperHelper;
 
 
@@ -58,17 +58,17 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 	}
 
 	/**
-	* @param pisdR401 the this.pisdR401 to set
-	*/
-	public void setPisdR401(PISDR401 pisdR401) {
-		this.pisdR401 = pisdR401;
-	}
-
-	/**
 	* @param pisdR350 the this.pisdR350 to set
 	*/
 	public void setPisdR350(PISDR350 pisdR350) {
 		this.pisdR350 = pisdR350;
+	}
+
+	/**
+	* @param pisdR401 the this.pisdR401 to set
+	*/
+	public void setPisdR401(PISDR401 pisdR401) {
+		this.pisdR401 = pisdR401;
 	}
 
 	public void setMapperHelper(MapperHelper mapperHelper) {
