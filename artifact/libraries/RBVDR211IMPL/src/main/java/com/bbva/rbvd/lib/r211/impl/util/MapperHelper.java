@@ -145,17 +145,12 @@ public class MapperHelper {
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
     private static final String TAG_ENDORSEE = "ENDORSEE";
     private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
-
-
     private static final String GMT_TIME_ZONE = "GMT";
-
-
     private static final String RUC_ID = "R";
-
     private static final BigDecimal LEGAL_REPRESENTATIVE_ID = new BigDecimal(3);
     private static final String SIN_ESPECIFICAR = "N/A";
     private static final String NO_EXIST = "NotExist";
-
+    private static final Integer MAX_CHARACTER = 1;
     private final SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
     private ApplicationConfigurationService applicationConfigurationService;
@@ -866,7 +861,13 @@ public class MapperHelper {
                 : requestBody.getHolder().getIdentityDocument().getDocumentType().getId()));
         persona.setNroDocumento(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())?requestBody.getHolder().getIdentityDocument().getNumber():customer.getIdentityDocuments().get(0).getDocumentNumber());
         persona.setApePaterno(customer.getLastName());
-        persona.setApeMaterno(customer.getSecondLastName());
+
+        if(customer.getSecondLastName().length() > MAX_CHARACTER) {
+            persona.setApeMaterno(customer.getSecondLastName());
+        } else {
+            persona.setApeMaterno("");
+        }
+
         persona.setNombres(customer.getFirstName());
         persona.setFechaNacimiento(customer.getBirthData().getBirthDate());
         if(Objects.nonNull(customer.getGender())) persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
@@ -1585,14 +1586,14 @@ public class MapperHelper {
         nameLote = mapAditional.getOrDefault("LOT", "");
 
         if (!nameManzana.isEmpty() && !stringAddress.toString().contains(nameManzana)) {
-            appendToAddress(stringAddress, "MZ " + nameManzana);
+            appendToAddress(stringAddress, nameManzana);
         }
         if (!nameLote.isEmpty() && !stringAddress.toString().contains(nameLote)) {
-            appendToAddress(stringAddress, "LT " + nameLote);
+            appendToAddress(stringAddress, nameLote);
         }
         if (!nameManzana.isEmpty() && !nameLote.isEmpty()) {
             if (!stringAddress.toString().contains(nameManzana) || !stringAddress.toString().contains(nameLote)) {
-                appendToAddress(stringAddress, "MZ " + nameManzana + " LT " + nameLote);
+                appendToAddress(stringAddress, nameManzana.concat(" ").concat(nameLote));
             }
         }
     }
