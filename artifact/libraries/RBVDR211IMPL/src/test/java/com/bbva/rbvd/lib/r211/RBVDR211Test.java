@@ -877,6 +877,7 @@ public class RBVDR211Test {
 		responseBD.put("PREMIUM_AMOUNT",  new BigDecimal(100));
 		responseBD.put("PREMIUM_CURRENCY_ID", "USD");
 		responseBD.put("POLICY_PAYMENT_FREQUENCY_TYPE", "M");
+		responseBD.put("OPERATION_GLOSSARY_DESC", "DESEMPLEO");
 		requestBody.getFirstInstallment().getPaymentAmount().setAmount(100d);
 		requestBody.getTotalAmount().setAmount(1200d);
 		requestBody.getInstallmentPlan().getPaymentAmount().setAmount(100d);
