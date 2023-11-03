@@ -34,11 +34,11 @@ import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RelatedContractDAO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
@@ -112,6 +112,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String FIELD_POLICY_PAYMENT_FREQUENCY_TYPE = "POLICY_PAYMENT_FREQUENCY_TYPE";
 	private static final String PROPERTY_RANGE_PAYMENT_AMOUNT = "property.range.payment.amount.insurance";
 	private static final String PROPERTY_VALIDATION_RANGE = "property.validation.range.";
+	private static final String PROPERTY_ONLY_FIRST_RECEIPT = "products.modalities.only.first.receipt";
+
+	private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
+	private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -232,13 +236,13 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 						participantsArguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
 			}
 
-			if(!CollectionUtils.isEmpty(requestBody.getRelatedContracts())){
-
-				for(RelatedContractDTO relatedContractDTO : requestBody.getRelatedContracts()){
-					Map<String,Object> argumentsForSaveInsuranceContractDetails= this.mapperHelper.createSaveInsuranceContractDetailsArguments(requestBody, relatedContractDTO, contractDao);
-					int insertedInsuranceContractDetails = this.pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(),argumentsForSaveInsuranceContractDetails);
-					validateInsertion(insertedInsuranceContractDetails, RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
-				}
+			if(!isEmpty(requestBody.getRelatedContracts())) {
+				List<RelatedContractDAO> relatedContractsDao = this.mapperHelper.buildRelatedContractsWithInsurance(requestBody, contractDao);
+				Map<String, Object>[] relatedContractsArguments = this.mapperHelper.createSaveRelatedContractsArguments(relatedContractsDao);
+				Arrays.stream(relatedContractsArguments).
+						forEach(receipt -> receipt.
+								forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveRelatedContractsArguments parameter {} with value: {} *****", key, value)));
+				this.pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), relatedContractsArguments);
 			}
 
 			if(isEndorsement){
@@ -290,18 +294,23 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 				validateInsertion(updatedContract, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
 
-				List<InsuranceCtrReceiptsDAO> otherReceipts = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
-						filter(cuota -> cuota.getCuota().compareTo(1L) > 0).map(cuota -> this.generateNextReceipt(asoResponse, cuota)).
-						collect(toList());
+				String productsCalculateValidityMonths = this.applicationConfigurationService.getDefaultProperty(PROPERTY_ONLY_FIRST_RECEIPT,"");
+				String operacionGlossaryDesc = responseQueryGetRequiredFields.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString();
 
-				Map<String, Object>[] receiptUpdateArguments = this.mapperHelper.createSaveReceiptsArguments(otherReceipts);
+				if (!Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)) {
+					List<InsuranceCtrReceiptsDAO> otherReceipts = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
+							filter(cuota -> cuota.getCuota().compareTo(1L) > 0).map(cuota -> this.generateNextReceipt(asoResponse, cuota)).
+							collect(toList());
 
-				Arrays.stream(receiptUpdateArguments).
-						forEach(receiptUpdated -> receiptUpdated.
-								forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value)));
+					Map<String, Object>[] receiptUpdateArguments = this.mapperHelper.createSaveReceiptsArguments(otherReceipts);
 
-				validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS",
-						receiptUpdateArguments), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
+					Arrays.stream(receiptUpdateArguments).
+							forEach(receiptUpdated -> receiptUpdated.
+									forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveReceipt parameter {} with value: {} *****", key, value)));
+
+					validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS",
+							receiptUpdateArguments), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
+				}
 
 				policyNumber = rimacResponse.getPayload().getNumeroPoliza();
 

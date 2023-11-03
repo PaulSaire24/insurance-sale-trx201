@@ -321,6 +321,7 @@ public class MapperHelperTest {
     @Test
     public void buildRequestBodyRimac_OK() {
         PolicyInspectionDTO inspection = apxRequest.getInspection();
+        when(applicationConfigurationService.getDefaultProperty(anyString(),anyString())).thenReturn("DESEMPLEO_PRESTAMO");
         EmisionBO validation = mapperHelper.buildRequestBodyRimac(inspection, "secondValue", "channelCode",
                 "dataId", "saleOffice");
 
@@ -1009,11 +1010,13 @@ public class MapperHelperTest {
         when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("R");
         when(this.applicationConfigurationService.getProperty("DNI")).thenReturn("L");
         when(this.applicationConfigurationService.getProperty("MONTHLY")).thenReturn("M");
+        when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","")).thenReturn("DESEMPLEO_PRESTAMO");
         Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue(), "33556255");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue(), "HOGAR_TOTAL");
+        requiredFieldsEmisionBDResponse.put(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue(), "DESEMPLEO_PRESTAMO");
         EmisionBO emisionInput = new EmisionBO();
         PersonaBO persona = new PersonaBO();
         StringBuilder stringAddress = new StringBuilder();
@@ -2435,13 +2438,24 @@ public class MapperHelperTest {
         numberTypeDTO.setId("01");
         apxRequest.getRelatedContracts().get(0).getContractDetails().setProduct(financialProductDTO);
         apxRequest.getRelatedContracts().get(1).getContractDetails().setNumberType( numberTypeDTO );
-        Map<String, Object> validation = this.mapperHelper.createSaveInsuranceContractDetailsArguments( apxRequest,apxRequest.getRelatedContracts().get(0),
-                contractDao);
-        assertEquals("01", validation.get(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue()));
-        assertEquals("01", validation.get(RBVDProperties.FIELD_CONTRACT_LINKED_STATUS_TYPE.getValue()));
-        Map<String, Object> validation2 = this.mapperHelper.createSaveInsuranceContractDetailsArguments( apxRequest,apxRequest.getRelatedContracts().get(1),
-                contractDao);
-        assertEquals("02", validation2.get(RBVDProperties.FIELD_LINKED_CONTRACT_ID.getValue()));
+        List<RelatedContractDAO> relatedContractDAOS = this.mapperHelper.buildRelatedContractsWithInsurance( apxRequest, contractDao);
+        assertEquals("01", relatedContractDAOS.get(0).getContractLinkedStatusType());
+        List<RelatedContractDAO> relatedContractDAO2 = this.mapperHelper.buildRelatedContractsWithInsurance( apxRequest, contractDao);
+        assertEquals("01", relatedContractDAO2.get(1).getContractLinkedStatusType());
+        List<RelatedContractDAO> listContract = new ArrayList<>();
+        RelatedContractDAO contract = new RelatedContractDAO();
+        contract.setEntityId(contractDao.getEntityId());
+        contract.setBranchId(contractDao.getBranchId());
+        contract.setIntAccountId(contractDao.getIntAccountId());
+        contract.setRelatedContractProductId("01234567890123456789");
+        contract.setLinkedContractId("01234567890123456789");
+        contract.setStartLinkageDate(contractDao.getInsuranceContractStartDate());
+        contract.setEndLinkageDate(contractDao.getEndLinkageDate());
+        contract.setContractLinkedStatusType("01");
+        contract.setCreationUserId(contractDao.getCreationUserId());
+        contract.setCreationUserId(contractDao.getUserAuditId());
+        listContract.add(contract);
+        this.mapperHelper.createSaveRelatedContractsArguments(listContract);
     }
 
 }
