@@ -906,6 +906,7 @@ public class MapperHelperTest {
             when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("R");
             when(this.applicationConfigurationService.getProperty("DNI")).thenReturn("L");
             when(this.applicationConfigurationService.getProperty("MONTHLY")).thenReturn("M");
+            when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
             Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
             requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
             requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
@@ -914,7 +915,9 @@ public class MapperHelperTest {
             EmisionBO emisionInput = new EmisionBO();
             PersonaBO persona = new PersonaBO();
             StringBuilder stringAddress = new StringBuilder();
-            String filledAddress = mapperHelper.fillAddress(customerList, persona, stringAddress);
+            PolicyDTO requestBody = new PolicyDTO();
+            requestBody.setSaleChannelId("PC");
+            String filledAddress = mapperHelper.fillAddress(customerList, persona, stringAddress, requestBody);
             DatoParticularBO datoParticular1 = new DatoParticularBO();
             datoParticular1.setCodigo("");
             datoParticular1.setEtiqueta("CANAL_TERCERO");
@@ -1230,6 +1233,9 @@ public class MapperHelperTest {
             EmisionBO validation9 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
             assertNotNull(validation9);
 
+            apxRequest.setSaleChannelId("PC");
+            when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
+
             GeographicGroupsBO geographicGroupsBONull = new GeographicGroupsBO();
             geographicGroupsBONull.setName("xxxxx");
             GeographicGroupTypeBO geographicGroupTypeBONull = new GeographicGroupTypeBO();
@@ -1261,7 +1267,39 @@ public class MapperHelperTest {
                 assertNotNull(e);
             }
 
-            List<GeographicGroupsBO> geographicGroupsAddress = new ArrayList<>();
+        apxRequest.setSaleChannelId("CC");
+        when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
+
+        GeographicGroupsBO nullChannel = new GeographicGroupsBO();
+        nullChannel.setName("xxxxx");
+        GeographicGroupTypeBO nullTypeChannel = new GeographicGroupTypeBO();
+        nullTypeChannel.setId("xxxxx");
+        nullTypeChannel.setName("xxxxx");
+        geographicGroupsBONull.setGeographicGroupType(nullTypeChannel);
+
+        GeographicGroupsBO nullChannel1 = new GeographicGroupsBO();
+        nullChannel1.setName("xxxxx");
+        GeographicGroupTypeBO nullTypeChannel1 = new GeographicGroupTypeBO();
+        nullTypeChannel1.setId("xxxxx");
+        nullTypeChannel1.setName("xxxxx");
+        geographicGroupsBONull1.setGeographicGroupType(nullTypeChannel1);
+
+        List<GeographicGroupsBO> geographicGroupsNull = new ArrayList<>();
+        geographicGroupsNull.add(nullChannel);
+        geographicGroupsNull.add(nullChannel1);
+        geographicGroupsNull.add(geographicGroupsExteriorNumber2);
+        geographicGroupsNull.add(geographicGroupsDepartment1);
+        geographicGroupsNull.add(geographicGroupsProvince1);
+        geographicGroupsNull.add(geographicGroupsDistrict1);
+        geographicGroupsNull.add(geographicGroupsUbigeo1);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOsNull);
+
+        EmisionBO validationNull = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse, customerList);
+
+        assertNotNull(validationNull);
+
+        List<GeographicGroupsBO> geographicGroupsAddress = new ArrayList<>();
             GeographicGroupsBO geographicGroupBlock = new GeographicGroupsBO();
             GeographicGroupTypeBO geographicGroupTypeBlock = new GeographicGroupTypeBO();
             geographicGroupTypeBlock.setId("BLOCK");
@@ -2100,6 +2138,10 @@ public class MapperHelperTest {
         Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
         requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+
+        when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
+
+        apxRequest.setSaleChannelId("PC");
 
         GeographicGroupsBO geographicGroupsBO1 = new GeographicGroupsBO();
         geographicGroupsBO1.setName("xxxx");

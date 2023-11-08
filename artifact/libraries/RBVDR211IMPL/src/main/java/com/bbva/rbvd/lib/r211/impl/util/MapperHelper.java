@@ -151,6 +151,7 @@ public class MapperHelper {
     private static final String SIN_ESPECIFICAR = "N/A";
     private static final String NO_EXIST = "NotExist";
     private static final Integer MAX_CHARACTER = 1;
+    private static final String KEY_PIC_CODE = "pic.code";
     private final SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
     private ApplicationConfigurationService applicationConfigurationService;
@@ -823,7 +824,7 @@ public class MapperHelper {
 
         StringBuilder stringAddress  = new StringBuilder();
 
-        String filledAddress = fillAddress(customerList, persona, stringAddress);
+        String filledAddress = fillAddress(customerList, persona, stringAddress, requestBody);
         if (isNull(filledAddress)) {
             throw new BusinessException("RBVD10094935", false,"Revisar Datos de Direccion");
         }
@@ -891,7 +892,7 @@ public class MapperHelper {
         payload.setProducto(businessName);
         this.constructListPersons(this.constructPerson(requestBody,customerList.getData().get(0),responseQueryGetRequiredFields),personasList);
         personasList.stream().forEach(persona ->{
-            String filledAddress = fillAddress(customerList, persona, stringAddress);
+            String filledAddress = fillAddress(customerList, persona, stringAddress, requestBody);
             if (isNull(filledAddress)) {
                 throw new BusinessException("RBVD10094935", false,"Revisar Datos de Direccion");
             }
@@ -1376,7 +1377,11 @@ public class MapperHelper {
         persons.setCelular(persona.getCelular());
         return persons;
     }
-    public String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder stringAddress) {
+    public String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder stringAddress, PolicyDTO requestBody) {
+
+        String picCodeValue = this.applicationConfigurationService.getProperty(KEY_PIC_CODE);
+
+        String controlChannel = " ";
 
         CustomerBO customer = customerList.getData().get(0);
         LocationBO customerLocation = customer.getAddresses().get(0).getLocation();
@@ -1394,8 +1399,16 @@ public class MapperHelper {
         String addressViaList = fillAddressViaList(geographicGroupsAddress, persona);
         String addressGroupList = fillAddressGroupList(geographicGroupsAddress, addressViaList, persona);
 
-        if(isNull(addressGroupList) && isNull(addressViaList)) {
+        if(isNull(addressGroupList) && isNull(addressViaList) &&
+                picCodeValue.equals(requestBody.getSaleChannelId())) {
             return null;
+        } else if (isNull(addressGroupList) && isNull(addressViaList) &&
+                !picCodeValue.equals(requestBody.getSaleChannelId())) {
+            persona.setTipoVia(SIN_ESPECIFICAR);
+            persona.setNombreVia(SIN_ESPECIFICAR);
+            persona.setNumeroVia(SIN_ESPECIFICAR);
+            persona.setDireccion(SIN_ESPECIFICAR);
+            return controlChannel;
         }
 
         String addressNumberVia = fillAddressNumberVia(geographicGroupsAddress, addressViaList, persona);
