@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r201.impl;
 
+import com.bbva.apx.exception.io.network.TimeoutException;
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
@@ -104,8 +105,6 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Param: {}", jsonString);
 
-		EmisionBO responseBody = null;
-
 		SignatureAWS signature = this.pisdR014.executeSignatureConstruction(jsonString, HttpMethod.POST.toString(),
 				this.rimacUrlForker.generateUriForSignatureAWS(productId, quotationId), null, traceId);
 
@@ -115,17 +114,22 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		uriParam.put("ideCotizacion", quotationId);
 
 		try {
-			responseBody = this.externalApiConnector.postForObject(this.rimacUrlForker.generatePropertyKeyName(productId), entity,
+			EmisionBO responseBody = this.externalApiConnector.postForObject(this.rimacUrlForker.generatePropertyKeyName(productId), entity,
 					EmisionBO.class, uriParam);
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Response: {}", getRequestBodyAsJsonFormat(responseBody));
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService END *****");
+			return responseBody;
 		} catch (RestClientException ex) {
 			this.addAdviceWithDescription("RBVD10094932",ex.getMessage());
 			this.addAdviceWithDescription("RBVD10094943","Error al devolver informacion de Rimac en Alta de Poliza");
-			this.addAdviceWithDescription("RBVD10094935",ex.getMessage());
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
+			return null;
+		} catch (TimeoutException toex) {
+			this.addAdvice("RBVD01020044");
+			LOGGER.info("*** RBVDR201Impl - executePrePolicyEmissionService *** TimeoutException: {}", toex.getAdviceCode());
+			return null;
 		}
-		return responseBody;
+
 	}
 
 	@Override

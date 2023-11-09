@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r211;
 
+import com.bbva.apx.exception.io.network.TimeoutException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 
 import com.bbva.elara.domain.transaction.Context;
@@ -52,6 +53,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
 
