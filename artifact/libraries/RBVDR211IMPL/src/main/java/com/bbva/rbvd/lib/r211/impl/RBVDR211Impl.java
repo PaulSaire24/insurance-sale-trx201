@@ -73,7 +73,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
-import org.springframework.util.CollectionUtils;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
