@@ -128,11 +128,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Calendar;
-
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -167,14 +162,12 @@ public class MapperHelper {
     private static final String RECEIPT_DEFAULT_DATE_VALUE = "01/01/0001";
     private static final String PRICE_TYPE_VALUE = "PURCHASE";
     private static final String TAG_ENDORSEE = "ENDORSEE";
-    private static final String TAG_LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
     private static final String FIELD_SYSTEM = "SYSTEM";
     private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
     private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
     private static final String GMT_TIME_ZONE = "GMT";
 
     private static final String RUC_ID = "R";
-    private static final BigDecimal LEGAL_REPRESENTATIVE_ID = new BigDecimal(3);
 
     private static final String SIN_ESPECIFICAR = "N/A";
     private static final String NO_EXIST = "NotExist";
@@ -861,7 +854,7 @@ public class MapperHelper {
 
         StringBuilder stringAddress  = new StringBuilder();
 
-        String filledAddress = fillAddress(customerList, persona, stringAddress);
+        String filledAddress = fillAddress(customerList, persona, stringAddress,requestBody.getSaleChannelId());
         validateIfAddressIsNull(filledAddress);
 
         constructListPersons(persona, personasList);
@@ -960,12 +953,12 @@ public class MapperHelper {
                     PersonaBO paymentPerson = this.getFillFieldsPerson(
                             this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
                     paymentPerson.setRol(ConstantsUtil.ParticipantRol.PAYMENT_MANAGER.getRol());
-                    validateIfAddressIsNull(fillAddress(customerList,paymentPerson,new StringBuilder()));
+                    validateIfAddressIsNull(fillAddress(customerList,paymentPerson,new StringBuilder(),requestBody.getSaleChannelId()));
 
                     //Contratante. Si requiere cambios para este participante, agregar propia validacion
                     PersonaBO contractorPerson = this.getFillFieldsPerson(paymentPerson);
                     contractorPerson.setRol(ConstantsUtil.ParticipantRol.CONTRACTOR.getRol());
-                    validateIfAddressIsNull(fillAddress(customerList,contractorPerson,new StringBuilder()));
+                    validateIfAddressIsNull(fillAddress(customerList,contractorPerson,new StringBuilder(), requestBody.getSaleChannelId()));
 
                     personasList.add(paymentPerson);
                     personasList.add(contractorPerson);
@@ -973,7 +966,7 @@ public class MapperHelper {
                 }else if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.Participant.INSURED)){
                     ParticipantDTO participantDTO = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.INSURED);
                     PersonaBO insuredPerson = generateBasicDataInsuredParticipant(participantDTO, dataInsured);
-                    fillAddressInsuredParticipant(rbvdr201, customerList, participantDTO, insuredPerson);
+                    fillAddressInsuredParticipant(rbvdr201, customerList, participantDTO, insuredPerson,requestBody.getSaleChannelId());
 
                     personasList.add(insuredPerson);
                 }
@@ -983,7 +976,7 @@ public class MapperHelper {
                 PersonaBO contractorPerson = this.getFillFieldsPerson(
                         this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
                 contractorPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
-                validateIfAddressIsNull(fillAddress(customerList,contractorPerson,new StringBuilder()));
+                validateIfAddressIsNull(fillAddress(customerList,contractorPerson,new StringBuilder(),requestBody.getSaleChannelId()));
                 personasList.add(contractorPerson);
             }
 
@@ -995,12 +988,13 @@ public class MapperHelper {
         return request;
     }
 
-    private void fillAddressInsuredParticipant(RBVDR201 rbvdr201, CustomerListASO customerList, ParticipantDTO participantDTO, PersonaBO insuredPerson) {
+    private void fillAddressInsuredParticipant(RBVDR201 rbvdr201, CustomerListASO customerList,
+                                   ParticipantDTO participantDTO, PersonaBO insuredPerson,String saleChannelId) {
         if(Objects.nonNull(participantDTO.getCustomerId())){
             CustomerListASO customerInsured = rbvdr201.executeGetCustomerInformation(participantDTO.getCustomerId());
-            validateIfAddressIsNull(fillAddress(customerInsured, insuredPerson,new StringBuilder()));
+            validateIfAddressIsNull(fillAddress(customerInsured, insuredPerson,new StringBuilder(),saleChannelId));
         }else{
-            validateIfAddressIsNull(fillAddress(customerList, insuredPerson,new StringBuilder()));
+            validateIfAddressIsNull(fillAddress(customerList, insuredPerson,new StringBuilder(),saleChannelId));
         }
     }
 
@@ -1516,7 +1510,7 @@ public class MapperHelper {
         persons.setCelular(persona.getCelular());
         return persons;
     }
-    public String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder stringAddress, PolicyDTO requestBody) {
+    public String fillAddress(CustomerListASO customerList, PersonaBO persona, StringBuilder stringAddress, String saleChannelId) {
 
         String picCodeValue = this.applicationConfigurationService.getProperty(KEY_PIC_CODE);
 
@@ -1539,10 +1533,10 @@ public class MapperHelper {
         String addressGroupList = fillAddressGroupList(geographicGroupsAddress, addressViaList, persona);
 
         if(isNull(addressGroupList) && isNull(addressViaList) &&
-                picCodeValue.equals(requestBody.getSaleChannelId())) {
+                picCodeValue.equals(saleChannelId)) {
             return null;
         } else if (isNull(addressGroupList) && isNull(addressViaList) &&
-                !picCodeValue.equals(requestBody.getSaleChannelId())) {
+                !picCodeValue.equals(saleChannelId)) {
             persona.setTipoVia(SIN_ESPECIFICAR);
             persona.setNombreVia(SIN_ESPECIFICAR);
             persona.setNumeroVia(SIN_ESPECIFICAR);
