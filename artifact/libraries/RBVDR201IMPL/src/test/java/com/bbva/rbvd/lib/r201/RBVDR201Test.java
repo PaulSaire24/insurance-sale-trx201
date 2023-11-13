@@ -2,6 +2,7 @@ package com.bbva.rbvd.lib.r201;
 
 import com.bbva.apx.exception.business.BusinessException;
 
+import com.bbva.apx.exception.io.network.TimeoutException;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 
@@ -433,5 +434,19 @@ public class RBVDR201Test {
 		assertNull(validation);
 	}
 
+	@Test
+	public void executePrePilicyEmissionServiceWithTimeoutException() {
+
+		LOGGER.info("RBVDR201Test - Executing executePrePilicyEmissionServiceWithTimeoutException...");
+
+		String responseBody = "{\"error\":{\"code\":\"CQT001\",\"message\"\"Error interno del Servidor.\",\"details\":[\"\\\"SIN999001\\\"Error de sintaxis\"],\"httpStatus\":504}}";
+		when(rimacUrlForker.generatePropertyKeyName(anyString())).thenReturn("value");
+		when(rimacUrlForker.generateUriForSignatureAWS(anyString(), anyString())).thenReturn("value");
+		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenThrow(new TimeoutException("RBVD01020044"));
+
+		EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId", "830");
+		assertNull(rimacResponse);
+
+	}
 
 }
