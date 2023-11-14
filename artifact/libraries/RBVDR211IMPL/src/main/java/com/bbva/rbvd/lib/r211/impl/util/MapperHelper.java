@@ -834,6 +834,13 @@ public class MapperHelper {
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         financiamiento.setFechaInicio(strDate);
         financiamiento.setNumeroCuotas(requestBody.getInstallmentPlan().getTotalNumberInstallments());
+
+        String  operacionGlossaryDesc = responseQueryGetRequiredFields.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString();
+        if (Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)) {
+            financiamiento.setFrecuencia("L");
+            financiamiento.setNumeroCuotas(1L);
+        }
+
         List<FinanciamientoBO> financiamientoBOs = new ArrayList<>();
         financiamientoBOs.add(financiamiento);
         CrearCronogramaBO crearCronogramaBO = new CrearCronogramaBO();
@@ -857,7 +864,6 @@ public class MapperHelper {
 
         generalEmisionRimacRequest.getPayload().setAgregarPersona(agregarPersonaBO);
 
-        String  operacionGlossaryDesc = responseQueryGetRequiredFields.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString();
         if(Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)){
             DatoParticularBO quintoDatoParticular = new DatoParticularBO();
             quintoDatoParticular.setEtiqueta(PARTICULAR_DATA_MESES_DE_VIGENCIA);
