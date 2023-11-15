@@ -201,7 +201,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			validateInsertion(insertedContract, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
 
-			List<InsuranceCtrReceiptsDAO> receiptsList = this.mapperHelper.buildInsuranceCtrReceipts(asoResponse, requestBody);
+			List<InsuranceCtrReceiptsDAO> receiptsList = this.mapperHelper.buildInsuranceCtrReceipts(asoResponse, requestBody, responseQueryGetRequiredFields);
 
 			Map<String, Object>[] receiptsArguments = this.mapperHelper.createSaveReceiptsArguments(receiptsList);
 			Arrays.stream(receiptsArguments).
@@ -429,7 +429,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			validateInsertion(insertedContract, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
 
-			List<InsuranceCtrReceiptsDAO> receiptsList = this.mapperHelper.buildInsuranceCtrReceipts(asoResponse, requestBody);
+			List<InsuranceCtrReceiptsDAO> receiptsList = this.mapperHelper.buildInsuranceCtrReceipts(asoResponse, requestBody, responseQueryGetRequiredFields);
 
 			Map<String, Object>[] receiptsArguments = this.mapperHelper.createSaveReceiptsArguments(receiptsList);
 			Arrays.stream(receiptsArguments).

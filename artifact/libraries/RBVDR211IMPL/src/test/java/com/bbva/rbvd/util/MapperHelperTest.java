@@ -87,6 +87,7 @@ public class MapperHelperTest {
     private EmisionBO rimacResponse;
     private CustomerListASO customerList;
     private Map<String,Object> responseQueryGetProductById;
+    private Map<String,Object> responseQueryGetRequiredFields;
 
     private RBVDR201 rbvdr201;
     private PISDR350 pisdr350;
@@ -169,6 +170,11 @@ public class MapperHelperTest {
         responseQueryGetProductById = new HashMap<>();
         responseQueryGetProductById.put("INSURANCE_BUSINESS_NAME","VIDA");
         responseQueryGetProductById.put("PRODUCT_SHORT_DESC","VIDADINAMICO");
+
+        responseQueryGetRequiredFields = new HashMap<>();
+        responseQueryGetRequiredFields.put(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue(), "DESEMPLEO_PRESTAMO");
+
+        when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","")).thenReturn("DESEMPLEO_PRESTAMO");
     }
 
 
@@ -660,7 +666,7 @@ public class MapperHelperTest {
 
     @Test
     public void buildInsuranceCtrReceipt_OK() {
-        List<InsuranceCtrReceiptsDAO> validation = mapperHelper.buildInsuranceCtrReceipts(asoResponse, apxRequest);
+        List<InsuranceCtrReceiptsDAO> validation = mapperHelper.buildInsuranceCtrReceipts(asoResponse, apxRequest, responseQueryGetRequiredFields);
 
         assertNotNull(validation.get(0).getEntityId());
         assertNotNull(validation.get(0).getBranchId());
@@ -727,7 +733,7 @@ public class MapperHelperTest {
         apxRequest.getPaymentMethod().getRelatedContracts().get(0).getProduct().setId("ACCOUNT");
         apxRequest.getFirstInstallment().setIsPaymentRequired(true);
 
-        validation = mapperHelper.buildInsuranceCtrReceipts(asoResponse, apxRequest);
+        validation = mapperHelper.buildInsuranceCtrReceipts(asoResponse, apxRequest, responseQueryGetRequiredFields);
 
         assertEquals(BigDecimal.ZERO, validation.get(0).getFixingExchangeRateAmount());
         assertEquals(BigDecimal.ZERO, validation.get(0).getPremiumCurrencyExchAmount());
@@ -2129,7 +2135,7 @@ public class MapperHelperTest {
     @Test
     public void buildInsuranceCtrReceipt_ProductLife() {
         apxRequest.setProductId("840");
-        List<InsuranceCtrReceiptsDAO> validation = mapperHelper.buildInsuranceCtrReceipts(asoResponse, apxRequest);
+        List<InsuranceCtrReceiptsDAO> validation = mapperHelper.buildInsuranceCtrReceipts(asoResponse, apxRequest, responseQueryGetRequiredFields);
 
         assertNotNull(validation.get(0).getEntityId());
         assertNotNull(validation.get(0).getBranchId());

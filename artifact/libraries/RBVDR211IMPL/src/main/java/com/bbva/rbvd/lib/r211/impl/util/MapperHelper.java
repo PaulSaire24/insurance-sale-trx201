@@ -554,7 +554,7 @@ public class MapperHelper {
         return arguments;
     }
 
-    public List<InsuranceCtrReceiptsDAO> buildInsuranceCtrReceipts(PolicyASO asoResponse, PolicyDTO requestBody) {
+    public List<InsuranceCtrReceiptsDAO> buildInsuranceCtrReceipts(PolicyASO asoResponse, PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields) {
 
         List<InsuranceCtrReceiptsDAO> receiptList = new ArrayList<>();
 
@@ -618,10 +618,13 @@ public class MapperHelper {
 
         receiptList.add(firstReceipt);
 
+        String productsCalculateValidityMonths = this.applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","");
+        String  operacionGlossaryDesc = responseQueryGetRequiredFields.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString();
         if("MONTHLY".equals(requestBody.getInstallmentPlan().getPeriod().getId()) &&
                 !(requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue()) ||
                         requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue()) ||
-                        requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_3.getValue()))) {
+                        requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_3.getValue())) &&
+                    !Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)) {
             generateMonthlyReceipts(firstReceipt, receiptList);
         }
 
