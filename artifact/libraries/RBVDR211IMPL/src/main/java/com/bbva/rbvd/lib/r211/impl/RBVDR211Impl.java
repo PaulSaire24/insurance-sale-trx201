@@ -167,20 +167,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Required payment evaluation *****");
 			evaluateRequiredPayment(requestBody);
 
-
-
-
-
-
-
 			PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
-
-
-
-
-
-
-
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Setting branchId provided by HOST *****");
 			String hostBranchId = asoResponse.getData().getBank().getBranch().getId();
