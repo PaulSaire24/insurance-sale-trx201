@@ -926,7 +926,7 @@ public class MapperHelper {
         persona.setNroDocumento(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())?requestBody.getHolder().getIdentityDocument().getNumber():customer.getIdentityDocuments().get(0).getDocumentNumber());
         persona.setApePaterno(customer.getLastName());
 
-        if(customer.getSecondLastName().length() > MAX_CHARACTER) {
+        if(Objects.nonNull(customer.getSecondLastName()) && customer.getSecondLastName().length() > MAX_CHARACTER) {
             persona.setApeMaterno(customer.getSecondLastName());
         } else {
             persona.setApeMaterno("");
