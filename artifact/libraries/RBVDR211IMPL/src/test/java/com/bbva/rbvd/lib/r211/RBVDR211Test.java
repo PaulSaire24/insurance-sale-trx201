@@ -597,7 +597,71 @@ public class RBVDR211Test {
 		when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt", "")).thenReturn("");
 
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+		assertNotNull(validation);
+	}
 
+	@Test
+	public void eexecuteBusinessLogicEmissionPrePolicySetOrganizatioFieldsNullsTest() {
+		LOGGER.info("RBVDR211Test - Executing eexecuteBusinessLogicEmissionPrePolicySetOrganizationTest...");
+
+		this.requestBody.getBank().getBranch().setId("7794");
+		requestBody.setProductId("833");
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+
+		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
+		this.requestBody.getBank().getBranch().setId("0057");
+		this.requestBody.setSaleChannelId("BI");
+
+		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
+		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("DISTRICT_NAME", "LINCE");
+		responseGetHomeInfoForEmissionService.put("HOUSING_TYPE", "A");
+		responseGetHomeInfoForEmissionService.put("AREA_PROPERTY_1_NUMBER", new BigDecimal(2));
+		responseGetHomeInfoForEmissionService.put("PROP_SENIORITY_YEARS_NUMBER", new BigDecimal(10));
+		responseGetHomeInfoForEmissionService.put("FLOOR_NUMBER", new BigDecimal(3));
+		responseGetHomeInfoForEmissionService.put("EDIFICATION_LOAN_AMOUNT", new BigDecimal(111.1));
+		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
+
+		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
+		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+
+		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(null);
+
+		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
+
+		customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("RUC");
+		customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("20999999991");
+
+		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
+
+		assertNull(validation);
+
+		ListBusinessesASO businesses = new ListBusinessesASO();
+		BusinessASO business = new BusinessASO();
+		FormationASO formation = new FormationASO();
+		formation.setCountry(new CountryASO());
+		business.setBusinessDocuments(Collections.singletonList(new BusinessDocumentASO()));
+		business.setFormation(formation);
+		business.setAnnualSales(new SaleASO());
+		business.setBusinessGroup(new BusinessGroupASO());
+		business.setEconomicActivity(new EconomicActivityASO());
+		businesses.setData(Collections.singletonList(business));
+
+		businesses.getData().get(0).setEconomicActivity(null);
+		businesses.getData().get(0).setBusinessGroup(null);
+		businesses.getData().get(0).setAnnualSales(null);
+		businesses.getData().get(0).setFormation(null);
+
+		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(businesses);
+		when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt", "")).thenReturn("");
+
+		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertNotNull(validation);
 	}
 

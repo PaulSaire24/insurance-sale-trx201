@@ -115,6 +115,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
 	private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
+	private static final String FIELD_BLANK = "";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -835,12 +836,17 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			organizacion.setNroDocumento(business.getBusinessDocuments().get(0).getDocumentNumber());
 			organizacion.setRazonSocial(business.getLegalName());
 			organizacion.setNombreComercial(business.getLegalName());
-			organizacion.setPaisOrigen(business.getFormation().getCountry().getName());
-			organizacion.setFechaConstitucion(business.getFormation().getDate());
-			organizacion.setFechaInicioActividad(business.getAnnualSales().getStartDate());
-			organizacion.setTipoOrganizacion(business.getBusinessGroup().getId());
+			if(Objects.nonNull(business.getFormation())) {
+				organizacion.setPaisOrigen(business.getFormation().getCountry().getName());
+				organizacion.setFechaConstitucion(business.getFormation().getDate());
+			} else {
+				organizacion.setPaisOrigen("PERU");
+				organizacion.setFechaConstitucion(null);
+			}
+			organizacion.setFechaInicioActividad(Objects.isNull(business.getAnnualSales()) ? null : business.getAnnualSales().getStartDate());
+			organizacion.setTipoOrganizacion(Objects.isNull(business.getBusinessGroup()) ? FIELD_BLANK : business.getBusinessGroup().getId());
 			organizacion.setGrupoEconomico(TAG_OTROS);
-			organizacion.setCiiu(business.getEconomicActivity().getId());
+			organizacion.setCiiu(Objects.isNull(business.getEconomicActivity()) ? FIELD_BLANK : business.getEconomicActivity().getId());
 			organizacion.setTelefonoFijo(fijo);
 			organizacion.setCelular(celular);
 			organizacion.setCorreoElectronico(correo);

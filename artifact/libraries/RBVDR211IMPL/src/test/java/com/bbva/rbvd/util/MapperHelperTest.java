@@ -1478,6 +1478,72 @@ public class MapperHelperTest {
 
     }
 
+    @Test
+    public void mapRimacEmisionRequestWithOutSecondLastName_OK() {
+        when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("R");
+        when(this.applicationConfigurationService.getProperty("DNI")).thenReturn("L");
+        when(this.applicationConfigurationService.getProperty("MONTHLY")).thenReturn("M");
+        when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
+        when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","")).thenReturn("DESEMPLEO_PRESTAMO");
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_PARTICIPANT_PERSONAL_ID.getValue(), "33556255");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue(), "HOGAR_TOTAL");
+        requiredFieldsEmisionBDResponse.put(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue(), "DESEMPLEO_PRESTAMO");
+        EmisionBO emisionInput = new EmisionBO();
+        PersonaBO persona = new PersonaBO();
+        PolicyDTO requestBody = new PolicyDTO();
+        requestBody.setSaleChannelId("PC");
+        StringBuilder stringAddress = new StringBuilder();
+        String filledAddress = mapperHelper.fillAddress(customerList, persona, stringAddress, "PC");
+        DatoParticularBO datoParticular1 = new DatoParticularBO();
+        datoParticular1.setCodigo("");
+        datoParticular1.setEtiqueta("CANAL_TERCERO");
+        datoParticular1.setValor("PC");
+        DatoParticularBO datoParticular2 = new DatoParticularBO();
+        datoParticular2.setCodigo("");
+        datoParticular2.setEtiqueta("DATOS_DE_CUENTA");
+        datoParticular2.setValor("CUENTA||***8744||PEN");
+        DatoParticularBO datoParticular3 = new DatoParticularBO();
+        datoParticular3.setCodigo("");
+        datoParticular3.setEtiqueta("NRO_CERT_BANCO");
+        datoParticular3.setValor("00117799494000007585");
+        DatoParticularBO datoParticular4 = new DatoParticularBO();
+        datoParticular4.setCodigo("");
+        datoParticular4.setEtiqueta("OFICINA_VENTA");
+        datoParticular4.setValor("7799");
+        List<DatoParticularBO> datosParticulares = new ArrayList<>();
+        datosParticulares.add(datoParticular1);
+        datosParticulares.add(datoParticular2);
+        datosParticulares.add(datoParticular3);
+        datosParticulares.add(datoParticular4);
+        PayloadEmisionBO payload = new PayloadEmisionBO();
+        payload.setEnvioElectronico("N");
+        payload.setIndCobro("N");
+        payload.setIndInspeccion(Long.valueOf(1));
+        payload.setIndValidaciones("N");
+        ContactoInspeccionBO contactoInspeccion = new ContactoInspeccionBO();
+        contactoInspeccion.setNombre("Jose Sandoval");
+        contactoInspeccion.setCorreo("jose.sandoval.tirado.contractor@bbva.com");
+        contactoInspeccion.setTelefono("993766790");
+        payload.setContactoInspeccion(contactoInspeccion);
+        emisionInput.setPayload(payload);
+        emisionInput.getPayload().setDatosParticulares(datosParticulares);
+
+        DocumentTypeBO documentTypeBO1 = new DocumentTypeBO();
+        documentTypeBO1.setId("DNI");
+        IdentityDocumentsBO identityDocumentsBO1 = new IdentityDocumentsBO();
+        identityDocumentsBO1.setDocumentType(documentTypeBO1);
+        identityDocumentsBO1.setDocumentNumber("75485245");
+        List<IdentityDocumentsBO> identityDocumentsBOs1 = new ArrayList<>();
+        identityDocumentsBOs1.add(identityDocumentsBO1);
+        customerList.getData().get(0).setSecondLastName(null);
+        customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs1);
+        EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById ,customerList);
+        assertNotNull(validation1);
+    }
+
 
 
     @Test
