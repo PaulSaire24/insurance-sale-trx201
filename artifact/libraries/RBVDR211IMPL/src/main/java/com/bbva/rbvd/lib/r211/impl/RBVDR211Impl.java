@@ -48,6 +48,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
+import com.bbva.rbvd.lib.r211.impl.util.ConstantsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -71,12 +72,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
+
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
+
 
 public class RBVDR211Impl extends RBVDR211Abstract {
 
@@ -110,6 +115,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
 	private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
+	private static final String FIELD_BLANK = "";
 
 	@Override
 	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
@@ -150,6 +156,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Map<String, Object> responseQueryGetPaymentPeriod = pisdR012.executeGetASingleRow(RBVDProperties.QUERY_SELECT_PAYMENT_PERIOD.getValue(),
 					frequencyTypeArgument);
 
+			Map<String,Object> responseQueryGetProductById = (Map<String,Object>) this.pisdR401.executeGetProductById(ConstantsUtil.Queries.QUERY_SELECT_PRODUCT_BY_PRODUCT_TYPE,
+					singletonMap(RBVDProperties.FIELD_INSURANCE_PRODUCT_TYPE.getValue(), requestBody.getProductId()));
+
 			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields, responseQueryGetPaymentPeriod);
 
 			if(this.applicationConfigurationService.getDefaultProperty(PROPERTY_VALIDATION_RANGE + requestBody.getProductId() + "." + requestBody.getSaleChannelId(), "0").equals("1"))
@@ -171,8 +180,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			validateDigitalSale(requestBody);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Building Rimac request *****");
-
-
 			EmisionBO rimacRequest = this.mapperHelper.buildRequestBodyRimac(requestBody.getInspection(), createSecondDataValue(asoResponse),
 					requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
 
@@ -194,7 +201,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			validateInsertion(insertedContract, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
 
-			List<InsuranceCtrReceiptsDAO> receiptsList = this.mapperHelper.buildInsuranceCtrReceipts(asoResponse, requestBody);
+			List<InsuranceCtrReceiptsDAO> receiptsList = this.mapperHelper.buildInsuranceCtrReceipts(asoResponse, requestBody, responseQueryGetRequiredFields);
 
 			Map<String, Object>[] receiptsArguments = this.mapperHelper.createSaveReceiptsArguments(receiptsList);
 			Arrays.stream(receiptsArguments).
@@ -228,6 +235,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 				validateMultipleInsertion(this.pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSRNC_CTR_PARTICIPANT.getValue(),
 						participantsArguments), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE);
 			}
+
 			if(!isEmpty(requestBody.getRelatedContracts())) {
 				List<RelatedContractDAO> relatedContractsDao = this.mapperHelper.buildRelatedContractsWithInsurance(requestBody, contractDao);
 				Map<String, Object>[] relatedContractsArguments = this.mapperHelper.createSaveRelatedContractsArguments(relatedContractsDao);
@@ -236,6 +244,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 								forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - SaveRelatedContractsArguments parameter {} with value: {} *****", key, value)));
 				this.pisdR012.executeMultipleInsertionOrUpdate(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue(), relatedContractsArguments);
 			}
+
 			if(isEndorsement){
 				endosatarioRuc = requestBody.getParticipants().get(1).getIdentityDocument().getNumber();
 				endosatarioPorcentaje = requestBody.getParticipants().get(1).getBenefitPercentage();
@@ -260,7 +269,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					LOGGER.info("***** PISDR0019Impl - executeListCustomerResponse {} *****", ex.getMessage());
 					return null;
 				}
-				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody, responseQueryGetRequiredFields, customerList);
+				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody,
+						responseQueryGetRequiredFields,responseQueryGetProductById, customerList);
 				LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****",generalEmisionRequest);
 
 				setOrganization(generalEmisionRequest,  requestBody, customerList);
@@ -336,7 +346,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	}
 	@Override
-	public PolicyDTO executeBusinessLogicEmissionPrePolicyLifeEasyYes(PolicyDTO requestBody){
+	public PolicyDTO executeBusinessLogicEmissionPrePolicyLifeProduct(PolicyDTO requestBody){
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes START *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes ***** Param: {}", requestBody);
 
@@ -368,6 +378,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			Map<String, Object> responseQueryGetPaymentPeriod = pisdR012.executeGetASingleRow(RBVDProperties.QUERY_SELECT_PAYMENT_PERIOD.getValue(),
 					frequencyTypeArgument);
 
+			Map<String,Object> responseQueryGetProductById = (Map<String,Object>) this.pisdR401.executeGetProductById(ConstantsUtil.Queries.QUERY_SELECT_PRODUCT_BY_PRODUCT_TYPE,
+					singletonMap(RBVDProperties.FIELD_INSURANCE_PRODUCT_TYPE.getValue(), requestBody.getProductId()));
+
 			RequiredFieldsEmissionDAO emissionDao = validateResponseQueryGetRequiredFields(responseQueryGetRequiredFields, responseQueryGetPaymentPeriod);
 
 			if(this.applicationConfigurationService.getDefaultProperty(PROPERTY_VALIDATION_RANGE + requestBody.getProductId() + "." + requestBody.getSaleChannelId(), "0").equals("1"))
@@ -389,16 +402,16 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			validateDigitalSale(requestBody);
 
 			LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes | Building Rimac request *****");
-			String insuranceBusinessName = (String) responseQueryGetRequiredFields.get(PISDProperties.FIELD_INSURANCE_BUSINESS_NAME.getValue());
+			String insuranceBusinessName = this.mapperHelper.getInsuranceBusinessNameFromDB(responseQueryGetProductById);
 			String branchRequest = requestBody.getBank().getBranch().getId();
 			RelatedContractASO relatedContractASO = asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0);
 
 			EmisionBO requestEmisionLife = this.mapperHelper.generateRimacRequestLife(
-					insuranceBusinessName, asoResponse.getData().getId(), branchRequest	,
-					this.getKindOfAccount(relatedContractASO),this.getAccountNumberInDatoParticular(relatedContractASO), asoResponse.getData().getFirstInstallment().getOperationNumber(), requestBody);
+					insuranceBusinessName, requestBody.getSaleChannelId(), asoResponse.getData().getId(), branchRequest	,
+					this.getKindOfAccount(relatedContractASO),this.getAccountNumberInDatoParticular(relatedContractASO), asoResponse.getData().getFirstInstallment().getOperationNumber(), requestBody, (String)responseQueryGetRequiredFields.get("ACCOUNT_ID"));
 			LOGGER.info("***** RBVDR211Impl - generateRimacRequestLife | Emission Life Rimac request : {} *****",requestEmisionLife);
 
-			isEndorsement = validateParticipantTypeIfExist(requestBody.getParticipants(),TAG_ENDORSEE);
+			isEndorsement = ValidationUtil.validateEndorsementInParticipantsRequest(requestBody);
 
 			InsuranceContractDAO contractDao = this.mapperHelper.buildInsuranceContract(requestBody, emissionDao, asoResponse.getData().getId(), isEndorsement);
 			LOGGER.info("***** RBVDR211Impl - buildInsuranceContract | Mapping to save contract life : {} *****",contractDao);
@@ -416,7 +429,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			validateInsertion(insertedContract, RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
 
-			List<InsuranceCtrReceiptsDAO> receiptsList = this.mapperHelper.buildInsuranceCtrReceipts(asoResponse, requestBody);
+			List<InsuranceCtrReceiptsDAO> receiptsList = this.mapperHelper.buildInsuranceCtrReceipts(asoResponse, requestBody, responseQueryGetRequiredFields);
 
 			Map<String, Object>[] receiptsArguments = this.mapperHelper.createSaveReceiptsArguments(receiptsList);
 			Arrays.stream(receiptsArguments).
@@ -460,7 +473,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			if(isEndorsement){
-				ParticipantDTO participantEndorse = filterParticipantByType(requestBody.getParticipants(),TAG_ENDORSEE);
+				ParticipantDTO participantEndorse = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),TAG_ENDORSEE);
 				endosatarioRuc = participantEndorse.getIdentityDocument().getNumber();
 				endosatarioPorcentaje = participantEndorse.getBenefitPercentage();
 
@@ -478,7 +491,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			//llamada a add participants
-			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,requestBody,customerList,responseQueryGetRequiredFields);
+			Map<String, Object> dataInsuredFromDB = this.getDataInsuredParticipantFromDB(requestBody, responseQueryGetRequiredFields);
+			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,
+					requestBody,this.rbvdR201,responseQueryGetRequiredFields,dataInsuredFromDB);
 			LOGGER.info("***** RBVDR211Impl - generateRequestAddParticipants | Request add Participants Rimac Service : {} *****",requestAddParticipants);
 
 			AgregarTerceroBO responseAddParticipants = rbvdR201.executeAddParticipantsService(requestAddParticipants, emissionDao.getInsuranceCompanyQuotaId(),requestBody.getProductId(),requestBody.getTraceId());
@@ -535,13 +550,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		}
 	}
 
-	private static ParticipantDTO filterParticipantByType(List<ParticipantDTO> participants,String participantType) {
-		return participants.stream().filter(participantDTO -> participantDTO.getParticipantType().getId().equals(participantType)).collect(toList()).get(0);
-	}
-
-	private boolean validateParticipantTypeIfExist(List<ParticipantDTO> participants,String tagParticipantType){
-		return (!org.springframework.util.StringUtils.isEmpty(participants) &&
-			participants.stream().anyMatch(participant -> participant.getParticipantType().getId().equals(tagParticipantType)));
+	private Map<String, Object> getDataInsuredParticipantFromDB(PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields) {
+		Map<String,Object> argumentForGetDataInsured = new HashMap<>();
+		argumentForGetDataInsured.put(RBVDProperties.FIELD_POLICY_QUOTA_INTERNAL_ID.getValue(),
+				requestBody.getQuotationId());
+		argumentForGetDataInsured.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(),
+				responseQueryGetRequiredFields.get(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue()));
+		argumentForGetDataInsured.put(RBVDProperties.FIELD_INSURANCE_MODALITY_TYPE.getValue(), requestBody.getProductPlan().getId());
+		return this.pisdR350.executeGetASingleRow(ConstantsUtil.Queries.QUERY_GET_INSURED_DATA_LIFE,argumentForGetDataInsured);
 	}
 
 	private Map<String, Object> createSingleArgument(String argument, String parameterName) {
@@ -820,12 +836,17 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			organizacion.setNroDocumento(business.getBusinessDocuments().get(0).getDocumentNumber());
 			organizacion.setRazonSocial(business.getLegalName());
 			organizacion.setNombreComercial(business.getLegalName());
-			organizacion.setPaisOrigen(business.getFormation().getCountry().getName());
-			organizacion.setFechaConstitucion(business.getFormation().getDate());
-			organizacion.setFechaInicioActividad(business.getAnnualSales().getStartDate());
-			organizacion.setTipoOrganizacion(business.getBusinessGroup().getId());
+			if(Objects.nonNull(business.getFormation())) {
+				organizacion.setPaisOrigen(business.getFormation().getCountry().getName());
+				organizacion.setFechaConstitucion(business.getFormation().getDate());
+			} else {
+				organizacion.setPaisOrigen("PERU");
+				organizacion.setFechaConstitucion(null);
+			}
+			organizacion.setFechaInicioActividad(Objects.isNull(business.getAnnualSales()) ? null : business.getAnnualSales().getStartDate());
+			organizacion.setTipoOrganizacion(Objects.isNull(business.getBusinessGroup()) ? FIELD_BLANK : business.getBusinessGroup().getId());
 			organizacion.setGrupoEconomico(TAG_OTROS);
-			organizacion.setCiiu(business.getEconomicActivity().getId());
+			organizacion.setCiiu(Objects.isNull(business.getEconomicActivity()) ? FIELD_BLANK : business.getEconomicActivity().getId());
 			organizacion.setTelefonoFijo(fijo);
 			organizacion.setCelular(celular);
 			organizacion.setCorreoElectronico(correo);

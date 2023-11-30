@@ -37,6 +37,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -134,7 +135,7 @@ public class RBVDT20101PETransactionTest {
 		this.addParameter("productId", "840");
 		simulateResponse.setOperationDate(new Date());
 
-		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeEasyYes(anyObject())).thenReturn(simulateResponse);
+		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(anyObject())).thenReturn(simulateResponse);
 
 		this.transaction.getContext().getParameterList().forEach(
 				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)

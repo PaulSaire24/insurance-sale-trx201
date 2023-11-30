@@ -91,12 +91,22 @@
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR012</artifactId>
-			<version>0.28.3</version>
+			<version>0.31.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.ksmk</groupId>
 			<artifactId>KSMKR002</artifactId>
 			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.bbva.pisd</groupId>
+			<artifactId>PISDR401</artifactId>
+			<version>0.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.bbva.pisd</groupId>
+			<artifactId>PISDR350</artifactId>
+			<version>0.2.8</version>
 		</dependency>
 	</dependencies>
 	<build>
