@@ -1223,10 +1223,10 @@ public class MapperHelperTest {
         assertNotNull(validation3);
 
         GeographicGroupsBO geographicGroupsBO5 = new GeographicGroupsBO();
-        geographicGroupsBO5.setName("LOMAS");
+        geographicGroupsBO5.setName("-");
         GeographicGroupTypeBO geographicGroupTypeBO5 = new GeographicGroupTypeBO();
-        geographicGroupTypeBO5.setId("PASSAGE");
-        geographicGroupTypeBO5.setName("PSJ");
+        geographicGroupTypeBO5.setId("JIRON");
+        geographicGroupTypeBO5.setName("JR.");
         geographicGroupsBO5.setGeographicGroupType(geographicGroupTypeBO5);
 
         GeographicGroupsBO geographicGroupsBO6 = new GeographicGroupsBO();
