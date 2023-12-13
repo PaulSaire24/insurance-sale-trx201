@@ -1616,7 +1616,7 @@ public class MapperHelper {
                 .map(element -> this.getViaType(element.getGeographicGroupType().getId()) + separationSymbol + element.getName())
                 .orElse(null);
 
-        if(nonNull(dataViaType)) {
+        if(nonNull(dataViaType) && dataViaType.split(separationSymbol).length > 1) {
             String[] arrayVia = dataViaType.split(separationSymbol);
             viaType = arrayVia[0];
             viaName = arrayVia[1];
@@ -1653,7 +1653,7 @@ public class MapperHelper {
                 .map(element -> this.getGroupType(element.getGeographicGroupType().getId()) + separationSymbol + element.getName())
                 .orElse(null);
 
-        if(nonNull(dataGroupType)) {
+        if(nonNull(dataGroupType) && dataGroupType.split(separationSymbol).length > 1) {
             String[] arrayGroupType = dataGroupType.split(separationSymbol);
             groupType = arrayGroupType[0];
             groupName = arrayGroupType[1];
@@ -1711,7 +1711,7 @@ public class MapperHelper {
                 .map(element -> this.getTypeOther(element.getGeographicGroupType().getId()) + separationSymbol + element.getName())
                 .orElse(NO_EXIST);
 
-        if (!NO_EXIST.equals(addressOther)) {
+        if (!NO_EXIST.equals(addressOther) && addressOther.split(separationSymbol).length > 1) {
             String[] arrayOther = addressOther.split(separationSymbol);
             typeOther = arrayOther[0];
             nameOther = arrayOther[1];
