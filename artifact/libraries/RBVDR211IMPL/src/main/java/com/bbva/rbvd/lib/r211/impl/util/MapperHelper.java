@@ -1578,14 +1578,24 @@ public class MapperHelper {
                         element -> element.getGeographicGroupType().getId(),
                         element -> element.getCode() + separationSymbol + element.getName()));
 
-        String[] arrayDepartment = mapUbication.get("DEPARTMENT").split(separationSymbol);
-        String[] arrayProvince = mapUbication.get("PROVINCE").split(separationSymbol);
-        String[] arrayDistrict = mapUbication.get("DISTRICT").split(separationSymbol);
+        String[] arrayDepartment = mapUbication.getOrDefault("DEPARTMENT", "").split(separationSymbol);
+        String[] arrayProvince = mapUbication.getOrDefault("PROVINCE", "").split(separationSymbol);
+        String[] arrayDistrict = mapUbication.getOrDefault("DISTRICT", "").split(separationSymbol);
 
-        ubigeo = arrayDepartment[0] + arrayProvince[0] + arrayDistrict[0];
-        department = arrayDepartment[1];
-        province = arrayProvince[1];
-        district = arrayDistrict[1];
+        if (arrayDepartment.length >= 2) {
+            ubigeo += arrayDepartment[0];
+            department = arrayDepartment[1];
+        }
+
+        if (arrayProvince.length >= 2) {
+            ubigeo += arrayProvince[0];
+            province = arrayProvince[1];
+        }
+
+        if (arrayDistrict.length >= 2) {
+            ubigeo += arrayDistrict[0];
+            district = arrayDistrict[1];
+        }
 
         persona.setDepartamento(department);
         persona.setProvincia(province);
