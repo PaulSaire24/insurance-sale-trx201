@@ -398,7 +398,7 @@ public class RBVDR211Test {
 
 		secondParticipant.setParticipantType(tipoParticipante);
 
-		requestBody.getParticipants().add(secondParticipant);
+		requestBody.getParticipants().set(1, secondParticipant);
 
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 
@@ -458,7 +458,7 @@ public class RBVDR211Test {
 
 		secondParticipant.setParticipantType(tipoParticipante);
 
-		requestBody.getParticipants().add(secondParticipant);
+		requestBody.getParticipants().set(1, secondParticipant);
 
 		when(pisdR012.executeInsertSingleRow(RBVDProperties.QUERY_INSERT_POLICY_ENDORSEMENT.getValue(), new HashMap<>())).
 				thenReturn(1);

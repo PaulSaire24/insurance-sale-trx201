@@ -408,7 +408,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 			EmisionBO requestEmisionLife = this.mapperHelper.generateRimacRequestLife(
 					insuranceBusinessName, requestBody.getSaleChannelId(), asoResponse.getData().getId(), branchRequest	,
-					this.getKindOfAccount(relatedContractASO),this.getAccountNumberInDatoParticular(relatedContractASO), asoResponse.getData().getFirstInstallment().getOperationNumber(), requestBody, (String)responseQueryGetRequiredFields.get("ACCOUNT_ID"));
+					this.getKindOfAccount(relatedContractASO),this.getAccountNumberInDatoParticular(relatedContractASO), asoResponse.getData().getFirstInstallment().getOperationNumber(), requestBody, (String)responseQueryGetRequiredFields.get(RBVDProperties.FIELD_ACCOUNT_ID.getValue()));
 			LOGGER.info("***** RBVDR211Impl - generateRimacRequestLife | Emission Life Rimac request : {} *****",requestEmisionLife);
 
 			isEndorsement = ValidationUtil.validateEndorsementInParticipantsRequest(requestBody);

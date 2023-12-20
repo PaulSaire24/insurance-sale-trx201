@@ -7,6 +7,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ValidationUtil {
 
@@ -17,6 +18,16 @@ public class ValidationUtil {
             Optional<ParticipantDTO> participant = participants.stream()
                     .filter(participantDTO -> participantType.equals(participantDTO.getParticipantType().getId())).findFirst();
             return participant.orElse(null);
+        }else{
+            return null;
+        }
+    }
+
+    public static List<ParticipantDTO> filterBenficiaryType(List<ParticipantDTO> participants, String participantType) {
+        if(!CollectionUtils.isEmpty(participants)){
+            List<ParticipantDTO> participant = participants.stream()
+                    .filter(participantDTO -> participantType.equals(participantDTO.getParticipantType().getId())).collect(Collectors.toList());
+            return participant.isEmpty() ? null : participant;
         }else{
             return null;
         }

@@ -280,7 +280,7 @@ public class MapperHelperTest {
     @Test
     public void buildAsoRequest_WithInsuredParticipant_OK() {
 
-        apxRequest.getParticipants().add(dataInsuredParticipant());
+        apxRequest.getParticipants().set(1, dataInsuredParticipant());
 
         DataASO validation = mapperHelper.buildAsoRequest(apxRequest);
 
@@ -292,7 +292,7 @@ public class MapperHelperTest {
         assertNotNull(validation.getHolder().getIdentityDocument().getDocumentType().getId());
         assertNotNull(validation.getHolder().getIdentityDocument().getNumber());
         assertFalse(validation.getParticipants().isEmpty());
-        assertEquals(2,validation.getParticipants().size());
+        assertEquals(3,validation.getParticipants().size());
         assertNotNull(validation.getParticipants().get(0).getParticipantType());
         assertNotNull(validation.getParticipants().get(0).getParticipantType().getId());
         assertNotNull(validation.getParticipants().get(0).getCustomerId());
@@ -320,7 +320,7 @@ public class MapperHelperTest {
         assertNotNull(validation.getHolder().getIdentityDocument().getNumber());
         assertNull(validation.getHolder().getId());
         assertFalse(validation.getParticipants().isEmpty());
-        assertEquals(2,validation.getParticipants().size());
+        assertEquals(3,validation.getParticipants().size());
 
     }
 
@@ -1809,7 +1809,7 @@ public class MapperHelperTest {
         document.setNumber("12345678");
         participanteEndorsee.setIdentityDocument(document);
 
-        apxRequest.getParticipants().add(participanteEndorsee);
+        apxRequest.getParticipants().set(1, participanteEndorsee);
 
         mapperHelper.mappingOutputFields(apxRequest, asoResponse, rimacResponse, requiredFieldsEmissionDao);
 

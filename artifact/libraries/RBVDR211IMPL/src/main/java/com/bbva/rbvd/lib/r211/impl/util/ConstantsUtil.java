@@ -9,6 +9,7 @@ public class ConstantsUtil {
         public static final String PAYMENT_MANAGER = "PAYMENT_MANAGER";
         public static final String INSURED = "INSURED";
         public static final String LEGAL_REPRESENTATIVE = "LEGAL_REPRESENTATIVE";
+        public static final String BENEFICIARY = "BENEFICIARY";
     }
 
     public static final String FIELD_PRODUCT_SHORT_DESC = "PRODUCT_SHORT_DESC";

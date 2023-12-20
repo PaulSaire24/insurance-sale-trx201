@@ -6,6 +6,7 @@ import com.bbva.elara.configuration.manager.application.ApplicationConfiguration
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 
 import com.bbva.pisd.dto.insurance.bo.CommonBO;
+import com.bbva.pisd.dto.insurance.bo.ContactDetailsBO;
 import com.bbva.pisd.dto.insurance.bo.GeographicGroupsBO;
 import com.bbva.pisd.dto.insurance.bo.LocationBO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
@@ -47,6 +48,7 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.BeneficiarioBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.CrearCronogramaBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.FinanciamientoBO;
@@ -127,6 +129,7 @@ import java.util.HashMap;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -632,7 +635,8 @@ public class MapperHelper {
         if("MONTHLY".equals(requestBody.getInstallmentPlan().getPeriod().getId()) &&
                 !(requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue()) ||
                 requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue()) ||
-                requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_3.getValue())) &&
+                requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_3.getValue()) ||
+                requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_4.getValue())) &&
             !Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)) {
             generateMonthlyReceipts(firstReceipt, receiptList);
         }
@@ -749,6 +753,8 @@ public class MapperHelper {
         ParticipantDTO participant = requestBody.getParticipants().get(0);
         ParticipantDTO legalRepre = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),
                 ConstantsUtil.Participant.LEGAL_REPRESENTATIVE);
+        List<ParticipantDTO> beneficiary = ValidationUtil.filterBenficiaryType(requestBody.getParticipants(),
+                ConstantsUtil.Participant.BENEFICIARY);
         List<Map<String, Object>> rolesFromDB = (List<Map<String, Object>>) responseQueryRoles.get(PISDProperties.KEY_OF_INSRC_LIST_RESPONSES.getValue());
         ParticipantDTO insured = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),
                 ConstantsUtil.Participant.INSURED);
@@ -782,6 +788,15 @@ public class MapperHelper {
                             insured,requestBody,this.applicationConfigurationService));
         }
 
+        if(beneficiary != null){
+            BigDecimal partyOrderNumber = BigDecimal.valueOf(1L);
+            for(ParticipantDTO benef : beneficiary){
+                partyOrderNumber = partyOrderNumber.add(BigDecimal.valueOf(1L));
+                listParticipants.add(InsrcContractParticipantBean.createParticipantBeneficiaryDao(id,new BigDecimal(ConstantsUtil.Number.DOS),
+                            benef,requestBody,this.applicationConfigurationService,partyOrderNumber));
+            }
+        }
+
         return listParticipants;
 
     }
@@ -808,6 +823,12 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_REGISTRY_SITUATION_TYPE.getValue(), participantDao.getRegistrySituationType());
         arguments.put(RBVDProperties.FIELD_CREATION_USER_ID.getValue(), participantDao.getCreationUserId());
         arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), participantDao.getUserAuditId());
+        arguments.put(RBVDProperties.FIELD_REFUND_PER.getValue(), participantDao.getRefundPer());
+        arguments.put(RBVDProperties.FIELD_INSURED_CUSTOMER_NAME.getValue(), participantDao.getInsuredCustomerName());
+        arguments.put(RBVDProperties.FIELD_FIRST_LAST_NAME.getValue(), participantDao.getFirstLastName());
+        arguments.put(RBVDProperties.FIELD_SECOND_LAST_NAME.getValue(), participantDao.getSecondLastName());
+        arguments.put(RBVDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), participantDao.getContactEmailDesc());
+        arguments.put(RBVDProperties.FIELD_PHONE_ID.getValue(), participantDao.getPhoneId());
         return arguments;
     }
 
@@ -953,7 +974,7 @@ public class MapperHelper {
         PayloadAgregarTerceroBO payload = new PayloadAgregarTerceroBO();
         AgregarTerceroBO request = new AgregarTerceroBO();
         List<PersonaBO> personasList = new ArrayList<>();
-
+        List<BeneficiarioBO> beneficiarioList = new ArrayList<>();
         payload.setProducto(businessName);
 
         if(!CollectionUtils.isEmpty(requestBody.getParticipants())){
@@ -980,6 +1001,9 @@ public class MapperHelper {
                     fillAddressInsuredParticipant(rbvdr201, customerList, participantDTO, insuredPerson,requestBody.getSaleChannelId());
 
                     personasList.add(insuredPerson);
+                }else if(ValidationUtil.validateOtherParticipants(participant, ConstantsUtil.Participant.BENEFICIARY)){
+                    BeneficiarioBO beneficiary = generateBenficiaryPayloadRimac(participant);
+                    beneficiarioList.add(beneficiary);
                 }
             });
 
@@ -989,6 +1013,14 @@ public class MapperHelper {
                 contractorPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
                 validateIfAddressIsNull(fillAddress(customerList,contractorPerson,new StringBuilder(),requestBody.getSaleChannelId()));
                 personasList.add(contractorPerson);
+            }
+
+            if(!beneficiarioList.isEmpty()){
+                personasList.forEach(persona -> {
+                    if (persona.getRol().equals(ConstantsUtil.ParticipantRol.INSURED.getRol())) {
+                        persona.setBeneficiario(beneficiarioList);
+                    }
+                });
             }
 
         }
@@ -1038,6 +1070,24 @@ public class MapperHelper {
         insuredPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
         insuredPerson.setCelular((String) dataInsured.get(LifeInsuranceInsuredData.FIELD_PHONE_ID));
         return insuredPerson;
+    }
+
+    private BeneficiarioBO generateBenficiaryPayloadRimac(ParticipantDTO participantDTO){
+        BeneficiarioBO beneficiarioBO = new BeneficiarioBO();
+        beneficiarioBO.setTipoDocumento(this.applicationConfigurationService.getProperty(participantDTO.getIdentityDocument().getDocumentType().getId()));
+        beneficiarioBO.setNroDocumento(participantDTO.getIdentityDocument().getNumber());
+        beneficiarioBO.setApePaterno(participantDTO.getLastName());
+        beneficiarioBO.setApeMaterno(participantDTO.getSecondLastName());
+        beneficiarioBO.setNombres(participantDTO.getFirstName());
+        beneficiarioBO.setPorcentajeParticipacion(participantDTO.getBenefitPercentage());
+        beneficiarioBO.setParentesco(participantDTO.getRelationship().getId());
+        Optional<ContactDetailDTO> phoneContact = participantDTO.getContactDetails().stream()
+                .filter(email -> PHONE_NUMBER_VALUE.equals(email.getContact().getContactDetailType())).findFirst();
+        Optional<ContactDetailDTO> emailContact = participantDTO.getContactDetails().stream()
+                .filter(email -> EMAIL_VALUE.equals(email.getContact().getContactDetailType())).findFirst();
+        beneficiarioBO.setTelefono(phoneContact.isPresent() ? phoneContact.get().getContact().getPhoneNumber() : null);
+        beneficiarioBO.setCorreo(emailContact.isPresent() ? emailContact.get().getContact().getAddress() : null);
+        return beneficiarioBO;
     }
 
     private static void validateIfAddressIsNull(String filledAddress) {
