@@ -251,8 +251,11 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			this.addAdviceWithDescription("RBVD10094944","Error al devolver informacion del Servicio de Agregar Terceros de Rimac");
 			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Exception: {}", ex.getMessage());
 			return null;
+		}catch (TimeoutException toex) {
+			this.addAdvice("RBVD01020044");
+			LOGGER.info("*** RBVDR201Impl - executeAddParticipantsService *** TimeoutException: {}", toex.getAdviceCode());
+			return null;
 		}
-
 	}
 
 	private String getRequestBodyAsJsonFormat(Object requestBody) {
