@@ -435,6 +435,18 @@ public class RBVDR201Test {
 	}
 
 	@Test
+	public void testExecuteAddParticipantsServiceWithTimeoutException() {
+		LOGGER.info("RBVDR201Test - Executing testExecuteAddParticipantsServiceWithTimeoutException...");
+
+		when(rimacUrlForker.generateUriAddParticipants(anyString(),anyString())).thenReturn("any-value");
+		when(rimacUrlForker.generateKeyAddParticipants(anyString())).thenReturn("any-value");
+		when(this.externalApiConnector.exchange(anyString(), anyObject(),anyObject(), (Class<AgregarTerceroBO>) any(), anyMap())).thenThrow(new TimeoutException(HttpStatus.GATEWAY_TIMEOUT.toString()));
+
+		AgregarTerceroBO validation = this.rbvdR201.executeAddParticipantsService(new AgregarTerceroBO(),"quotationId","productId","traceId");
+		assertNull(validation);
+	}
+
+	@Test
 	public void executePrePilicyEmissionServiceWithTimeoutException() {
 
 		LOGGER.info("RBVDR201Test - Executing executePrePilicyEmissionServiceWithTimeoutException...");
