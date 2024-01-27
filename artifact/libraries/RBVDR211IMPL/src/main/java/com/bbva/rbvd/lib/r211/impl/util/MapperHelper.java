@@ -1018,7 +1018,7 @@ public class MapperHelper {
             if(!beneficiarioList.isEmpty()){
                 personasList.forEach(persona -> {
                     if (persona.getRol().equals(ConstantsUtil.ParticipantRol.INSURED.getRol())) {
-                        persona.setBeneficiario(beneficiarioList);
+                        persona.setBeneficiarios(beneficiarioList);
                     }
                 });
             }
