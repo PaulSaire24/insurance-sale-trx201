@@ -2437,6 +2437,8 @@ public class MapperHelperTest {
 
         when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
 
+        apxRequest.getParticipants().get(2).getRelationship().setId("13");
+
 		AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipants("VIDADINAMICO", apxRequest, rbvdr201, requiredFieldsEmisionBDResponse,data);
 		assertNotNull(validation);
 		assertEquals(3, validation.getPayload().getPersona().size());
