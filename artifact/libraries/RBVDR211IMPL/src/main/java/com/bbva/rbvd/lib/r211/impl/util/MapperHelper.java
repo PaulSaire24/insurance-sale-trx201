@@ -1080,7 +1080,10 @@ public class MapperHelper {
         beneficiarioBO.setApeMaterno(participantDTO.getSecondLastName());
         beneficiarioBO.setNombres(participantDTO.getFirstName());
         beneficiarioBO.setPorcentajeParticipacion(participantDTO.getBenefitPercentage());
-        beneficiarioBO.setParentesco(participantDTO.getRelationship().getId());
+
+        String relationshipValue = ConstantsUtil.Relationship.getRelationshipValue(participantDTO.getRelationship().getId());
+
+        beneficiarioBO.setParentesco(relationshipValue);
         Optional<ContactDetailDTO> phoneContact = participantDTO.getContactDetails().stream()
                 .filter(email -> PHONE_NUMBER_VALUE.equals(email.getContact().getContactDetailType())).findFirst();
         Optional<ContactDetailDTO> emailContact = participantDTO.getContactDetails().stream()
