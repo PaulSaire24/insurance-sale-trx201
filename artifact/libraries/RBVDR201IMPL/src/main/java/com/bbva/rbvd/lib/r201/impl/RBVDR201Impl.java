@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r201.impl;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.apx.exception.io.network.TimeoutException;
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 
@@ -19,6 +20,7 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.bbva.rbvd.lib.r201.impl.util.AsoExceptionHandler;
@@ -34,6 +36,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
 import java.nio.charset.StandardCharsets;
@@ -55,6 +58,14 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	private static final String X_AMZ_DATE_HEADER = "X-Amz-Date";
 	private static final String X_API_KEY_HEADER = "x-api-key";
 	private static final String TRACE_ID_HEADER = "traceId";
+	private static final String ERROR_SERVICE_ASO_ADVICE_CODE = "RBVD00000175";
+	private static final String ERROR_SERVICE_ASO_MESSAGE = "Actualmente, estamos experimentando dificultades para establecer conexión con el servicio %s, utilizado en el servicio ASO '%s', debido a un error detectado: '%s'. Por favor, inténtalo de nuevo más tarde. Lamentamos los inconvenientes.";
+	private static final String ERROR_SERVICE_TIMEOUT_ASO_ADVICE_CODE = "RBVD00000174";
+	private static final String ERROR_SERVICE_TIMEOUT_ASO_MESSAGE = "Actualmente, el servicio %s no está disponible debido a un tiempo de espera en la conexión, al ser utilizado en el contexto del servicio ASO %s. Te recomendamos intentar acceder a este servicio en unos minutos, gracias.";
+	private static final String CREATE_INSURANCE_SERVICE = "createInsurance";
+	private static final String ICR2_COMMUNICATION_DESC = "con comunicación a la ICR2";
+	private static final String PROPERTIES_TIMEOUT_EXCEPTION = "error.message.timeout";
+	private static final String PROPERTIES_REST_EXCEPTION = "error.message.restException";
 
 	@Override
 	public GetContactDetailsASO executeGetContactDetailsService(String customerId) {
@@ -89,10 +100,19 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			responseBody = this.internalApiConnector.postForObject(ID_API_INSURANCES_CREATE_INSURANCE_ASO, entity, PolicyASO.class);
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Response: {}", getRequestBodyAsJsonFormat(responseBody));
 			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionASO END *****");
+		} catch (HttpStatusCodeException sce){
+			String errorMessage = AsoExceptionHandler.getErrorCode(sce.getResponseBodyAsString());
+			throw new BusinessException(RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode(), false, errorMessage);
 		} catch (RestClientException ex) {
 			LOGGER.debug("***** RBVDR201Impl - executePrePolicyEmissionASO ***** Exception: {}", ex.getMessage());
-			AsoExceptionHandler exceptionHandler = new AsoExceptionHandler();
-			exceptionHandler.handler(ex);
+			String messageRestException = this.applicationConfigurationService.getDefaultProperty(PROPERTIES_REST_EXCEPTION, ERROR_SERVICE_ASO_MESSAGE);
+			throw new BusinessException(ERROR_SERVICE_ASO_ADVICE_CODE, false,
+					String.format(messageRestException,CREATE_INSURANCE_SERVICE, ICR2_COMMUNICATION_DESC, ex.getMessage()));
+		} catch (TimeoutException toex) {
+			LOGGER.debug("***** RBVDR201Impl - executePrePolicyEmissionASO ***** TimeoutException: {}", toex.getMessage());
+			String messageTimeout = this.applicationConfigurationService.getDefaultProperty(PROPERTIES_TIMEOUT_EXCEPTION, ERROR_SERVICE_TIMEOUT_ASO_MESSAGE);
+			throw new BusinessException(ERROR_SERVICE_TIMEOUT_ASO_ADVICE_CODE, false,
+					String.format(messageTimeout,CREATE_INSURANCE_SERVICE, ICR2_COMMUNICATION_DESC));
 		}
 		return responseBody;
 	}
