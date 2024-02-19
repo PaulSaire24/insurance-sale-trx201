@@ -496,10 +496,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 					requestBody,this.rbvdR201,responseQueryGetRequiredFields,dataInsuredFromDB);
 			LOGGER.info("***** RBVDR211Impl - generateRequestAddParticipants | Request add Participants Rimac Service : {} *****",requestAddParticipants);
 
-			AgregarTerceroBO responseAddParticipants = rbvdR201.executeAddParticipantsService(requestAddParticipants, emissionDao.getInsuranceCompanyQuotaId(),requestBody.getProductId(),requestBody.getTraceId());
-			LOGGER.info("**** RBVDR211Impl - executeAddParticipantsService | responseAddParticipants => {} ****",responseAddParticipants);
+			if(!RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue().equals(requestBody.getProductId())){
+				AgregarTerceroBO responseAddParticipants = rbvdR201.executeAddParticipantsService(requestAddParticipants, emissionDao.getInsuranceCompanyQuotaId(),requestBody.getProductId(),requestBody.getTraceId());
+				LOGGER.info("**** RBVDR211Impl - executeAddParticipantsService | responseAddParticipants => {} ****",responseAddParticipants);
 
-			validateResponseAddParticipantsService(responseAddParticipants);
+				validateResponseAddParticipantsService(responseAddParticipants);
+			}
 
 			//llamada a emision
 			rimacResponse = rbvdR201.executePrePolicyEmissionService(requestEmisionLife,emissionDao.getInsuranceCompanyQuotaId(),requestBody.getTraceId(),requestBody.getProductId());
