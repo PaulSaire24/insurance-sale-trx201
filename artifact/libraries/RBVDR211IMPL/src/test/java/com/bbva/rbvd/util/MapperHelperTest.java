@@ -18,6 +18,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 
 import com.bbva.pisd.lib.r350.PISDR350;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -76,7 +77,7 @@ public class MapperHelperTest {
     private static final String N_VALUE = "N";
     private static final String S_VALUE = "S";
     private static final String NO_EXIST = "NotExist";
-
+    private static final String EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
     private InsuranceContractDAO contractDao;
     private InsuranceCtrReceiptsDAO receiptDao;
     private IsrcContractMovDAO contractMovDao;
@@ -2586,6 +2587,25 @@ public class MapperHelperTest {
         contract.setCreationUserId(contractDao.getUserAuditId());
         listContract.add(contract);
         this.mapperHelper.createSaveRelatedContractsArguments(listContract);
+    }
+
+    @Test
+    public void validateLoanAssociatedWithInsuranceOk() {
+
+        List<RelatedContractDTO> relatedContractList = new ArrayList<>();
+        RelatedContractDTO relatedContract = new RelatedContractDTO();
+        ContractDetailsDTO contactDetail = new ContractDetailsDTO();
+        contactDetail.setContractType(EXTERNAL_CONTRACT);
+        contactDetail.setNumber("00110241709612444994");
+        relatedContract.setContractDetails(contactDetail);
+        relatedContractList.add(relatedContract);
+
+        apxRequest.setRelatedContracts(relatedContractList);
+
+        DataASO validation = this.mapperHelper.buildAsoRequest(apxRequest);
+
+        assertNotNull(validation);
+
     }
 
 }
