@@ -1,28 +1,26 @@
 package com.bbva.rbvd.lib.r211.impl.util;
 
 import com.bbva.apx.exception.business.BusinessException;
+
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 
 import com.bbva.pisd.dto.insurance.bo.CommonBO;
-import com.bbva.pisd.dto.insurance.bo.ContactDetailsBO;
 import com.bbva.pisd.dto.insurance.bo.GeographicGroupsBO;
 import com.bbva.pisd.dto.insurance.bo.LocationBO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
-import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
-import com.bbva.rbvd.dto.insrncsale.aso.IdentityDocumentASO;
-
-
+import com.bbva.rbvd.dto.insrncsale.aso.ContractDetailsASO;
+import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
 import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
 import com.bbva.rbvd.dto.insrncsale.aso.PaymentAmountASO;
-import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
-
+import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
+import com.bbva.rbvd.dto.insrncsale.aso.IdentityDocumentASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.ProductPlanASO;
@@ -41,6 +39,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.SalesSupplierASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuranceCompanyASO;
+
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EntidadBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.FacturacionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
@@ -56,17 +55,7 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadAgregarTerceroBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarPersonaBO;
 
-import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.RelatedContractDAO;
-import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.ValidityPeriodDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
-
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
@@ -88,17 +77,27 @@ import com.bbva.rbvd.dto.insrncsale.events.header.TraceDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.HeaderDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.FlagDTO;
 
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.TotalAmountDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyInstallmentPlanDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PaymentPeriodDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.TotalInstallmentDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PaymentPeriodDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyInstallmentPlanDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
+
+import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.ValidityPeriodDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
 
 import com.bbva.rbvd.dto.insrncsale.utils.LifeInsuranceInsuredData;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
@@ -108,12 +107,11 @@ import com.bbva.rbvd.lib.r201.RBVDR201;
 
 import com.bbva.rbvd.lib.r211.impl.transform.bean.HolderBean;
 import com.bbva.rbvd.lib.r211.impl.transform.bean.InsrcContractParticipantBean;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
-import java.util.Arrays;
-import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 
@@ -122,6 +120,7 @@ import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Map;
@@ -138,6 +137,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull; //import static java.util.stream.Collectors.counting;
 
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class MapperHelper {
     private static final String EMAIL_VALUE = "EMAIL";
@@ -169,20 +169,14 @@ public class MapperHelper {
     private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
     private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
     private static final String GMT_TIME_ZONE = "GMT";
-
     private static final String RUC_ID = "R";
-
     private static final String SIN_ESPECIFICAR = "N/A";
     private static final String NO_EXIST = "NotExist";
     private static final Integer MAX_CHARACTER = 1;
     private static final String KEY_PIC_CODE = "pic.code";
     private final SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-
-
     private ApplicationConfigurationService applicationConfigurationService;
-
     private final String currentDate;
-
     public MapperHelper() {
         this.currentDate = generateCorrectDateFormat(new LocalDate());
     }
@@ -274,6 +268,8 @@ public class MapperHelper {
             salesSupplier.setId(apxRequest.getSaleSupplier().getId());
             requestAso.setSalesSupplier(salesSupplier);
         }
+
+        validateLoanAssociatedWithInsurance(apxRequest);
 
         BankASO bank = new BankASO();
 
@@ -977,7 +973,7 @@ public class MapperHelper {
         List<BeneficiarioBO> beneficiarioList = new ArrayList<>();
         payload.setProducto(businessName);
 
-        if(!CollectionUtils.isEmpty(requestBody.getParticipants())){
+        if(!isNull(requestBody.getParticipants()) || !isEmpty(requestBody.getParticipants())){
             CustomerListASO customerList = rbvdr201.executeGetCustomerInformation(requestBody.getHolder().getId());
 
             requestBody.getParticipants().forEach(participant -> {
@@ -1018,7 +1014,7 @@ public class MapperHelper {
             if(!beneficiarioList.isEmpty()){
                 personasList.forEach(persona -> {
                     if (persona.getRol().equals(ConstantsUtil.ParticipantRol.INSURED.getRol())) {
-                        persona.setBeneficiario(beneficiarioList);
+                        persona.setBeneficiarios(beneficiarioList);
                     }
                 });
             }
@@ -1985,4 +1981,30 @@ public class MapperHelper {
         arguments.put(RBVDProperties.FIELD_USER_AUDIT_ID.getValue(), contract.getUserAuditId());
         return arguments;
     }
+
+    private void validateLoanAssociatedWithInsurance(PolicyDTO policyDTO) {
+
+        if(!isNull(policyDTO.getRelatedContracts()) || !isEmpty(policyDTO.getRelatedContracts())) {
+
+            List<RelatedContractASO> relatedContractList = new ArrayList<>();
+
+            RelatedContractASO relatedContract = new RelatedContractASO();
+            ContractDetailsASO contractDetails = new ContractDetailsASO();
+            DataASO dataASO = new DataASO();
+
+            String loanNumber = policyDTO.getRelatedContracts().stream()
+                    .filter(element -> FIELD_EXTERNAL_CONTRACT.equalsIgnoreCase(element.getContractDetails().getContractType()))
+                    .findAny()
+                    .map(element -> element.getContractDetails().getNumber())
+                    .orElse(NO_EXIST);
+
+            if(!NO_EXIST.equals(loanNumber)) {
+                contractDetails.setNumber(loanNumber);
+                relatedContract.setContractDetails(contractDetails);
+                relatedContractList.add(relatedContract);
+                dataASO.setRelatedContracts(relatedContractList);
+            }
+        }
+    }
+
 }
