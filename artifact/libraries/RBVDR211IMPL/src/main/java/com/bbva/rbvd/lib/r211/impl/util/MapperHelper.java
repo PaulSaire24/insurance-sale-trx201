@@ -159,6 +159,8 @@ public class MapperHelper {
     private static final String COLLECTION_STATUS_NEXT_VALUES = "02";
     private static final String CARD_PRODUCT_ID = "CARD";
     private static final String CARD_METHOD_TYPE = "T";
+    private static final String FREE_PERIOD = "L";
+    private static final String MONTHLY_PERIOD = "L";
     private static final String ACCOUNT_METHOD_TYPE = "C";
     private static final String FIRST_RECEIPT_STATUS_TYPE_VALUE = "COB";
     private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
@@ -870,10 +872,10 @@ public class MapperHelper {
 
         String  operacionGlossaryDesc = responseQueryGetRequiredFields.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString();
         if (Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)) {
-            if(requestBody.getInstallmentPlan().getPeriod().getId().equals("MONTHLY")){
-                financiamiento.setFrecuencia("L");
+            if(MONTHLY_PERIOD.equals(requestBody.getInstallmentPlan().getPeriod().getId())){
+                financiamiento.setFrecuencia(FREE_PERIOD);
             }
-            financiamiento.setNumeroCuotas(1L);
+            financiamiento.setNumeroCuotas(INDICATOR_INSPECTION_REQUIRED_VALUE);
         }
 
         List<FinanciamientoBO> financiamientoBOs = new ArrayList<>();
