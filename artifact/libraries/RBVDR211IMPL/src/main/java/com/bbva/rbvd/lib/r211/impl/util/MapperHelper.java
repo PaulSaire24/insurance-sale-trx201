@@ -870,7 +870,9 @@ public class MapperHelper {
 
         String  operacionGlossaryDesc = responseQueryGetRequiredFields.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString();
         if (Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)) {
-            financiamiento.setFrecuencia("L");
+            if(requestBody.getInstallmentPlan().getPeriod().getId().equals("MONTHLY")){
+                financiamiento.setFrecuencia("L");
+            }
             financiamiento.setNumeroCuotas(1L);
         }
 
