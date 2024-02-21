@@ -154,6 +154,7 @@ public class MapperHelper {
     private static final String N_VALUE = "N";
     private static final Long INDICATOR_INSPECTION_NOT_REQUIRED_VALUE = 0L;
     private static final Long INDICATOR_INSPECTION_REQUIRED_VALUE = 1L;
+    private static final Long NUMBER_QUOTAS_UNEMPLOYMENT = 1L;
     private static final String PAYMENT_METHOD_VALUE = "DIRECT_DEBIT";
     private static final String COLLECTION_STATUS_FIRST_RECEIPT_VALUE = "00";
     private static final String COLLECTION_STATUS_NEXT_VALUES = "02";
@@ -875,7 +876,7 @@ public class MapperHelper {
             if(MONTHLY_PERIOD.equals(requestBody.getInstallmentPlan().getPeriod().getId())){
                 financiamiento.setFrecuencia(FREE_PERIOD);
             }
-            financiamiento.setNumeroCuotas(INDICATOR_INSPECTION_REQUIRED_VALUE);
+            financiamiento.setNumeroCuotas(NUMBER_QUOTAS_UNEMPLOYMENT);
         }
 
         List<FinanciamientoBO> financiamientoBOs = new ArrayList<>();
