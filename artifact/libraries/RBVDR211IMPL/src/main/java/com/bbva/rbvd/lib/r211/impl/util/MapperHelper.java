@@ -160,7 +160,7 @@ public class MapperHelper {
     private static final String CARD_PRODUCT_ID = "CARD";
     private static final String CARD_METHOD_TYPE = "T";
     private static final String FREE_PERIOD = "L";
-    private static final String MONTHLY_PERIOD = "L";
+    private static final String MONTHLY_PERIOD = "MONTHLY";
     private static final String ACCOUNT_METHOD_TYPE = "C";
     private static final String FIRST_RECEIPT_STATUS_TYPE_VALUE = "COB";
     private static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
