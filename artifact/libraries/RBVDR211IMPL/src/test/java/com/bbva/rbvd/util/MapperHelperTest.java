@@ -1542,6 +1542,12 @@ public class MapperHelperTest {
         customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs1);
         EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById ,customerList);
         assertNotNull(validation1);
+        apxRequest.getInstallmentPlan().getPeriod().setId("ANNUAL");
+        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById ,customerList);
+        assertNotNull(validation2);
+        requiredFieldsEmisionBDResponse.put(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue(),"VIDA");
+        EmisionBO validation3 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById ,customerList);
+        assertNotNull(validation3);
     }
 
 
