@@ -269,7 +269,7 @@ public class MapperHelper {
             requestAso.setSalesSupplier(salesSupplier);
         }
 
-        validateLoanAssociatedWithInsurance(apxRequest);
+        validateLoanAssociatedWithInsurance(apxRequest, requestAso);
 
         BankASO bank = new BankASO();
 
@@ -1982,24 +1982,32 @@ public class MapperHelper {
         return arguments;
     }
 
-    private void validateLoanAssociatedWithInsurance(PolicyDTO policyDTO) {
+    private void validateLoanAssociatedWithInsurance(PolicyDTO policyDTO, DataASO dataASO) {
+
+        List<RelatedContractASO> relatedContractList = new ArrayList<>();
+
+        String separationSymbol = "-";
 
         if(!isNull(policyDTO.getRelatedContracts()) || !isEmpty(policyDTO.getRelatedContracts())) {
 
             RelatedContractASO relatedContract = new RelatedContractASO();
             ContractDetailsASO contractDetails = new ContractDetailsASO();
-            DataASO dataASO = new DataASO();
 
             String loanNumber = policyDTO.getRelatedContracts().stream()
                     .filter(element -> FIELD_EXTERNAL_CONTRACT.equalsIgnoreCase(element.getContractDetails().getContractType()))
                     .findAny()
-                    .map(element -> element.getContractDetails().getNumber())
+                    .map(element -> element.getContractDetails().getContractType() + separationSymbol + element.getContractDetails().getNumber())
                     .orElse(NO_EXIST);
 
-            if(!NO_EXIST.equals(loanNumber)) {
-                contractDetails.setNumber(loanNumber);
+            if (!NO_EXIST.equals(loanNumber) && loanNumber.split(separationSymbol).length > 1) {
+
+                String[] arrayLoanNumber = loanNumber.split(separationSymbol);
+                contractDetails.setContractType(arrayLoanNumber[0]);
+                contractDetails.setNumber(arrayLoanNumber[1]);
                 relatedContract.setContractDetails(contractDetails);
-                dataASO.setRelatedContracts(Collections.singletonList(relatedContract));
+                relatedContractList.add(relatedContract);
+                dataASO.setRelatedContracts(relatedContractList);
+
             }
         }
     }
