@@ -1984,7 +1984,11 @@ public class MapperHelper {
 
     private void validateLoanAssociatedWithInsurance(PolicyDTO policyDTO) {
 
+        String separationSymbol = "-";
+
         if(!isNull(policyDTO.getRelatedContracts()) || !isEmpty(policyDTO.getRelatedContracts())) {
+
+            List<RelatedContractASO> relatedContractList = new ArrayList<>();
 
             RelatedContractASO relatedContract = new RelatedContractASO();
             ContractDetailsASO contractDetails = new ContractDetailsASO();
@@ -1993,13 +1997,18 @@ public class MapperHelper {
             String loanNumber = policyDTO.getRelatedContracts().stream()
                     .filter(element -> FIELD_EXTERNAL_CONTRACT.equalsIgnoreCase(element.getContractDetails().getContractType()))
                     .findAny()
-                    .map(element -> element.getContractDetails().getNumber())
+                    .map(element -> element.getContractDetails().getContractType() + separationSymbol + element.getContractDetails().getNumber())
                     .orElse(NO_EXIST);
 
-            if(!NO_EXIST.equals(loanNumber)) {
-                contractDetails.setNumber(loanNumber);
+            if(!NO_EXIST.equals(loanNumber) && loanNumber.split(separationSymbol).length > 1) {
+
+                String[] arrayLoanNumber = loanNumber.split(separationSymbol);
+                contractDetails.setContractType(arrayLoanNumber[0]);
+                contractDetails.setNumber(arrayLoanNumber[1]);
                 relatedContract.setContractDetails(contractDetails);
-                dataASO.setRelatedContracts(Collections.singletonList(relatedContract));
+                relatedContractList.add(relatedContract);
+                dataASO.setRelatedContracts(relatedContractList);
+
             }
         }
     }
