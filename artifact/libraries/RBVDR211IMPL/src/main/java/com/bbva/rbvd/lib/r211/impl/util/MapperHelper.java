@@ -167,6 +167,7 @@ public class MapperHelper {
     private static final String TAG_ENDORSEE = "ENDORSEE";
     private static final String FIELD_SYSTEM = "SYSTEM";
     private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
+    private static final String FIELD_EXTERNAL_CONTRACT_HOST = "VIN";
     private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
     private static final String GMT_TIME_ZONE = "GMT";
     private static final String RUC_ID = "R";
@@ -269,7 +270,7 @@ public class MapperHelper {
             requestAso.setSalesSupplier(salesSupplier);
         }
 
-        validateLoanAssociatedWithInsurance(apxRequest);
+        validateLoanAssociatedWithInsurance(apxRequest, requestAso);
 
         BankASO bank = new BankASO();
 
@@ -1982,29 +1983,25 @@ public class MapperHelper {
         return arguments;
     }
 
-    private void validateLoanAssociatedWithInsurance(PolicyDTO policyDTO) {
+    private void validateLoanAssociatedWithInsurance(PolicyDTO policyDTO, DataASO dataASO) {
 
-        String separationSymbol = "-";
+        List<RelatedContractASO> relatedContractList = new ArrayList<>();
 
         if(!isNull(policyDTO.getRelatedContracts()) || !isEmpty(policyDTO.getRelatedContracts())) {
 
-            List<RelatedContractASO> relatedContractList = new ArrayList<>();
-
             RelatedContractASO relatedContract = new RelatedContractASO();
             ContractDetailsASO contractDetails = new ContractDetailsASO();
-            DataASO dataASO = new DataASO();
 
             String loanNumber = policyDTO.getRelatedContracts().stream()
                     .filter(element -> FIELD_EXTERNAL_CONTRACT.equalsIgnoreCase(element.getContractDetails().getContractType()))
                     .findAny()
-                    .map(element -> element.getContractDetails().getContractType() + separationSymbol + element.getContractDetails().getNumber())
+                    .map(element -> element.getContractDetails().getNumber())
                     .orElse(NO_EXIST);
 
-            if(!NO_EXIST.equals(loanNumber) && loanNumber.split(separationSymbol).length > 1) {
+            if(!NO_EXIST.equals(loanNumber)) {
 
-                String[] arrayLoanNumber = loanNumber.split(separationSymbol);
-                contractDetails.setContractType(arrayLoanNumber[0]);
-                contractDetails.setNumber(arrayLoanNumber[1]);
+                contractDetails.setContractType(FIELD_EXTERNAL_CONTRACT_HOST);
+                contractDetails.setNumber(loanNumber);
                 relatedContract.setContractDetails(contractDetails);
                 relatedContractList.add(relatedContract);
                 dataASO.setRelatedContracts(relatedContractList);
