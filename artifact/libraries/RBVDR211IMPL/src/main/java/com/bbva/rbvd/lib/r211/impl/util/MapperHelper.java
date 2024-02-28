@@ -1999,7 +1999,7 @@ public class MapperHelper {
                     .map(element -> element.getContractDetails().getContractType() + separationSymbol + element.getContractDetails().getNumber())
                     .orElse(NO_EXIST);
 
-            if (!NO_EXIST.equals(loanNumber) && loanNumber.split(separationSymbol).length > 1) {
+            if(!NO_EXIST.equals(loanNumber) && loanNumber.split(separationSymbol).length > 1) {
 
                 String[] arrayLoanNumber = loanNumber.split(separationSymbol);
                 contractDetails.setContractType(arrayLoanNumber[0]);
