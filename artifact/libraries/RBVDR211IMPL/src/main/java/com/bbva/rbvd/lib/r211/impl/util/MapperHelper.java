@@ -269,7 +269,7 @@ public class MapperHelper {
             requestAso.setSalesSupplier(salesSupplier);
         }
 
-        validateLoanAssociatedWithInsurance(apxRequest);
+        validateLoanAssociatedWithInsurance(apxRequest, requestAso);
 
         BankASO bank = new BankASO();
 
@@ -1982,17 +1982,16 @@ public class MapperHelper {
         return arguments;
     }
 
-    private void validateLoanAssociatedWithInsurance(PolicyDTO policyDTO) {
+    private void validateLoanAssociatedWithInsurance(PolicyDTO policyDTO, DataASO dataASO) {
+
+        List<RelatedContractASO> relatedContractList = new ArrayList<>();
 
         String separationSymbol = "-";
 
         if(!isNull(policyDTO.getRelatedContracts()) || !isEmpty(policyDTO.getRelatedContracts())) {
 
-            List<RelatedContractASO> relatedContractList = new ArrayList<>();
-
             RelatedContractASO relatedContract = new RelatedContractASO();
             ContractDetailsASO contractDetails = new ContractDetailsASO();
-            DataASO dataASO = new DataASO();
 
             String loanNumber = policyDTO.getRelatedContracts().stream()
                     .filter(element -> FIELD_EXTERNAL_CONTRACT.equalsIgnoreCase(element.getContractDetails().getContractType()))
