@@ -159,6 +159,15 @@ public class MapperHelperTest {
         apxRequest.setUserAudit("userAudit");
         apxRequest.setSaleChannelId("BI");
         apxRequest.setAap("13000001");
+
+        RelationTypeDTO relationType = new RelationTypeDTO();
+        relationType.setId("1");
+
+        apxRequest.getRelatedContracts().get(1).setRelationType(relationType);
+        apxRequest.getRelatedContracts().get(2).setRelationType(relationType);
+        apxRequest.getRelatedContracts().get(1).getContractDetails().setNumber("00110241709612444994");
+        apxRequest.getRelatedContracts().get(2).getContractDetails().setNumber("00110241709612444995");
+
         asoResponse = mockData.getEmisionASOResponse();
         rimacResponse = mockData.getEmisionRimacResponse();
         customerList = mockDTO.getCustomerDataResponse();
@@ -2593,10 +2602,16 @@ public class MapperHelperTest {
     public void validateLoanAssociatedWithInsuranceOk() {
 
         List<RelatedContractDTO> relatedContractList = new ArrayList<>();
+
         RelatedContractDTO relatedContract = new RelatedContractDTO();
         ContractDetailsDTO contactDetail = new ContractDetailsDTO();
+        RelationTypeDTO relationType = new RelationTypeDTO();
+
+        relationType.setId("1");
         contactDetail.setContractType(EXTERNAL_CONTRACT);
         contactDetail.setNumber("00110241709612444994");
+
+        relatedContract.setRelationType(relationType);
         relatedContract.setContractDetails(contactDetail);
         relatedContractList.add(relatedContract);
 

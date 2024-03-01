@@ -13,14 +13,15 @@ import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
-import com.bbva.rbvd.dto.insrncsale.aso.ContractDetailsASO;
-import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
-import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
-import com.bbva.rbvd.dto.insrncsale.aso.PaymentAmountASO;
-import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
+import com.bbva.rbvd.dto.insrncsale.aso.RelationTypeASO;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
+import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
+import com.bbva.rbvd.dto.insrncsale.aso.PaymentAmountASO;
 import com.bbva.rbvd.dto.insrncsale.aso.IdentityDocumentASO;
+import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
+import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
+import com.bbva.rbvd.dto.insrncsale.aso.ContractDetailsASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.ProductPlanASO;
@@ -77,17 +78,7 @@ import com.bbva.rbvd.dto.insrncsale.events.header.TraceDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.HeaderDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.FlagDTO;
 
-import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.TotalAmountDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.TotalInstallmentDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PaymentPeriodDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyInstallmentPlanDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PolicyPaymentMethodDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.ExchangeRateDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.DetailDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.FactorDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.*;
 
 import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
@@ -167,7 +158,7 @@ public class MapperHelper {
     private static final String TAG_ENDORSEE = "ENDORSEE";
     private static final String FIELD_SYSTEM = "SYSTEM";
     private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
-    private static final String FIELD_EXTERNAL_CONTRACT_HOST = "VIN";
+    private static final String FIELD_EXTERNAL_CONTRACT_HOST = "EXT";
     private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
     private static final String GMT_TIME_ZONE = "GMT";
     private static final String RUC_ID = "R";
@@ -1987,23 +1978,33 @@ public class MapperHelper {
 
         List<RelatedContractASO> relatedContractList = new ArrayList<>();
 
+        String separationSymbol = "-";
+
         if(!isNull(policyDTO.getRelatedContracts()) || !isEmpty(policyDTO.getRelatedContracts())) {
 
-            RelatedContractASO relatedContract = new RelatedContractASO();
+            RelationTypeASO relationType = new RelationTypeASO();
             ContractDetailsASO contractDetails = new ContractDetailsASO();
+            RelatedContractASO relatedContract = new RelatedContractASO();
 
             String loanNumber = policyDTO.getRelatedContracts().stream()
                     .filter(element -> FIELD_EXTERNAL_CONTRACT.equalsIgnoreCase(element.getContractDetails().getContractType()))
                     .findAny()
-                    .map(element -> element.getContractDetails().getNumber())
+                    .map(element -> element.getRelationType().getId() + separationSymbol + element.getContractDetails().getNumber())
                     .orElse(NO_EXIST);
 
-            if(!NO_EXIST.equals(loanNumber)) {
+            if(!NO_EXIST.equals(loanNumber) && loanNumber.split(separationSymbol).length > 1) {
+
+                String[] loanNumberArray = loanNumber.split(separationSymbol);
+
+                relationType.setId(loanNumberArray[0]);
 
                 contractDetails.setContractType(FIELD_EXTERNAL_CONTRACT_HOST);
-                contractDetails.setNumber(loanNumber);
+                contractDetails.setNumber(loanNumberArray[1]);
+
+                relatedContract.setRelationType(relationType);
                 relatedContract.setContractDetails(contractDetails);
                 relatedContractList.add(relatedContract);
+
                 dataASO.setRelatedContracts(relatedContractList);
 
             }
