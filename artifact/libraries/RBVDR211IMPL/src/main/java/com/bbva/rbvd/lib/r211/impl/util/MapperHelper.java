@@ -161,7 +161,6 @@ public class MapperHelper {
     private static final String TAG_ENDORSEE = "ENDORSEE";
     private static final String FIELD_SYSTEM = "SYSTEM";
     private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
-    private static final String FIELD_EXTERNAL_CONTRACT_HOST = "EXT";
     private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
     private static final String GMT_TIME_ZONE = "GMT";
     private static final String RUC_ID = "R";
@@ -2003,7 +2002,7 @@ public class MapperHelper {
 
                 relationType.setId(loanNumberArray[0]);
 
-                contractDetails.setContractType(FIELD_EXTERNAL_CONTRACT_HOST);
+                contractDetails.setContractType(FIELD_EXTERNAL_CONTRACT);
                 contractDetails.setNumber(loanNumberArray[1]);
 
                 relatedContract.setRelationType(relationType);
