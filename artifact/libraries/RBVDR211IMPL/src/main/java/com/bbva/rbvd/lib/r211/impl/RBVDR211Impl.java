@@ -491,15 +491,16 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			//llamada a add participants
-			Map<String, Object> dataInsuredFromDB = this.getDataInsuredParticipantFromDB(requestBody, responseQueryGetRequiredFields);
-			AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,
-					requestBody,this.rbvdR201,responseQueryGetRequiredFields,dataInsuredFromDB);
-			LOGGER.info("***** RBVDR211Impl - generateRequestAddParticipants | Request add Participants Rimac Service : {} *****",requestAddParticipants);
-
-			AgregarTerceroBO responseAddParticipants = rbvdR201.executeAddParticipantsService(requestAddParticipants, emissionDao.getInsuranceCompanyQuotaId(),requestBody.getProductId(),requestBody.getTraceId());
-			LOGGER.info("**** RBVDR211Impl - executeAddParticipantsService | responseAddParticipants => {} ****",responseAddParticipants);
-
-			validateResponseAddParticipantsService(responseAddParticipants);
+			if(!RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue().equals(requestBody.getProductId())){
+				LOGGER.info("llamada a add participants without Dynamic Life");
+				Map<String, Object> dataInsuredFromDB = this.getDataInsuredParticipantFromDB(requestBody, responseQueryGetRequiredFields);
+				AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,
+						requestBody,this.rbvdR201,responseQueryGetRequiredFields,dataInsuredFromDB);
+				LOGGER.info("***** RBVDR211Impl - generateRequestAddParticipants | Request add Participants Rimac Service : {} *****",requestAddParticipants);
+				AgregarTerceroBO responseAddParticipants = rbvdR201.executeAddParticipantsService(requestAddParticipants, emissionDao.getInsuranceCompanyQuotaId(),requestBody.getProductId(),requestBody.getTraceId());
+				LOGGER.info("**** RBVDR211Impl - executeAddParticipantsService | responseAddParticipants => {} ****",responseAddParticipants);
+				validateResponseAddParticipantsService(responseAddParticipants);
+			}
 
 			//llamada a emision
 			rimacResponse = rbvdR201.executePrePolicyEmissionService(requestEmisionLife,emissionDao.getInsuranceCompanyQuotaId(),requestBody.getTraceId(),requestBody.getProductId());
