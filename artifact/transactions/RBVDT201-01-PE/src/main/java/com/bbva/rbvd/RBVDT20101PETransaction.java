@@ -81,9 +81,9 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		PolicyDTO responseBody = null;
 
 		if(requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue()) ||
-				requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue()) ||
-				requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_3.getValue()) ||
-				requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_4.getValue())){
+				requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_DINAMICO.getValue()) ||
+				requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_LEY.getValue()) ||
+				requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_INVERSION.getValue())){
 			responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 		}else{
 			responseBody = rbvdR211.executeBusinessLogicEmissionPrePolicy(requestBody);
