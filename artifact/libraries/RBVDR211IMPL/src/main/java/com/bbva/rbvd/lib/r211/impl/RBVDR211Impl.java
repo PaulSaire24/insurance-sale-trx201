@@ -491,7 +491,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			//llamada a add participants
-			if(!RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue().equals(requestBody.getProductId())) {
+			if(!RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_DINAMICO.getValue().equals(requestBody.getProductId())) {
 				Map<String, Object> dataInsuredFromDB = this.getDataInsuredParticipantFromDB(requestBody, responseQueryGetRequiredFields);
 				AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipants(insuranceBusinessName,
 						requestBody, this.rbvdR201, responseQueryGetRequiredFields, dataInsuredFromDB);
