@@ -63,11 +63,7 @@ import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
 
-import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
-import com.bbva.rbvd.dto.insrncsale.events.CreatedInsuranceDTO;
-import com.bbva.rbvd.dto.insrncsale.events.ProductCreatedInsrcEventDTO;
-import com.bbva.rbvd.dto.insrncsale.events.PlanCreatedInsrcEventDTO;
-import com.bbva.rbvd.dto.insrncsale.events.InstallmentPlansCreatedInsrcEvent;
+import com.bbva.rbvd.dto.insrncsale.events.*;
 
 import com.bbva.rbvd.dto.insrncsale.events.header.EventDTO;
 import com.bbva.rbvd.dto.insrncsale.events.header.OriginDTO;
@@ -1474,6 +1470,9 @@ public class MapperHelper {
         HeaderDTO header = new HeaderDTO(event, flag, origin, result, traces, "1.1.0");
 
         createdInsuranceEvent.setHeader(header);
+
+        createdInsuranceEvent.setStatus(new StatusDTO());
+        createdInsuranceEvent.getStatus().setId("Contratada");
 
         return createdInsuranceEvent;
     }
