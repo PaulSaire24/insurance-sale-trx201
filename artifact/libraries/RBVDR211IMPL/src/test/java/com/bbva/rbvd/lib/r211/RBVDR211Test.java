@@ -185,6 +185,7 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.840.PC", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.841.PC", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.range.payment.amount.insurance", "5")).thenReturn("5");
+		when(this.applicationConfigurationService.getProperty("product.codes.without.third.party.validation")).thenReturn("841");
 
 		asoResponse = mockData.getEmisionASOResponse();
 		rimacResponse = mockData.getEmisionRimacResponse();
