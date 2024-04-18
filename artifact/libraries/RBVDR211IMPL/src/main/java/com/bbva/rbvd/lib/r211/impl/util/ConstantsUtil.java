@@ -14,6 +14,8 @@ public class ConstantsUtil {
 
     public static final String FIELD_PRODUCT_SHORT_DESC = "PRODUCT_SHORT_DESC";
 
+    public static final String PRODUCT_CODES_WITHOUT_THIRD_PARTY_VALIDATION = "product.codes.without.third.party.validation";
+
 
     public static final class DocumentType{
         public static final String RUC = "RUC";
