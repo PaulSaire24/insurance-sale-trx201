@@ -146,4 +146,54 @@ public class RBVDT20101PETransactionTest {
 		assertTrue(this.transaction.getAdviceList().isEmpty());
 	}
 
+	@Test
+	public void executeDynamicLife() throws IOException {
+		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
+		this.addParameter("productId", "841");
+		simulateResponse.setOperationDate(new Date());
+
+		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(anyObject())).thenReturn(simulateResponse);
+
+		this.transaction.getContext().getParameterList().forEach(
+				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)
+		);
+
+		this.transaction.execute();
+
+		assertTrue(this.transaction.getAdviceList().isEmpty());
+	}
+	@Test
+	public void executeLawLife() throws IOException {
+		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
+		this.addParameter("productId", "842");
+		simulateResponse.setOperationDate(new Date());
+
+		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(anyObject())).thenReturn(simulateResponse);
+
+		this.transaction.getContext().getParameterList().forEach(
+				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)
+		);
+
+		this.transaction.execute();
+
+		assertTrue(this.transaction.getAdviceList().isEmpty());
+	}
+
+	@Test
+	public void executeInvestmentLife() throws IOException {
+		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
+		this.addParameter("productId", "845");
+		simulateResponse.setOperationDate(new Date());
+
+		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(anyObject())).thenReturn(simulateResponse);
+
+		this.transaction.getContext().getParameterList().forEach(
+				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)
+		);
+
+		this.transaction.execute();
+
+		assertTrue(this.transaction.getAdviceList().isEmpty());
+	}
+
 }
