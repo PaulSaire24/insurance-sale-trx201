@@ -186,7 +186,8 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.841.PC", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.range.payment.amount.insurance", "5")).thenReturn("5");
 		when(this.applicationConfigurationService.getProperty("product.codes.without.third.party.validation")).thenReturn("841");
-
+		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.legal.833.BI", "true")).thenReturn("true");
+		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.natural.833.BI", "true")).thenReturn("true");
 		asoResponse = mockData.getEmisionASOResponse();
 		rimacResponse = mockData.getEmisionRimacResponse();
 		EmisionBO emision = new EmisionBO();
@@ -600,7 +601,8 @@ public class RBVDR211Test {
 
 		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(businesses);
 		when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt", "")).thenReturn("");
-
+		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.natural.833.BI", "")).thenReturn("true");
+		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.legal.833.BI", "")).thenReturn("true");
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertNotNull(validation);
 	}

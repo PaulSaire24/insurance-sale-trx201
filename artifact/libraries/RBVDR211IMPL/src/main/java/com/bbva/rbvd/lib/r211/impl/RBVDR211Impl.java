@@ -115,6 +115,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
 	private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
+
+	private static final String PROPERTY_VALIDATE_NATURAL_PARTICIPANT = "invoke.participant.validation.emission.noLife.natural.";
+	private static final String PROPERTY_VALIDATE_LEGAL_PARTICIPANT = "invoke.participant.validation.emission.noLife.legal.";
 	private static final String FIELD_BLANK = "";
 
 	@Override
@@ -134,8 +137,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		String endosatarioRuc;
 
 		Double endosatarioPorcentaje;
-
-		CustomerListASO customerList = null;
 
 		try {
 
@@ -262,19 +263,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			if (!requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VEH.getValue())) {
-				customerList = this.rbvdR201.executeGetCustomerInformation(requestBody.getHolder().getId());
-				try {
-					validateQueryCustomerResponse(customerList);
-				} catch (BusinessException ex) {
-					LOGGER.info("***** PISDR0019Impl - executeListCustomerResponse {} *****", ex.getMessage());
+				EmisionBO generalEmissionRequest = addNotLifeParticipants(rimacRequest,requestBody,responseQueryGetRequiredFields,responseQueryGetProductById);
+				if(Objects.isNull(generalEmissionRequest)){
 					return null;
 				}
-				EmisionBO generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody,
-						responseQueryGetRequiredFields,responseQueryGetProductById, customerList);
-				LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****",generalEmisionRequest);
-
-				setOrganization(generalEmisionRequest,  requestBody, customerList);
-				rimacResponse = rbvdR201.executePrePolicyEmissionService(generalEmisionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
+				rimacResponse = rbvdR201.executePrePolicyEmissionService(generalEmissionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			} else {
 				rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
 			}
@@ -785,25 +778,21 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private void setOrganization(EmisionBO emision, PolicyDTO requestBody, CustomerListASO customerList){
 		PersonaBO persona = emision.getPayload().getAgregarPersona().getPersona().get(0);
 		CustomerBO customer = customerList.getData().get(0);
-		String tipoDoc = customer.getIdentityDocuments().get(0).getDocumentType().getId();
-		String nroDoc = customer.getIdentityDocuments().get(0).getDocumentNumber();
-		if (RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20")){
 
-			String xcustomerId = this.rbvdR201.executeCypherService(new CypherASO(requestBody.getHolder().getId(), KEY_CYPHER_CODE));
-			if (xcustomerId == null){
-				BusinessException except = RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
-				except.setMessage("ERROR AL ENCRIPTAR EL IDENTIFICADOR DEL CLIENTE");
-				throw except;
-			}
-
-			ListBusinessesASO listBussinesses = this.rbvdR201.executeGetListBusinesses(xcustomerId, null);
-			if (listBussinesses == null) {
-				throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
-			}
-			List<OrganizacionBO> organizaciones = mapOrganizations(listBussinesses.getData().get(0), persona, customer, requestBody);
-			emision.getPayload().getAgregarPersona().setOrganizacion(organizaciones);
-			emision.getPayload().getAgregarPersona().setPersona(null);
+		String xcustomerId = this.rbvdR201.executeCypherService(new CypherASO(requestBody.getHolder().getId(), KEY_CYPHER_CODE));
+		if (xcustomerId == null){
+			BusinessException except = RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
+			except.setMessage("ERROR AL ENCRIPTAR EL IDENTIFICADOR DEL CLIENTE");
+			throw except;
 		}
+
+		ListBusinessesASO listBussinesses = this.rbvdR201.executeGetListBusinesses(xcustomerId, null);
+		if (listBussinesses == null) {
+			throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
+		}
+		List<OrganizacionBO> organizaciones = mapOrganizations(listBussinesses.getData().get(0), persona, customer, requestBody);
+		emision.getPayload().getAgregarPersona().setOrganizacion(organizaciones);
+		emision.getPayload().getAgregarPersona().setPersona(null);
 	}
 
 	private List<OrganizacionBO> mapOrganizations(final BusinessASO business, PersonaBO persona, CustomerBO customer,PolicyDTO requestBody) {
@@ -931,6 +920,52 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private String encodeB64(byte[] hash) {
 		return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+	}
+
+	public EmisionBO addNotLifeParticipants(EmisionBO rimacRequest, PolicyDTO requestBody,  Map<String, Object> responseQueryGetRequiredFields,
+											Map<String, Object> responseQueryGetProductById) {
+
+		String productChannelConditionalNaturalPers = this.applicationConfigurationService.
+				getDefaultProperty(PROPERTY_VALIDATE_NATURAL_PARTICIPANT.
+						concat(requestBody.getProductId()).concat(".").
+						concat(requestBody.getSaleChannelId()),"true");
+		String productChannelConditionalLegalPers = this.applicationConfigurationService.
+				getDefaultProperty(PROPERTY_VALIDATE_LEGAL_PARTICIPANT.
+						concat(requestBody.getProductId()).concat(".").
+						concat(requestBody.getSaleChannelId()),"true");
+
+		Boolean validateNaturalParticipant = Boolean.valueOf(productChannelConditionalNaturalPers);
+		Boolean validateLegalParticipant = Boolean.valueOf(productChannelConditionalLegalPers);
+
+		if(!validateNaturalParticipant && !validateLegalParticipant){
+			return rimacRequest;
+		}
+
+		CustomerListASO customerList = this.rbvdR201.executeGetCustomerInformation(requestBody.getHolder().getId());
+		try {
+			validateQueryCustomerResponse(customerList);
+		} catch (BusinessException ex) {
+			LOGGER.info("***** PISDR0019Impl - executeListCustomerResponse {} *****", ex.getMessage());
+			return null;
+		}
+
+		String tipoDoc = customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().getId();
+		String nroDoc = customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentNumber();
+		boolean isLegalPerson = RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20");
+
+		EmisionBO generalEmisionRequest = null;
+
+		if((validateNaturalParticipant && !isLegalPerson) || (isLegalPerson && validateLegalParticipant)) {
+			generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody,
+					responseQueryGetRequiredFields, responseQueryGetProductById, customerList);
+			LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****", generalEmisionRequest);
+		}
+
+		if (isLegalPerson && validateLegalParticipant) {
+			setOrganization(generalEmisionRequest, requestBody, customerList);
+		}
+
+		return Objects.isNull(generalEmisionRequest) ? rimacRequest : generalEmisionRequest;
 	}
 
 }
