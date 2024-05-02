@@ -42,6 +42,7 @@ public class InsrcContractParticipantBean {
         participantDao.setPersonalDocType(applicationConfigurationService.getProperty(participant.getIdentityDocument().getDocumentType().getId()));
         participantDao.setParticipantPersonalId(participant.getIdentityDocument().getNumber());
         participantDao.setCustomerId(Objects.nonNull(participant.getCustomerId()) ? participant.getCustomerId() : null);
+        participantDao.setCustomerRelationshipType(participant.getRelationship().getId());
         participantDao.setCreationUserId(requestBody.getCreationUser());
         participantDao.setUserAuditId(requestBody.getUserAudit());
         participantDao.setRefundPer(participant.getBenefitPercentage());
