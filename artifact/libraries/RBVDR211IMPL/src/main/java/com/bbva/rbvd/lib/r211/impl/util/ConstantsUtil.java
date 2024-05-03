@@ -56,5 +56,43 @@ public class ConstantsUtil {
         }
     }
 
+    public enum Relationship {
+        HOLDER("01", "TITULAR"),
+        SPOUSE("02", "CONYUGE"),
+        CHILDREN("03", "HIJO(A)"),
+        FATHER("04", "PADRE"),
+        MOTHER("05", "MADRE"),
+        COHABITANT("06", "CONVIVIENTE"),
+        BROTHERS("07", "HERMANO(A)"),
+        UNCLES("08", "TIO(A)"),
+        OTHERS("09", "OTROS"),
+        GRANDCHILDREN("10", "NIETO(A)"),
+        COUPLE("11", "NOVIO(A)"),
+        COUSINS("12", "PRIMO(A)"),
+        PARENTS("13", "PADRES");
+
+        private final String code;
+        private final String value;
+
+        Relationship(String code, String value) {
+            this.code = code;
+            this.value = value;
+        }
+
+        public String getCode() {return code;}
+
+        public String getValue() {return value;}
+
+        public static String getRelationshipValue(String relationshipCode) {
+            for(Relationship relationship : Relationship.values()) {
+                if(relationshipCode.equals(relationship.getCode())) {
+                    return relationship.getValue();
+                }
+            }
+            return null;
+        }
+
+    }
+
 
 }
