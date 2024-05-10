@@ -6,6 +6,7 @@ import com.bbva.ksmk.lib.r002.KSMKR002;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.pisd.lib.r350.PISDR350;
 import com.bbva.pisd.lib.r401.PISDR401;
+import com.bbva.pisd.lib.r601.PISDR601;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.RBVDR211;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
@@ -27,6 +28,8 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 
 	protected PISDR350 pisdR350;
 	protected MapperHelper mapperHelper;
+
+	protected PISDR601 pisdR601;
 
 
 	/**
@@ -70,8 +73,15 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 	public void setPisdR350(PISDR350 pisdR350) {
 		this.pisdR350 = pisdR350;
 	}
-
 	public void setMapperHelper(MapperHelper mapperHelper) {
 		this.mapperHelper = mapperHelper;
 	}
+
+	/**
+	* @param pisdR601 the this.pisdR601 to set
+	*/
+	public void setPisdR601(PISDR601 pisdR601) {
+		this.pisdR601 = pisdR601;
+	}
+
 }

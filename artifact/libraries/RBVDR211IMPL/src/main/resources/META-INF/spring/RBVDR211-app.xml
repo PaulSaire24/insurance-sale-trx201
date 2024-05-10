@@ -8,6 +8,7 @@
 		<property name="ksmkR002" ref="ksmkR002"/>
 		<property name="pisdR401" ref="pisdR401"/>
 		<property name="pisdR350" ref="pisdR350"/>
+		<property name="pisdR601" ref="pisdR601"/>
 	</bean>
 	<bean id="mapperHelper" class="com.bbva.rbvd.lib.r211.impl.util.MapperHelper">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>

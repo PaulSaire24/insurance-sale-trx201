@@ -15,6 +15,7 @@ import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.dto.insurance.utils.PISDValidation;
 
+import com.bbva.pisd.dto.insurancedao.entities.QuotationEntity;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -536,6 +537,10 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** Before Response - emissionDao => {} *****",emissionDao);
 
 			CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(responseBody);
+
+			QuotationEntity quotationEntity = this.pisdR601.executeFindQuotationByReferenceAndPayrollId(requestBody.getQuotationId());
+			String status = quotationEntity.getRfqInternalId().isEmpty() || quotationEntity.getPayrollId().isEmpty() ? "CONTRACTED" : "PAID";
+			createdInsrcEventDTO.getCreatedInsurance().getStatus().setId(status);
 
 			Integer httpStatusCode = this.rbvdR201.executePutEventUpsilonService(createdInsrcEventDTO);
 
