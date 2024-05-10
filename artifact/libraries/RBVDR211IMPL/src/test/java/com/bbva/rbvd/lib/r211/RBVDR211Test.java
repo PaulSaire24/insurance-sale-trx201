@@ -988,6 +988,11 @@ public class RBVDR211Test {
 		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
 
+		QuotationEntity quotationEntity = new QuotationEntity();
+		quotationEntity.setRfqInternalId("R05658");
+		quotationEntity.setPayrollId(null);
+		when(pisdR601.executeFindQuotationByReferenceAndPayrollId(anyString())).thenReturn(quotationEntity);
+
 		PolicyDTO validation = rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(requestBody);
 
 		assertNotNull(validation);

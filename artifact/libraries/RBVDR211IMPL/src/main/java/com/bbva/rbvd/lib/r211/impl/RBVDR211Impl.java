@@ -539,7 +539,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(responseBody);
 
 			QuotationEntity quotationEntity = this.pisdR601.executeFindQuotationByReferenceAndPayrollId(requestBody.getQuotationId());
-			String status = quotationEntity.getRfqInternalId().isEmpty() || quotationEntity.getPayrollId().isEmpty() ? "CONTRACTED" : "PAID";
+			String status = isNull(quotationEntity.getRfqInternalId())  ? "CONTRACTED" : "PAID";
 			createdInsrcEventDTO.getCreatedInsurance().getStatus().setId(status);
 
 			Integer httpStatusCode = this.rbvdR201.executePutEventUpsilonService(createdInsrcEventDTO);
