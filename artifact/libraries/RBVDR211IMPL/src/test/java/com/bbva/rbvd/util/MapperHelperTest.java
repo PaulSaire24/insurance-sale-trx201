@@ -4,7 +4,6 @@ import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 
 import com.bbva.pisd.dto.insurance.bo.DocumentTypeBO;
 import com.bbva.pisd.dto.insurance.bo.GenderBO;
@@ -18,7 +17,6 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 
 import com.bbva.pisd.lib.r350.PISDR350;
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -41,7 +39,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.bbva.rbvd.lib.r201.RBVDR201;
-import com.bbva.rbvd.lib.r211.impl.util.ConstantsUtil;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 
@@ -55,9 +53,6 @@ import java.io.IOException;
 
 import java.math.BigDecimal;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.util.Collections.singletonList;

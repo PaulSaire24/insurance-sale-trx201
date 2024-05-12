@@ -48,7 +48,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
-import com.bbva.rbvd.lib.r211.impl.util.ConstantsUtil;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;

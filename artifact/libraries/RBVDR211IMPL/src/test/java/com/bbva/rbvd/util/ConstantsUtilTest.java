@@ -1,6 +1,6 @@
 package com.bbva.rbvd.util;
 
-import com.bbva.rbvd.lib.r211.impl.util.ConstantsUtil;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

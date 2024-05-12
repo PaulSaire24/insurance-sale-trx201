@@ -2,6 +2,7 @@ package com.bbva.rbvd.lib.r211.impl.util;
 
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public class ValidationUtil {
     }
 
     public static boolean validateEndorsementInParticipantsRequest(PolicyDTO requestBody) {
-        if(Objects.nonNull(filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.ENDORSEE))){
+        if(Objects.nonNull(filterParticipantByType(requestBody.getParticipants(), ConstantsUtil.Participant.ENDORSEE))){
             ParticipantDTO endorseParticipant = filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.ENDORSEE);
             return  endorseParticipant != null
                     && endorseParticipant.getIdentityDocument() != null

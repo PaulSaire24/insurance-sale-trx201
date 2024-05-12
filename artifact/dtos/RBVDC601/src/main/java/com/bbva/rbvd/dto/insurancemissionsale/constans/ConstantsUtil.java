@@ -1,4 +1,4 @@
-package com.bbva.rbvd.lib.r211.impl.util;
+package com.bbva.rbvd.dto.insurancemissionsale.constans;
 
 public class ConstantsUtil {
 

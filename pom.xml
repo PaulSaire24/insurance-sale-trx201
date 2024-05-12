@@ -23,6 +23,7 @@
 		<sonar.moduleKey>${project.groupId}:${project.parent.artifactId}:${project.artifactId}:${project.version}</sonar.moduleKey>
 	</properties>
 	<modules>
+		<module>artifact/dtos</module>
 		<module>artifact/libraries</module>
 		<module>artifact/transactions</module>
 	</modules>
