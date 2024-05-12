@@ -4,9 +4,9 @@ package com.bbva.rbvd.lib.r201.transform.bean;
 import com.bbva.rbvd.dto.cicsconnection.icr2.ICMRYS2;
 import com.bbva.rbvd.dto.cicsconnection.icr2.ICR2Request;
 import com.bbva.rbvd.dto.insrncsale.aso.*;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.*;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.mock.EntityMock;
 import org.junit.Test;
@@ -15,7 +15,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +22,6 @@ import java.util.List;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.ASO_VALUES.EXTERNAL_CONTRACT_OUT;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.ASO_VALUES.INTERNAL_CONTRACT_OUT;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

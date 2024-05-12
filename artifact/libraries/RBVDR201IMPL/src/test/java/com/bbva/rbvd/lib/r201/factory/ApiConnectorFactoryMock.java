@@ -1,11 +1,10 @@
 package com.bbva.rbvd.lib.r201.factory;
 
-import org.mockito.Mockito;
-import org.osgi.framework.BundleContext;
-
 import com.bbva.elara.utility.api.connector.APIConnector;
 import com.bbva.elara.utility.api.connector.APIConnectorBuilder;
 import com.bbva.elara.utility.api.connector.APIConnectorFactory;
+import org.mockito.Mockito;
+import org.osgi.framework.BundleContext;
 
 public class ApiConnectorFactoryMock implements APIConnectorFactory {
 

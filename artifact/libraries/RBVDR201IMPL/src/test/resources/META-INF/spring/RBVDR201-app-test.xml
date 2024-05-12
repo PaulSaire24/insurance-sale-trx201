@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jdbc="http://www.springframework.org/schema/jdbc" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 	http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
-	<bean id="pisdR014" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="com.bbva.pisd.lib.r014.PISDR014"/>
-	</bean>
 	<bean id="rimacUrlForker" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.rbvd.lib.r201.util.RimacUrlForker"/>
 	</bean>
@@ -12,5 +9,14 @@
 	</bean>
 	<bean id="rbvdR602" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="com.bbva.rbvd.lib.r602.RBVDR602"/>
+	</bean>
+	<bean id="rbvdR066" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r066.RBVDR066"/>
+	</bean>
+	<bean id="rbvdR046" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r046.RBVDR046"/>
+	</bean>
+	<bean id="pisdR352" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.pisd.lib.r352.PISDR352"/>
 	</bean>
 </beans>

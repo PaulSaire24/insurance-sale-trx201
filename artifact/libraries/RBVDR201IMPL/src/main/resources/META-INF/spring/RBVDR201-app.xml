@@ -3,9 +3,11 @@
 		http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 	<bean id="rbvdR201" class="com.bbva.rbvd.lib.r201.impl.RBVDR201Impl" parent="rbvdR201Abstract">
 		<property name="rimacUrlForker" ref="rimacUrlForker"/>
-		<property name="pisdR014" ref="pisdR014"/>
 		<property name="rbvdR047" ref="rbvdR047"/>
 		<property name="rbvdR602" ref="rbvdR602"/>
+		<property name="rbvdR066" ref="rbvdR066"/>
+		<property name="rbvdR046" ref="rbvdR046"/>
+		<property name="pisdR352" ref="pisdR352"/>
 	</bean>
 	<bean id="rimacUrlForker" class="com.bbva.rbvd.lib.r201.util.RimacUrlForker">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>

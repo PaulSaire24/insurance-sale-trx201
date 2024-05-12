@@ -4,8 +4,10 @@ import com.bbva.elara.configuration.manager.application.ApplicationConfiguration
 import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.elara.utility.api.connector.APIConnector;
 import com.bbva.elara.utility.api.connector.APIConnectorBuilder;
-import com.bbva.pisd.lib.r014.PISDR014;
+import com.bbva.pisd.lib.r352.PISDR352;
+import com.bbva.rbvd.lib.r046.RBVDR046;
 import com.bbva.rbvd.lib.r047.RBVDR047;
+import com.bbva.rbvd.lib.r066.RBVDR066;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r201.util.RimacUrlForker;
 import com.bbva.rbvd.lib.r602.RBVDR602;
@@ -23,15 +25,19 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 
 	protected ApplicationConfigurationService applicationConfigurationService;
 
-	protected APIConnector internalApiConnectorImpersonation;
-
-	protected PISDR014 pisdR014;
-
 	protected RBVDR047 rbvdR047;
 
 	protected RBVDR602 rbvdR602;
 
+	protected RBVDR066 rbvdR066;
+
+	protected RBVDR046 rbvdR046;
+
+	protected PISDR352 pisdR352;
+
 	protected RimacUrlForker rimacUrlForker;
+
+	protected APIConnector internalApiConnectorImpersonation;
 
 
 	/**
@@ -63,13 +69,6 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 	}
 
 	/**
-	* @param pisdR014 the this.pisdR014 to set
-	*/
-	public void setPisdR014(PISDR014 pisdR014) {
-		this.pisdR014 = pisdR014;
-	}
-
-	/**
 	* @param rbvdR047 the this.rbvdR047 to set
 	*/
 	public void setRbvdR047(RBVDR047 rbvdR047) {
@@ -81,6 +80,27 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 	*/
 	public void setRbvdR602(RBVDR602 rbvdR602) {
 		this.rbvdR602 = rbvdR602;
+	}
+
+	/**
+	* @param rbvdR066 the this.rbvdR066 to set
+	*/
+	public void setRbvdR066(RBVDR066 rbvdR066) {
+		this.rbvdR066 = rbvdR066;
+	}
+
+	/**
+	* @param rbvdR046 the this.rbvdR046 to set
+	*/
+	public void setRbvdR046(RBVDR046 rbvdR046) {
+		this.rbvdR046 = rbvdR046;
+	}
+
+	/**
+	* @param pisdR352 the this.pisdR352 to set
+	*/
+	public void setPisdR352(PISDR352 pisdR352) {
+		this.pisdR352 = pisdR352;
 	}
 
 	public void setInternalApiConnectorImpersonation(APIConnector internalApiConnectorImpersonation) {

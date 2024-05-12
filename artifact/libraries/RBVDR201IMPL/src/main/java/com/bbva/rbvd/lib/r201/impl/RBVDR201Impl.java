@@ -62,14 +62,9 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR201Impl.class);
 	private static final String CUSTOMER_ID = "customerId";
-	private static final String GET_CONTACT_DETAILS_SERVICE_ID = "glomoContactDetails";
 	private static final String ID_API_INSURANCES_CREATE_INSURANCE_ASO = "emission.aso";
 	private static final String ID_PUT_EVENT_UPSILON_SERVICE = "createdInsurancePutEvent";
 	private static final String ID_API_CYPHER = "executecypher";
-	private static final String AUTHORIZATION_HEADER = "Authorization";
-	private static final String X_AMZ_DATE_HEADER = "X-Amz-Date";
-	private static final String X_API_KEY_HEADER = "x-api-key";
-	private static final String TRACE_ID_HEADER = "traceId";
 	private static final String ERROR_SERVICE_ASO_ADVICE_CODE = "RBVD00000175";
 	private static final String ERROR_SERVICE_ASO_MESSAGE = "Actualmente, estamos experimentando dificultades para establecer conexión con el servicio %s, utilizado en el servicio ASO '%s', debido a un error detectado: '%s'. Por favor, inténtalo de nuevo más tarde. Lamentamos los inconvenientes.";
 	private static final String ERROR_SERVICE_TIMEOUT_ASO_ADVICE_CODE = "RBVD00000174";
@@ -81,19 +76,8 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	@Override
 	public GetContactDetailsASO executeGetContactDetailsService(String customerId) {
-		LOGGER.info("***** PISDR007Impl - executeGetContactDetailsService START *****");
-
-		Map<String, String> pathParam = new HashMap<>();
-		pathParam.put(CUSTOMER_ID, customerId);
-
-		try {
-			GetContactDetailsASO response = this.internalApiConnector.getForObject(GET_CONTACT_DETAILS_SERVICE_ID, GetContactDetailsASO.class, pathParam);
-			LOGGER.info("***** PISDR007Impl - executeGetContactDetailsService END *****");
-			return response;
-		} catch(RestClientException ex) {
-			LOGGER.debug("***** PISDR007Impl - executeGetContactDetailsService ***** Something went wrong: {}", ex.getMessage());
-			return null;
-		}
+		LOGGER.info("***** RBVDR201Impl - executeGetContactDetailsService START *****");
+		return this.rbvdR046.executeGetContactDetailsService(customerId);
 	}
 
 	@Override
@@ -132,35 +116,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	@Override
 	public EmisionBO executePrePolicyEmissionService(EmisionBO requestBody, String quotationId, String traceId, String productId) {
 		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService START *****");
-
-		String jsonString = getRequestBodyAsJsonFormat(requestBody);
-
-		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Param: {}", jsonString);
-
-		SignatureAWS signature = this.pisdR014.executeSignatureConstruction(jsonString, HttpMethod.POST.toString(),
-				this.rimacUrlForker.generateUriForSignatureAWS(productId, quotationId), null, traceId);
-
-		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeadersAWS(signature));
-
-		Map<String, String> uriParam = new HashMap<>();
-		uriParam.put("ideCotizacion", quotationId);
-
-		try {
-			EmisionBO responseBody = this.externalApiConnector.postForObject(this.rimacUrlForker.generatePropertyKeyName(productId), entity,
-					EmisionBO.class, uriParam);
-			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Response: {}", getRequestBodyAsJsonFormat(responseBody));
-			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService END *****");
-			return responseBody;
-		} catch (RestClientException ex) {
-			this.addAdviceWithDescription("RBVD10094932",ex.getMessage());
-			this.addAdviceWithDescription("RBVD10094943","Error al devolver informacion de Rimac en Alta de Poliza");
-			LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService ***** Exception: {}", ex.getMessage());
-			return null;
-		} catch (TimeoutException toex) {
-			this.addAdvice("RBVD01020044");
-			LOGGER.info("*** RBVDR201Impl - executePrePolicyEmissionService *** TimeoutException: {}", toex.getAdviceCode());
-			return null;
-		}
+		return this.pisdR352.executePrePolicyEmissionService(requestBody, quotationId, productId, traceId);
 	}
 
 	@Override
@@ -186,26 +142,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	public ListBusinessesASO executeGetListBusinesses(String customerId, String expands) {
 		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START customerId: {} ***** ", customerId);
 		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses START expands: {} ***** ", expands);
-		Map<String, Object> pathParams = new HashMap<>();
-		pathParams.put(CUSTOMER_ID, customerId);
-		if (StringUtils.isNotBlank(expands)) pathParams.put("expand", expands);
-		ListBusinessesASO responseList = null;
-		BusinessASO output = null;
-		String responJsons = "";
-		try {
-			responseList = this.internalApiConnector.getForObject(RBVDProperties.ID_API_LIST_BUSINESSES.getValue()
-					, ListBusinessesASO.class, pathParams);
-			if (responseList != null && responseList.getData() != null && !responseList.getData().isEmpty()) {
-				output = responseList.getData().get(0);
-				LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses ***** output: {}", output);
-				responJsons = getRequestBodyAsJsonFormat(responseList.getData().get(0));
-			}
-		} catch (RestClientException e) {
-			LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses ***** Exception: {}", e.getMessage());
-		}
-		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses output ***** Response: {}", responJsons);
-		LOGGER.info("***** RBVDR201Impl - executeGetListBusinesses END getSuccess ***** ");
-		return responseList;
+		return this.rbvdR066.executeGetListBusinesses(customerId, expands);
 	}
 
 	@Override
@@ -260,34 +197,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	@Override
 	public AgregarTerceroBO executeAddParticipantsService(AgregarTerceroBO requestBody, String quotationId, String productId, String traceId) {
 		LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService START *****");
-		String jsonString = this.getRequestBodyAsJsonFormat(requestBody);
-
-		LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Param: {}", jsonString);
-
-		AgregarTerceroBO output = null;
-
-		SignatureAWS signature = this.pisdR014.executeSignatureConstruction(jsonString, HttpMethod.PATCH.toString(),
-				this.rimacUrlForker.generateUriAddParticipants(quotationId,productId), null, traceId);
-
-		HttpEntity<String> entity = new HttpEntity<>(jsonString, createHttpHeadersAWS(signature));
-
-		try {
-			ResponseEntity<AgregarTerceroBO> response = this.externalApiConnector.exchange(this.rimacUrlForker.generateKeyAddParticipants(productId),HttpMethod.PATCH, entity,
-					AgregarTerceroBO.class, singletonMap("cotizacion",quotationId));
-			output = response.getBody();
-			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Response: {}", this.getRequestBodyAsJsonFormat(output));
-			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService END *****");
-			return output;
-		} catch (RestClientException ex) {
-			this.addAdviceWithDescription("RBVD10094933",ex.getMessage());
-			this.addAdviceWithDescription("RBVD10094944","Error al devolver informacion del Servicio de Agregar Terceros de Rimac");
-			LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService ***** Exception: {}", ex.getMessage());
-			return null;
-		}catch (TimeoutException toex) {
-			this.addAdvice("RBVD01020044");
-			LOGGER.info("*** RBVDR201Impl - executeAddParticipantsService *** TimeoutException: {}", toex.getAdviceCode());
-			return null;
-		}
+		return this.pisdR352.executeAddParticipantsService(requestBody, quotationId, productId, traceId);
 	}
 
 	/**
@@ -362,15 +272,5 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		return headers;
 	}
 
-	private HttpHeaders createHttpHeadersAWS(SignatureAWS signature) {
-		HttpHeaders headers = new HttpHeaders();
-		MediaType mediaType = new MediaType("application","json", StandardCharsets.UTF_8);
-		headers.setContentType(mediaType);
-		headers.set(AUTHORIZATION_HEADER, signature.getAuthorization());
-		headers.set(X_AMZ_DATE_HEADER, signature.getxAmzDate());
-		headers.set(X_API_KEY_HEADER, signature.getxApiKey());
-		headers.set(TRACE_ID_HEADER, signature.getTraceId());
-		return headers;
-	}
 
 }

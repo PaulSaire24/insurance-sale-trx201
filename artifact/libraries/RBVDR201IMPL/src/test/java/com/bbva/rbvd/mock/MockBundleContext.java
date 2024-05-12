@@ -1,33 +1,16 @@
 package com.bbva.rbvd.mock;
 
-import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.List;
-import java.util.Map;
 import org.mockito.Mockito;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.BundleListener;
-import org.osgi.framework.Constants;
-import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkListener;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceFactory;
-import org.osgi.framework.ServiceListener;
-import org.osgi.framework.ServiceObjects;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.framework.Version;
+import org.osgi.framework.*;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.osgi.mock.MockServiceReference;
+
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
 
 public class MockBundleContext implements BundleContext,
 		ApplicationContextAware {

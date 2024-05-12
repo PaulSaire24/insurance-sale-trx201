@@ -8,7 +8,7 @@ import com.bbva.elara.domain.transaction.request.body.CommonRequestBody;
 import com.bbva.elara.domain.transaction.request.header.CommonRequestHeader;
 import com.bbva.rbvd.dto.cicsconnection.icr3.ICR3Response;
 import com.bbva.rbvd.dto.cicsconnection.utils.HostAdvice;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.*;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r602.RBVDR602;

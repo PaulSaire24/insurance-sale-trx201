@@ -1,8 +1,7 @@
 package com.bbva.rbvd.mock;
 
-import org.aspectj.lang.ProceedingJoinPoint;
-
 import com.bbva.elara.aspect.LibraryMonitorizationAspect;
+import org.aspectj.lang.ProceedingJoinPoint;
 
 public class LibraryMonitorizationAspectMock implements LibraryMonitorizationAspect{
 

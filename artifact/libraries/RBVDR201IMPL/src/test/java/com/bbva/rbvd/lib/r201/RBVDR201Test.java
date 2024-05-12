@@ -1,69 +1,52 @@
 package com.bbva.rbvd.lib.r201;
 
 import com.bbva.apx.exception.business.BusinessException;
-
 import com.bbva.apx.exception.io.network.TimeoutException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
-
 import com.bbva.elara.utility.api.connector.APIConnector;
-
-import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
-
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
-
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
-
-import com.bbva.pisd.lib.r014.PISDR014;
-
+import com.bbva.pisd.lib.r352.PISDR352;
 import com.bbva.rbvd.dto.cicsconnection.icr2.ICR2Response;
 import com.bbva.rbvd.dto.cicsconnection.utils.HostAdvice;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherDataASO;
-
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
-
-import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
-
 import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsuranceDTO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
-
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
+import com.bbva.rbvd.lib.r046.RBVDR046;
 import com.bbva.rbvd.lib.r047.RBVDR047;
+import com.bbva.rbvd.lib.r066.RBVDR066;
 import com.bbva.rbvd.lib.r201.factory.ApiConnectorFactoryMock;
-
 import com.bbva.rbvd.lib.r201.impl.RBVDR201Impl;
 import com.bbva.rbvd.lib.r201.util.RimacUrlForker;
-
+import com.bbva.rbvd.lib.r602.RBVDR602;
 import com.bbva.rbvd.mock.EntityMock;
 import com.bbva.rbvd.mock.MockBundleContext;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
@@ -90,7 +73,6 @@ public class RBVDR201Test {
 
 	private RBVDR201Impl rbvdR201 = new RBVDR201Impl();
 
-	private PISDR014 pisdr014;
 
 	private MockData mockData;
 	private APIConnector internalApiConnector;
@@ -99,10 +81,21 @@ public class RBVDR201Test {
 	private RimacUrlForker rimacUrlForker;
 	private CustomerListASO customerList;
 	private MockDTO mockDTO;
-	private ApplicationConfigurationService applicationConfigurationService;
 
+	private PISDR352 pisdR352;
+
+	private RBVDR066 rbvdR066;
+
+	private RBVDR602 rbvdR602;
+	private RBVDR046 rbvdR046;
 	private RBVDR047 rbvdR047;
 
+	private ApplicationConfigurationService applicationConfigurationService;
+
+	private static final String ERROR_SERVICE_ASO_MESSAGE = "Actualmente, estamos experimentando dificultades para establecer conexión con el servicio %s, utilizado en el servicio ASO '%s', debido a un error detectado: '%s'. Por favor, inténtalo de nuevo más tarde. Lamentamos los inconvenientes.";
+	private static final String ERROR_SERVICE_TIMEOUT_ASO_MESSAGE = "Actualmente, el servicio %s no está disponible debido a un tiempo de espera en la conexión, al ser utilizado en el contexto del servicio ASO %s. Te recomendamos intentar acceder a este servicio en unos minutos, gracias.";
+	private static final String PROPERTIES_TIMEOUT_EXCEPTION = "error.message.timeout";
+	private static final String PROPERTIES_REST_EXCEPTION = "error.message.restException";
 
 	@Before
 	public void setUp() throws Exception{
@@ -122,25 +115,35 @@ public class RBVDR201Test {
 		internalApiConnectorImpersonation = apiConnectorFactoryMock.getAPIConnector(mockBundleContext, true, true);
 		rbvdR201.setInternalApiConnectorImpersonation(internalApiConnectorImpersonation);
 
-		applicationConfigurationService = mock(ApplicationConfigurationService.class);
-		rbvdR201.setApplicationConfigurationService(applicationConfigurationService);
 
-		pisdr014 = mock(PISDR014.class);
-		rbvdR201.setPisdR014(pisdr014);
 		rimacUrlForker = mock(RimacUrlForker.class);
 		rbvdR201.setRimacUrlForker(rimacUrlForker);
+
+		mockDTO = MockDTO.getInstance();
+		customerList = mockDTO.getCustomerDataResponse();
+
+		pisdR352 = mock(PISDR352.class);
+		rbvdR201.setPisdR352(pisdR352);
+
+		rbvdR066 = mock(RBVDR066.class);
+		rbvdR201.setRbvdR066(rbvdR066);
+
+		rbvdR602 = mock(RBVDR602.class);
+		rbvdR201.setRbvdR602(rbvdR602);
+
+		rbvdR046 = mock(RBVDR046.class);
+		rbvdR201.setRbvdR046(rbvdR046);
 
 		rbvdR047 = mock(RBVDR047.class);
 		rbvdR201.setRbvdR047(rbvdR047);
 
-		when(pisdr014.executeSignatureConstruction(anyString(), anyString(), anyString(), anyString(), anyString()))
-				.thenReturn(new SignatureAWS("", "", "", ""));
-		mockDTO = MockDTO.getInstance();
-		customerList = mockDTO.getCustomerDataResponse();
+		applicationConfigurationService = Mockito.mock(ApplicationConfigurationService.class);
+		rbvdR201.setApplicationConfigurationService(applicationConfigurationService);
 
-		when(applicationConfigurationService.getDefaultProperty(eq("error.message.timeout"),anyString())).thenReturn("ERROR_SERVICE_TIMEOUT_ASO.getMessage()");
-		when(applicationConfigurationService.getDefaultProperty(eq("error.message.restException"), anyString())).thenReturn("ERROR_SERVICE_ASO.getMessage()");
+		when(this.applicationConfigurationService.getDefaultProperty(eq(PROPERTIES_REST_EXCEPTION), eq(ERROR_SERVICE_ASO_MESSAGE))).thenReturn(ERROR_SERVICE_ASO_MESSAGE);
+		when(this.applicationConfigurationService.getDefaultProperty(eq(PROPERTIES_TIMEOUT_EXCEPTION), eq(ERROR_SERVICE_TIMEOUT_ASO_MESSAGE))).thenReturn(ERROR_SERVICE_TIMEOUT_ASO_MESSAGE);
 	}
+
 
 	@Test
 	public void prePolicyEmissionCicsReturnsExpectedResult() throws IOException {
@@ -176,32 +179,146 @@ public class RBVDR201Test {
 	}
 
 
+
 	@Test
-	public void executeGetContactDetailsServiceOK() throws IOException {
-		LOGGER.info("RBVDR201Test - Executing executeGetContactDetailsServiceOK...");
+	public void prePolicyEmissionThrowsBusinessExceptionForHttpStatusCodeException() {
+		// Given
+		DataASO requestBody = new DataASO();
+		when(internalApiConnector.postForObject(anyString(), any(HttpEntity.class), eq(PolicyASO.class))).thenThrow(new HttpStatusCodeException(HttpStatus.BAD_REQUEST) {});
 
-		GetContactDetailsASO responseListCustomers = mockDTO.getContactDetailsResponse();
-
-		when(internalApiConnector.getForObject(anyString(), any(), anyMap())).
-				thenReturn(responseListCustomers);
-
-		GetContactDetailsASO validation = rbvdR201.executeGetContactDetailsService("customerId");
-
-		assertNotNull(validation);
-		assertFalse(validation.getData().isEmpty());
+		// When / Then
+		assertThrows(BusinessException.class, () -> rbvdR201.executePrePolicyEmissionASO(requestBody));
 	}
 
 	@Test
-	public void executeGetContactDetailsServiceWithRestClientException() {
-		LOGGER.info("RBVDR201Test - Executing executeGetContactDetailsServiceWithRestClientException...");
+	public void prePolicyEmissionThrowsBusinessExceptionForRestClientException() {
+		// Given
+		DataASO requestBody = new DataASO();
+		when(internalApiConnector.postForObject(anyString(), any(HttpEntity.class), eq(PolicyASO.class))).thenThrow(new RestClientException("error"));
 
-		when(internalApiConnector.getForObject(anyString(), any(), anyMap())).
-				thenThrow(new RestClientException(MESSAGE_EXCEPTION));
-
-		GetContactDetailsASO validation = rbvdR201.executeGetContactDetailsService("customerId");
-
-		assertNull(validation);
+		// When / Then
+		assertThrows(BusinessException.class, () -> rbvdR201.executePrePolicyEmissionASO(requestBody));
 	}
+
+	@Test
+	public void prePolicyEmissionThrowsBusinessExceptionForTimeoutException() {
+		// Given
+		DataASO requestBody = new DataASO();
+		when(internalApiConnector.postForObject(anyString(), any(HttpEntity.class), eq(PolicyASO.class))).thenThrow(new TimeoutException("TIMEOUT EXCEPTION"));
+
+		// When / Then
+		assertThrows(BusinessException.class, () -> rbvdR201.executePrePolicyEmissionASO(requestBody));
+	}
+
+	@Test
+	public void executeGetContactDetailsServiceReturnsExpectedResult() {
+		// Given
+		String customerId = "customerId";
+		GetContactDetailsASO expected = new GetContactDetailsASO();
+		when(rbvdR046.executeGetContactDetailsService(customerId)).thenReturn(expected);
+
+		// When
+		GetContactDetailsASO result = rbvdR201.executeGetContactDetailsService(customerId);
+
+		// Then
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void executeGetContactDetailsServiceReturnsNullWhenServiceFails() {
+		// Given
+		String customerId = "customerId";
+		when(rbvdR046.executeGetContactDetailsService(customerId)).thenReturn(null);
+
+		// When
+		GetContactDetailsASO result = rbvdR201.executeGetContactDetailsService(customerId);
+
+		// Then
+		assertNull(result);
+	}
+
+
+	@Test
+	public void executePrePolicyEmissionServiceReturnsExpectedResult() {
+		// Given
+		EmisionBO requestBody = new EmisionBO();
+		String quotationId = "quotationId";
+		String productId = "productId";
+		String traceId = "traceId";
+		EmisionBO expected = new EmisionBO();
+		when(pisdR352.executePrePolicyEmissionService(Mockito.anyObject(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(expected);
+
+		// When
+		EmisionBO result = rbvdR201.executePrePolicyEmissionService(requestBody, quotationId, productId, traceId);
+
+		// Then
+		assertEquals(expected, result);
+	}
+
+
+
+	@Test
+	public void executeGetListBusinessesReturnsExpectedResult() {
+		// Given
+		String customerId = "customerId";
+		String expands = "expands";
+		ListBusinessesASO expected = new ListBusinessesASO();
+		when(rbvdR066.executeGetListBusinesses(customerId, expands)).thenReturn(expected);
+
+		// When
+		ListBusinessesASO result = rbvdR201.executeGetListBusinesses(customerId, expands);
+
+		// Then
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void executeGetListBusinessesReturnsNullWhenServiceFails() {
+		// Given
+		String customerId = "customerId";
+		String expands = "expands";
+		when(rbvdR066.executeGetListBusinesses(customerId, expands)).thenReturn(null);
+
+		// When
+		ListBusinessesASO result = rbvdR201.executeGetListBusinesses(customerId, expands);
+
+		// Then
+		assertNull(result);
+	}
+
+	@Test
+	public void executeAddParticipantsServiceReturnsExpectedResult() {
+		// Given
+		AgregarTerceroBO requestBody = new AgregarTerceroBO();
+		String quotationId = "quotationId";
+		String productId = "productId";
+		String traceId = "traceId";
+		AgregarTerceroBO expected = new AgregarTerceroBO();
+		when(pisdR352.executeAddParticipantsService(requestBody, quotationId, productId, traceId)).thenReturn(expected);
+
+		// When
+		AgregarTerceroBO result = rbvdR201.executeAddParticipantsService(requestBody, quotationId, productId, traceId);
+
+		// Then
+		assertEquals(expected, result);
+	}
+
+	@Test(expected = BusinessException.class)
+	public void executeAddParticipantsServiceThrowsBusinessException() {
+		// Given
+		AgregarTerceroBO requestBody = new AgregarTerceroBO();
+		String quotationId = "quotationId";
+		String productId = "productId";
+		String traceId = "traceId";
+		when(pisdR352.executeAddParticipantsService(requestBody, quotationId, productId, traceId)).thenThrow(BusinessException.class);
+
+		// When
+		rbvdR201.executeAddParticipantsService(requestBody, quotationId, productId, traceId);
+
+		// Then exception is thrown
+	}
+
+
 
 	@Test(expected = BusinessException.class)
 	public void executePrePolicyEmissionASOWithRestClientException() {
@@ -210,24 +327,6 @@ public class RBVDR201Test {
 		String responseBody = "{\"messages\":[{\"code\":\"wrongParameters\",\"message\":\"LOS DATOS INGRESADOS SON INVALIDOS\",\"parameters\":[],\"type\":\"FATAL\"}]}";
 
 		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
-
-		rbvdR201.executePrePolicyEmissionASO(new DataASO());
-	}
-
-	@Test(expected = BusinessException.class)
-	public void executePrePolicyEmissionASOWithTimeoutException() {
-		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionASOWithRestClientException...");
-
-		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new TimeoutException("timeoutExcp"));
-
-		rbvdR201.executePrePolicyEmissionASO(new DataASO());
-	}
-
-	@Test(expected = BusinessException.class)
-	public void executePrePolicyEmissionASOWithStatusCodeException() {
-		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionASOWithRestClientException...");
-
-		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_GATEWAY));
 
 		rbvdR201.executePrePolicyEmissionASO(new DataASO());
 	}
@@ -279,67 +378,7 @@ public class RBVDR201Test {
 		assertNotNull(validation.getData().getInsuranceCompany().getName());
 	}
 
-	@Test
-	public void executePrePolicyEmissionServiceWithRestClientException() {
-		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionServiceWithRestClientException...");
 
-		String responseBody = "{\"error\":{\"code\":\"VEHDAT005\",\"message\":\"Error al Validar Datos.\",\"details\":[\"\\\"contactoInspeccion.telefono\\\" debe contener caracteres\"],\"httpStatus\":400}}";
-		when(rimacUrlForker.generatePropertyKeyName(anyString())).thenReturn("value");
-		when(rimacUrlForker.generateUriForSignatureAWS(anyString(), anyString())).thenReturn("value");
-		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
-
-		EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId", "830");
-		assertNull(rimacResponse);
-	}
-
-	@Test
-	public void executePrePolicyEmissionServiceOK() throws IOException {
-		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionServiceOK...");
-
-		EmisionBO rimacResponse = mockData.getEmisionRimacResponse();
-		when(rimacUrlForker.generatePropertyKeyName(anyString())).thenReturn("value");
-		when(rimacUrlForker.generateUriForSignatureAWS(anyString(), anyString())).thenReturn("value");
-		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenReturn(rimacResponse);
-
-		EmisionBO validation = rbvdR201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId", "830");
-
-		assertNotNull(validation);
-		assertNotNull(validation.getPayload());
-		assertNotNull(validation.getPayload().getCotizacion());
-		assertNotNull(validation.getPayload().getIndicadorRequierePago());
-		assertNotNull(validation.getPayload().getCodProducto());
-		assertNotNull(validation.getPayload().getNumeroPoliza());
-		assertNotNull(validation.getPayload().getPrimaNeta());
-		assertNotNull(validation.getPayload().getPrimaBruta());
-		assertNotNull(validation.getPayload().getIndicadorInspeccion());
-		assertNotNull(validation.getPayload().getIndicadorGps());
-		assertNotNull(validation.getPayload().getEnvioElectronico());
-		assertNotNull(validation.getPayload().getFinanciamiento());
-		assertNotNull(validation.getPayload().getNumeroCuotas());
-		assertNotNull(validation.getPayload().getFechaInicio());
-		assertNotNull(validation.getPayload().getFechaFinal());
-		assertNotNull(validation.getPayload().getCuotasFinanciamiento());
-		assertFalse(validation.getPayload().getCuotasFinanciamiento().isEmpty());
-		assertNotNull(validation.getPayload().getContratante());
-		assertNotNull(validation.getPayload().getContratante().getTipoDocumento());
-		assertNotNull(validation.getPayload().getContratante().getNumeroDocumento());
-		assertNotNull(validation.getPayload().getContratante().getApellidoPaterno());
-		assertNotNull(validation.getPayload().getContratante().getApellidoMaterno());
-		assertNotNull(validation.getPayload().getContratante().getNombres());
-		assertNotNull(validation.getPayload().getContratante().getSexo());
-		assertNotNull(validation.getPayload().getContratante().getFechaNacimiento());
-		assertNotNull(validation.getPayload().getContratante().getUbigeo());
-		assertNotNull(validation.getPayload().getContratante().getNombreDistrito());
-		assertNotNull(validation.getPayload().getContratante().getNombreProvincia());
-		assertNotNull(validation.getPayload().getContratante().getNombreDepartamento());
-		assertNotNull(validation.getPayload().getContratante().getNombreVia());
-		assertNotNull(validation.getPayload().getContratante().getNumeroVia());
-		assertNotNull(validation.getPayload().getContratante().getCorreo());
-		assertNotNull(validation.getPayload().getContratante().getTelefono());
-		assertNotNull(validation.getPayload().getResponsablePago());
-		assertNotNull(validation.getPayload().getAsegurado());
-
-	}
 
 	@Test
 	public void executeGetCustomerInformationServiceOK() {
@@ -360,35 +399,6 @@ public class RBVDR201Test {
 				.thenThrow(new RestClientException(MESSAGE_EXCEPTION));
 
 		CustomerListASO validation = rbvdR201.executeGetCustomerInformation("90008603");
-		assertNull(validation);
-	}
-
-	@Test
-	public void executeGetListBusinessesServiceOK() {
-		LOGGER.info("RBVDR201Test - Executing executeGetListBusinessesServiceOK...");
-		ListBusinessesASO businesses = new ListBusinessesASO();
-		businesses.setData(new ArrayList<>());
-		when(internalApiConnector.getForObject(anyString(), any(), anyMap()))
-				.thenReturn(businesses);
-
-		ListBusinessesASO validation = rbvdR201.executeGetListBusinesses("90008603", null);
-		assertNotNull(validation);
-
-		validation = rbvdR201.executeGetListBusinesses("90008603", "ABC");
-		assertNotNull(validation);
-
-		businesses.setData(Collections.singletonList(new BusinessASO()));
-		validation = rbvdR201.executeGetListBusinesses("90008603", "ABC");
-		assertNotNull(validation);
-	}
-
-	@Test
-	public void executeGetListBusinessesResponseWithRestClientException() {
-		LOGGER.info("RBVDR201Test - Executing executeGetListBusinessesResponseWithRestClientException...");
-		when(internalApiConnector.getForObject(anyString(), any(), anyMap()))
-				.thenThrow(new RestClientException(MESSAGE_EXCEPTION));
-
-		ListBusinessesASO validation = rbvdR201.executeGetListBusinesses("90008603", null);
 		assertNull(validation);
 	}
 
@@ -472,67 +482,15 @@ public class RBVDR201Test {
 		assertEquals(0, validation.intValue());
 	}
 
-	@Test
-	public void testExecuteAddParticipantsService_OK() throws IOException{
 
-		AgregarTerceroBO response = mockData.getAddParticipantsRimacResponse();
 
-		when(this.rimacUrlForker.generateKeyAddParticipants(anyString())).thenReturn("key.property");
-		when(this.rimacUrlForker.generateUriAddParticipants(anyString(),anyString())).thenReturn("value-key-1");
-		when(this.externalApiConnector.exchange(anyString(), anyObject(),anyObject(), (Class<AgregarTerceroBO>) any(), anyMap())).thenReturn(new ResponseEntity<>(response,HttpStatus.OK));
+	@Test(expected = BusinessException.class)
+	public void executePrePolicyEmissionASOWithStatusCodeException() {
+		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionASOWithRestClientException...");
 
-		AgregarTerceroBO validation = this.rbvdR201.executeAddParticipantsService(new AgregarTerceroBO(),"quotationId","840","traceId");
+		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_GATEWAY));
 
-		assertNotNull(validation);
-		assertNotNull(validation.getPayload());
-		assertNotNull(validation.getPayload().getStatus());
-		assertNotNull(validation.getPayload().getMensaje());
-		assertEquals("1",validation.getPayload().getStatus());
-		assertNotNull(validation.getPayload().getTerceros());
-		assertEquals(3,validation.getPayload().getTerceros().size());
-		assertNotNull(validation.getPayload().getTerceros().get(0));
-		assertNotNull(validation.getPayload().getTerceros().get(1));
-		assertNotNull(validation.getPayload().getTerceros().get(2));
-		assertEquals(0,validation.getPayload().getBeneficiario().size());
-	}
-	@Test
-	public void testExecuteAddParticipantsServiceWithRestClientException() {
-		LOGGER.info("RBVDR201Test - Executing testExecuteAddParticipantsServiceWithRestClientException...");
-
-		String responseBody = "{\"error\":{\"code\":\"VIDA001\",\"message\":\"ErroralValidarDatos.\",\"details\":[\"\\\"persona[0].celular\\\"esrequerido\"],\"httpStatus\":400}}";
-		when(rimacUrlForker.generateUriAddParticipants(anyString(),anyString())).thenReturn("any-value");
-		when(rimacUrlForker.generateKeyAddParticipants(anyString())).thenReturn("any-value");
-		when(this.externalApiConnector.exchange(anyString(), anyObject(),anyObject(), (Class<AgregarTerceroBO>) any(), anyMap())).thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
-
-		AgregarTerceroBO validation = this.rbvdR201.executeAddParticipantsService(new AgregarTerceroBO(),"quotationId","productId","traceId");
-		assertNull(validation);
-	}
-
-	@Test
-	public void testExecuteAddParticipantsServiceWithTimeoutException() {
-		LOGGER.info("RBVDR201Test - Executing testExecuteAddParticipantsServiceWithTimeoutException...");
-
-		when(rimacUrlForker.generateUriAddParticipants(anyString(),anyString())).thenReturn("any-value");
-		when(rimacUrlForker.generateKeyAddParticipants(anyString())).thenReturn("any-value");
-		when(this.externalApiConnector.exchange(anyString(), anyObject(),anyObject(), (Class<AgregarTerceroBO>) any(), anyMap())).thenThrow(new TimeoutException(HttpStatus.GATEWAY_TIMEOUT.toString()));
-
-		AgregarTerceroBO validation = this.rbvdR201.executeAddParticipantsService(new AgregarTerceroBO(),"quotationId","productId","traceId");
-		assertNull(validation);
-	}
-
-	@Test
-	public void executePrePilicyEmissionServiceWithTimeoutException() {
-
-		LOGGER.info("RBVDR201Test - Executing executePrePilicyEmissionServiceWithTimeoutException...");
-
-		String responseBody = "{\"error\":{\"code\":\"CQT001\",\"message\"\"Error interno del Servidor.\",\"details\":[\"\\\"SIN999001\\\"Error de sintaxis\"],\"httpStatus\":504}}";
-		when(rimacUrlForker.generatePropertyKeyName(anyString())).thenReturn("value");
-		when(rimacUrlForker.generateUriForSignatureAWS(anyString(), anyString())).thenReturn("value");
-		when(externalApiConnector.postForObject(anyString(), anyObject(), any(), anyMap())).thenThrow(new TimeoutException("RBVD01020044"));
-
-		EmisionBO rimacResponse = rbvdR201.executePrePolicyEmissionService(new EmisionBO(), "quotationId", "traceId", "830");
-		assertNull(rimacResponse);
-
+		rbvdR201.executePrePolicyEmissionASO(new DataASO());
 	}
 
 }

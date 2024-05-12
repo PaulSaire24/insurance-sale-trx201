@@ -2,7 +2,6 @@ package com.bbva.rbvd.mock;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.configuration.manager.application.factory.ApplicationConfigurationServiceFactory;
-
 import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
 

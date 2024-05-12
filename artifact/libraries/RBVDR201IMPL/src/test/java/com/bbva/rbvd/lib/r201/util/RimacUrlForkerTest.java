@@ -1,16 +1,14 @@
 package com.bbva.rbvd.lib.r201.util;
 
-import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
-import com.bbva.rbvd.lib.r201.util.RimacUrlForker;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RimacUrlForkerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(RimacUrlForkerTest.class);
