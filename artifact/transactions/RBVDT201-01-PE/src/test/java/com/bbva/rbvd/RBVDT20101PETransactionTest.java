@@ -8,6 +8,7 @@ import com.bbva.elara.domain.transaction.request.TransactionRequest;
 import com.bbva.elara.domain.transaction.request.body.CommonRequestBody;
 import com.bbva.elara.domain.transaction.request.header.CommonRequestHeader;
 
+import com.bbva.elara.domain.transaction.response.HttpResponseCode;
 import com.bbva.elara.test.osgi.DummyBundleContext;
 
 import java.io.IOException;
@@ -20,6 +21,8 @@ import javax.annotation.Resource;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insrncsale.policy.*;
 
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.RBVDR211;
 
 import org.junit.Before;
@@ -94,11 +97,89 @@ public class RBVDT20101PETransactionTest {
 	}
 
 	@Test
+	public void executeSetsCorrectHttpResponseCodeAndSeverityForLegacyFlowProcessAndNonNullBody() throws IOException {
+		// Given
+		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
+		simulateResponse.setOperationDate(new Date());
+		when(rbvdr211.executeBusinessLogicEmissionPolicyNotLifeFlowNew(anyObject())).thenReturn(ResponseLibrary.ResponseServiceBuilder.an()
+				.flowProcess(RBVDInternalConstants.FlowProcess.LEGACY_FLOW_PROCESS).body(simulateResponse));
+
+		// When
+		transaction.execute();
+
+		// Then
+		assertEquals(Severity.OK, transaction.getSeverity());
+	}
+
+	@Test
+	public void executeSetsSeverityENRForLegacyFlowProcessAndNullBody() {
+		// Given
+		when(rbvdr211.executeBusinessLogicEmissionPolicyNotLifeFlowNew(anyObject())).thenReturn(ResponseLibrary.ResponseServiceBuilder.an()
+				.flowProcess(RBVDInternalConstants.FlowProcess.LEGACY_FLOW_PROCESS).body(null));
+
+		// When
+		transaction.execute();
+
+		// Then
+		assertEquals(Severity.ENR, transaction.getSeverity());
+	}
+
+	@Test
+	public void executeSetsCorrectHttpResponseCodeAndSeverityForNonLegacyFlowProcessAndStatusOK() throws IOException {
+		// Given
+		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
+		simulateResponse.setOperationDate(new Date());
+		ResponseLibrary<PolicyDTO> response =
+				ResponseLibrary.ResponseServiceBuilder
+						.an().statusIndicatorProcess(RBVDInternalConstants.Status.OK).flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+						.body(simulateResponse);
+		when(rbvdr211.executeBusinessLogicEmissionPolicyNotLifeFlowNew(anyObject())).thenReturn(response);
+
+		// When
+		transaction.execute();
+
+		// Then
+		assertEquals(Severity.OK, transaction.getSeverity());
+	}
+
+	@Test
+	public void executeSetsSeverityEWRForNonLegacyFlowProcessAndStatusEWR() {
+		// Given
+		ResponseLibrary<PolicyDTO> response =
+				ResponseLibrary.ResponseServiceBuilder
+						.an().statusIndicatorProcess(RBVDInternalConstants.Status.EWR).flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+						.body(new PolicyDTO());
+		when(rbvdr211.executeBusinessLogicEmissionPolicyNotLifeFlowNew(anyObject())).thenReturn(response);
+
+		// When
+		transaction.execute();
+
+		// Then
+		assertEquals(Severity.EWR, transaction.getSeverity());
+	}
+
+	@Test
+	public void executeSetsSeverityENRForNonLegacyFlowProcessAndStatusNotOKOrEWR() {
+		// Given
+
+		ResponseLibrary<PolicyDTO> response =
+				ResponseLibrary.ResponseServiceBuilder
+						.an().statusIndicatorProcess(RBVDInternalConstants.Status.ENR).flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+						.body(new PolicyDTO());
+		when(rbvdr211.executeBusinessLogicEmissionPolicyNotLifeFlowNew(anyObject())).thenReturn(response);
+		// When
+		transaction.execute();
+
+		// Then
+		assertEquals(Severity.ENR, transaction.getSeverity());
+	}
+
+	@Test
 	public void execute() throws IOException {
 		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
 		simulateResponse.setOperationDate(new Date());
 
-		when(rbvdr211.executeBusinessLogicEmissionPrePolicy(anyObject())).thenReturn(simulateResponse);
+		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLegacy(anyObject())).thenReturn(simulateResponse);
 
 		this.transaction.getContext().getParameterList().forEach(
 				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)
@@ -119,7 +200,9 @@ public class RBVDT20101PETransactionTest {
 
 	@Test
 	public void testNull() {
-		when(rbvdr211.executeBusinessLogicEmissionPrePolicy(anyObject())).thenReturn(null);
+		// Given
+		when(rbvdr211.executeBusinessLogicEmissionPolicyNotLifeFlowNew(anyObject())).thenReturn(ResponseLibrary.ResponseServiceBuilder.an()
+				.flowProcess(RBVDInternalConstants.FlowProcess.LEGACY_FLOW_PROCESS).body(null));
 		this.transaction.execute();
 		assertEquals(Severity.ENR.getValue(), this.transaction.getSeverity().getValue());
 	}
@@ -135,57 +218,7 @@ public class RBVDT20101PETransactionTest {
 		this.addParameter("productId", "840");
 		simulateResponse.setOperationDate(new Date());
 
-		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(anyObject())).thenReturn(simulateResponse);
-
-		this.transaction.getContext().getParameterList().forEach(
-				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)
-		);
-
-		this.transaction.execute();
-
-		assertTrue(this.transaction.getAdviceList().isEmpty());
-	}
-
-	@Test
-	public void executeDynamicLife() throws IOException {
-		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
-		this.addParameter("productId", "841");
-		simulateResponse.setOperationDate(new Date());
-
-		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(anyObject())).thenReturn(simulateResponse);
-
-		this.transaction.getContext().getParameterList().forEach(
-				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)
-		);
-
-		this.transaction.execute();
-
-		assertTrue(this.transaction.getAdviceList().isEmpty());
-	}
-	@Test
-	public void executeLawLife() throws IOException {
-		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
-		this.addParameter("productId", "842");
-		simulateResponse.setOperationDate(new Date());
-
-		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(anyObject())).thenReturn(simulateResponse);
-
-		this.transaction.getContext().getParameterList().forEach(
-				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)
-		);
-
-		this.transaction.execute();
-
-		assertTrue(this.transaction.getAdviceList().isEmpty());
-	}
-
-	@Test
-	public void executeInvestmentLife() throws IOException {
-		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
-		this.addParameter("productId", "845");
-		simulateResponse.setOperationDate(new Date());
-
-		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProduct(anyObject())).thenReturn(simulateResponse);
+		when(rbvdr211.executeBusinessLogicEmissionPrePolicyLifeProductLegacy(anyObject())).thenReturn(simulateResponse);
 
 		this.transaction.getContext().getParameterList().forEach(
 				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)

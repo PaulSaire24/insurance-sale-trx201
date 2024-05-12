@@ -123,7 +123,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String FIELD_BLANK = "";
 
 	@Override
-	public PolicyDTO executeBusinessLogicEmissionPrePolicy(PolicyDTO requestBody) {
+	public PolicyDTO executeBusinessLogicEmissionPrePolicyLegacy(PolicyDTO requestBody) {
 
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy START *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Param: {}", requestBody);
@@ -344,7 +344,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 	}
 	@Override
-	public PolicyDTO executeBusinessLogicEmissionPrePolicyLifeProduct(PolicyDTO requestBody){
+	public PolicyDTO executeBusinessLogicEmissionPrePolicyLifeProductLegacy(PolicyDTO requestBody){
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes START *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes ***** Param: {}", requestBody);
 
