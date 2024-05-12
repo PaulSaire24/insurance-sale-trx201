@@ -1,4 +1,4 @@
-package com.bbva.rbvd.lib.r211.impl.transform.bean;
+package com.bbva.rbvd.lib.r211.impl.transfor.bean;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
@@ -41,7 +41,6 @@ public class InsrcContractParticipantBean {
         participantDao.setPersonalDocType(applicationConfigurationService.getProperty(participant.getIdentityDocument().getDocumentType().getId()));
         participantDao.setParticipantPersonalId(participant.getIdentityDocument().getNumber());
         participantDao.setCustomerId(Objects.nonNull(participant.getCustomerId()) ? participant.getCustomerId() : null);
-        participantDao.setCustomerRelationshipType(participant.getRelationship().getId());
         participantDao.setCreationUserId(requestBody.getCreationUser());
         participantDao.setUserAuditId(requestBody.getUserAudit());
         participantDao.setRefundPer(participant.getBenefitPercentage());

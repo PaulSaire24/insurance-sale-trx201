@@ -49,8 +49,10 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
+import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -115,15 +117,37 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	private static final String PROPERTY_VALIDATION_RANGE = "property.validation.range.";
 	private static final String PROPERTY_ONLY_FIRST_RECEIPT = "products.modalities.only.first.receipt";
 
-	private static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
-	private static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
-
 	private static final String PROPERTY_VALIDATE_NATURAL_PARTICIPANT = "invoke.participant.validation.emission.noLife.natural.";
 	private static final String PROPERTY_VALIDATE_LEGAL_PARTICIPANT = "invoke.participant.validation.emission.noLife.legal.";
 	private static final String FIELD_BLANK = "";
+	private BasicProductInsuranceProperties basicProductInsuranceProperties;
+
+
+	/**
+	 * This method is responsible for executing the business logic for the emission of non-life insurance policies.
+	 * It first checks if all products are enabled for emission or if the specific product in the request is enabled for emission.
+	 * If so, it delegates the emission process to the 'emissionPolicyNotLifeBusiness' service.
+	 * If not, it falls back to the legacy emission process.
+	 *
+	 * @param requestBody The request body containing the details of the policy to be emitted.
+	 * @return A ResponseLibrary object containing the details of the emitted policy.
+	 */
+	@Override
+	public ResponseLibrary<PolicyDTO> executeEmissionPolicyNotLifeFlowNew(PolicyDTO requestBody) {
+		LOGGER.info(" :: executeBusinessLogicEmissionPolicyFlowNew :: [ START ]");
+		LOGGER.info(" :: executeBusinessLogicEmissionPolicyFlowNew :: [ PolicyDTO :: {} ]",requestBody);
+		if(basicProductInsuranceProperties.enabledAllProductsEmissionRoyal2_0() || basicProductInsuranceProperties.enabledFlowEmissionRoyal2_0ByProduct(requestBody.getProductId())) {
+			return this.emissionPolicyNotLifeBusinessImpl.executeEmissionPolicy(requestBody);
+
+		}
+		PolicyDTO policyContractBankCompany = this.executeEmissionPrePolicyLegacy(requestBody);
+		return ResponseLibrary.ResponseServiceBuilder
+				.an().flowProcess(RBVDInternalConstants.FlowProcess.LEGACY_FLOW_PROCESS).
+				body(policyContractBankCompany);
+	}
 
 	@Override
-	public PolicyDTO executeBusinessLogicEmissionPrePolicyLegacy(PolicyDTO requestBody) {
+	public PolicyDTO executeEmissionPrePolicyLegacy(PolicyDTO requestBody) {
 
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy START *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Param: {}", requestBody);
@@ -343,8 +367,27 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		}
 
 	}
+
+	/**
+	 * This method is responsible for executing the business logic for the emission of life insurance policies.
+	 * It delegates the emission process to the 'executeBusinessLogicEmissionPrePolicyLifeProductLegacy' method.
+	 * The result is then wrapped in a ResponseLibrary object and returned.
+	 *
+	 * @param requestBody The request body containing the details of the policy to be emitted.
+	 * @return A ResponseLibrary object containing the details of the emitted policy.
+	 */
 	@Override
-	public PolicyDTO executeBusinessLogicEmissionPrePolicyLifeProductLegacy(PolicyDTO requestBody){
+	public ResponseLibrary<PolicyDTO> executeEmissionPrePolicyLifeProductFlowNew(PolicyDTO requestBody) {
+		LOGGER.info(" :: executeBusinessLogicEmissionPrePolicyLifeProductFlowNew :: [ START ]");
+		LOGGER.info(" :: executeBusinessLogicEmissionPrePolicyLifeProductFlowNew :: [ PolicyDTO :: {} ]",requestBody);
+		PolicyDTO policyContractBankCompany = this.executeEmissionPrePolicyLifeProductLegacy(requestBody);
+		return ResponseLibrary.ResponseServiceBuilder
+				.an().flowProcess(RBVDInternalConstants.FlowProcess.LEGACY_FLOW_PROCESS).
+				body(policyContractBankCompany);
+	}
+
+	@Override
+	public PolicyDTO executeEmissionPrePolicyLifeProductLegacy(PolicyDTO requestBody){
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes START *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes ***** Param: {}", requestBody);
 
@@ -548,6 +591,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			this.addAdviceWithDescription(ex.getAdviceCode(), ex.getMessage());
 			return null;
 		}
+	}
+
+
+	public void setBasicProductInsuranceProperties(BasicProductInsuranceProperties basicProductInsuranceProperties) {
+		this.basicProductInsuranceProperties = basicProductInsuranceProperties;
 	}
 
 	private Map<String, Object> getDataInsuredParticipantFromDB(PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields) {

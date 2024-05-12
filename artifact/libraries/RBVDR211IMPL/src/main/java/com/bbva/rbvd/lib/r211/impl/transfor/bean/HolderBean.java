@@ -1,4 +1,4 @@
-package com.bbva.rbvd.lib.r211.impl.transform.bean;
+package com.bbva.rbvd.lib.r211.impl.transfor.bean;
 
 import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
 import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
@@ -12,7 +12,7 @@ public class HolderBean {
 
     private HolderBean(){}
 
-    public static HolderASO getHolderASO(PolicyDTO apxRequest) {
+    public static HolderASO toHolderASO(PolicyDTO apxRequest) {
         HolderASO holder = new HolderASO();
 
         IdentityDocumentASO identityDocument = new IdentityDocumentASO();

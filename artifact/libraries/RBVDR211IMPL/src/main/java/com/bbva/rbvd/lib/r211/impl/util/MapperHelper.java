@@ -97,8 +97,8 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 
-import com.bbva.rbvd.lib.r211.impl.transform.bean.HolderBean;
-import com.bbva.rbvd.lib.r211.impl.transform.bean.InsrcContractParticipantBean;
+import com.bbva.rbvd.lib.r211.impl.transfor.bean.HolderBean;
+import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsrcContractParticipantBean;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -217,7 +217,7 @@ public class MapperHelper {
 
         requestAso.setInsuredAmount(insuredAmount);
 
-        HolderASO holder = HolderBean.getHolderASO(apxRequest);
+        HolderASO holder = HolderBean.toHolderASO(apxRequest);
 
         requestAso.setHolder(holder);
 
@@ -926,7 +926,7 @@ public class MapperHelper {
         }
     }
 
-    private PersonaBO constructPerson(PolicyDTO requestBody,CustomerBO customer,Map<String, Object> responseQueryGetRequiredFields){
+    public PersonaBO constructPerson(PolicyDTO requestBody,CustomerBO customer,Map<String, Object> responseQueryGetRequiredFields){
         PersonaBO persona = new PersonaBO();
         ContactDetailDTO correoSelect=new ContactDetailDTO();
         ContactDetailDTO celularSelect=new ContactDetailDTO();

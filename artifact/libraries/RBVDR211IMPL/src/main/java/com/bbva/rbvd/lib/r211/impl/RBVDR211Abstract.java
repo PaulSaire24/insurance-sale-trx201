@@ -8,6 +8,7 @@ import com.bbva.pisd.lib.r350.PISDR350;
 import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.RBVDR211;
+import com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyNotLifeBusinessImpl;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 /**
@@ -27,6 +28,8 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 
 	protected PISDR350 pisdR350;
 	protected MapperHelper mapperHelper;
+
+	protected EmissionPolicyNotLifeBusinessImpl emissionPolicyNotLifeBusinessImpl;
 
 
 	/**
@@ -74,4 +77,12 @@ public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR2
 	public void setMapperHelper(MapperHelper mapperHelper) {
 		this.mapperHelper = mapperHelper;
 	}
+
+	/**
+	 * @param emissionPolicyNotLifeBusinessImpl the this.emissionPolicyNotLifeBusinessImpl to set
+	 */
+	public void setEmissionPolicyNotLifeBusinessImpl(EmissionPolicyNotLifeBusinessImpl emissionPolicyNotLifeBusinessImpl) {
+		this.emissionPolicyNotLifeBusinessImpl = emissionPolicyNotLifeBusinessImpl;
+	}
+
 }

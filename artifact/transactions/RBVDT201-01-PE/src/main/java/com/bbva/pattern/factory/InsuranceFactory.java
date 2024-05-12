@@ -27,9 +27,9 @@ public class InsuranceFactory extends AbstractCommon {
      */
     public ResponseLibrary<PolicyDTO> createInsuranceBankAndCompany(String typeProduct, RBVDR211 rbvdR211, List<String> listOfLifeProductCodes,PolicyDTO requestBody){
         if(listOfLifeProductCodes.contains(typeProduct)){
-            return rbvdR211.executeBusinessLogicEmissionPrePolicyLifeProductFlowNew(requestBody);
+            return rbvdR211.executeEmissionPrePolicyLifeProductFlowNew(requestBody);
         }
-        return rbvdR211.executeBusinessLogicEmissionPolicyNotLifeFlowNew(requestBody);
+        return rbvdR211.executeEmissionPolicyNotLifeFlowNew(requestBody);
     }
 
 

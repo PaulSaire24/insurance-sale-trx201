@@ -92,6 +92,16 @@
 			<groupId>com.bbva.pisd</groupId>
 			<artifactId>PISDR012</artifactId>
 			<version>0.31.4</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.bbva.rbvd.dto.insrncsale</groupId>
+					<artifactId>RBVDC201</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.bbva.pisd.dto.insurance</groupId>
+					<artifactId>PISDC011</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.ksmk</groupId>

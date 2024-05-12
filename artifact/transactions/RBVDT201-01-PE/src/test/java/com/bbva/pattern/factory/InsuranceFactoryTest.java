@@ -27,7 +27,7 @@ public class InsuranceFactoryTest {
         List<String> listOfLifeProductCodes = Arrays.asList("lifeProduct");
         PolicyDTO requestBody = new PolicyDTO();
         ResponseLibrary<PolicyDTO> expectedResponse = ResponseLibrary.ResponseServiceBuilder.an().build();
-        when(rbvdR211.executeBusinessLogicEmissionPrePolicyLifeProductFlowNew(requestBody)).thenReturn(expectedResponse);
+        when(rbvdR211.executeEmissionPrePolicyLifeProductFlowNew(requestBody)).thenReturn(expectedResponse);
         InsuranceFactory insuranceFactory = new InsuranceFactory();
         // When
         ResponseLibrary<PolicyDTO> result = insuranceFactory.createInsuranceBankAndCompany(typeProduct, rbvdR211, listOfLifeProductCodes, requestBody);
@@ -43,7 +43,7 @@ public class InsuranceFactoryTest {
         List<String> listOfLifeProductCodes = Arrays.asList("lifeProduct");
         PolicyDTO requestBody = new PolicyDTO();
         ResponseLibrary<PolicyDTO> expectedResponse = ResponseLibrary.ResponseServiceBuilder.an().build();
-        when(rbvdR211.executeBusinessLogicEmissionPolicyNotLifeFlowNew(requestBody)).thenReturn(expectedResponse);
+        when(rbvdR211.executeEmissionPolicyNotLifeFlowNew(requestBody)).thenReturn(expectedResponse);
         InsuranceFactory insuranceFactory = new InsuranceFactory();
         // When
         ResponseLibrary<PolicyDTO> result = insuranceFactory.createInsuranceBankAndCompany(typeProduct, rbvdR211, listOfLifeProductCodes, requestBody);
