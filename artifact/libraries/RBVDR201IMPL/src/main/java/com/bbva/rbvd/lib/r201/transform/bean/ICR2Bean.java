@@ -416,7 +416,7 @@ public class ICR2Bean {
         return result;
     }
 
-    private static FirstInstallmentASO mapOutFirstInstallment(final ICMRYS2 formato) {
+    public static FirstInstallmentASO mapOutFirstInstallment(final ICMRYS2 formato) {
         if (formato.getFECPAG() == null && formato.getCOBRO() == null &&
                 formato.getMTOCUO() == null && formato.getDIVCUO() == null &&
                 formato.getFECTPC() == null && formato.getTIPCAM() == null &&
@@ -476,7 +476,7 @@ public class ICR2Bean {
         return result;
     }
 
-    private static PaymentAmountASO mapOutPaymenAmount(final BigDecimal amount, final String currency) {
+    public static PaymentAmountASO mapOutPaymenAmount(final BigDecimal amount, final String currency) {
         if (amount == null && currency == null) {
             return null;
         }
@@ -515,7 +515,7 @@ public class ICR2Bean {
         return result;
     }
 
-    private static PaymentPeriodASO mapOutPeriod(final String periodId, final String periodName) {
+    public static PaymentPeriodASO mapOutPeriod(final String periodId, final String periodName) {
         if (periodId == null && periodName == null) {
             return null;
         }
@@ -526,7 +526,7 @@ public class ICR2Bean {
         return result;
     }
 
-    private static List<RelatedContractASO> mapOutRelatedContracts(final String contractType, final String contractNumberId) {
+    public static List<RelatedContractASO> mapOutRelatedContracts(final String contractType, final String contractNumberId) {
         if (contractType == null && contractNumberId == null) {
             return null;
         }
@@ -536,7 +536,7 @@ public class ICR2Bean {
         return Collections.singletonList(result);
     }
 
-    private static ContractDetailsASO mapOutContractDeatils(final String contractType, final String contractNumberId) {
+    public static ContractDetailsASO mapOutContractDeatils(final String contractType, final String contractNumberId) {
         ContractDetailsASO result = null;
         if (INTERNAL_CONTRACT_OUT.equalsIgnoreCase(contractType)) {
             result = new ContractDetailsASO();
@@ -550,7 +550,7 @@ public class ICR2Bean {
         return result;
     }
 
-    private static HolderASO mapOutHolder(final String id, final String documentType, final String identityDocumentNumber) {
+    public static HolderASO mapOutHolder(final String id, final String documentType, final String identityDocumentNumber) {
         if (id == null && documentType == null && identityDocumentNumber == null) {
             return null;
         }
@@ -561,7 +561,7 @@ public class ICR2Bean {
         return result;
     }
 
-    private static IdentityDocumentASO mapOutIdentityDocument(final String documentType, final String identityDocumentNumber) {
+    public static IdentityDocumentASO mapOutIdentityDocument(final String documentType, final String identityDocumentNumber) {
         if (documentType == null && identityDocumentNumber == null) {
             return null;
         }
@@ -572,7 +572,7 @@ public class ICR2Bean {
         return result;
     }
 
-    private static DocumentTypeASO mapOutDocumentType(final String documentType) {
+    public static DocumentTypeASO mapOutDocumentType(final String documentType) {
         if (documentType == null) {
             return null;
         }

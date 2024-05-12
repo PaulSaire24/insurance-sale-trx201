@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.ASO_VALUES.EXTERNAL_CONTRACT_OUT;
+import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.ASO_VALUES.INTERNAL_CONTRACT_OUT;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
@@ -27,6 +29,218 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ICR2BeanTest {
+
+    @Test
+    public void mapOutFirstInstallment_returnsNull_whenAllParametersAreNull() {
+        ICMRYS2 formato = mock(ICMRYS2.class);
+        FirstInstallmentASO result = ICR2Bean.mapOutFirstInstallment(formato);
+        assertNull(result);
+    }
+
+
+    @Test
+    public void mapOutPaymentAmount_returnsNull_whenAmountAndCurrencyAreNull() {
+        BigDecimal amount = null;
+        String currency = null;
+        PaymentAmountASO result = ICR2Bean.mapOutPaymenAmount(amount, currency);
+
+        assertNull(result);
+    }
+
+    @Test
+    public void mapOutPaymentAmount_returnsPaymentAmount_withNullAmount_whenCurrencyIsNotNull() {
+        BigDecimal amount = null;
+        String currency = "USD";
+        PaymentAmountASO result = ICR2Bean.mapOutPaymenAmount(amount, currency);
+
+        assertNotNull(result);
+        assertNull(result.getAmount());
+        assertEquals(currency, result.getCurrency());
+    }
+
+    @Test
+    public void mapOutPaymentAmount_returnsPaymentAmount_withAmountAndCurrency() {
+        BigDecimal amount = new BigDecimal(100);
+        String currency = "USD";
+        PaymentAmountASO result = ICR2Bean.mapOutPaymenAmount(amount, currency);
+
+        assertNotNull(result);
+        assertEquals(amount.doubleValue(), result.getAmount(), 0.01);
+        assertEquals(currency, result.getCurrency());
+    }
+
+    @Test
+    public void mapOutPeriod_returnsNull_whenPeriodIdAndPeriodNameAreNull() {
+        PaymentPeriodASO result = ICR2Bean.mapOutPeriod(null, null);
+        assertNull(result);
+    }
+
+    @Test
+    public void mapOutPeriod_returnsPaymentPeriod_withOnlyId_whenPeriodNameIsNull() {
+        String periodId = "MONTHLY";
+        PaymentPeriodASO result = ICR2Bean.mapOutPeriod(periodId, null);
+
+        assertNotNull(result);
+        assertEquals(periodId, result.getId());
+        assertNull(result.getName());
+    }
+
+    @Test
+    public void mapOutPeriod_returnsPaymentPeriod_withOnlyName_whenPeriodIdIsNull() {
+        String periodName = "Monthly Payment";
+        PaymentPeriodASO result = ICR2Bean.mapOutPeriod(null, periodName);
+
+        assertNotNull(result);
+        assertNull(result.getId());
+        assertEquals(periodName, result.getName());
+    }
+
+    @Test
+    public void mapOutPeriod_returnsPaymentPeriod_whenPeriodIdAndPeriodNameAreNotNull() {
+        String periodId = "MONTHLY";
+        String periodName = "Monthly Payment";
+        PaymentPeriodASO result = ICR2Bean.mapOutPeriod(periodId, periodName);
+
+        assertNotNull(result);
+        assertEquals(periodId, result.getId());
+        assertEquals(periodName, result.getName());
+    }
+
+    @Test
+    public void mapOutRelatedContracts_returnsNull_whenContractTypeAndContractNumberIdAreNull() {
+        List<RelatedContractASO> result = ICR2Bean.mapOutRelatedContracts(null, null);
+        assertNull(result);
+    }
+
+    @Test
+    public void mapOutRelatedContracts_returnsRelatedContract_withContractDetails_whenContractTypeAndContractNumberIdAreNotNull() {
+        String contractType = INTERNAL_CONTRACT_OUT;
+        String contractNumberId = "123";
+
+        List<RelatedContractASO> result = ICR2Bean.mapOutRelatedContracts(contractType, contractNumberId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertNotNull(result.get(0).getContractDetails());
+        assertEquals(contractType, result.get(0).getContractDetails().getContractType());
+        assertEquals(contractNumberId, result.get(0).getContractDetails().getContractId());
+    }
+
+    @Test
+    public void mapOutContractDetails_returnsNull_whenContractTypeAndContractNumberIdAreNull() {
+        ContractDetailsASO result = ICR2Bean.mapOutContractDeatils(null, null);
+        assertNull(result);
+    }
+
+    @Test
+    public void mapOutContractDetails_returnsContractDetails_withInternalContractType_whenContractTypeIsInternal() {
+        String contractType = INTERNAL_CONTRACT_OUT;
+        String contractNumberId = "123";
+
+        ContractDetailsASO result = ICR2Bean.mapOutContractDeatils(contractType, contractNumberId);
+
+        assertNotNull(result);
+        assertEquals(contractType, result.getContractType());
+        assertEquals(contractNumberId, result.getContractId());
+    }
+
+    @Test
+    public void mapOutContractDetails_returnsContractDetails_withExternalContractType_whenContractTypeIsExternal() {
+        String contractType = EXTERNAL_CONTRACT_OUT;
+        String contractNumberId = "456";
+
+        ContractDetailsASO result = ICR2Bean.mapOutContractDeatils(contractType, contractNumberId);
+
+        assertNotNull(result);
+        assertEquals(contractType, result.getContractType());
+        assertEquals(contractNumberId, result.getNumber());
+    }
+
+    @Test
+    public void mapOutHolder_returnsNull_whenAllParametersAreNull() {
+        HolderASO result = ICR2Bean.mapOutHolder(null, null, null);
+        assertNull(result);
+    }
+
+    @Test
+    public void mapOutHolder_returnsHolder_withNullIdentityDocument_whenDocumentTypeAndIdentityDocumentNumberAreNull() {
+        String id = "123";
+        HolderASO result = ICR2Bean.mapOutHolder(id, null, null);
+
+        assertNotNull(result);
+        assertEquals(id, result.getId());
+        assertNull(result.getIdentityDocument());
+    }
+
+    @Test
+    public void mapOutHolder_returnsHolder_withIdentityDocument_whenAllParametersAreNotNull() {
+        String id = "123";
+        String documentType = "DNI";
+        String identityDocumentNumber = "456789";
+
+        HolderASO result = ICR2Bean.mapOutHolder(id, documentType, identityDocumentNumber);
+
+        assertNotNull(result);
+        assertEquals(id, result.getId());
+        assertNotNull(result.getIdentityDocument());
+        assertEquals(documentType, result.getIdentityDocument().getDocumentType().getId());
+        assertEquals(identityDocumentNumber, result.getIdentityDocument().getNumber());
+    }
+
+    @Test
+    public void mapOutIdentityDocument_returnsNull_whenDocumentTypeAndIdentityDocumentNumberAreNull() {
+        IdentityDocumentASO result = ICR2Bean.mapOutIdentityDocument(null, null);
+        assertNull(result);
+    }
+
+    @Test
+    public void mapOutIdentityDocument_returnsIdentityDocument_whenDocumentTypeAndIdentityDocumentNumberAreNotNull() {
+        String documentType = "DNI";
+        String identityDocumentNumber = "12345678";
+
+        IdentityDocumentASO result = ICR2Bean.mapOutIdentityDocument(documentType, identityDocumentNumber);
+
+        assertNotNull(result);
+        assertEquals(documentType, result.getDocumentType().getId());
+        assertEquals(identityDocumentNumber, result.getNumber());
+    }
+
+    @Test
+    public void mapOutIdentityDocument_returnsIdentityDocument_withNullDocumentType_whenDocumentTypeIsNull() {
+        String identityDocumentNumber = "12345678";
+
+        IdentityDocumentASO result = ICR2Bean.mapOutIdentityDocument(null, identityDocumentNumber);
+
+        assertNotNull(result);
+        assertNull(result.getDocumentType());
+        assertEquals(identityDocumentNumber, result.getNumber());
+    }
+
+    @Test
+    public void mapOutIdentityDocument_returnsIdentityDocument_withNullNumber_whenIdentityDocumentNumberIsNull() {
+        String documentType = "DNI";
+
+        IdentityDocumentASO result = ICR2Bean.mapOutIdentityDocument(documentType, null);
+
+        assertNotNull(result);
+        assertEquals(documentType, result.getDocumentType().getId());
+        assertNull(result.getNumber());
+    }
+
+    @Test
+    public void mapOutDocumentType_returnsNull_whenDocumentTypeIsNull() {
+        DocumentTypeASO result = ICR2Bean.mapOutDocumentType(null);
+        assertNull(result);
+    }
+
+    @Test
+    public void mapOutDocumentType_returnsDocumentType_whenDocumentTypeIsNotNull() {
+        String documentType = "DNI";
+        DocumentTypeASO result = ICR2Bean.mapOutDocumentType(documentType);
+
+        assertNotNull(result);
+        assertEquals(documentType, result.getId());
+    }
 
     @Test
     public void mapOutInsuredAmount_returnsNull_whenAmountAndCurrencyAreNull() {

@@ -49,6 +49,8 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -125,6 +127,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy START *****");
 		LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy ***** Param: {}", requestBody);
+
+		ResponseLibrary<String> responseNotFound = ResponseLibrary.ResponseServiceBuilder.an().build();
+		ProcessPrePolicyDTO processPrePolicyDTONotFound = new ProcessPrePolicyDTO();
 
 		EmisionBO rimacResponse = null;
 
