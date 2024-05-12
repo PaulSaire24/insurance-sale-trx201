@@ -5,6 +5,12 @@
 		<constructor-arg value="com.bbva.pisd.lib.r014.PISDR014"/>
 	</bean>
 	<bean id="rimacUrlForker" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="com.bbva.rbvd.lib.r201.impl.util.RimacUrlForker"/>
+		<constructor-arg value="com.bbva.rbvd.lib.r201.util.RimacUrlForker"/>
+	</bean>
+	<bean id="rbvdR047" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r047.RBVDR047"/>
+	</bean>
+	<bean id="rbvdR602" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="com.bbva.rbvd.lib.r602.RBVDR602"/>
 	</bean>
 </beans>

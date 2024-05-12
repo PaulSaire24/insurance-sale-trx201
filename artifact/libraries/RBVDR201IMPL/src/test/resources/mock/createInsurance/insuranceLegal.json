@@ -1,0 +1,176 @@
+{
+  "quotationId": "12345",
+  "productId": "VEH",
+  "productPlan": {
+    "id": "P"
+  },
+  "paymentMethod": {
+    "paymentType": "DIRECT_DEBIT",
+    "installmentFrequency": "MONTHLY",
+    "relatedContracts": [
+      {
+        "contractId": "123",
+        "number": "2131231213",
+        "contractId": "19128299392",
+        "product": {
+          "id": "CARD"
+        }
+      }
+    ]
+  },
+  "validityPeriod": {
+    "startDate": "2021-04-16"
+  },
+  "holder": {
+    "id": "1231234",
+    "identityDocument": {
+      "documentType": {
+        "id": "DNI"
+      },
+      "number": "73219203"
+    },
+    "contactDetails": [
+      {
+        "contact": {
+          "contactDetailType": "EMAIL",
+          "address": "134 Spain Avenue"
+        }
+      },
+      {
+        "contact": {
+          "contactDetailType": "PHONE",
+          "phoneNumber": "+51989493921"
+        }
+      }
+    ]
+  },
+  "deliveries" : [
+    {
+        "serviceType": {
+          "id": "1qwe"
+        },
+        "method": "1methodasd"
+    },
+    {
+      "serviceType": {
+        "id": "2qwe"
+      },
+      "method": "2methodasd"
+    }
+  ],
+  "relatedContracts": [
+    {
+      "relationType": {
+        "id": "ASSOCIATED"
+      },
+      "contractDetails": {
+        "contractType": "INTERNAL_CONTRACT",
+        "contractId": "8378273937293848",
+        "number": "31267756"
+      }
+    },
+    {
+      "relationType": {
+        "id": "UNASSOCIATED"
+      },
+      "contractDetails": {
+        "contractType": "EXTERNAL_CONTRACT",
+        "number": "13413412341234",
+        "numberType": {
+          "id": "942348902480"
+        }
+      }
+    }
+  ],
+  "installmentPlan": {
+    "startDate": "2021-04-16",
+    "maturityDate": "2025-04-16",
+    "totalNumberInstallments": 60,
+    "period": {
+      "id": "MONTHLY"
+    },
+    "paymentAmount": {
+      "amount": 50,
+      "currency": "USD"
+    }
+  },
+  "totalAmount": {
+    "amount": 100,
+    "currency": "PEN"
+  },
+  "insuredAmount": {
+    "amount": 200,
+    "currency": "PEN"
+  },
+  "isDataTreatment": true,
+  "firstInstallment": {
+    "firstPaymentDate": "2021-05-27",
+    "isPaymentRequired": true,
+    "paymentAmount": {
+      "amount": 23,
+      "currency": "USD"
+    }
+  },
+  "hasAcceptedContract": true,
+  "inspection": {
+    "isRequired": true,
+    "fullName": "Trevor Strathmore",
+    "contactDetails": [
+      {
+        "contact": {
+          "contactDetailType": "EMAIL",
+          "address": "testemail@testdomain.com"
+        }
+      },
+      {
+        "contact": {
+          "contactDetailType": "PHONE",
+          "phoneNumber": "+51989707747"
+        }
+      }
+    ]
+  },
+  "participants": [
+    {
+      "customerId": "2314211",
+      "benefitPercentage": 22.3,
+      "fullName": "Susan Fletcher",
+      "identityDocument": {
+        "documentType": {
+          "id": "DNI"
+        },
+        "number": "72839291"
+      },
+      "participantType": {
+        "id": "LEGAL_REPRESENTATIVE"
+      },
+      "startDate": "2021-04-16",
+      "endDate": "2021-08-16",
+      "relationship": {
+        "id": "PARENT"
+      },
+      "benefitAmount": {
+        "amount": 4500,
+        "currency": "USD"
+      }
+    }
+  ],
+  "businessAgent": {
+    "id": "P02983"
+  },
+  "promoter": {
+    "id": "P02938"
+  },
+  "bank": {
+    "id": "0011",
+    "branch": {
+      "id": "001"
+    }
+  },
+  "insuranceCompany": {
+    "id": "21"
+  },
+  "identityVerificationCode":"2693832",
+  "couponCode":"BBVA20"
+
+}

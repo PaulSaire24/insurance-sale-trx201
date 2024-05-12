@@ -4,14 +4,17 @@
 	<parent>
 		<groupId>com.bbva.rbvd</groupId>
 		<artifactId>DTOS-insurance-sale-trx201</artifactId>
-		<version>0.20.0-SNAPSHOT</version>
+		<version>0.21.0-SNAPSHOT</version>
 	</parent>
 	<groupId>com.bbva.rbvd.dto.insurancemissionsale</groupId>
 	<artifactId>RBVDC601</artifactId>
-	<version>0.20.0-SNAPSHOT</version>
+	<version>0.21.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<description>dto orientado al manejo interno de entidades.</description>
 	<properties>
+		<sonar.coverage.exclusions>
+			/src/main/java/com/bbva/rbvd/dto/insurancemissionsale/**/**.java
+		</sonar.coverage.exclusions>
 		<osgi.version.manifest>0.0</osgi.version.manifest>
 	</properties>
 	<dependencies>

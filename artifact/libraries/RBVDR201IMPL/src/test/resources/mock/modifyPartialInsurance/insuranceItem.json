@@ -1,0 +1,70 @@
+{
+  "externalPolicyNumber": "RIM-1221",
+  "insuranceCompany": {
+    "productId": "SEG-RIMAC-123",
+    "status": {
+      "id": "ACTIVE"
+    }
+  },
+  "validityPeriod": {
+    "startDate": "2021-04-22",
+    "endDate": "2030-04-22"
+  },
+  "installmentPlan": {
+    "maturityDate": "2030-03-22"
+  },
+  "links": [
+    {
+      "href": "/documents/V01/?$filter=0152iOICflfwjOt4lo7G9ap8%2BxID6bmWEJ0%2Ft2PnwtPeQPNlb0F84299ecQ6IsaQ",
+      "rel": "insurances:conditions",
+      "title": "General conditions"
+    },
+    {
+      "href": "/documents/V01/?$filter=9845aBCDflfwjOt4lo7G882BxID6bmWEJ0%33Ft2PingpteQPNkZ0F99210ZXSawebgFty62",
+      "rel": "insurances:plan-estar-seguro",
+      "title": "Annexed of Plan EstarSeguro product"
+    }
+  ],
+  "paymentMethod": {
+    "relatedContracts": [
+      {
+        "contractId": "01782947328472942",
+        "number": "00110023455432",
+        "product": {
+          "id": "ACCOUNT"
+        }
+      },
+      {
+        "contractId": "00110241400000001102",
+        "number": "00110023455123",
+        "product": {
+          "id": "ACCOUNT"
+        }
+      }
+    ]
+  },
+  "nextInstallment": {
+    "maturityDate": "2021-04-22"
+  },
+  "installmentPayments": [
+    {
+      "externalPaymentId": "externalPaymentId"
+    }
+  ],
+  "participants": [
+    {
+      "firstName": "jose",
+      "lastName": "javier",
+      "secondLastName": "Susan Fletcher",
+      "identityDocument": {
+        "documentType": {
+          "id": "DNI"
+        },
+        "number": "72839291"
+      },
+      "participantType": {
+        "id": "PAYMENT_MANAGER"
+      }
+    }
+  ]
+}

@@ -1,7 +1,6 @@
-package com.bbva.rbvd.lib.r201.impl.util;
+package com.bbva.rbvd.lib.r201.util;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
-
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

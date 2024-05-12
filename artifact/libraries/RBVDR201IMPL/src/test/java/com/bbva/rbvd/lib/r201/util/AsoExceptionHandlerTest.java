@@ -1,6 +1,6 @@
 package com.bbva.rbvd.lib.r201.util;
 
-import com.bbva.rbvd.lib.r201.impl.util.AsoExceptionHandler;
+import com.bbva.rbvd.lib.r201.util.AsoExceptionHandler;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

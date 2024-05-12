@@ -12,17 +12,21 @@ public class RBVDInternalConstants  {
 	public static final class FlowProcess{
 		public static final String LEGACY_FLOW_PROCESS = "LEGACY_FLOW_PROCESS";
 		public static final String NEW_FLOW_PROCESS    = "NEW_FLOW_PROCESS";
+
+		private FlowProcess(){}
 	}
 
 
     public static final class RBVDProperties{
 		public static final String UPDATE_CONTRACT_ENDORSEMENT = "PISD.UPDATE_CONTRACT_ENDORSEMENT";
+		private RBVDProperties(){}
 	}
 
 	public static final class ContractType{
 		public static final String FIELD_EXTERNAL_CONTRACT = "EXTERNAL_CONTRACT";
 		public static final String FIELD_INTERNAL_CONTRACT = "INTERNAL_CONTRACT";
 		public static final String FIELD_SYSTEM = "SYSTEM";
+		private ContractType(){}
 	}
 
 	public static final class Tables{
@@ -31,6 +35,7 @@ public class RBVDInternalConstants  {
 		public static final String T_PISD_INSRNC_CONTRACT_MOV = "T_PISD_INSRNC_CONTRACT_MOV";
 		public static final String T_PISD_INSRNC_CTR_PARTICIPANT = "T_PISD_INSRNC_CTR_PARTICIPANT";
 		public static final String T_PISD_ENDORSEMENT_INSRNC_CTR = "T_PISD_ENDORSEMENT_INSRNC_CTR";
+		private Tables(){}
 	}
 
 
@@ -49,6 +54,7 @@ public class RBVDInternalConstants  {
 
 		public static final String NEXT_RECEIPTS_STATUS_TYPE_VALUE = "INC";
 		public static final String FIRST_RECEIPT_STATUS_TYPE_VALUE = "COB";
+		private ReceiptDefaultValues(){}
 
 	}
 
@@ -66,6 +72,7 @@ public class RBVDInternalConstants  {
 		public static final String PARTICULAR_DATA_CERT_BANCO = "NRO_CERT_BANCO";
 		public static final String PARTICULAR_DATA_SALE_OFFICE = "OFICINA_VENTA";
 		public static final String TAG_OTHERS = "OTROS";
+		private DataParticulars(){}
 	}
 
 	public static final class Payment{
@@ -73,6 +80,7 @@ public class RBVDInternalConstants  {
 		public static final String CARD_PRODUCT_ID = "CARD";
 		public static final String CARD_METHOD_TYPE = "T";
 		public static final String ACCOUNT_METHOD_TYPE = "C";
+		private Payment(){}
 	}
 
 
@@ -95,16 +103,22 @@ public class RBVDInternalConstants  {
 
 	public static final class Messages {
 		public static final String ERROR_DEFAULT_CONTACT_DETAIL = "No se encontro %s";
+		private Messages() {
+		}
 	}
 
 	public static final class LabelCompany{
 		public static final String PARTICULAR_DATA_MESES_DE_VIGENCIA = "MESES_DE_VIGENCIA";
 		public static final String SIN_ESPECIFICAR = "N/A";
+		private LabelCompany() {
+		}
 	}
 
 	public static final class LabelRimac{
 		public static final String PARTICULAR_DATA_MESES_DE_VIGENCIA = "MESES_DE_VIGENCIA";
 		public static final String SIN_ESPECIFICAR = "N/A";
+		private LabelRimac() {
+		}
 	}
 
 
@@ -115,7 +129,7 @@ public class RBVDInternalConstants  {
 		public static final String MONTHLY_LARGE  = "MONTHLY";
 
 
-		public Period() {
+		private Period() {
 		}
 	}
 
@@ -126,20 +140,28 @@ public class RBVDInternalConstants  {
 		public static final String APP_NAME = "apx-pe";
 		public static final String CRED_EXTRA_PARAMS = "user=KSMK;country=PE";
 		public static final String KEY_CYPHER_CODE = "apx-pe-fpextff1-do";
+		private Crypto() {
+		}
 	}
 
 	public static final class NotSpecified{
 		public static final String NO_EXIST = "NotExist";
+		private NotSpecified() {
+		}
 
 	}
 
 	public static final class Channel{
 		public static final String TELEMARKETING_CODE = "TM";
+		private Channel() {
+		}
 	}
 
 	public static final class TimeUtil{
 		public static final String GMT_TIME_ZONE = "GMT";
 		public static final String LIMA_TIME_ZONE = "America/Lima";
+		private TimeUtil() {
+		}
 	}
 
 	public enum INDICATOR_PRE_FORMALIZED{

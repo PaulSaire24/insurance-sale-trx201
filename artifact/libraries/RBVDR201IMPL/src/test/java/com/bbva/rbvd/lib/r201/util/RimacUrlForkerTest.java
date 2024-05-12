@@ -2,7 +2,7 @@ package com.bbva.rbvd.lib.r201.util;
 
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
-import com.bbva.rbvd.lib.r201.impl.util.RimacUrlForker;
+import com.bbva.rbvd.lib.r201.util.RimacUrlForker;
 
 import org.junit.Before;
 import org.junit.Test;

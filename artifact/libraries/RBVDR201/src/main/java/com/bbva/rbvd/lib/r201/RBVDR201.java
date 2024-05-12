@@ -14,6 +14,8 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 
 public interface RBVDR201 {
 
@@ -24,6 +26,8 @@ public interface RBVDR201 {
 	ListBusinessesASO executeGetListBusinesses(String customerId, String expands);
 	String executeCypherService(CypherASO input);
 	Integer executePutEventUpsilonService(CreatedInsrcEventDTO createdInsuranceEvent);
-	public AgregarTerceroBO executeAddParticipantsService(AgregarTerceroBO requestBody, String quotationId, String productId, String traceId);
+	AgregarTerceroBO executeAddParticipantsService(AgregarTerceroBO requestBody, String quotationId, String productId, String traceId);
+	ResponseLibrary<PolicyASO> executePrePolicyEmissionCics(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized);
+	ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(PolicyASO policyASO);
 
 }

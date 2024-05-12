@@ -27,7 +27,7 @@ public enum RBVDInternalErrors {
     private final boolean rollback;
     private final String message;
 
-    private RBVDInternalErrors(String adviceCode, boolean rollback, String message) {
+    RBVDInternalErrors(String adviceCode, boolean rollback, String message) {
         this.adviceCode = adviceCode;
         this.rollback = rollback;
         this.message = message;

@@ -2,6 +2,7 @@ package com.bbva.rbvd.lib.r201.impl;
 
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.apx.exception.io.network.TimeoutException;
+import com.bbva.elara.domain.transaction.RequestHeaderParamsName;
 import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
@@ -10,6 +11,10 @@ import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
+import com.bbva.rbvd.dto.cicsconnection.icr2.ICR2Request;
+import com.bbva.rbvd.dto.cicsconnection.icr2.ICR2Response;
+import com.bbva.rbvd.dto.cicsconnection.icr3.ICR3Request;
+import com.bbva.rbvd.dto.cicsconnection.icr3.ICR3Response;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -23,9 +28,15 @@ import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
-import com.bbva.rbvd.lib.r201.impl.util.AsoExceptionHandler;
-import com.bbva.rbvd.lib.r201.impl.util.JsonHelper;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 
+import com.bbva.rbvd.lib.r201.transform.bean.ICR2Bean;
+import com.bbva.rbvd.lib.r201.transform.bean.ICR3Bean;
+import com.bbva.rbvd.lib.r201.util.AsoExceptionHandler;
+import com.bbva.rbvd.lib.r201.util.FunctionsUtils;
+import com.bbva.rbvd.lib.r201.util.JsonHelper;
 import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
@@ -36,6 +47,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
@@ -276,6 +288,64 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 			LOGGER.info("*** RBVDR201Impl - executeAddParticipantsService *** TimeoutException: {}", toex.getAdviceCode());
 			return null;
 		}
+	}
+
+	/**
+	 * This method is responsible for executing the pre-policy emission process in the CICS system.
+	 * It takes a DataASO object and an INDICATOR_PRE_FORMALIZED object as input, maps them to an ICR2Request object, and then calls the executePreFormalizationContract method.
+	 * If there are any host advice codes in the ICR2Response, it adds them to the advice list and returns a ResponseLibrary object with a status of ENR.
+	 * If there are no host advice codes, it maps the ICR2Response to a new PolicyASO object and returns a ResponseLibrary object with a status of OK and the new PolicyASO object as the body.
+	 *
+	 * @param requestBody The DataASO object that contains the request body details.
+	 * @param indicatorPreFormalized The INDICATOR_PRE_FORMALIZED object that indicates whether the policy is pre-formalized.
+	 * @return ResponseLibrary<PolicyASO> A ResponseLibrary object that contains the status of the process and the new PolicyASO object if the process was successful.
+	 */
+	@Override
+	public ResponseLibrary<PolicyASO> executePrePolicyEmissionCics(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized) {
+		LOGGER.info(" :: executePrePolicyEmissionCics :: [ START ]");
+		LOGGER.info(" :: executePrePolicyEmissionCics :: [ DataASO :: {} ]",requestBody);
+		ICR2Request icr2Request = ICR2Bean.mapIn(requestBody,indicatorPreFormalized);
+		ICR2Response icr2Response = this.rbvdR047.executePreFormalizationContract(icr2Request);
+		if(CollectionUtils.isEmpty(icr2Response.getHostAdviceCode())){
+			PolicyASO policyASO = new PolicyASO();
+			policyASO.setData(ICR2Bean.mapOut(icr2Response.getIcmrys2()));
+			return ResponseLibrary.ResponseServiceBuilder.an()
+					.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
+					.body(policyASO);
+		}
+		this.addAdviceWithDescription(RBVDInternalErrors.ERROR_GENERIC_HOST.getAdviceCode(), FunctionsUtils.getAdviceListOfString(icr2Response.getHostAdviceCode()));
+		return ResponseLibrary.ResponseServiceBuilder.an()
+				.statusIndicatorProcess(RBVDInternalConstants.Status.ENR)
+				.build();
+	}
+
+	/**
+	 * This method is used to execute the insurance payment and formalization process.
+	 * It takes a PolicyASO object as input, maps it to an ICR3Request object, and then calls the executeFormalizationContractAndPayment method.
+	 * If there are any host advice codes in the ICR3Response, it adds them to the advice list and returns a ResponseLibrary object with a status of EWR.
+	 * If there are no host advice codes, it maps the ICR3Response to a new PolicyASO object and returns a ResponseLibrary object with a status of OK and the new PolicyASO object as the body.
+	 *
+	 * @param policyASO The PolicyASO object that contains the policy details.
+	 * @return ResponseLibrary<PolicyASO> A ResponseLibrary object that contains the status of the process and the new PolicyASO object if the process was successful.
+	 */
+	@Override
+	public ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(PolicyASO policyASO) {
+		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ START ]");
+		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ Data :: {} ]",policyASO);
+		ICR3Request icr3Request = ICR3Bean.mapIn(policyASO, (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE));
+		ICR3Response icr3Response = this.rbvdR602.executeFormalizationContractAndPayment(icr3Request);
+		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ ICR3Response :: {} ]",icr3Response);
+		if (!CollectionUtils.isEmpty(icr3Response.getHostAdviceCode())) {
+			this.addAdviceWithDescription(RBVDInternalErrors.ERROR_GENERIC_HOST.getAdviceCode(), FunctionsUtils.getAdviceListOfString(icr3Response.getHostAdviceCode()));
+			return ResponseLibrary.ResponseServiceBuilder.an()
+					.statusIndicatorProcess(RBVDInternalConstants.Status.EWR)
+					.build();
+		}
+		PolicyASO policy = new PolicyASO();
+		policy.setData(ICR2Bean.mapOut(icr3Response.getIcmrys2()));
+		return ResponseLibrary.ResponseServiceBuilder.an()
+				.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
+				.body(policyASO);
 	}
 
 	private String getRequestBodyAsJsonFormat(Object requestBody) {

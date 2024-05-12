@@ -5,15 +5,15 @@ import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.elara.utility.api.connector.APIConnector;
 import com.bbva.elara.utility.api.connector.APIConnectorBuilder;
 import com.bbva.pisd.lib.r014.PISDR014;
+import com.bbva.rbvd.lib.r047.RBVDR047;
 import com.bbva.rbvd.lib.r201.RBVDR201;
-import com.bbva.rbvd.lib.r201.impl.util.RimacUrlForker;
+import com.bbva.rbvd.lib.r201.util.RimacUrlForker;
+import com.bbva.rbvd.lib.r602.RBVDR602;
 
 /**
  * This class automatically defines the libraries and utilities that it will use.
  */
 public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR201 {
-
-	protected ApplicationConfigurationService applicationConfigurationService;
 
 	protected APIConnector externalApiConnector;
 
@@ -21,19 +21,19 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 
 	protected APIConnector internalApiConnector;
 
+	protected ApplicationConfigurationService applicationConfigurationService;
+
 	protected APIConnector internalApiConnectorImpersonation;
 
 	protected PISDR014 pisdR014;
 
+	protected RBVDR047 rbvdR047;
+
+	protected RBVDR602 rbvdR602;
+
 	protected RimacUrlForker rimacUrlForker;
 
-	/**
-	* @param applicationConfigurationService the this.applicationConfigurationService to set
-	*/
-	public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
-		this.applicationConfigurationService = applicationConfigurationService;
-	}
-	
+
 	/**
 	* @param externalApiConnector the this.externalApiConnector to set
 	*/
@@ -55,8 +55,11 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 		this.internalApiConnector = internalApiConnector;
 	}
 
-	public void setInternalApiConnectorImpersonation(APIConnector internalApiConnectorImpersonation) {
-		this.internalApiConnectorImpersonation = internalApiConnectorImpersonation;
+	/**
+	* @param applicationConfigurationService the this.applicationConfigurationService to set
+	*/
+	public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {
+		this.applicationConfigurationService = applicationConfigurationService;
 	}
 
 	/**
@@ -66,5 +69,25 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 		this.pisdR014 = pisdR014;
 	}
 
+	/**
+	* @param rbvdR047 the this.rbvdR047 to set
+	*/
+	public void setRbvdR047(RBVDR047 rbvdR047) {
+		this.rbvdR047 = rbvdR047;
+	}
+
+	/**
+	* @param rbvdR602 the this.rbvdR602 to set
+	*/
+	public void setRbvdR602(RBVDR602 rbvdR602) {
+		this.rbvdR602 = rbvdR602;
+	}
+
+	public void setInternalApiConnectorImpersonation(APIConnector internalApiConnectorImpersonation) {
+		this.internalApiConnectorImpersonation = internalApiConnectorImpersonation;
+	}
+
 	public void setRimacUrlForker(RimacUrlForker rimacUrlForker) { this.rimacUrlForker = rimacUrlForker; }
+
+
 }

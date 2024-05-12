@@ -18,6 +18,8 @@ import com.bbva.pisd.dto.insurance.mock.MockDTO;
 
 import com.bbva.pisd.lib.r014.PISDR014;
 
+import com.bbva.rbvd.dto.cicsconnection.icr2.ICR2Response;
+import com.bbva.rbvd.dto.cicsconnection.utils.HostAdvice;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherDataASO;
 
@@ -34,17 +36,22 @@ import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsuranceDTO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
+import com.bbva.rbvd.lib.r047.RBVDR047;
 import com.bbva.rbvd.lib.r201.factory.ApiConnectorFactoryMock;
 
 import com.bbva.rbvd.lib.r201.impl.RBVDR201Impl;
-import com.bbva.rbvd.lib.r201.impl.util.RimacUrlForker;
+import com.bbva.rbvd.lib.r201.util.RimacUrlForker;
 
+import com.bbva.rbvd.mock.EntityMock;
 import com.bbva.rbvd.mock.MockBundleContext;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,6 +101,9 @@ public class RBVDR201Test {
 	private MockDTO mockDTO;
 	private ApplicationConfigurationService applicationConfigurationService;
 
+	private RBVDR047 rbvdR047;
+
+
 	@Before
 	public void setUp() throws Exception{
 		ThreadContext.set(new Context());
@@ -119,6 +129,10 @@ public class RBVDR201Test {
 		rbvdR201.setPisdR014(pisdr014);
 		rimacUrlForker = mock(RimacUrlForker.class);
 		rbvdR201.setRimacUrlForker(rimacUrlForker);
+
+		rbvdR047 = mock(RBVDR047.class);
+		rbvdR201.setRbvdR047(rbvdR047);
+
 		when(pisdr014.executeSignatureConstruction(anyString(), anyString(), anyString(), anyString(), anyString()))
 				.thenReturn(new SignatureAWS("", "", "", ""));
 		mockDTO = MockDTO.getInstance();
@@ -127,6 +141,40 @@ public class RBVDR201Test {
 		when(applicationConfigurationService.getDefaultProperty(eq("error.message.timeout"),anyString())).thenReturn("ERROR_SERVICE_TIMEOUT_ASO.getMessage()");
 		when(applicationConfigurationService.getDefaultProperty(eq("error.message.restException"), anyString())).thenReturn("ERROR_SERVICE_ASO.getMessage()");
 	}
+
+	@Test
+	public void prePolicyEmissionCicsReturnsExpectedResult() throws IOException {
+		// Given
+		DataASO requestBody = new DataASO();
+		RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S;
+		ICR2Response icr2Response = new ICR2Response();
+		icr2Response.setHostAdviceCode(new ArrayList<>());
+		icr2Response.setIcmrys2(EntityMock.getInstance().buildFormatoICMRYS2());
+		when(rbvdR047.executePreFormalizationContract(Mockito.anyObject())).thenReturn(icr2Response);
+
+		// When
+		ResponseLibrary<PolicyASO> result = rbvdR201.executePrePolicyEmissionCics(requestBody, indicatorPreFormalized);
+
+		// Then
+		assertEquals(RBVDInternalConstants.Status.OK, result.getStatusProcess());
+	}
+
+	@Test
+	public void prePolicyEmissionCicsReturnsErrorResult() {
+		// Given
+		DataASO requestBody = new DataASO();
+		RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.NOT_PRE_FORMALIZED_N;
+		ICR2Response icr2Response = new ICR2Response();
+		icr2Response.setHostAdviceCode(Collections.singletonList(new HostAdvice("IC123123","ERROR ABEND")));
+		when(rbvdR047.executePreFormalizationContract(Mockito.anyObject())).thenReturn(icr2Response);
+
+		// When
+		ResponseLibrary<PolicyASO> result = rbvdR201.executePrePolicyEmissionCics(requestBody, indicatorPreFormalized);
+
+		// Then
+		assertEquals(RBVDInternalConstants.Status.ENR, result.getStatusProcess());
+	}
+
 
 	@Test
 	public void executeGetContactDetailsServiceOK() throws IOException {

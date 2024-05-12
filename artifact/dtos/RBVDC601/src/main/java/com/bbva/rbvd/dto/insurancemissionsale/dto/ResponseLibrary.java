@@ -2,9 +2,7 @@ package com.bbva.rbvd.dto.insurancemissionsale.dto;
 
 import java.io.Serializable;
 
-/**
- * The ResponseLibrary class...
- */
+
 public class ResponseLibrary<T> implements Serializable  {
 	private static final long serialVersionUID = 2931699728946643245L;
 	private String statusProcess;

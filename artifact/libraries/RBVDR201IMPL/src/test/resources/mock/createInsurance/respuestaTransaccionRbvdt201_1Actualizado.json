@@ -1,0 +1,341 @@
+{
+  "id": "837291",
+  "policyNumber": "2348023047",
+  "quotationId": "12345",
+  "productId": "VEH-123",
+  "productDescription": "Vehicle insurance per miles",
+  "productPlan": {
+    "id": "VEH-OPTA-123",
+    "description": "Optative vehicule insurance plan"
+  },
+  "paymentMethod": {
+    "paymentType": "DIRECT_DEBIT",
+    "installmentFrequency": "MONTHLY",
+    "relatedContractsPay": [
+      {
+        "relatedContractPay": {
+          "contractId": "231574",
+          "number": "19128299392",
+          "product": {
+            "id": "ACCOUNT",
+            "name": "Simple account product"
+          }
+        }
+      }
+    ]
+  },
+  "operationDate": "2021-04-16T23:20:50.52Z",
+  "validityPeriod": {
+    "startDate": "2021-04-16",
+    "endDate": "2025-04-16"
+  },
+  "links": [
+    {
+      "link": {
+        "href": "https://aws.s3.iiruhfruf",
+        "rel": "associated",
+        "title": "Contrato de seguro"
+      }
+    },
+    {
+      "link": {
+        "href": "https://aws.s3.ii848e99suf",
+        "rel": "associated",
+        "title": "Póliza de seguro"
+      }
+    }
+  ],
+  "totalAmount": {
+    "amount": 60000,
+    "currency": "USD",
+    "exchangeRateToAm": {
+      "date": "2021-04-16",
+      "baseCurrency": "USD",
+      "targetCurrency": "PEN",
+      "detailToAm": {
+        "factorToAm": {
+          "value": 10.1,
+          "ratio": 1.5
+        },
+        "priceType": "C"
+      }
+    }
+  },
+  "isDataTreatment": true,
+  "insuredAmount": {
+    "amount": 4000,
+    "currency": "USD"
+  },
+  "holder": {
+    "id": "92812311",
+    "identityDocumentHo": {
+      "documentType": {
+        "id": "DNI",
+        "description": "DNID"
+      },
+      "documentNumber": "73219203"
+    },
+    "contactDetailsHo": [
+      {
+        "contactDetailHo": {
+          "id": "21",
+          "contact": {
+            "contactDetailType": "EMAIL",
+            "address": "134 Spain Avenue"
+          }
+        }
+      },
+      {
+        "contactDetailHo": {
+          "id": "22",
+          "contact": {
+            "contactDetailType": "PHONE",
+            "phoneNumber": "+51989493921"
+          }
+        }
+      }
+    ]
+  },
+  "deliveries": [
+    {
+      "deliverie": {
+        "serviceType": {
+          "id": "1qwe"
+        },
+        "method": "1methodasd"
+      }
+    },
+    {
+      "deliverie": {
+        "serviceType": {
+          "id": "2qwe"
+        },
+        "method": "2methodasd"
+      }
+    }
+  ],
+  "relatedContracts": [
+    {
+      "relatedContract": {
+        "id": "12",
+        "relationType": {
+          "id": "ASSOCIATED",
+          "description": "ASSOCIATEDD"
+        },
+        "contractDetails": {
+          "description": "descripcion",
+          "contractType": "INTERNAL_CONTRACT",
+          "contractId": "8378273937293848",
+          "product": {
+            "id": "123123",
+            "name": "product name"
+          }
+        }
+      }
+    },
+    {
+      "relatedContract": {
+        "id": "12",
+        "relationType": {
+          "id": "ASSOCIATED",
+          "description": "ASSOCIATEDD"
+        },
+        "contractDetails": {
+          "description": "descripcion external",
+          "contractType": "EXTERNAL_CONTRACT",
+          "number": "2901929302910293",
+          "numberType": {
+            "id": "123123121"
+          }
+        }
+      }
+    }
+  ],
+  "firstInstallment": {
+    "firstPaymentDate": "2021-05-03",
+    "isPaymentRequired": true,
+    "paymentAmount": {
+      "amount": 15,
+      "currency": "USD"
+    },
+    "operationNumber": "OP1231",
+    "transactionNumber": "TX2413",
+    "operationDate": "2021-05-03",
+    "accountingDate": "2021-05-03",
+    "exchangeRateFirs": {
+      "date": "2021-05-03",
+      "detailFirs": {
+        "factorFirs": {
+          "value": 3.8
+        },
+        "priceType": "PURCHASE"
+      }
+    }
+  },
+  "installmentPlan": {
+    "startDate": "2021-04-16",
+    "maturityDate": "2025-04-16",
+    "totalNumberInstallments": 60,
+    "period": {
+      "id": "MONTHLY",
+      "name": "Monthly installment payment"
+    },
+    "paymentAmount": {
+      "amount": 50,
+      "currency": "USD"
+    },
+    "exchangeRateIns": {
+      "date": "2021-04-16",
+      "baseCurrency": "USD",
+      "targetCurrency": "PEN",
+      "detailIns": {
+        "factorIns": {
+          "value": 10.1,
+          "ratio": 1.5
+        },
+        "priceType": "PURCHASE"
+      }
+    },
+    "paymentWithoutTax": {
+      "amount": 50,
+      "currency": "USD",
+      "exchangeRatePay": {
+        "exchangeRateDate": "2021-04-16",
+        "baseCurrency": "USD",
+        "targetCurrency": "PEN",
+        "detailPay": {
+          "factorPay": {
+            "value": 10.1,
+            "ratio": 1.5
+          },
+          "priceType": "PURCHASE"
+        }
+      }
+    }
+  },
+  "hasAcceptedContract": true,
+  "inspection": {
+    "isRequired": true,
+    "fullName": "full name",
+    "contactDetailsIns": [
+      {
+        "contactDetailIns": {
+          "id": "1",
+          "contact": {
+            "contactDetailType": "EMAIL",
+            "address": "testemail@testdomain.com"
+          }
+        }
+      },
+      {
+        "contactDetailIns": {
+          "id": "2",
+          "contact": {
+            "contactDetailType": "PHONE",
+            "phoneNumber": "+51989707747"
+          }
+        }
+      }
+    ]
+  },
+  "participants": [
+    {
+      "participant": {
+        "customerId": "1229237490",
+        "benefitPercentage": 12.2,
+        "id": "123781208",
+        "identityDocumentPar": {
+          "documentType": {
+            "id": "DNI",
+            "description": "DNID"
+          },
+          "number": "72839291"
+        },
+        "fullName": "John Becker",
+        "firstName": "Susan Fletcher",
+        "lastName": "Susan Fletcher",
+        "secondLastName": "Susan Fletcher",
+        "participantType": {
+          "id": "DRIVER",
+          "name": "Driver of the vehicle"
+        },
+        "startDate": "2021-04-16",
+        "endDate": "2021-08-16",
+        "relationship": {
+          "id": "PARENT",
+          "description": "Parent"
+        },
+        "benefitAmount": {
+          "amount": 4500,
+          "currency": "USD"
+        },
+        "contactDetailsPar": [
+          {
+            "contactDetailPar": {
+              "contact": {
+                "contactDetailType": "EMAIL",
+                "address": "134 Spain Avenue"
+              }
+            }
+          },
+          {
+            "contactDetailPar": {
+              "contact": {
+                "contactDetailType": "PHONE",
+                "phoneNumber": "+51989493921"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "businessAgent": {
+    "id": "P02983",
+    "fullName": "Aliona Ivánovna"
+  },
+  "promoter": {
+    "id": "P02938",
+    "fullName": "Arkadii Ivánovich"
+  },
+  "insuranceCompany": {
+    "id": "RI",
+    "name": "RIMAC Seguros",
+    "productId": "EXTPRO-1231"
+  },
+  "externalQuotationId": "EXTQUO-13881",
+  "externalPolicyNumber": "EXTPON-93291",
+  "status": {
+    "id": "ACTIVE",
+    "description": "Active insurance"
+  },
+  "bank": {
+    "id": "0011",
+    "branch": {
+      "id": "001182"
+    }
+  },
+  "identityVerificationCode": "3829102",
+  "couponCode": "BBVA20",
+  "policyDuration": {
+    "id": "MONTHLY",
+    "name": "mes",
+    "number": "2"
+  },
+  "totalAmountWithoutTax": {
+    "amount": 50,
+    "currency": "USD",
+    "exchangeRateTotal": {
+      "exchangeRateDate": "2021-04-16",
+      "baseCurrency": "USD",
+      "targetCurrency": "PEN",
+      "detailTotal": {
+        "factorTotal": {
+          "value": 10.1,
+          "ratio": 1.5
+        },
+        "priceType": "PURCHASE"
+      }
+    }
+  }
+}

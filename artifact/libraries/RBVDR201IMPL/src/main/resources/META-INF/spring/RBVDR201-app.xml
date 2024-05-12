@@ -4,8 +4,10 @@
 	<bean id="rbvdR201" class="com.bbva.rbvd.lib.r201.impl.RBVDR201Impl" parent="rbvdR201Abstract">
 		<property name="rimacUrlForker" ref="rimacUrlForker"/>
 		<property name="pisdR014" ref="pisdR014"/>
+		<property name="rbvdR047" ref="rbvdR047"/>
+		<property name="rbvdR602" ref="rbvdR602"/>
 	</bean>
-	<bean id="rimacUrlForker" class="com.bbva.rbvd.lib.r201.impl.util.RimacUrlForker">
+	<bean id="rimacUrlForker" class="com.bbva.rbvd.lib.r201.util.RimacUrlForker">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 	</bean>
 </beans>

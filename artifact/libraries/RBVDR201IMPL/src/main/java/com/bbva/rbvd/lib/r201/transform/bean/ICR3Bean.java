@@ -1,0 +1,22 @@
+package com.bbva.rbvd.lib.r201.transform.bean;
+
+import com.bbva.pisd.dto.insurance.utils.PISDConstants;
+import com.bbva.rbvd.dto.cicsconnection.icr3.ICR3Request;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+
+public class ICR3Bean {
+
+    private ICR3Bean(){}
+
+    public static ICR3Request mapIn(PolicyASO policyASO, String userCode) {
+        ICR3Request icr3Request = new ICR3Request();
+        icr3Request.setNUMCON(policyASO.getData().getId());
+        icr3Request.setMTDPGO(policyASO.getData().getPaymentMethod().getPaymentType());
+        icr3Request.setCOBRO(policyASO.getData().getFirstInstallment().getIsPaymentRequired() ? PISDConstants.LETTER_SI : PISDConstants.LETTER_NO);
+        icr3Request.setOFICON(policyASO.getData().getBank().getBranch().getId());
+        icr3Request.setUSUARIO(userCode);
+        icr3Request.setFLGOPAY(PISDConstants.LETTER_NO);
+        return icr3Request;
+    }
+
+}
