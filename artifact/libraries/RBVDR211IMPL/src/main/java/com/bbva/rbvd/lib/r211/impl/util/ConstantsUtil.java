@@ -13,9 +13,7 @@ public class ConstantsUtil {
     }
 
     public static final String FIELD_PRODUCT_SHORT_DESC = "PRODUCT_SHORT_DESC";
-
     public static final String PRODUCT_CODES_WITHOUT_THIRD_PARTY_VALIDATION = "product.codes.without.third.party.validation";
-
 
     public static final class DocumentType{
         public static final String RUC = "RUC";
@@ -56,6 +54,44 @@ public class ConstantsUtil {
         public Integer getRol() {
             return rol;
         }
+    }
+
+    public enum Relationship {
+        HOLDER("01", "TITULAR"),
+        SPOUSE("02", "CONYUGE"),
+        CHILDREN("03", "HIJO(A)"),
+        FATHER("04", "PADRE"),
+        MOTHER("05", "MADRE"),
+        COHABITANT("06", "CONVIVIENTE"),
+        BROTHERS("07", "HERMANO(A)"),
+        UNCLES("08", "TIO(A)"),
+        OTHERS("09", "OTROS"),
+        GRANDCHILDREN("10", "NIETO(A)"),
+        COUPLE("11", "NOVIO(A)"),
+        COUSINS("12", "PRIMO(A)"),
+        PARENTS("13", "PADRES");
+
+        private final String code;
+        private final String value;
+
+        Relationship(String code, String value) {
+            this.code = code;
+            this.value = value;
+        }
+
+        public String getCode() {return code;}
+
+        public String getValue() {return value;}
+
+        public static String getRelationshipValue(String relationshipCode) {
+            for(Relationship relationship : Relationship.values()) {
+                if(relationshipCode.equals(relationship.getCode())) {
+                    return relationship.getValue();
+                }
+            }
+            return null;
+        }
+
     }
 
 

@@ -3,6 +3,7 @@ package com.bbva.rbvd.lib.r201;
 import com.bbva.apx.exception.business.BusinessException;
 
 import com.bbva.apx.exception.io.network.TimeoutException;
+import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 
@@ -91,6 +92,7 @@ public class RBVDR201Test {
 	private RimacUrlForker rimacUrlForker;
 	private CustomerListASO customerList;
 	private MockDTO mockDTO;
+	private ApplicationConfigurationService applicationConfigurationService;
 
 	@Before
 	public void setUp() throws Exception{
@@ -110,6 +112,9 @@ public class RBVDR201Test {
 		internalApiConnectorImpersonation = apiConnectorFactoryMock.getAPIConnector(mockBundleContext, true, true);
 		rbvdR201.setInternalApiConnectorImpersonation(internalApiConnectorImpersonation);
 
+		applicationConfigurationService = mock(ApplicationConfigurationService.class);
+		rbvdR201.setApplicationConfigurationService(applicationConfigurationService);
+
 		pisdr014 = mock(PISDR014.class);
 		rbvdR201.setPisdR014(pisdr014);
 		rimacUrlForker = mock(RimacUrlForker.class);
@@ -118,6 +123,9 @@ public class RBVDR201Test {
 				.thenReturn(new SignatureAWS("", "", "", ""));
 		mockDTO = MockDTO.getInstance();
 		customerList = mockDTO.getCustomerDataResponse();
+
+		when(applicationConfigurationService.getDefaultProperty(eq("error.message.timeout"),anyString())).thenReturn("ERROR_SERVICE_TIMEOUT_ASO.getMessage()");
+		when(applicationConfigurationService.getDefaultProperty(eq("error.message.restException"), anyString())).thenReturn("ERROR_SERVICE_ASO.getMessage()");
 	}
 
 	@Test
@@ -154,6 +162,24 @@ public class RBVDR201Test {
 		String responseBody = "{\"messages\":[{\"code\":\"wrongParameters\",\"message\":\"LOS DATOS INGRESADOS SON INVALIDOS\",\"parameters\":[],\"type\":\"FATAL\"}]}";
 
 		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
+
+		rbvdR201.executePrePolicyEmissionASO(new DataASO());
+	}
+
+	@Test(expected = BusinessException.class)
+	public void executePrePolicyEmissionASOWithTimeoutException() {
+		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionASOWithRestClientException...");
+
+		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new TimeoutException("timeoutExcp"));
+
+		rbvdR201.executePrePolicyEmissionASO(new DataASO());
+	}
+
+	@Test(expected = BusinessException.class)
+	public void executePrePolicyEmissionASOWithStatusCodeException() {
+		LOGGER.info("RBVDR201Test - Executing executePrePolicyEmissionASOWithRestClientException...");
+
+		when(internalApiConnector.postForObject(anyString(), anyObject(), any())).thenThrow(new HttpClientErrorException(HttpStatus.BAD_GATEWAY));
 
 		rbvdR201.executePrePolicyEmissionASO(new DataASO());
 	}
@@ -429,6 +455,18 @@ public class RBVDR201Test {
 		when(rimacUrlForker.generateUriAddParticipants(anyString(),anyString())).thenReturn("any-value");
 		when(rimacUrlForker.generateKeyAddParticipants(anyString())).thenReturn("any-value");
 		when(this.externalApiConnector.exchange(anyString(), anyObject(),anyObject(), (Class<AgregarTerceroBO>) any(), anyMap())).thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST, "", responseBody.getBytes(), StandardCharsets.UTF_8));
+
+		AgregarTerceroBO validation = this.rbvdR201.executeAddParticipantsService(new AgregarTerceroBO(),"quotationId","productId","traceId");
+		assertNull(validation);
+	}
+
+	@Test
+	public void testExecuteAddParticipantsServiceWithTimeoutException() {
+		LOGGER.info("RBVDR201Test - Executing testExecuteAddParticipantsServiceWithTimeoutException...");
+
+		when(rimacUrlForker.generateUriAddParticipants(anyString(),anyString())).thenReturn("any-value");
+		when(rimacUrlForker.generateKeyAddParticipants(anyString())).thenReturn("any-value");
+		when(this.externalApiConnector.exchange(anyString(), anyObject(),anyObject(), (Class<AgregarTerceroBO>) any(), anyMap())).thenThrow(new TimeoutException(HttpStatus.GATEWAY_TIMEOUT.toString()));
 
 		AgregarTerceroBO validation = this.rbvdR201.executeAddParticipantsService(new AgregarTerceroBO(),"quotationId","productId","traceId");
 		assertNull(validation);
