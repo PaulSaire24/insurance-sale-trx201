@@ -541,6 +541,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			QuotationEntity quotationEntity = this.pisdR601.executeFindQuotationByReferenceAndPayrollId(requestBody.getQuotationId());
 			String status = isNull(quotationEntity.getRfqInternalId())  ? "CONTRACTED" : "PAID";
 			createdInsrcEventDTO.getCreatedInsurance().getStatus().setId(status);
+			createdInsrcEventDTO.getCreatedInsurance().getStatus().setName(status);
 
 			Integer httpStatusCode = this.rbvdR201.executePutEventUpsilonService(createdInsrcEventDTO);
 
