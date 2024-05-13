@@ -45,6 +45,7 @@
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 		<property name="mapperHelper" ref="mapperHelper"/>
 		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
+		<property name="crossOperationsBusinessInsuranceContractBank" ref="crossOperationsBusinessInsuranceContractBank"/>
 	</bean>
 	<bean id="rimacCompanyNotLifeFactory" class="com.bbva.rbvd.lib.r211.impl.pattern.factory.RimacCompanyNotLifeFactory">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
@@ -53,6 +54,11 @@
 	<!-- Helpers -->
 	<bean id="mapperHelper" class="com.bbva.rbvd.lib.r211.impl.util.MapperHelper">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
+	</bean>
+	<bean id="crossOperationsBusinessInsuranceContractBank" class="com.bbva.rbvd.lib.r211.impl.pattern.template.crossoperations.CrossOperationsBusinessInsuranceContractBank">
+		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
+		<property name="cryptoServiceInternal" ref="cryptoServiceInternal"/>
+		<property name="customerRBVD066InternalService" ref="customerRBVD066InternalService"/>
 	</bean>
 	<!-- Services -->
 	<bean id="policyRBVDR201ServiceExternal" class="com.bbva.rbvd.lib.r211.impl.service.api.PolicyRBVDR201ServiceExternal">

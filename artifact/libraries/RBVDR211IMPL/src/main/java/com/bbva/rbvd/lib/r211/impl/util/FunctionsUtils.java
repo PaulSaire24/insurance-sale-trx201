@@ -28,19 +28,6 @@ public class FunctionsUtils {
         return new BusinessException(error.getAdviceCode(), error.isRollback(),message);
     }
 
-    public static  Optional<String> validateString(String input) {
-        if (!StringUtils.isEmpty(input)) {
-            return Optional.of(input);
-        }
-        return Optional.empty();
-    }
-
-    public static <T> Optional<List<T>> validateList(List<T> list) {
-        if(!CollectionUtils.isEmpty(list)){
-            return Optional.of(list);
-        }
-        return Optional.empty();
-    }
 
     public static <T,K> Optional<Map<T,K>> validateMap(Map<T,K> list) {
         if(!CollectionUtils.isEmpty(list)){

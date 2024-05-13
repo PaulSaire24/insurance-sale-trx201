@@ -76,6 +76,7 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
     private ApplicationConfigurationService applicationConfigurationService;
 
     private MapperHelper mapperHelper;
+    private CrossOperationsBusinessInsuranceContractBank crossOperationsBusinessInsuranceContractBank;
 
 
     @Override
@@ -157,71 +158,33 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
 
     }
 
+
     @Override
     protected void executeFetchRequiredData(PolicyDTO requestBody) {
         CustomerListASO customerList = null;
         ListBusinessesASO listBusinessesASO = null;
-        String frequencyType = this.basicProductInsuranceProperties.obtainFrequencyTypeByPeriodId(requestBody.getInstallmentPlan().getPeriod().getId());
-        if(StringUtils.isEmpty(frequencyType)){
-            String message =  String.format(ERROR_NOT_CONFIG_FREQUENCY_TYPE.getMessage(),frequencyType);
-            this.addAdviceWithDescription(ERROR_NOT_CONFIG_FREQUENCY_TYPE.getAdviceCode(),message);
-            throw buildValidation(ERROR_NOT_CONFIG_FREQUENCY_TYPE,message);
-        }
-        Map<String,Object> paymentPeriodData = this.insrncPaymentPeriodDAO.findPaymentPeriodByFrequencyType(frequencyType);
-        if(CollectionUtils.isEmpty(paymentPeriodData)){
-            String message =  String.format( ERROR_EMPTY_RESULT_FREQUENCY_TYPE.getMessage(),frequencyType);
-            this.addAdviceWithDescription(ERROR_EMPTY_RESULT_FREQUENCY_TYPE.getAdviceCode(),message);
-            throw buildValidation(ERROR_EMPTY_RESULT_FREQUENCY_TYPE,message);
-        }
-        Map<String, Object> quotationData    = this.insrncQuotationModDAO.findQuotationByQuotationId(requestBody.getQuotationId());
-        if(CollectionUtils.isEmpty(quotationData)){
-            String message =  String.format( ERROR_EMPTY_RESULT_QUOTATION_DATA.getMessage(),requestBody.getQuotationId());
-            this.addAdviceWithDescription(ERROR_EMPTY_RESULT_QUOTATION_DATA.getAdviceCode(),message);
-            throw buildValidation(ERROR_EMPTY_RESULT_QUOTATION_DATA,message);
-        }
-
+        String frequencyType = basicProductInsuranceProperties.obtainFrequencyTypeByPeriodId(requestBody.getInstallmentPlan().getPeriod().getId());
+        crossOperationsBusinessInsuranceContractBank.validateFrequencyType(frequencyType);
+        Map<String,Object> paymentPeriodData = insrncPaymentPeriodDAO.findPaymentPeriodByFrequencyType(frequencyType);
+        crossOperationsBusinessInsuranceContractBank.validatePaymentPeriodData(paymentPeriodData, frequencyType);
+        Map<String, Object> quotationData = insrncQuotationModDAO.findQuotationByQuotationId(requestBody.getQuotationId());
+        crossOperationsBusinessInsuranceContractBank.validateQuotationData(quotationData, requestBody.getQuotationId());
         Map<String,Object> responseQueryGetProductById = insuranceProductDAO.findByProductId(requestBody.getProductId());
-        if(CollectionUtils.isEmpty(responseQueryGetProductById)){
-            String message =  String.format( ERROR_EMPTY_RESULT_PRODUCT_DATA.getMessage(),requestBody.getProductId());
-            this.addAdviceWithDescription(ERROR_EMPTY_RESULT_PRODUCT_DATA.getAdviceCode(),message);
-            throw buildValidation(ERROR_EMPTY_RESULT_PRODUCT_DATA,message);
-        }
+        crossOperationsBusinessInsuranceContractBank.validateProductData(responseQueryGetProductById, requestBody.getProductId());
 
         if(!RBVDProperties.INSURANCE_PRODUCT_TYPE_VEH.getValue().equalsIgnoreCase(requestBody.getProductId())){
-             customerList = customerRBVD066InternalService.findCustomerInformationByCustomerId(requestBody.getHolder().getId());
-            if(CollectionUtils.isEmpty(customerList.getData())){
-                this.addAdviceWithDescription(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getAdviceCode(),PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getMessage());
-                throw PISDValidation.build(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE);
-            }
-
+            customerList = customerRBVD066InternalService.findCustomerInformationByCustomerId(requestBody.getHolder().getId());
+            crossOperationsBusinessInsuranceContractBank.validateCustomerList(customerList);
             CustomerBO customer = customerList.getData().get(0);
-            String typeDocument = customer.getIdentityDocuments().get(0).getDocumentType().getId();
-            String numberDocument = customer.getIdentityDocuments().get(0).getDocumentNumber();
-
-            if(RBVDInternalConstants.Endorsement.RUC.equalsIgnoreCase(typeDocument) && StringUtils.startsWith(numberDocument,"20")){
-                String customerIdEncrypted = this.cryptoServiceInternal.encryptCustomerId(requestBody.getHolder().getId());
-                if(StringUtils.isEmpty(customerIdEncrypted)){
-                    this.addAdviceWithDescription(RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE.getAdviceCode(),RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE.getMessage());
-                    throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE);
-                }
-
-                listBusinessesASO = this.businessRBVD66ServiceInternal.getListBusinessesByCustomerId(customerIdEncrypted);
-                if(Objects.isNull(listBusinessesASO)  || CollectionUtils.isEmpty(listBusinessesASO.getData())){
-                    this.addAdviceWithDescription(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO.getAdviceCode(),RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO.getMessage());
-                    throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
-                }
-
-                PersonaBO persona = this.mapperHelper.constructPerson(requestBody,customer,quotationData);
-                StringBuilder stringAddress  = new StringBuilder();
-                String filledAddress = EmissionBean.fillAddress(customerList, persona, stringAddress,requestBody.getSaleChannelId(),applicationConfigurationService);
-                if (isNull(filledAddress)) {
-                    String message =  String.format( ERROR_VALID_ADDRESS.getMessage(),"N/A");
-                    this.addAdviceWithDescription(ERROR_VALID_ADDRESS.getAdviceCode(),message);
-                    throw buildValidation(ERROR_VALID_ADDRESS,message);
-                }
+            if(crossOperationsBusinessInsuranceContractBank.isRucCustomer(customer)){
+                String customerIdEncrypted = cryptoServiceInternal.encryptCustomerId(requestBody.getHolder().getId());
+                crossOperationsBusinessInsuranceContractBank.validateCustomerIdEncryption(customerIdEncrypted);
+                listBusinessesASO = businessRBVD66ServiceInternal.getListBusinessesByCustomerId(customerIdEncrypted);
+                crossOperationsBusinessInsuranceContractBank.validateListBusinessesASO(listBusinessesASO);
+                PersonaBO persona = mapperHelper.constructPerson(requestBody,customer,quotationData);
+                String filledAddress = EmissionBean.fillAddress(customerList, persona, new StringBuilder(),requestBody.getSaleChannelId(),applicationConfigurationService);
+                crossOperationsBusinessInsuranceContractBank.validateFilledAddress(filledAddress);
             }
-
-
         }
         RequiredFieldsEmissionDAO requiredFieldsEmissionDAO = PrePolicyTransfor.toRequiredFieldsEmissionDAO(quotationData, paymentPeriodData);
         ProcessPrePolicyDTO processPrePolicyDTO = new ProcessPrePolicyDTO();
@@ -236,52 +199,24 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         this.setResponseLibrary(ResponseLibrary.ResponseServiceBuilder.an().body(processPrePolicyDTO));
     }
 
-
     @Override
     protected void executeGenerateContract() {
-        PolicyDTO                 requestBody          = this.getResponseLibrary().getBody().getPolicy();
-        RequiredFieldsEmissionDAO emissionDao          = this.getResponseLibrary().getBody().getRequiredFieldsEmission();
-        PolicyDTO bodyUsedLambda = requestBody;
-        Date startDate   = Optional.ofNullable(requestBody.getValidityPeriod().getStartDate()).map(FunctionsUtils::convertDateToLocalTimeZone).orElseThrow(() -> {
-            String message = String.format(ERROR_NOT_VALUE_VALIDITY_PERIOD.getMessage(),"startDate", bodyUsedLambda.getValidityPeriod().getStartDate());
-            this.addAdviceWithDescription(ERROR_NOT_VALUE_VALIDITY_PERIOD.getAdviceCode(),message);
-            return buildValidation(ERROR_NOT_VALUE_VALIDITY_PERIOD,message);
-        });
-        Boolean isPaymentRequired = CrossOperationsBusinessInsuranceContractBank.evaluateRequiredPayment(startDate);
+        PolicyDTO requestBody = this.getResponseLibrary().getBody().getPolicy();
+        RequiredFieldsEmissionDAO emissionDao = this.getResponseLibrary().getBody().getRequiredFieldsEmission();
+
+        Date startDate = crossOperationsBusinessInsuranceContractBank.validateStartDate(requestBody);
+        Boolean isPaymentRequired = crossOperationsBusinessInsuranceContractBank.evaluateRequiredPayment(startDate);
         requestBody = PrePolicyTransfor.toIsPaymentRequired(requestBody,isPaymentRequired);
         DataASO dataASO = PrePolicyTransfor.toDataASO(requestBody);
+
         ResponseLibrary<PolicyASO> responseService = contractPISD201ServiceInternal.generateContractHost(dataASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
-        if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseService.getStatusProcess())){
-            this.addAdviceWithDescription(ERROR_RESPONSE_SERVICE_ICR2.getAdviceCode(),ERROR_RESPONSE_SERVICE_ICR2.getMessage());
-            throw buildValidation(ERROR_RESPONSE_SERVICE_ICR2);
-        }
+        crossOperationsBusinessInsuranceContractBank.validateContractGeneration(responseService);
+
         PolicyASO asoResponse = responseService.getBody();
         String codeOfficeTelemarketing = this.basicProductInsuranceProperties.obtainOfficeTelemarketingCode();
-        String saleChannelIdOffice   = codeOfficeTelemarketing.equals(asoResponse.getData().getBank().getBranch().getId()) ? Channel.TELEMARKETING_CODE : requestBody.getSaleChannelId();
-        requestBody = PrePolicyTransfor.toMapBranchAndSaleChannelIdOfficial(asoResponse.getData().getBank().getBranch().getId(),saleChannelIdOffice,requestBody);
-        List<String> channelsSaleNotDigital = this.basicProductInsuranceProperties.obtainSaleChannelsNotDigital();
-        if(!channelsSaleNotDigital.contains(requestBody.getSaleChannelId())){
-            List<String> aapSSearchInContactDetail = this.basicProductInsuranceProperties.obtainAapSSearchInContactDetail();
-            if(aapSSearchInContactDetail.contains(requestBody.getSaleChannelId())){
-                String customerId = Optional.ofNullable(requestBody.getHolder()).map(HolderDTO::getId).orElse(StringUtils.EMPTY);
-                String emailCode = Optional.ofNullable(requestBody.getHolder()).map(holderDTO -> CollectionUtils.isEmpty(holderDTO.getContactDetails()) ? StringUtils.EMPTY : holderDTO.getContactDetails().get(0).getId()).orElse(StringUtils.EMPTY);
-                String phoneCode  = Optional.ofNullable(requestBody.getHolder()).filter(holderDTO -> !CollectionUtils.isEmpty(holderDTO.getContactDetails()) && holderDTO.getContactDetails().size() > 1).map(holderDTO -> holderDTO.getContactDetails().get(1).getId()).orElse(StringUtils.EMPTY);
-                String emailEncrypt = cryptoServiceInternal.encryptContactDetail(emailCode);
-                String phoneEncrypt = cryptoServiceInternal.encryptContactDetail(phoneCode);
-                GetContactDetailsASO contactDetails = customerRBVD066InternalService.findByContactDetailByCustomerId(customerId);
-                List<ContactDTO> contacts = CrossOperationsBusinessInsuranceContractBank.obtainContactDetails(emailEncrypt, phoneEncrypt, contactDetails);
-                requestBody.getHolder().getContactDetails().get(0).setContact(contacts.get(0));
-                requestBody.getHolder().getContactDetails().get(1).setContact(contacts.get(1));
-
-            }
-            String promoterCodeDefaultSaleDigital = this.basicProductInsuranceProperties.obtainDefaultPromoterCodeSaleDigital();
-            if(Objects.isNull(requestBody.getPromoter())){
-                PromoterDTO promoterDTO = PrePolicyTransfor.mapInPromoterId(promoterCodeDefaultSaleDigital);
-                requestBody.setPromoter(promoterDTO);
-            }
-            BusinessAgentDTO businessAgentDTO = PrePolicyTransfor.mapInBusinessAgentSaleDigital(promoterCodeDefaultSaleDigital);
-            requestBody.setBusinessAgent(businessAgentDTO);
-        }
+        String saleChannelIdOffice = codeOfficeTelemarketing.equals(asoResponse.getData().getBank().getBranch().getId()) ? Channel.TELEMARKETING_CODE : requestBody.getSaleChannelId();
+        requestBody = PrePolicyTransfor.toMapBranchAndSaleChannelIdOfficial(asoResponse.getData().getBank().getBranch().getId(), saleChannelIdOffice, requestBody);
+        crossOperationsBusinessInsuranceContractBank.handleNonDigitalSale(requestBody);
         boolean isEndorsement = CrossOperationsBusinessInsuranceContractBank.validateEndorsement(requestBody);
         BigDecimal totalNumberInstallments = (requestBody.getFirstInstallment().getIsPaymentRequired()) ? BigDecimal.valueOf(requestBody.getInstallmentPlan().getTotalNumberInstallments() - 1) : BigDecimal.valueOf(requestBody.getInstallmentPlan().getTotalNumberInstallments());
         InsuranceContractDAO contractDao = InsuranceContractBean.toInsuranceContractDAO(requestBody,emissionDao,asoResponse.getData().getId(),isEndorsement,totalNumberInstallments) ;
@@ -296,8 +231,8 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         List<String> productsNotGenerateMonthlyReceipts = this.basicProductInsuranceProperties.obtainProductsNotGenerateMonthlyReceipts();
         String  operationGlossaryDesc = this.getResponseLibrary().getBody().getOperationGlossaryDesc();
         if(Period.MONTHLY_LARGE.equalsIgnoreCase(requestBody.getInstallmentPlan().getPeriod().getId()) && !productsNotGenerateMonthlyReceipts.contains(operationGlossaryDesc)){
-             List<InsuranceCtrReceiptsDAO> receipts = InsuranceReceiptBean.toGenerateMonthlyReceipts(receiptsList.get(0));
-             receiptsList.addAll(receipts);
+            List<InsuranceCtrReceiptsDAO> receipts = InsuranceReceiptBean.toGenerateMonthlyReceipts(receiptsList.get(0));
+            receiptsList.addAll(receipts);
         }
         Map<String, Object>[] receiptsArguments = InsuranceReceiptMap.receiptsToMaps(receiptsList);
         Boolean isSavedInsuranceReceipts = this.insuranceCtrReceiptsDAO.saveInsuranceReceipts(receiptsArguments);
@@ -371,6 +306,10 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
             }
         }
 
+    }
+
+    public void setCrossOperationsBusinessInsuranceContractBank(CrossOperationsBusinessInsuranceContractBank crossOperationsBusinessInsuranceContractBank) {
+        this.crossOperationsBusinessInsuranceContractBank = crossOperationsBusinessInsuranceContractBank;
     }
 
     public void setBusinessRBVD66ServiceInternal(BusinessRBVD66ServiceInternal businessRBVD66ServiceInternal) {

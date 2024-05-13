@@ -40,9 +40,11 @@ import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
+import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 import org.junit.Before;
@@ -112,6 +114,8 @@ public class RBVDR211Test {
 
 	private CustomerListASO customerList;
 	private Map<String,Object> responseQueryGetProductById;
+
+	private BasicProductInsuranceProperties basicProductInsuranceProperties;
 
 	@Before
 	public void setUp() throws IOException {
@@ -248,6 +252,11 @@ public class RBVDR211Test {
 				.thenReturn(responseQueryGetProductById);
 
 		/* P030557 */
+
+		basicProductInsuranceProperties = new BasicProductInsuranceProperties();
+		basicProductInsuranceProperties.setApplicationConfigurationService(applicationConfigurationService);
+
+		rbvdr211.setBasicProductInsuranceProperties(basicProductInsuranceProperties);
 	}
 
 	@Test
@@ -260,9 +269,9 @@ public class RBVDR211Test {
 		when(pisdR012.executeGetASingleRow(RBVDProperties.QUERY_VALIDATE_IF_POLICY_EXISTS.getValue(), argumentValidateIfPolicyExists)).
 				thenReturn(policiesNumber);
 
-		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
+		ResponseLibrary<PolicyDTO> validation = rbvdr211.executeEmissionPolicyNotLifeFlowNew(requestBody);
 
-		assertNull(validation);
+		assertNull(validation.getBody());
 		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.POLICY_ALREADY_EXISTS.getAdviceCode());
 	}
 

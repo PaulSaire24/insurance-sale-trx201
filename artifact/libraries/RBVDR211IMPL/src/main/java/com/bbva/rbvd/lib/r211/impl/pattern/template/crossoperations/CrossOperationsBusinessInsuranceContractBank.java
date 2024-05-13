@@ -1,16 +1,32 @@
 package com.bbva.rbvd.lib.r211.impl.pattern.template.crossoperations;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+import com.bbva.elara.library.AbstractLibrary;
+import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.bo.ContactDetailsBO;
+import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 import com.bbva.pisd.dto.insurance.utils.PISDConstants;
+import com.bbva.pisd.dto.insurance.utils.PISDErrors;
+import com.bbva.pisd.dto.insurance.utils.PISDValidation;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
+import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
+import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
+import com.bbva.rbvd.lib.r211.impl.service.api.CryptoServiceInternal;
+import com.bbva.rbvd.lib.r211.impl.service.api.CustomerRBVD066InternalService;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsrcContractParticipantBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.PrePolicyTransfor;
 import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
@@ -19,15 +35,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.Endorsement;
+import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.*;
+import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.ERROR_EMPTY_RESULT_QUOTATION_DATA;
+import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.buildValidation;
+import static java.util.Objects.isNull;
 
-public class CrossOperationsBusinessInsuranceContractBank {
+public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrary {
+
+    private BasicProductInsuranceProperties basicProductInsuranceProperties;
+    private CryptoServiceInternal cryptoServiceInternal;
+    private CustomerRBVD066InternalService customerRBVD066InternalService;
 
     public static List<IsrcContractParticipantDAO> toIsrcContractParticipantDAOList(PolicyDTO requestBody, List<Map<String, Object>> rolesFromDB, String id, ApplicationConfigurationService applicationConfigurationService){
         ParticipantDTO participant = requestBody.getParticipants().get(0);
@@ -95,7 +116,7 @@ public class CrossOperationsBusinessInsuranceContractBank {
     }
 
 
-    public static Boolean evaluateRequiredPayment(Date startDate) {
+    public Boolean evaluateRequiredPayment(Date startDate) {
         Date currentDate = FunctionsUtils.currentDate();
         Boolean isPaymentRequired;
         if(startDate.after(currentDate)) {
@@ -117,5 +138,143 @@ public class CrossOperationsBusinessInsuranceContractBank {
         }
         return false;
     }
+
+    public void validatePaymentPeriodData(Map<String, Object> paymentPeriodData, String frequencyType) {
+        if(CollectionUtils.isEmpty(paymentPeriodData)){
+            String message =  String.format( ERROR_EMPTY_RESULT_FREQUENCY_TYPE.getMessage(),frequencyType);
+            this.addAdviceWithDescription(ERROR_EMPTY_RESULT_FREQUENCY_TYPE.getAdviceCode(),message);
+            throw buildValidation(ERROR_EMPTY_RESULT_FREQUENCY_TYPE,message);
+        }
+    }
+
+    public void validateQuotationData(Map<String, Object> quotationData, String quotationId) {
+        if(CollectionUtils.isEmpty(quotationData)){
+            String message =  String.format( ERROR_EMPTY_RESULT_QUOTATION_DATA.getMessage(),quotationId);
+            this.addAdviceWithDescription(ERROR_EMPTY_RESULT_QUOTATION_DATA.getAdviceCode(),message);
+            throw buildValidation(ERROR_EMPTY_RESULT_QUOTATION_DATA,message);
+        }
+    }
+
+    public void validateProductData(Map<String, Object> productData, String productId) {
+        if(CollectionUtils.isEmpty(productData)){
+            String message =  String.format( ERROR_EMPTY_RESULT_PRODUCT_DATA.getMessage(),productId);
+            this.addAdviceWithDescription(ERROR_EMPTY_RESULT_PRODUCT_DATA.getAdviceCode(),message);
+            throw buildValidation(ERROR_EMPTY_RESULT_PRODUCT_DATA,message);
+        }
+    }
+
+    public void validateCustomerList(CustomerListASO customerList) {
+        if(CollectionUtils.isEmpty(customerList.getData())){
+            this.addAdviceWithDescription(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getAdviceCode(),PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getMessage());
+            throw PISDValidation.build(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE);
+        }
+    }
+
+    public boolean isRucCustomer(CustomerBO customer) {
+        String typeDocument = customer.getIdentityDocuments().get(0).getDocumentType().getId();
+        String numberDocument = customer.getIdentityDocuments().get(0).getDocumentNumber();
+        return RBVDInternalConstants.Endorsement.RUC.equalsIgnoreCase(typeDocument) && StringUtils.startsWith(numberDocument, "20");
+    }
+
+    public void validateFrequencyType(String frequencyType) {
+        if(StringUtils.isEmpty(frequencyType)){
+            String message =  String.format(ERROR_NOT_CONFIG_FREQUENCY_TYPE.getMessage(),frequencyType);
+            this.addAdviceWithDescription(ERROR_NOT_CONFIG_FREQUENCY_TYPE.getAdviceCode(),message);
+            throw buildValidation(ERROR_NOT_CONFIG_FREQUENCY_TYPE,message);
+        }
+    }
+
+
+    public void validateCustomerIdEncryption(String customerIdEncrypted) {
+        if(StringUtils.isEmpty(customerIdEncrypted)){
+            this.addAdviceWithDescription(RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE.getAdviceCode(),RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE.getMessage());
+            throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE);
+        }
+    }
+
+    public void validateListBusinessesASO(ListBusinessesASO listBusinessesASO) {
+        if(Objects.isNull(listBusinessesASO)  || CollectionUtils.isEmpty(listBusinessesASO.getData())){
+            this.addAdviceWithDescription(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO.getAdviceCode(),RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO.getMessage());
+            throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
+        }
+    }
+
+    public void validateFilledAddress(String filledAddress) {
+        if (isNull(filledAddress)) {
+            String message =  String.format( ERROR_VALID_ADDRESS.getMessage(),"N/A");
+            this.addAdviceWithDescription(ERROR_VALID_ADDRESS.getAdviceCode(),message);
+            throw buildValidation(ERROR_VALID_ADDRESS,message);
+        }
+    }
+
+    public Date validateStartDate(PolicyDTO requestBody) {
+        return Optional.ofNullable(requestBody.getValidityPeriod().getStartDate())
+                .map(FunctionsUtils::convertDateToLocalTimeZone)
+                .orElseThrow(() -> {
+                    String message = String.format(ERROR_NOT_VALUE_VALIDITY_PERIOD.getMessage(), "startDate", requestBody.getValidityPeriod().getStartDate());
+                    return buildValidation(ERROR_NOT_VALUE_VALIDITY_PERIOD, message);
+                });
+    }
+
+    public void validateContractGeneration(ResponseLibrary<PolicyASO> responseService) {
+        if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseService.getStatusProcess())){
+            this.addAdviceWithDescription(ERROR_RESPONSE_SERVICE_ICR2.getAdviceCode(),ERROR_RESPONSE_SERVICE_ICR2.getMessage());
+            throw buildValidation(ERROR_RESPONSE_SERVICE_ICR2);
+        }
+    }
+
+    public void handleNonDigitalSale(PolicyDTO requestBody) {
+        List<String> channelsSaleNotDigital = this.basicProductInsuranceProperties.obtainSaleChannelsNotDigital();
+        if (!channelsSaleNotDigital.contains(requestBody.getSaleChannelId())) {
+            handleAAPSSale(requestBody);
+            handleDigitalPromoter(requestBody);
+        }
+    }
+
+    private void handleAAPSSale(PolicyDTO requestBody) {
+        List<String> aapSSearchInContactDetail = this.basicProductInsuranceProperties.obtainAapSSearchInContactDetail();
+        if (aapSSearchInContactDetail.contains(requestBody.getSaleChannelId())) {
+            String customerId = Optional.ofNullable(requestBody.getHolder()).map(HolderDTO::getId).orElse(StringUtils.EMPTY);
+            String emailCode = Optional.ofNullable(requestBody.getHolder()).map(holderDTO -> CollectionUtils.isEmpty(holderDTO.getContactDetails()) ? StringUtils.EMPTY : holderDTO.getContactDetails().get(0).getId()).orElse(StringUtils.EMPTY);
+            String phoneCode = Optional.ofNullable(requestBody.getHolder()).filter(holderDTO -> !CollectionUtils.isEmpty(holderDTO.getContactDetails()) && holderDTO.getContactDetails().size() > 1).map(holderDTO -> holderDTO.getContactDetails().get(1).getId()).orElse(StringUtils.EMPTY);
+            String emailEncrypt = cryptoServiceInternal.encryptContactDetail(emailCode);
+            String phoneEncrypt = cryptoServiceInternal.encryptContactDetail(phoneCode);
+                GetContactDetailsASO contactDetails = customerRBVD066InternalService.findByContactDetailByCustomerId(customerId);
+            List<ContactDTO> contacts = CrossOperationsBusinessInsuranceContractBank.obtainContactDetails(emailEncrypt, phoneEncrypt, contactDetails);
+            requestBody.getHolder().getContactDetails().get(0).setContact(contacts.get(0));
+            requestBody.getHolder().getContactDetails().get(1).setContact(contacts.get(1));
+        }
+        String promoterCodeDefaultSaleDigital = this.basicProductInsuranceProperties.obtainDefaultPromoterCodeSaleDigital();
+        if (Objects.isNull(requestBody.getPromoter())) {
+            PromoterDTO promoterDTO = PrePolicyTransfor.mapInPromoterId(promoterCodeDefaultSaleDigital);
+            requestBody.setPromoter(promoterDTO);
+        }
+        BusinessAgentDTO businessAgentDTO = PrePolicyTransfor.mapInBusinessAgentSaleDigital(promoterCodeDefaultSaleDigital);
+        requestBody.setBusinessAgent(businessAgentDTO);
+    }
+
+    private void handleDigitalPromoter(PolicyDTO requestBody) {
+        String promoterCodeDefaultSaleDigital = this.basicProductInsuranceProperties.obtainDefaultPromoterCodeSaleDigital();
+        if (Objects.isNull(requestBody.getPromoter())) {
+            PromoterDTO promoterDTO = PrePolicyTransfor.mapInPromoterId(promoterCodeDefaultSaleDigital);
+            requestBody.setPromoter(promoterDTO);
+        }
+        BusinessAgentDTO businessAgentDTO = PrePolicyTransfor.mapInBusinessAgentSaleDigital(promoterCodeDefaultSaleDigital);
+        requestBody.setBusinessAgent(businessAgentDTO);
+    }
+
+    public void setBasicProductInsuranceProperties(BasicProductInsuranceProperties basicProductInsuranceProperties) {
+        this.basicProductInsuranceProperties = basicProductInsuranceProperties;
+    }
+
+    public void setCryptoServiceInternal(CryptoServiceInternal cryptoServiceInternal) {
+        this.cryptoServiceInternal = cryptoServiceInternal;
+    }
+
+    public void setCustomerRBVD066InternalService(CustomerRBVD066InternalService customerRBVD066InternalService) {
+        this.customerRBVD066InternalService = customerRBVD066InternalService;
+    }
+
+
 
 }

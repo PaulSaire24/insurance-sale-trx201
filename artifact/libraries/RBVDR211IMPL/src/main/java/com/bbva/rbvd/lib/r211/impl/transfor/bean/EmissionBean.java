@@ -74,7 +74,7 @@ public class EmissionBean {
 
         CustomerBO customer = customerList.getData().get(0);
         List<PersonaBO> personasList = new ArrayList<>();
-        PersonaBO persona = constructPerson(requestBody,customer,processPrePolicyDTO,applicationConfigurationService);
+        PersonaBO persona = Optional.ofNullable(customer).map(customerBO -> constructPerson(requestBody,customerBO,processPrePolicyDTO,applicationConfigurationService)).orElse(new PersonaBO()) ;
 
         StringBuilder stringAddress  = new StringBuilder();
 
@@ -534,50 +534,66 @@ public class EmissionBean {
 
     }
 
-    private static PersonaBO constructPerson(PolicyDTO requestBody,CustomerBO customer,ProcessPrePolicyDTO processPrePolicyDTO,ApplicationConfigurationService applicationConfigurationService){
+
+    private static PersonaBO constructPerson(PolicyDTO requestBody, CustomerBO customer, ProcessPrePolicyDTO processPrePolicyDTO, ApplicationConfigurationService applicationConfigurationService){
         PersonaBO persona = new PersonaBO();
-        ContactDetailDTO correoSelect=new ContactDetailDTO();
-        ContactDetailDTO celularSelect=new ContactDetailDTO();
-        if(!Objects.isNull(requestBody.getHolder())){
-            correoSelect= requestBody.getHolder().getContactDetails().stream().
-                    filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(PISDConstants.ContactDetail.EMAIL_TYPE)).findFirst().orElse(new ContactDetailDTO());
-            celularSelect= requestBody.getHolder().getContactDetails().stream().
-                    filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(PISDConstants.ContactDetail.MOBILE_TYPE)).findFirst().orElse(new ContactDetailDTO());
-        }
-        persona.setTipoDocumento(applicationConfigurationService.getProperty(Objects.isNull(requestBody.getHolder())?
-                customer.getIdentityDocuments().get(0).getDocumentType().getId()
-                : requestBody.getHolder().getIdentityDocument().getDocumentType().getId()));
-        if(RUC_ID.equalsIgnoreCase(persona.getTipoDocumento())){
-            String nroDocument = StringUtils.EMPTY;
-            if(Objects.nonNull(requestBody.getHolder()) && Objects.nonNull(requestBody.getHolder().getIdentityDocument()) && Objects.nonNull(requestBody.getHolder().getIdentityDocument().getNumber())){
-                nroDocument = requestBody.getHolder().getIdentityDocument().getNumber();
-            }
-            persona.setNroDocumento(nroDocument);
-        }else{
-            String nroDocument = StringUtils.EMPTY;
-            if(Objects.nonNull(customer) && !CollectionUtils.isEmpty(customer.getIdentityDocuments()) ){
-                nroDocument = StringUtils.defaultString(customer.getIdentityDocuments().get(0).getDocumentNumber());
+        ContactDetailDTO emailContact = getEmailContact(requestBody);
+        ContactDetailDTO mobileContact = getMobileContact(requestBody);
 
-            }
-            persona.setNroDocumento(  nroDocument);
-        }
+        persona.setTipoDocumento(getDocumentType(requestBody, customer, applicationConfigurationService));
+        persona.setNroDocumento(getDocumentNumber(requestBody, customer, applicationConfigurationService));
         persona.setApePaterno(customer.getLastName());
-
-        if(Objects.nonNull(customer.getSecondLastName()) && customer.getSecondLastName().length() > PISDConstants.Number.UNO) {
-            persona.setApeMaterno(customer.getSecondLastName());
-        } else {
-            persona.setApeMaterno("");
-        }
-
+        persona.setApeMaterno(getSecondLastName(customer));
         persona.setNombres(customer.getFirstName());
         persona.setFechaNacimiento(customer.getBirthData().getBirthDate());
-        if(Objects.nonNull(customer.getGender())) persona.setSexo("MALE".equals(customer.getGender().getId()) ? "M" : "F");
-
-        persona.setCorreoElectronico(Objects.isNull(correoSelect.getContact()) ? processPrePolicyDTO.getQuotationEmailDesc() : correoSelect.getContact().getAddress());
-        persona.setCelular(Objects.isNull(celularSelect.getContact()) ? processPrePolicyDTO.getQuotationCustomerPhoneDesc() : celularSelect.getContact().getPhoneNumber());
+        persona.setSexo(getGender(customer));
+        persona.setCorreoElectronico(getEmail(emailContact, processPrePolicyDTO));
+        persona.setCelular(getMobileNumber(mobileContact, processPrePolicyDTO));
         persona.setTipoPersona(getPersonType(persona).getCode());
 
         return persona;
+    }
+
+    private static ContactDetailDTO getEmailContact(PolicyDTO requestBody) {
+        return requestBody.getHolder().getContactDetails().stream()
+                .filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(PISDConstants.ContactDetail.EMAIL_TYPE))
+                .findFirst()
+                .orElse(new ContactDetailDTO());
+    }
+
+    private static ContactDetailDTO getMobileContact(PolicyDTO requestBody) {
+        return requestBody.getHolder().getContactDetails().stream()
+                .filter(contactDetail -> contactDetail.getContact().getContactDetailType().equals(PISDConstants.ContactDetail.MOBILE_TYPE))
+                .findFirst()
+                .orElse(new ContactDetailDTO());
+    }
+
+    private static String getDocumentType(PolicyDTO requestBody, CustomerBO customer, ApplicationConfigurationService applicationConfigurationService) {
+        return applicationConfigurationService.getProperty(Objects.isNull(requestBody.getHolder()) ? customer.getIdentityDocuments().get(0).getDocumentType().getId() : requestBody.getHolder().getIdentityDocument().getDocumentType().getId());
+    }
+
+    private static String getDocumentNumber(PolicyDTO requestBody, CustomerBO customer , ApplicationConfigurationService applicationConfigurationService) {
+        if (RUC_ID.equalsIgnoreCase(getDocumentType(requestBody, customer,applicationConfigurationService))) {
+            return Objects.nonNull(requestBody.getHolder()) && Objects.nonNull(requestBody.getHolder().getIdentityDocument()) && Objects.nonNull(requestBody.getHolder().getIdentityDocument().getNumber()) ? requestBody.getHolder().getIdentityDocument().getNumber() : StringUtils.EMPTY;
+        } else {
+            return Objects.nonNull(customer) && !CollectionUtils.isEmpty(customer.getIdentityDocuments()) ? StringUtils.defaultString(customer.getIdentityDocuments().get(0).getDocumentNumber()) : StringUtils.EMPTY;
+        }
+    }
+
+    private static String getSecondLastName(CustomerBO customer) {
+        return Objects.nonNull(customer.getSecondLastName()) && customer.getSecondLastName().length() > PISDConstants.Number.UNO ? customer.getSecondLastName() : "";
+    }
+
+    private static String getGender(CustomerBO customer) {
+        return Objects.nonNull(customer.getGender()) ? "MALE".equals(customer.getGender().getId()) ? "M" : "F" : "";
+    }
+
+    private static String getEmail(ContactDetailDTO emailContact, ProcessPrePolicyDTO processPrePolicyDTO) {
+        return Objects.isNull(emailContact.getContact()) ? processPrePolicyDTO.getQuotationEmailDesc() : emailContact.getContact().getAddress();
+    }
+
+    private static String getMobileNumber(ContactDetailDTO mobileContact, ProcessPrePolicyDTO processPrePolicyDTO) {
+        return Objects.isNull(mobileContact.getContact()) ? processPrePolicyDTO.getQuotationCustomerPhoneDesc() : mobileContact.getContact().getPhoneNumber();
     }
 
     public static PersonTypeEnum getPersonType(EntidadBO person) {

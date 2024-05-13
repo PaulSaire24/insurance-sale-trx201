@@ -21,26 +21,26 @@ public class BasicProductInsuranceProperties extends Properties{
     public Boolean enableValidationQuotationAmountByProductIdAndChannelId(String productId, String channelId){
         String key = "property.validation.range.".concat(StringUtils.defaultString(productId)).concat(".").concat(StringUtils.defaultString(channelId));
         String enabledRulesValidationQuotationAmount = this.getProperty(key, String.valueOf(PISDConstants.Number.CERO));
-        LOGGER.info(" :: BasicProductInsuranceProperties[ enabledRulesValidationQuotationAmount :: {} ]",enabledRulesValidationQuotationAmount);
+        LOGGER.info(" :: BasicProductInsuranceProperties[ enableValidationQuotationAmountByProductIdAndChannelId :: {} ]",enabledRulesValidationQuotationAmount);
         return enabledRulesValidationQuotationAmount.equalsIgnoreCase("1") ? Boolean.TRUE : Boolean.FALSE;
     }
 
     public Boolean enabledFlowEmissionRoyal2_0ByProduct(String productId){
         String key = "flow.royal2.enabled.product.".concat(StringUtils.defaultString(productId));
         Boolean enabledRulesValidationQuotationAmount = Boolean.parseBoolean(this.getProperty(key, Boolean.FALSE.toString()));
-        LOGGER.info(" :: BasicProductInsuranceProperties[ enabledRulesValidationQuotationAmount :: {} ]",enabledRulesValidationQuotationAmount);
+        LOGGER.info(" :: BasicProductInsuranceProperties[ enabledFlowEmissionRoyal2_0ByProduct :: {} ]",enabledRulesValidationQuotationAmount);
         return enabledRulesValidationQuotationAmount;
     }
 
     public Boolean enabledAllProductsEmissionRoyal2_0(){
         Boolean enabledRulesValidationQuotationAmount = Boolean.parseBoolean(this.getProperty("flow.royal2.enabled.all.products", Boolean.FALSE.toString()));
-        LOGGER.info(" :: BasicProductInsuranceProperties[ enabledRulesValidationQuotationAmount :: {} ]",enabledRulesValidationQuotationAmount);
+        LOGGER.info(" :: BasicProductInsuranceProperties[ enabledAllProductsEmissionRoyal2_0 :: {} ]",enabledRulesValidationQuotationAmount);
         return enabledRulesValidationQuotationAmount;
     }
 
     public Boolean enabledPaymentICR3(){
         Boolean enabledRulesValidationQuotationAmount = Boolean.parseBoolean(this.getProperty("flow.royal2.enabled.payment.icr3", Boolean.TRUE.toString()));
-        LOGGER.info(" :: BasicProductInsuranceProperties[ enabledRulesValidationQuotationAmount :: {} ]",enabledRulesValidationQuotationAmount);
+        LOGGER.info(" :: BasicProductInsuranceProperties[ enabledPaymentICR3 :: {} ]",enabledRulesValidationQuotationAmount);
         return enabledRulesValidationQuotationAmount;
     }
 
