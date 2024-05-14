@@ -9,9 +9,11 @@ import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.pisd.dto.insurancedao.entities.QuotationEntity;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.pisd.lib.r350.PISDR350;
 import com.bbva.pisd.lib.r401.PISDR401;
+import com.bbva.pisd.lib.r601.PISDR601;
 import com.bbva.rbvd.dto.insrncsale.aso.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
@@ -19,6 +21,9 @@ import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
+import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
+import com.bbva.rbvd.dto.insrncsale.events.CreatedInsuranceDTO;
+import com.bbva.rbvd.dto.insrncsale.events.StatusDTO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insrncsale.policy.*;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
@@ -85,6 +90,8 @@ public class RBVDR211V2Test {
 
 	@Resource(name = "pisdR012")
 	private PISDR012 pisdR012;
+	@Resource(name = "pisdR601")
+	private PISDR601 pisdR601;
 
 	@Resource(name = "ksmkR002")
 	private KSMKR002 ksmkr002;
@@ -307,6 +314,18 @@ public class RBVDR211V2Test {
 		OutputDTO firstOutput = new OutputDTO();
 		firstOutput.setData("emhSTGcxRnM");
 		when(ksmkr002.executeKSMKR002(anyList(), anyString(), anyString(), anyObject())).thenReturn(singletonList(firstOutput));
+
+		CreatedInsrcEventDTO createdInsrcEventDTO = new CreatedInsrcEventDTO();
+		createdInsrcEventDTO.setCreatedInsurance(new CreatedInsuranceDTO());
+		createdInsrcEventDTO.getCreatedInsurance().setStatus(new StatusDTO());
+		when(mapperHelper.buildCreatedInsuranceEventObject(anyObject())).thenReturn(createdInsrcEventDTO);
+
+		QuotationEntity quotationEntity = new QuotationEntity();
+		quotationEntity.setRfqInternalId("R05658");
+		quotationEntity.setPayrollId("P05658");
+		when(pisdR601.executeFindQuotationByReferenceAndPayrollId(anyString())).thenReturn(quotationEntity);
+
+
 	}
 
 

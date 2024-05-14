@@ -10,13 +10,14 @@
 		<property name="pisdR350" ref="pisdR350"/>
 		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
 		<property name="emissionPolicyNotLifeBusinessImpl" ref="emissionPolicyNotLifeBusiness"/>
+		<property name="pisdR601" ref="pisdR601"/>
 	</bean>
 	<!-- Events -->
 	<bean id="gifoleEventInternal" class="com.bbva.rbvd.lib.r211.impl.event.GifoleEventInternal">
 		<property name="rbvdR201" ref="rbvdR201"/>
 	</bean>
 	<!-- Business -->
-	<bean id="emissionPolicyNotLifeBusiness" class="com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyNotLifeBusinessImpl" >
+	<bean id="emissionPolicyNotLifeBusiness" class="com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyNotLifeBusinessImpl">
 		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
 		<property name="mapperHelper" ref="mapperHelper"/>
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
@@ -26,7 +27,7 @@
 		<property name="rimacCompanyNotLifeFactory" ref="rimacCompanyNotLifeFactory"/>
 	</bean>
 	<!-- Pattern´s Design -->
-	<bean id="insuranceContractBank" class="com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank" abstract="true" />
+	<bean id="insuranceContractBank" class="com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank" abstract="true"/>
 	<bean id="basicProductInsuranceBankNotLife" class="com.bbva.rbvd.lib.r211.impl.pattern.template.BasicProductInsuranceBankNotLifeImpl" parent="insuranceContractBank">
 		<property name="insrncContractMovDAO" ref="contractMovPISD012DAO"/>
 		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
@@ -109,7 +110,7 @@
 	</bean>
 	<!-- Properties -->
 	<bean id="basicProductInsuranceProperties" class="com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties" parent="properties"/>
-	<bean id="properties" class="com.bbva.rbvd.lib.r211.impl.properties.Properties" >
+	<bean id="properties" class="com.bbva.rbvd.lib.r211.impl.properties.Properties">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 	</bean>
 </beans>

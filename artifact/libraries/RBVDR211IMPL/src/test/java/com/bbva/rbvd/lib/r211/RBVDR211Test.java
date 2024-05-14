@@ -16,10 +16,12 @@ import com.bbva.pisd.dto.insurance.mock.MockDTO;
 
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
+import com.bbva.pisd.dto.insurancedao.entities.QuotationEntity;
 import com.bbva.pisd.lib.r012.PISDR012;
 
 import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.pisd.lib.r350.PISDR350;
+import com.bbva.pisd.lib.r601.PISDR601;
 import com.bbva.rbvd.dto.insrncsale.aso.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
@@ -30,6 +32,9 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 
+import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
+import com.bbva.rbvd.dto.insrncsale.events.CreatedInsuranceDTO;
+import com.bbva.rbvd.dto.insrncsale.events.StatusDTO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
@@ -95,6 +100,7 @@ public class RBVDR211Test {
 	private MapperHelper mapperHelper;
 	private PISDR350 pisdr350;
 	private PISDR401 pisdr401;
+	private PISDR601 pisdR601;
 
 	private PolicyDTO requestBody;
 
@@ -130,6 +136,7 @@ public class RBVDR211Test {
 		mapperHelper = mock(MapperHelper.class);
 		pisdr401 = mock(PISDR401.class);
 		pisdr350 = mock(PISDR350.class);
+		pisdR601 = mock(PISDR601.class);
 
 		rbvdr211.setApplicationConfigurationService(applicationConfigurationService);
 		rbvdr211.setRbvdR201(rbvdr201);
@@ -138,6 +145,7 @@ public class RBVDR211Test {
 		rbvdr211.setMapperHelper(mapperHelper);
 		rbvdr211.setPisdR350(pisdr350);
 		rbvdr211.setPisdR401(pisdr401);
+		rbvdr211.setPisdR601(pisdR601);
 
 		requestBody = mockData.getCreateInsuranceRequestBody();
 		requestBody.setSaleChannelId("XX");
@@ -250,6 +258,16 @@ public class RBVDR211Test {
 		when(pisdr401.executeGetProductById("PISD.SELECT_PRODUCT_BY_PRODUCT_TYPE",
 				singletonMap(RBVDProperties.FIELD_INSURANCE_PRODUCT_TYPE.getValue(),requestBody.getProductId())))
 				.thenReturn(responseQueryGetProductById);
+
+		CreatedInsrcEventDTO createdInsrcEventDTO = new CreatedInsrcEventDTO();
+		createdInsrcEventDTO.setCreatedInsurance(new CreatedInsuranceDTO());
+		createdInsrcEventDTO.getCreatedInsurance().setStatus(new StatusDTO());
+		when(mapperHelper.buildCreatedInsuranceEventObject(anyObject())).thenReturn(createdInsrcEventDTO);
+
+		QuotationEntity quotationEntity = new QuotationEntity();
+		quotationEntity.setRfqInternalId("R05658");
+		quotationEntity.setPayrollId("P05658");
+		when(pisdR601.executeFindQuotationByReferenceAndPayrollId(anyString())).thenReturn(quotationEntity);
 
 		/* P030557 */
 
