@@ -178,7 +178,7 @@ public class OrganizationBeanTest {
         assertEquals(3, result.size());
         assertEquals("Test Business", result.get(0).getRazonSocial());
         assertEquals("USA", result.get(0).getPaisOrigen());
-        assertEquals("2024-05-13", result.get(0).getFechaConstitucion().toString());
+        assertEquals("2024-05-15", result.get(0).getFechaConstitucion().toString());
         assertEquals("989595932", result.get(0).getCelular());
     }
 

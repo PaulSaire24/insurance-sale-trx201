@@ -162,7 +162,7 @@ public class ICR2Bean {
         }
 
         format.setFECPAG(FunctionsUtils.generateCorrectDateFormat(installmentPlan.getStartDate()));
-        format.setNUMCUO(String.valueOf(installmentPlan.getTotalNumberInstallments()));
+        format.setNUMCUO(installmentPlan.getTotalNumberInstallments());
         mapInInstallmentPeriod(format, installmentPlan.getPeriod());
         mapInInstallmentPaymentAmount(format, installmentPlan.getPaymentAmount());
     }
@@ -172,7 +172,7 @@ public class ICR2Bean {
             return;
         }
 
-        format.setMTOCUO(String.valueOf(paymentAmount.getAmount()));
+        format.setMTOCUO(BigDecimal.valueOf(paymentAmount.getAmount()));
         format.setDIVCUO(paymentAmount.getCurrency());
     }
 
@@ -220,7 +220,7 @@ public class ICR2Bean {
             return;
         }
 
-        format.setSUMASE(String.valueOf(insuredAmount.getAmount()));
+        format.setSUMASE(BigDecimal.valueOf(insuredAmount.getAmount()));
         format.setDIVSUM(insuredAmount.getCurrency());
     }
 
@@ -229,7 +229,7 @@ public class ICR2Bean {
             return;
         }
 
-        format.setPRITOT(String.valueOf(totalAmount.getAmount()));
+        format.setPRITOT(BigDecimal.valueOf(totalAmount.getAmount()));
         format.setDIVPRI(totalAmount.getCurrency());
     }
 
