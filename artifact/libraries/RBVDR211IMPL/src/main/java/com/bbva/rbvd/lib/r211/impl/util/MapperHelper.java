@@ -1343,10 +1343,6 @@ public class MapperHelper {
         CreatedInsuranceDTO createdInsurance = new CreatedInsuranceDTO();
 
         createdInsurance.setQuotationId(policy.getQuotationId());
-
-        Optional<RelatedContractDTO> relatedContractDTO = policy.getRelatedContracts().stream().filter(contract -> FIELD_INTERNAL_CONTRACT.equals( contract.getContractDetails().getContractType())).findFirst();
-        createdInsurance.setContractId(relatedContractDTO.isPresent() ? relatedContractDTO.get().getContractDetails().getContractId() : null);
-
         Calendar operationDate = Calendar.getInstance();
         operationDate.setTime(policy.getOperationDate());
 
@@ -1425,6 +1421,7 @@ public class MapperHelper {
         RelatedContractDTO relatedContract = new RelatedContractDTO();
         relatedContract.setContractId(policy.getPaymentMethod().getRelatedContracts().get(0).getContractId());
         relatedContract.setNumber(policy.getPaymentMethod().getRelatedContracts().get(0).getNumber());
+        createdInsurance.setContractId(relatedContract.getContractId());
 
         paymentMethod.setRelatedContracts(singletonList(relatedContract));
 

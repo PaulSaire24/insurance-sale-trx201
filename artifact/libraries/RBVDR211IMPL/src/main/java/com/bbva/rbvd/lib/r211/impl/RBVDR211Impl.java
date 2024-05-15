@@ -39,6 +39,7 @@ import com.bbva.rbvd.dto.insrncsale.dao.RelatedContractDAO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 
+import com.bbva.rbvd.dto.insrncsale.events.StatusDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
@@ -505,8 +506,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			}
 
 			//llamada a emision
-			rimacResponse = rbvdR201.executePrePolicyEmissionService(requestEmisionLife,emissionDao.getInsuranceCompanyQuotaId(),requestBody.getTraceId(),requestBody.getProductId());
-
+			if(!applicationConfigurationService.getProperty(ConstantsUtil.PRODUCT_CODES_NOT_EMIT).contains(requestBody.getProductId())) {
+				rimacResponse = rbvdR201.executePrePolicyEmissionService(requestEmisionLife, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
+			}
 			LOGGER.info("**** RBVDR211Impl - executePrePolicyEmissionService | rimacResponse => {} ****",rimacResponse);
 
 			if(nonNull(rimacResponse)) {
@@ -539,9 +541,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(responseBody);
 
 			QuotationEntity quotationEntity = this.pisdR601.executeFindQuotationByReferenceAndPayrollId(requestBody.getQuotationId());
+			LOGGER.info("***** RBVDR211Impl - executeFindQuotationByReferenceAndPayrollId: {} *****", quotationEntity);
+
 			String status = isNull(quotationEntity.getRfqInternalId())  ? "CONTRACTED" : "PAID";
+			createdInsrcEventDTO.getCreatedInsurance().setStatus(new StatusDTO());
 			createdInsrcEventDTO.getCreatedInsurance().getStatus().setId(status);
 			createdInsrcEventDTO.getCreatedInsurance().getStatus().setName(status);
+			LOGGER.info("***** RBVDR211Impl - createdInsrcEventDTO: {} *****", createdInsrcEventDTO);
+
 
 			Integer httpStatusCode = this.rbvdR201.executePutEventUpsilonService(createdInsrcEventDTO);
 

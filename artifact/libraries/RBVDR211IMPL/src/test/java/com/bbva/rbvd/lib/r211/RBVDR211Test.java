@@ -194,6 +194,7 @@ public class RBVDR211Test {
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.841.PC", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.range.payment.amount.insurance", "5")).thenReturn("5");
 		when(this.applicationConfigurationService.getProperty("product.codes.without.third.party.validation")).thenReturn("841");
+		when(this.applicationConfigurationService.getProperty("product.codes.not.emit")).thenReturn("842");
 		asoResponse = mockData.getEmisionASOResponse();
 		rimacResponse = mockData.getEmisionRimacResponse();
 		EmisionBO emision = new EmisionBO();
@@ -209,7 +210,6 @@ public class RBVDR211Test {
 		generalEmisionRequest.setPayload(payload);
 		CreatedInsrcEventDTO createdInsrcEventDTO = new CreatedInsrcEventDTO();
 		createdInsrcEventDTO.setCreatedInsurance(new CreatedInsuranceDTO());
-		createdInsrcEventDTO.getCreatedInsurance().setStatus(new StatusDTO());
 		when(mapperHelper.buildCreatedInsuranceEventObject(anyObject())).thenReturn(createdInsrcEventDTO);
 		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(),anyMap(), anyObject())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.generateRimacRequestLife(anyString(),anyString(),anyString(),anyString(),anyString(),anyString(),anyString(), anyObject(), anyString())).thenReturn(generalEmisionRequest);
