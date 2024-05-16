@@ -1,6 +1,7 @@
 package com.bbva.rbvd.lib.r201.util;
 
 import com.bbva.rbvd.dto.cicsconnection.utils.HostAdvice;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 
@@ -28,9 +29,11 @@ public class FunctionsUtils {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
+
     public static LocalDate convertStringToLocalDate(String dateString) {
         org.joda.time.format.DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
-        return formatter.parseLocalDate(dateString);
+        DateTime dateTime = formatter.parseDateTime(dateString);
+        return dateTime.toLocalDate();
     }
 
     public static Boolean convertFromStringToBoolean(final String value) {

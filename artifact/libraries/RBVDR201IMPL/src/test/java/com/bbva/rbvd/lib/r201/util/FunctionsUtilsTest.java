@@ -79,4 +79,12 @@ public class FunctionsUtilsTest {
         assertFalse(result);
     }
 
+    @Test
+    public void convertStringToLocalDate() {
+        LocalDate result = FunctionsUtils.convertStringToLocalDate("2024-05-16");
+        String day = (result.getDayOfMonth() < 10) ? "0" + result.getDayOfMonth() : String.valueOf(result.getDayOfMonth());
+        String month = (result.getMonthOfYear() < 10) ? "0" + result.getMonthOfYear() : String.valueOf(result.getMonthOfYear());
+        int year = result.getYear();
+        assertEquals("2024-05-16", year + "-" + month + "-" + day);
+    }
 }
