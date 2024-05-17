@@ -33,7 +33,7 @@ public class InsuranceContractBean {
         contractDao.setInsurancePromoterId(Optional.ofNullable(apxRequest.getPromoter()).map(PromoterDTO::getId).orElse(null));
         contractDao.setOriginalPaymentSubchannelId(Optional.ofNullable(apxRequest.getSaleSupplier()).map(SaleSupplierDTO::getId).orElse(null));
         contractDao.setContractManagerBranchId(apxRequest.getBank().getBranch().getId());
-        contractDao.setContractInceptionDate(FunctionsUtils.generateCorrectDateFormat(LocalDate.now()));
+        contractDao.setContractInceptionDate(FunctionsUtils.generateCorrectDateFormat(new LocalDate()));
         contractDao.setEndLinkageDate(FunctionsUtils.generateCorrectDateFormat(FunctionsUtils.convertDateToLocalDate(apxRequest.getInstallmentPlan().getMaturityDate())));
         contractDao.setInsuranceContractStartDate(FunctionsUtils.generateCorrectDateFormat(FunctionsUtils.convertDateToLocalDate(apxRequest.getValidityPeriod().getStartDate())));
         contractDao.setValidityMonthsNumber(emissionDao.getContractDurationType().equals(Period.ANNUAL) ? emissionDao.getContractDurationNumber().multiply(BigDecimal.valueOf(12)) : emissionDao.getContractDurationNumber());
@@ -44,7 +44,7 @@ public class InsuranceContractBean {
         contractDao.setPremiumAmount(BigDecimal.valueOf(apxRequest.getFirstInstallment().getPaymentAmount().getAmount()));
         contractDao.setSettlePendingPremiumAmount(BigDecimal.valueOf(apxRequest.getTotalAmount().getAmount()));
         contractDao.setCurrencyId(apxRequest.getInstallmentPlan().getPaymentAmount().getCurrency());
-        contractDao.setInstallmentPeriodFinalDate(FunctionsUtils.generateCorrectDateFormat(LocalDate.now()));
+        contractDao.setInstallmentPeriodFinalDate(FunctionsUtils.generateCorrectDateFormat(new LocalDate()));
         contractDao.setInsuredAmount(BigDecimal.valueOf(apxRequest.getInsuredAmount().getAmount()));
         contractDao.setCtrctDisputeStatusType(apxRequest.getSaleChannelId());
         contractDao.setEndorsementPolicyIndType((isEndorsement) ? PISDConstants.LETTER_SI : PISDConstants.LETTER_NO );
