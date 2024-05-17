@@ -50,31 +50,54 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
     private CryptoServiceInternal cryptoServiceInternal;
     private CustomerRBVD066InternalService customerRBVD066InternalService;
 
+    /**
+     * This method is used to transform a list of participants from a policy into a list of IsrcContractParticipantDAO objects.
+     *
+     * @param requestBody The policy data transfer object (DTO) that contains the participants to be transformed.
+     * @param rolesFromDB A list of roles from the database. Each role is represented as a map with string keys and object values.
+     * @param id The id to be used when creating the IsrcContractParticipantDAO objects.
+     * @param applicationConfigurationService The service used for application configuration.
+     *
+     * @return A list of IsrcContractParticipantDAO objects created from the participants in the policy DTO.
+     */
     public static List<IsrcContractParticipantDAO> toIsrcContractParticipantDAOList(PolicyDTO requestBody, List<Map<String, Object>> rolesFromDB, String id, ApplicationConfigurationService applicationConfigurationService){
+        // Get the first participant from the policy DTO
         ParticipantDTO participant = requestBody.getParticipants().get(0);
+
+        // Filter the participants to get the legal representative
         ParticipantDTO legalRepre = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),
                 ConstantsUtil.Participant.LEGAL_REPRESENTATIVE);
+
+        // Filter the participants to get the beneficiaries
         List<ParticipantDTO> beneficiary = ValidationUtil.filterBenficiaryType(requestBody.getParticipants(),
                 ConstantsUtil.Participant.BENEFICIARY);
+
+        // Filter the participants to get the insured
         ParticipantDTO insured = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),
                 ConstantsUtil.Participant.INSURED);
 
+        // Create a list to store the roles of the participants
         List<BigDecimal> participantRoles = new ArrayList<>();
 
+        // Add the roles from the database to the list
         rolesFromDB.forEach(rol -> participantRoles.add((BigDecimal) rol.get(RBVDProperties.FIELD_PARTICIPANT_ROLE_ID.getValue())));
 
+        // If there is a legal representative, remove their role from the list
         if(legalRepre != null){
             participantRoles.removeIf(rol -> rol.compareTo(new BigDecimal(ConstantsUtil.Number.TRES)) == 0);
         }
 
+        // If there is an insured, remove their role from the list
         if(insured != null){
             participantRoles.removeIf(rol -> rol.compareTo(new BigDecimal(ConstantsUtil.Number.DOS)) == 0);
         }
 
+        // Create a list of IsrcContractParticipantDAO objects from the participant roles
         List<IsrcContractParticipantDAO> listParticipants = participantRoles.stream()
                 .map(rol -> InsrcContractParticipantBean.createParticipantDao(id,rol,participant,requestBody,applicationConfigurationService))
                 .collect(Collectors.toList());
 
+        // If there is a legal representative, add them to the list
         if(legalRepre != null){
             listParticipants.add(
                     InsrcContractParticipantBean.createParticipantDao(id,
@@ -82,12 +105,14 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
                             legalRepre,requestBody,applicationConfigurationService));
         }
 
+        // If there is an insured, add them to the list
         if(insured != null){
             listParticipants.add(
                     InsrcContractParticipantBean.createParticipantDao(id,new BigDecimal(ConstantsUtil.Number.DOS),
                             insured,requestBody,applicationConfigurationService));
         }
 
+        // If there are beneficiaries, add them to the list
         if(beneficiary != null){
             BigDecimal partyOrderNumber = BigDecimal.valueOf(1L);
             for(ParticipantDTO benef : beneficiary){
@@ -97,6 +122,7 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
             }
         }
 
+        // Return the list of IsrcContractParticipantDAO objects
         return listParticipants;
     }
 

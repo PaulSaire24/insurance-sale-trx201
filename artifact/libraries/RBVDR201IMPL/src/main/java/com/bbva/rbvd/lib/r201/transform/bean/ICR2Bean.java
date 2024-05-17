@@ -14,13 +14,11 @@ import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.lib.r201.util.FunctionsUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.ASO_VALUES.INTERNAL_CONTRACT_OUT;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.ASO_VALUES.EXTERNAL_CONTRACT_OUT;
@@ -303,7 +301,7 @@ public class ICR2Bean {
     }
 
     private static com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO mapOutBank(final String id, final String branchId) {
-        if (id == null && branchId == null) {
+        if (StringUtils.isEmpty(id) && StringUtils.isEmpty(branchId)) {
             return null;
         }
 
@@ -324,7 +322,7 @@ public class ICR2Bean {
     }
 
     private static StatusASO mapOutStatus(final String id, final String description) {
-        if (id == null && description == null) {
+        if (StringUtils.isEmpty(id) && StringUtils.isEmpty(description)) {
             return null;
         }
 
@@ -335,7 +333,7 @@ public class ICR2Bean {
     }
 
     private static InsuranceCompanyASO mapOutInsuranceCompany(final String id, final String name) {
-        if (id == null && name == null) {
+        if (StringUtils.isEmpty(id) && StringUtils.isEmpty(name)) {
             return null;
         }
 
@@ -346,7 +344,7 @@ public class ICR2Bean {
     }
 
     private static PromoterASO mapOutPromoter(final String id) {
-        if (id == null) {
+        if (StringUtils.isEmpty(id)) {
             return null;
         }
 
@@ -356,7 +354,7 @@ public class ICR2Bean {
     }
 
     private static SalesSupplierASO mapOutSalesSupplier(final String id) {
-        if (id == null) {
+        if (StringUtils.isEmpty(id)) {
             return null;
         }
 
@@ -366,7 +364,7 @@ public class ICR2Bean {
     }
 
     private static BusinessAgentASO mapOutBusinessAgent(final String id) {
-        if (id == null) {
+        if (StringUtils.isEmpty(id )) {
             return null;
         }
 
@@ -376,7 +374,7 @@ public class ICR2Bean {
     }
 
     private static void mapOutParticipants(final ICMRYS2 formato, DataASO insurance) {
-        if (formato.getCODRSP() == null && (formato.getTIPDO1() == null || formato.getNUMRSP() == null)) {
+        if (formato.getCODRSP() == null && (StringUtils.isEmpty(formato.getTIPDO1()) || StringUtils.isEmpty(formato.getNUMRSP()))) {
             return;
         }
         if (CollectionUtils.isEmpty(insurance.getParticipants())) {
@@ -396,7 +394,7 @@ public class ICR2Bean {
     }
 
     private static IdentityDocumentASO mapOutParticipantIdentityDocument(final String documentTypeId, final String number) {
-        if (documentTypeId == null && number == null) {
+        if (StringUtils.isEmpty(documentTypeId) && StringUtils.isEmpty(number)) {
             return null;
         }
 
@@ -407,7 +405,7 @@ public class ICR2Bean {
     }
 
     private static DocumentTypeASO mapOutParticipantDocumentType(final String documentTypeId) {
-        if (documentTypeId == null) {
+        if (StringUtils.isEmpty(documentTypeId)) {
             return null;
         }
 
@@ -417,37 +415,37 @@ public class ICR2Bean {
     }
 
     public static FirstInstallmentASO mapOutFirstInstallment(final ICMRYS2 formato) {
-        if (formato.getFECPAG() == null && formato.getCOBRO() == null &&
-                formato.getMTOCUO() == null && formato.getDIVCUO() == null &&
-                formato.getFECTPC() == null && formato.getTIPCAM() == null &&
-                formato.getCVCAMB() == null && formato.getIDNOPE() == null &&
-                formato.getNUMMOV() == null && formato.getFECOPE() == null &&
-                formato.getDIVTCM2() == null && formato.getMTOCAM() == null &&
-                formato.getFECCON()== null) {
+        if (StringUtils.isEmpty(formato.getFECPAG())  && formato.getCOBRO() == null &&
+                formato.getMTOCUO() == null && StringUtils.isEmpty(formato.getDIVCUO()) &&
+                StringUtils.isEmpty(formato.getFECTPC()) && formato.getTIPCAM() == null &&
+                StringUtils.isEmpty(formato.getCVCAMB()) && StringUtils.isEmpty(formato.getIDNOPE()) &&
+                StringUtils.isEmpty(formato.getNUMMOV()) && StringUtils.isEmpty(formato.getFECOPE()) &&
+                StringUtils.isEmpty(formato.getDIVTCM2()) && formato.getMTOCAM() == null &&
+                StringUtils.isEmpty(formato.getFECCON())) {
             return null;
         }
 
         FirstInstallmentASO result = new FirstInstallmentASO();
-        result.setFirstPaymentDate(FunctionsUtils.convertStringToLocalDate(formato.getFECPAG()));
+        result.setFirstPaymentDate(StringUtils.isEmpty(formato.getFECPAG())  ? null :  FunctionsUtils.convertStringToLocalDate(formato.getFECPAG()));
         result.setIsPaymentRequired(FunctionsUtils.convertFromStringToBoolean(formato.getCOBRO()));
         result.setPaymentAmount(mapOutPaymenAmount(formato.getMTOCUO(), formato.getDIVCUO()));
         result.setExchangeRate(mapOutExchangeRate(formato.getFECTPC(), formato.getDIVCUO(), formato.getDIVTCM2(), formato.getMTOCAM(), formato.getTIPCAM(), formato.getCVCAMB()));
         result.setOperationNumber(formato.getIDNOPE());
         result.setTransactionNumber(formato.getNUMMOV());
-        result.setOperationDate(FunctionsUtils.convertStringToDate(formato.getFECOPE()));
-        result.setAccountingDate(formato.getFECCON() ==null ? null : FunctionsUtils.convertStringToLocalDate(formato.getFECCON()));
+        result.setOperationDate(StringUtils.isEmpty(formato.getFECOPE()) ? null : FunctionsUtils.convertStringToDate(formato.getFECOPE()));
+        result.setAccountingDate(StringUtils.isEmpty(formato.getFECCON()) ? null : FunctionsUtils.convertStringToLocalDate(formato.getFECCON()));
         return result;
     }
 
 
     public static ExchangeRateASO mapOutExchangeRate(final String date, final String baseCurrency, final String targetCurrency, final BigDecimal value, final BigDecimal ratio, final String priceType) {
-        if (date == null && baseCurrency == null && targetCurrency == null &&
-                value == null && ratio == null && priceType == null) {
+        if (StringUtils.isEmpty(date) && StringUtils.isEmpty(baseCurrency) && StringUtils.isEmpty(targetCurrency) &&
+                value == null && ratio == null && StringUtils.isEmpty(priceType)) {
             return null;
         }
 
         ExchangeRateASO result = new ExchangeRateASO();
-        result.setDate(FunctionsUtils.convertStringToLocalDate(date));
+        result.setDate(StringUtils.isEmpty(date) ? null : FunctionsUtils.convertStringToLocalDate(date));
         result.setBaseCurrency(baseCurrency);
         result.setTargetCurrency(targetCurrency);
         result.setDetail(mapOutDetail(value, ratio, priceType));
@@ -488,14 +486,14 @@ public class ICR2Bean {
     }
 
     public static InstallmentPlanASO mapOutInstallmentPlan(final ICMRYS2 formato) {
-        if (formato.getFECPAG() == null && formato.getNUMCUO() == null && formato.getTFOPAG() == null && formato.getDSCTPA() == null &&
-                formato.getMTOCUO() == null &&  formato.getFECTPC() == null && formato.getDIVCUO() == null &&
-                formato.getDIVTCM2() == null && formato.getMTOCAM() == null && formato.getTIPCAM() == null && formato.getCVCAMB() == null) {
+        if (StringUtils.isEmpty(formato.getFECPAG())  &&  formato.getNUMCUO() == null && StringUtils.isEmpty(formato.getTFOPAG()) && StringUtils.isEmpty(formato.getDSCTPA()) &&
+                formato.getMTOCUO() == null &&  StringUtils.isEmpty(formato.getFECTPC()) && StringUtils.isEmpty(formato.getDIVCUO()) &&
+                StringUtils.isEmpty(formato.getDIVTCM2()) && formato.getMTOCAM() == null && formato.getTIPCAM() == null && StringUtils.isEmpty(formato.getCVCAMB())) {
             return null;
         }
 
         InstallmentPlanASO result = new InstallmentPlanASO();
-        result.setStartDate(FunctionsUtils.convertStringToLocalDate(formato.getFECPAG()));
+        result.setStartDate(StringUtils.isEmpty(formato.getFECPAG()) ? null :  FunctionsUtils.convertStringToLocalDate(formato.getFECPAG()));
         result.setTotalNumberInstallments(Optional.ofNullable(formato.getNUMCUO()).map(Long::valueOf).orElse(null));
         result.setPeriod(mapOutPeriod(formato.getTFOPAG(), formato.getDSCTPA()));
         result.setPaymentAmount(mapOutPaymentAmount(formato.getMTOCUO(), formato.getDIVCUO()));
@@ -505,7 +503,7 @@ public class ICR2Bean {
 
 
     public static PaymentAmountASO mapOutPaymentAmount(final BigDecimal paymentAmountAmount, final String paymentAmountCurrency) {
-        if (paymentAmountAmount == null && paymentAmountCurrency == null) {
+        if (paymentAmountAmount == null && StringUtils.isEmpty(paymentAmountCurrency)) {
             return null;
         }
 
@@ -527,7 +525,7 @@ public class ICR2Bean {
     }
 
     public static List<RelatedContractASO> mapOutRelatedContracts(final String contractType, final String contractNumberId) {
-        if (contractType == null && contractNumberId == null) {
+        if (StringUtils.isEmpty(contractType) && StringUtils.isEmpty(contractNumberId)) {
             return null;
         }
 
@@ -551,7 +549,7 @@ public class ICR2Bean {
     }
 
     public static HolderASO mapOutHolder(final String id, final String documentType, final String identityDocumentNumber) {
-        if (id == null && documentType == null && identityDocumentNumber == null) {
+        if (StringUtils.isEmpty(id) && StringUtils.isEmpty(documentType) && StringUtils.isEmpty(identityDocumentNumber)) {
             return null;
         }
 
@@ -562,7 +560,7 @@ public class ICR2Bean {
     }
 
     public static IdentityDocumentASO mapOutIdentityDocument(final String documentType, final String identityDocumentNumber) {
-        if (documentType == null && identityDocumentNumber == null) {
+        if (StringUtils.isEmpty(documentType) && StringUtils.isEmpty(identityDocumentNumber)) {
             return null;
         }
 
@@ -573,7 +571,7 @@ public class ICR2Bean {
     }
 
     public static DocumentTypeASO mapOutDocumentType(final String documentType) {
-        if (documentType == null) {
+        if (StringUtils.isEmpty(documentType)) {
             return null;
         }
 
@@ -583,7 +581,7 @@ public class ICR2Bean {
     }
 
     public static InsuredAmountASO mapOutInsuredAmount(final BigDecimal amount, final String currency) {
-        if (amount == null && currency == null) {
+        if (amount == null && StringUtils.isEmpty(currency)) {
             return null;
         }
 
@@ -594,7 +592,7 @@ public class ICR2Bean {
     }
 
     public static TotalAmountASO mapOutTotalAmount(final BigDecimal amount, final String currency, final String date, final String baseCurrency, final String targetCurrency, final BigDecimal value, final BigDecimal ratio, final String priceType) {
-        if (amount == null && currency == null) {
+        if (amount == null &&  StringUtils.isEmpty(currency)) {
             return null;
         }
 
@@ -606,19 +604,19 @@ public class ICR2Bean {
     }
 
     public static ValidityPeriodASO mapOutValidityPeriod(final String startDate, final String endDate) {
-        if (startDate == null && endDate == null) {
+        if (StringUtils.isEmpty(startDate)  && StringUtils.isEmpty(endDate)) {
             return null;
         }
 
         ValidityPeriodASO result = new ValidityPeriodASO();
-        result.setStartDate(FunctionsUtils.convertStringToLocalDate(startDate));
-        result.setEndDate(FunctionsUtils.convertStringToLocalDate(endDate));
+        result.setStartDate(StringUtils.isEmpty(startDate) ? null : FunctionsUtils.convertStringToLocalDate(startDate));
+        result.setEndDate(StringUtils.isEmpty(startDate) ? null : FunctionsUtils.convertStringToLocalDate(endDate));
         return result;
     }
 
     public static PaymentMethodASO mapOutPaymentMethod(final String paymentType, final String installmentFrequency, final String relatedContractNumber, final String relatedContractProductId) {
-        if (paymentType == null && installmentFrequency == null &&
-                relatedContractNumber == null && relatedContractProductId == null) {
+        if (StringUtils.isEmpty(paymentType) && StringUtils.isEmpty(installmentFrequency) &&
+                StringUtils.isEmpty(relatedContractNumber) && StringUtils.isEmpty(relatedContractProductId)) {
             return null;
         }
 
@@ -630,7 +628,7 @@ public class ICR2Bean {
     }
 
     public static List<RelatedContractASO> mapOutPaymentMethodRelatedContracts(final String relatedContractNumber, final String relatedContractProductId) {
-        if (relatedContractNumber == null && relatedContractProductId == null) {
+        if (StringUtils.isEmpty( relatedContractNumber)  && StringUtils.isEmpty(relatedContractProductId)) {
             return null;
         }
 
@@ -641,7 +639,7 @@ public class ICR2Bean {
     }
 
     public static RelatedContractProductASO mapOutPaymentMethodRelatedContractsProduct(final String relatedContractProductId) {
-        if (relatedContractProductId == null) {
+        if (StringUtils.isEmpty(relatedContractProductId)) {
             return null;
         }
 
@@ -651,7 +649,7 @@ public class ICR2Bean {
     }
 
     public static ProductPlanASO mapOutProductPlan(final String id, final String description) {
-        if (id == null && description == null) {
+        if (StringUtils.isEmpty(id) && StringUtils.isEmpty(description)) {
             return null;
         }
 
