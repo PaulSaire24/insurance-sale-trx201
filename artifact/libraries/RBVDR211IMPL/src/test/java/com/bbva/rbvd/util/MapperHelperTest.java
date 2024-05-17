@@ -1917,7 +1917,7 @@ public class MapperHelperTest {
         apxRequest.setHeaderOperationDate("20160101");
         apxRequest.setHeaderOperationTime("103051");
 
-        CreatedInsrcEventDTO validation = this.mapperHelper.buildCreatedInsuranceEventObject(apxRequest);
+        CreatedInsrcEventDTO validation = this.mapperHelper.buildCreatedInsuranceEventObject(apxRequest,"01234567891112");
 
         assertNotNull(validation.getCreatedInsurance());
         assertNotNull(validation.getCreatedInsurance().getQuotationId());
@@ -2075,7 +2075,7 @@ public class MapperHelperTest {
         apxRequest.setInspection(null);
         apxRequest.setProductId("840");
 
-        CreatedInsrcEventDTO validation = this.mapperHelper.buildCreatedInsuranceEventObject(apxRequest);
+        CreatedInsrcEventDTO validation = this.mapperHelper.buildCreatedInsuranceEventObject(apxRequest,"01234567891112");
 
         assertNotNull(validation.getCreatedInsurance());
         assertNotNull(validation.getCreatedInsurance().getQuotationId());

@@ -210,7 +210,7 @@ public class RBVDR211Test {
 		generalEmisionRequest.setPayload(payload);
 		CreatedInsrcEventDTO createdInsrcEventDTO = new CreatedInsrcEventDTO();
 		createdInsrcEventDTO.setCreatedInsurance(new CreatedInsuranceDTO());
-		when(mapperHelper.buildCreatedInsuranceEventObject(anyObject())).thenReturn(createdInsrcEventDTO);
+		when(mapperHelper.buildCreatedInsuranceEventObject(anyObject(),anyString())).thenReturn(createdInsrcEventDTO);
 		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(),anyMap(), anyObject())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.generateRimacRequestLife(anyString(),anyString(),anyString(),anyString(),anyString(),anyString(),anyString(), anyObject(), anyString())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.getPersonType(anyObject())).thenReturn(PersonTypeEnum.NATURAL);

@@ -330,7 +330,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** Before Response - rimacResponse => {} *****",rimacResponse);
 			LOGGER.info("***** Before Response - emissionDao => {} *****",emissionDao);
 
-			CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(responseBody);
+			CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(responseBody,asoResponse.getData().getId());
 
 			Integer httpStatusCode = this.rbvdR201.executePutEventUpsilonService(createdInsrcEventDTO);
 
@@ -538,7 +538,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			LOGGER.info("***** Before Response - rimacResponse => {} *****",rimacResponse);
 			LOGGER.info("***** Before Response - emissionDao => {} *****",emissionDao);
 
-			CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(responseBody);
+			CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(responseBody,asoResponse.getData().getId());
 
 			QuotationEntity quotationEntity = this.pisdR601.executeFindQuotationByReferenceAndPayrollId(requestBody.getQuotationId());
 			LOGGER.info("***** RBVDR211Impl - executeFindQuotationByReferenceAndPayrollId: {} *****", quotationEntity);

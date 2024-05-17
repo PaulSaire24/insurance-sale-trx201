@@ -1337,7 +1337,7 @@ public class MapperHelper {
         return totalAmountDTO;
     }
 
-    public CreatedInsrcEventDTO buildCreatedInsuranceEventObject(PolicyDTO policy) {
+    public CreatedInsrcEventDTO buildCreatedInsuranceEventObject(PolicyDTO policy,String contraId) {
         CreatedInsrcEventDTO createdInsuranceEvent = new CreatedInsrcEventDTO();
 
         CreatedInsuranceDTO createdInsurance = new CreatedInsuranceDTO();
@@ -1421,7 +1421,7 @@ public class MapperHelper {
         RelatedContractDTO relatedContract = new RelatedContractDTO();
         relatedContract.setContractId(policy.getPaymentMethod().getRelatedContracts().get(0).getContractId());
         relatedContract.setNumber(policy.getPaymentMethod().getRelatedContracts().get(0).getNumber());
-        createdInsurance.setContractId(relatedContract.getContractId());
+        createdInsurance.setContractId(contraId);
 
         paymentMethod.setRelatedContracts(singletonList(relatedContract));
 
