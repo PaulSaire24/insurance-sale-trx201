@@ -52,19 +52,19 @@ public class BasicProductInsuranceProperties extends Properties{
 
     public String obtainOfficeTelemarketingCode(){
         String telemarketingCode = this.getProperty("telemarketing.code", StringUtils.EMPTY);
-        LOGGER.info(" :: BasicProductInsuranceProperties[ obtainFrequencyTypeByPeriodId :: {} ]",telemarketingCode);
+        LOGGER.info(" :: BasicProductInsuranceProperties[ obtainOfficeTelemarketingCode :: {} ]",telemarketingCode);
         return telemarketingCode;
     }
 
     public List<String> obtainAapSSearchInContactDetail(){
         String aapSDigitalSale = this.getProperty("obtain.aaps.config.contact.details", StringUtils.EMPTY);
-        LOGGER.info(" :: BasicProductInsuranceProperties[ obtainAapSDigitalSale :: {} ]",aapSDigitalSale);
+        LOGGER.info(" :: BasicProductInsuranceProperties[ obtainAapSSearchInContactDetail :: {} ]",aapSDigitalSale);
         return Arrays.asList(aapSDigitalSale.split(";"));
     }
 
     public String obtainDefaultPromoterCodeSaleDigital(){
         String aapDigitalSale = this.getProperty("agent.and.promoter.code", StringUtils.EMPTY);
-        LOGGER.info(" :: BasicProductInsuranceProperties[ obtainAapSDigitalSale :: {} ]",aapDigitalSale);
+        LOGGER.info(" :: BasicProductInsuranceProperties[ obtainDefaultPromoterCodeSaleDigital :: {} ]",aapDigitalSale);
         return aapDigitalSale;
     }
 
@@ -76,7 +76,7 @@ public class BasicProductInsuranceProperties extends Properties{
 
     public List<String> obtainProductsNotGenerateMonthlyReceipts(){
         String productsNotGenerateFirstReceipts = this.getProperty("products.modalities.only.first.receipt", StringUtils.EMPTY);
-        LOGGER.info(" :: BasicProductInsuranceProperties[ productsNotGenerateFirstReceipts :: {} ]",productsNotGenerateFirstReceipts);
+        LOGGER.info(" :: BasicProductInsuranceProperties[ obtainProductsNotGenerateMonthlyReceipts :: {} ]",productsNotGenerateFirstReceipts);
         return Arrays.asList(productsNotGenerateFirstReceipts.split(","));
     }
 
