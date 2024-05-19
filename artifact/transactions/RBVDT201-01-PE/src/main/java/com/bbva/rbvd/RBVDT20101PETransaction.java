@@ -143,6 +143,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		requestBody.setTraceId((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.REQUESTID));
 		requestBody.setSaleChannelId((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.CHANNELCODE));
 		requestBody.setCreationUser((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE));
+		requestBody.setUserAudit((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE));
 		requestBody.setAap((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.AAP));
 		requestBody.setIpv4((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.IPADDRESS));
 		requestBody.setEnvironmentCode((String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.ENVIRONCODE));
