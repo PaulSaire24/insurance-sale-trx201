@@ -190,7 +190,7 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
     }
 
     public void validateCustomerList(CustomerListASO customerList) {
-        if(CollectionUtils.isEmpty(customerList.getData())){
+        if(Objects.isNull(customerList) || CollectionUtils.isEmpty(customerList.getData())){
             this.addAdviceWithDescription(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getAdviceCode(),PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getMessage());
             throw PISDValidation.build(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE);
         }
