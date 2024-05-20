@@ -2,11 +2,14 @@ package com.bbva.rbvd.mock;
 
 
 import com.bbva.rbvd.dto.cicsconnection.icr2.ICMRYS2;
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.*;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
 
 
 public final class EntityMock {
@@ -39,6 +42,8 @@ public final class EntityMock {
         // Crear método de pago
         PaymentMethodASO paymentMethod = new PaymentMethodASO();
         paymentMethod.setPaymentType("CREDIT_CARD"); // Tipo de pago de ejemplo
+        paymentMethod.setRelatedContracts(Collections.singletonList(new RelatedContractASO()));
+        paymentMethod.getRelatedContracts().get(0).setNumber("01230192830129830128");// Contratos relacionados
 
         // Crear primera cuota
         FirstInstallmentASO firstInstallment = new FirstInstallmentASO();

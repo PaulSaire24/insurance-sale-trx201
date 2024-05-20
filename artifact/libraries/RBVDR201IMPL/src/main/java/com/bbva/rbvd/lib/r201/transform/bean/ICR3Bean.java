@@ -12,6 +12,7 @@ public class ICR3Bean {
         ICR3Request icr3Request = new ICR3Request();
         icr3Request.setNUMCON(policyASO.getData().getId());
         icr3Request.setMTDPGO(policyASO.getData().getPaymentMethod().getPaymentType());
+        icr3Request.setNROCTA(policyASO.getData().getPaymentMethod().getRelatedContracts().get(0).getNumber());
         icr3Request.setCOBRO(policyASO.getData().getFirstInstallment().getIsPaymentRequired() ? PISDConstants.LETTER_SI : PISDConstants.LETTER_NO);
         icr3Request.setOFICON(policyASO.getData().getBank().getBranch().getId());
         icr3Request.setUSUARIO(userCode);

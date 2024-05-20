@@ -47,9 +47,11 @@ public class ICR3BeanTest {
     @Test
     public void mapIn_shouldReturnICR3Request_withCorrectPaymentType() {
         String paymentType = "testPaymentType";
+        String nrocta = "01230192830129830128";
         policyASO.getData().getPaymentMethod().setPaymentType(paymentType);
 
         ICR3Request result = ICR3Bean.mapIn(policyASO, userCode);
         assertEquals(paymentType, result.getMTDPGO());
+        assertEquals(nrocta, result.getNROCTA());
     }
 }
