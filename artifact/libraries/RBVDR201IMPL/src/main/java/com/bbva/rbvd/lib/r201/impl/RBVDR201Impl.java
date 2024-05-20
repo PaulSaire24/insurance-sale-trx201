@@ -115,7 +115,10 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	@Override
 	public EmisionBO executePrePolicyEmissionService(EmisionBO requestBody, String quotationId, String traceId, String productId) {
-		LOGGER.info("***** RBVDR201Impl - executePrePolicyEmissionService START *****");
+		LOGGER.info(" :: executePrePolicyEmissionService :: [ START ]");
+		LOGGER.info(" :: executePrePolicyEmissionService :: [ EmisionBO :: {} ]",requestBody);
+		LOGGER.info(" :: executePrePolicyEmissionService :: [ QuotationId :: {} , TraceId :: {}  ]",quotationId,traceId);
+		LOGGER.info(" :: executePrePolicyEmissionService :: [ ProductId :: {} ]",productId);
 		return this.pisdR352.executePrePolicyEmissionService(requestBody, quotationId, productId, traceId);
 	}
 
@@ -199,7 +202,10 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 
 	@Override
 	public AgregarTerceroBO executeAddParticipantsService(AgregarTerceroBO requestBody, String quotationId, String productId, String traceId) {
-		LOGGER.info("***** RBVDR201Impl - executeAddParticipantsService START *****");
+		LOGGER.info(" :: executePrePolicyEmissionService :: [ START ]");
+		LOGGER.info(" :: executePrePolicyEmissionService :: [ EmisionBO :: {} ]",requestBody);
+		LOGGER.info(" :: executePrePolicyEmissionService :: [ QuotationId :: {} , TraceId :: {}  ]",quotationId,traceId);
+		LOGGER.info(" :: executePrePolicyEmissionService :: [ ProductId :: {} ]",productId);
 		return this.pisdR352.executeAddParticipantsService(requestBody, quotationId, productId, traceId);
 	}
 

@@ -308,7 +308,7 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
                 throw buildValidation(ERROR_RESPONSE_SERVICE_ICR2);
             }
         }
-
+        this.setResponseLibrary(this.getResponseLibrary());
     }
 
     public void setCrossOperationsBusinessInsuranceContractBank(CrossOperationsBusinessInsuranceContractBank crossOperationsBusinessInsuranceContractBank) {
