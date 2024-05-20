@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl.pattern.template.crossoperations;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
@@ -22,9 +23,12 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalColumn;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
+import com.bbva.rbvd.lib.r211.impl.pattern.template.BasicProductInsuranceBankNotLifeImpl;
 import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
+import com.bbva.rbvd.lib.r211.impl.service.IInsrncQuotationModDAO;
 import com.bbva.rbvd.lib.r211.impl.service.api.CryptoServiceInternal;
 import com.bbva.rbvd.lib.r211.impl.service.api.CustomerRBVD066InternalService;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsrcContractParticipantBean;
@@ -32,6 +36,8 @@ import com.bbva.rbvd.lib.r211.impl.transfor.bean.PrePolicyTransfor;
 import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
 import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
@@ -41,14 +47,99 @@ import java.util.stream.Collectors;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.Endorsement;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.*;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.ERROR_EMPTY_RESULT_QUOTATION_DATA;
-import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.buildValidation;
+import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.*;
+import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.isValidateRange;
 import static java.util.Objects.isNull;
+import static java.util.Optional.ofNullable;
 
 public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrary {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CrossOperationsBusinessInsuranceContractBank.class);
 
     private BasicProductInsuranceProperties basicProductInsuranceProperties;
     private CryptoServiceInternal cryptoServiceInternal;
     private CustomerRBVD066InternalService customerRBVD066InternalService;
+
+    /**
+     * This method is used to validate the quotation amount of a policy.
+     * It checks if the validation is enabled, and if so, it retrieves the quotation data and performs several validations.
+     * These validations include checking the frequency type, payment currency ID, payment amount, and total amount.
+     * It also validates the first installment and installment plan of the policy.
+     * If any of these validations fail, it throws a validation exception.
+     *
+     * @param enableValidationQuotationAmount A boolean indicating whether the validation of the quotation amount is enabled.
+     * @param insrncQuotationModDAO The DAO used to retrieve the quotation data.
+     * @param requestBody The policy data transfer object (DTO) that contains the data to be validated.
+     * @throws BusinessException If any of the validations fail.
+     */
+    public void validateQuotationAmount(boolean enableValidationQuotationAmount, IInsrncQuotationModDAO insrncQuotationModDAO, PolicyDTO requestBody) {
+        if(enableValidationQuotationAmount){
+            Map<String, Object> quotationData = validateMap(insrncQuotationModDAO.findQuotationByQuotationId(requestBody.getQuotationId())).orElseThrow(() -> buildValidation(ERROR_EMPTY_RESULT_QUOTATION_DATA));
+            String frequencyType = ofNullable(quotationData.get(RBVDInternalColumn.PaymentPeriod.FIELD_POLICY_PAYMENT_FREQUENCY_TYPE)).map(Object::toString).orElseThrow(() -> {
+                String message = String.format(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE.getMessage(), requestBody.getQuotationId());
+                this.addAdviceWithDescription(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE.getAdviceCode(),message);
+                return buildValidation(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE, message);
+            });
+            String paymentCurrencyId = ofNullable(quotationData.get(RBVDInternalColumn.Quotation.FIELD_PREMIUM_CURRENCY_ID)).map(Object::toString).orElseThrow(() -> {
+                String message = String.format(ERROR_NOT_VALUE_QUOTATION.getMessage(),RBVDInternalColumn.Quotation.FIELD_PREMIUM_CURRENCY_ID, requestBody.getQuotationId());
+                this.addAdviceWithDescription(ERROR_NOT_VALUE_QUOTATION.getAdviceCode(),message);
+                return buildValidation(ERROR_NOT_VALUE_QUOTATION_CURRENCY_ID,message);
+            });
+            int paymentAmount = ofNullable(quotationData.get(RBVDInternalColumn.Quotation.FIELD_PREMIUM_AMOUNT)).map(premiumAmount -> new BigDecimal(premiumAmount.toString()).intValue()).orElseThrow(() -> {
+                String message = String.format(ERROR_NOT_VALUE_QUOTATION.getMessage(),RBVDInternalColumn.Quotation.FIELD_PREMIUM_AMOUNT, requestBody.getQuotationId());
+                this.addAdviceWithDescription(ERROR_NOT_VALUE_QUOTATION.getAdviceCode(),message);
+                return buildValidation(ERROR_NOT_VALUE_PREMIUM_AMOUNT,message);
+            });
+
+            String dataToConditionsLog = String.format(" FrequencyType :: %s,PaymentAmount :: %s, PaymentCurrency :: %s", frequencyType, paymentAmount, paymentCurrencyId);
+            LOGGER.info(" :: executeValidateConditions :: [ {} ]",dataToConditionsLog );
+            int rangeVariationPremiumAmount = this.basicProductInsuranceProperties.obtainRangePaymentAmount();
+            Integer amountQuotationMin   = ((100 - rangeVariationPremiumAmount)*paymentAmount)/100;
+            Integer amountQuotationMax   = ((100 + rangeVariationPremiumAmount)*paymentAmount)/100;
+            Integer amountTotalAmountMin = ((100 - rangeVariationPremiumAmount)*paymentAmount*12)/100;
+            Integer amountTotalAmountMax = ((100 + rangeVariationPremiumAmount)*paymentAmount*12)/100;
+            String dataAmountQuotation = String.format(" AmountQuotationMin :: %s ,AmountQuotationMax :: %s ,AmountTotalAmountMin :: %s , AmountTotalAmountMax :: %s ",amountQuotationMin, amountQuotationMax , amountTotalAmountMin ,amountTotalAmountMax );
+            LOGGER.info(" :: executeValidateConditions :: [ {} ] ", dataAmountQuotation);
+
+            String  totalAmountCurrencyId = requestBody.getTotalAmount().getCurrency();
+            int     totalAmount           = requestBody.getTotalAmount().getAmount().intValue();
+
+            if(!paymentCurrencyId.equals(totalAmountCurrencyId)){
+                String message = String.format(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getMessage(), paymentCurrencyId, totalAmountCurrencyId);
+                this.addAdviceWithDescription(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
+                throw buildValidation(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID,message);
+            }else if(RBVDInternalConstants.Period.ANNUAL.equalsIgnoreCase(frequencyType) && !isValidateRange(totalAmount, amountQuotationMin, amountQuotationMax) ){
+                String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), totalAmount, amountQuotationMin,amountQuotationMax);
+                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
+                throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
+            }else if(RBVDInternalConstants.Period.MONTHLY.equalsIgnoreCase(frequencyType) && !isValidateRange(totalAmount, amountTotalAmountMin, amountTotalAmountMax) ){
+                String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), totalAmount, amountTotalAmountMin,amountTotalAmountMax);
+                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
+                throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
+            }
+
+            if(!paymentCurrencyId.equals(requestBody.getFirstInstallment().getPaymentAmount().getCurrency())){
+                String message = String.format(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getMessage(), paymentCurrencyId, totalAmountCurrencyId);
+                this.addAdviceWithDescription(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
+                throw buildValidation(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID,message);
+            }else if(!isValidateRange(requestBody.getFirstInstallment().getPaymentAmount().getAmount().intValue(), amountQuotationMin, amountQuotationMax)){
+                String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), requestBody.getFirstInstallment().getPaymentAmount().getAmount().intValue(), amountQuotationMin,amountQuotationMax);
+                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
+                throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
+            }
+
+            if(!paymentCurrencyId.equals(requestBody.getInstallmentPlan().getPaymentAmount().getCurrency())){
+                String message = String.format(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getMessage(), paymentCurrencyId, totalAmountCurrencyId);
+                this.addAdviceWithDescription(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
+                throw buildValidation(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID,message);
+            }else if(!isValidateRange(requestBody.getInstallmentPlan().getPaymentAmount().getAmount().intValue(), amountQuotationMin, amountQuotationMax)){
+                String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), requestBody.getInstallmentPlan().getPaymentAmount().getAmount().intValue(), amountQuotationMin,amountQuotationMax);
+                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
+                throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
+            }
+
+        }
+    }
 
     /**
      * This method is used to transform a list of participants from a policy into a list of IsrcContractParticipantDAO objects.

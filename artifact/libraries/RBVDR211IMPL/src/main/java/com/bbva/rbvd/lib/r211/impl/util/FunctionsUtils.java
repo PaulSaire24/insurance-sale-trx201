@@ -6,6 +6,7 @@ import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -59,6 +60,35 @@ public class FunctionsUtils {
         String day = (localDate.getDayOfMonth() < 10) ? "0" + localDate.getDayOfMonth() : String.valueOf(localDate.getDayOfMonth());
         String month = (localDate.getMonthOfYear() < 10) ? "0" + localDate.getMonthOfYear() : String.valueOf(localDate.getMonthOfYear());
         return day + "/" + month + "/" + localDate.getYear();
+    }
+
+    public static void loggerAutomatic(String message,String body, Logger LOGGER){
+        int limit = 10124;
+        int total = body.length();
+        int limitInit = 0;
+        int limitProx = 0;
+        int positionEndValue = 0;
+        int tamEndValue = 0;
+        if(total <= limit){
+            LOGGER.info(message,body);
+        }else{
+            double division2 =  (double) total / limit;
+            double valueInt = Math.ceil(division2);
+            for(int i = 1; i<= (int) valueInt; i++){
+                limitInit = limitProx;
+                limitProx += limit;
+                String bodyResult;
+                if(i == valueInt){
+                    bodyResult = body.substring(positionEndValue+tamEndValue);
+                }else{
+                    bodyResult = body.substring(limitInit, limitProx);
+                    positionEndValue      = body.indexOf(bodyResult);
+                    tamEndValue           = bodyResult.length();
+                }
+                LOGGER.info(message.concat(String.valueOf(i)),bodyResult);
+            }
+        }
+
     }
 
 

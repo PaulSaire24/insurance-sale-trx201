@@ -54,6 +54,8 @@ import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
+import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
+import com.bbva.rbvd.lib.r211.impl.util.JsonHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -138,9 +140,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		LOGGER.info(" :: executeBusinessLogicEmissionPolicyFlowNew :: [ START ]");
 		LOGGER.info(" :: executeBusinessLogicEmissionPolicyFlowNew :: [ PolicyDTO :: {} ]",requestBody);
 		if(basicProductInsuranceProperties.enabledAllProductsEmissionRoyal2_0() || basicProductInsuranceProperties.enabledFlowEmissionRoyal2_0ByProduct(requestBody.getProductId())) {
-			return this.emissionPolicyNotLifeBusinessImpl.executeEmissionPolicy(requestBody);
+			ResponseLibrary<PolicyDTO> responseLibrary = this.emissionPolicyNotLifeBusinessImpl.executeEmissionPolicy(requestBody);
+			FunctionsUtils.loggerAutomatic(" :: Response Policy {} ", JsonHelper.getInstance().toJsonString(responseLibrary.getBody()),LOGGER);
+			return responseLibrary;
 
 		}
+
 		PolicyDTO policyContractBankCompany = this.executeEmissionPrePolicyLegacy(requestBody);
 		return ResponseLibrary.ResponseServiceBuilder
 				.an().flowProcess(RBVDInternalConstants.FlowProcess.LEGACY_FLOW_PROCESS).

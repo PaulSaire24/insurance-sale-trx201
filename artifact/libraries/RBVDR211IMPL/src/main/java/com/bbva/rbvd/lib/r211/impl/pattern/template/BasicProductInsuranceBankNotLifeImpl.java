@@ -89,73 +89,7 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         }
 
         Boolean enableValidationQuotationAmount = this.basicProductInsuranceProperties.enableValidationQuotationAmountByProductIdAndChannelId(requestBody.getProductId(),requestBody.getSaleChannelId());
-        if(enableValidationQuotationAmount){
-            Map<String, Object> quotationData = validateMap(this.insrncQuotationModDAO.findQuotationByQuotationId(requestBody.getQuotationId())).orElseThrow(() -> buildValidation(ERROR_EMPTY_RESULT_QUOTATION_DATA));
-            String frequencyType = ofNullable(quotationData.get(RBVDInternalColumn.PaymentPeriod.FIELD_POLICY_PAYMENT_FREQUENCY_TYPE)).map(Object::toString).orElseThrow(() -> {
-                String message = String.format(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE.getMessage(), requestBody.getQuotationId());
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE.getAdviceCode(),message);
-                return buildValidation(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE, message);
-            });
-            String paymentCurrencyId = ofNullable(quotationData.get(RBVDInternalColumn.Quotation.FIELD_PREMIUM_CURRENCY_ID)).map(Object::toString).orElseThrow(() -> {
-                String message = String.format(ERROR_NOT_VALUE_QUOTATION.getMessage(),RBVDInternalColumn.Quotation.FIELD_PREMIUM_CURRENCY_ID, requestBody.getQuotationId());
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_QUOTATION.getAdviceCode(),message);
-                return buildValidation(ERROR_NOT_VALUE_QUOTATION_CURRENCY_ID,message);
-            });
-            int paymentAmount = ofNullable(quotationData.get(RBVDInternalColumn.Quotation.FIELD_PREMIUM_AMOUNT)).map(premiumAmount -> new BigDecimal(premiumAmount.toString()).intValue()).orElseThrow(() -> {
-                String message = String.format(ERROR_NOT_VALUE_QUOTATION.getMessage(),RBVDInternalColumn.Quotation.FIELD_PREMIUM_AMOUNT, requestBody.getQuotationId());
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_QUOTATION.getAdviceCode(),message);
-                return buildValidation(ERROR_NOT_VALUE_PREMIUM_AMOUNT,message);
-            });
-
-            String dataToConditionsLog = String.format(" FrequencyType :: %s,PaymentAmount :: %s, PaymentCurrency :: %s", frequencyType, paymentAmount, paymentCurrencyId);
-            LOGGER.info(" :: executeValidateConditions :: [ {} ]",dataToConditionsLog );
-            int rangeVariationPremiumAmount = this.basicProductInsuranceProperties.obtainRangePaymentAmount();
-            Integer amountQuotationMin   = ((100 - rangeVariationPremiumAmount)*paymentAmount)/100;
-            Integer amountQuotationMax   = ((100 + rangeVariationPremiumAmount)*paymentAmount)/100;
-            Integer amountTotalAmountMin = ((100 - rangeVariationPremiumAmount)*paymentAmount*12)/100;
-            Integer amountTotalAmountMax = ((100 + rangeVariationPremiumAmount)*paymentAmount*12)/100;
-            String dataAmountQuotation = String.format(" AmountQuotationMin :: %s ,AmountQuotationMax :: %s ,AmountTotalAmountMin :: %s , AmountTotalAmountMax :: %s ",amountQuotationMin, amountQuotationMax , amountTotalAmountMin ,amountTotalAmountMax );
-            LOGGER.info(" :: executeValidateConditions :: [ {} ] ", dataAmountQuotation);
-
-            String  totalAmountCurrencyId = requestBody.getTotalAmount().getCurrency();
-            int     totalAmount           = requestBody.getTotalAmount().getAmount().intValue();
-
-            if(!paymentCurrencyId.equals(totalAmountCurrencyId)){
-                String message = String.format(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getMessage(), paymentCurrencyId, totalAmountCurrencyId);
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
-                throw buildValidation(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID,message);
-            }else if(Period.ANNUAL.equalsIgnoreCase(frequencyType) && !isValidateRange(totalAmount, amountQuotationMin, amountQuotationMax) ){
-                String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), totalAmount, amountQuotationMin,amountQuotationMax);
-                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
-                throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
-            }else if(Period.MONTHLY.equalsIgnoreCase(frequencyType) && !isValidateRange(totalAmount, amountTotalAmountMin, amountTotalAmountMax) ){
-                String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), totalAmount, amountTotalAmountMin,amountTotalAmountMax);
-                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
-                throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
-            }
-
-            if(!paymentCurrencyId.equals(requestBody.getFirstInstallment().getPaymentAmount().getCurrency())){
-                String message = String.format(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getMessage(), paymentCurrencyId, totalAmountCurrencyId);
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
-                throw buildValidation(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID,message);
-            }else if(!isValidateRange(requestBody.getFirstInstallment().getPaymentAmount().getAmount().intValue(), amountQuotationMin, amountQuotationMax)){
-                String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), requestBody.getFirstInstallment().getPaymentAmount().getAmount().intValue(), amountQuotationMin,amountQuotationMax);
-                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
-                throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
-            }
-
-            if(!paymentCurrencyId.equals(requestBody.getInstallmentPlan().getPaymentAmount().getCurrency())){
-                String message = String.format(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getMessage(), paymentCurrencyId, totalAmountCurrencyId);
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
-                throw buildValidation(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID,message);
-            }else if(!isValidateRange(requestBody.getInstallmentPlan().getPaymentAmount().getAmount().intValue(), amountQuotationMin, amountQuotationMax)){
-                String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), requestBody.getInstallmentPlan().getPaymentAmount().getAmount().intValue(), amountQuotationMin,amountQuotationMax);
-                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
-                throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
-            }
-
-        }
-
+        this.crossOperationsBusinessInsuranceContractBank.validateQuotationAmount(enableValidationQuotationAmount,this.insrncQuotationModDAO,requestBody);
     }
 
 

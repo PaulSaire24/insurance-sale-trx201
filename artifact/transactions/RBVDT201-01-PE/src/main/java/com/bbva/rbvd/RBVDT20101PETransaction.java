@@ -51,7 +51,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		InsuranceFactory insuranceFactory = new InsuranceFactory();
 
 		ResponseLibrary<PolicyDTO> responseBody = insuranceFactory.createInsuranceBankAndCompany(this.getProductid(), rbvdR211, listOfLifeProductCodes, requestBody);
-		LOGGER.info(" :: InsuranceEmission :: [ ResponseBody :: {} ]",responseBody);
+		LOGGER.info(" :: InsuranceEmission :: [ ResponseBody :: {} ]",responseBody.getBody());
 
 		if(FlowProcess.LEGACY_FLOW_PROCESS.equalsIgnoreCase(responseBody.getFlowProcess())){
 			if(Objects.nonNull(responseBody.getBody())) {
