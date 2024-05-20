@@ -1256,7 +1256,7 @@ public class MapperHelper {
         if(responseBody.getFirstInstallment().getIsPaymentRequired()) {
             responseBody.getFirstInstallment().setOperationDate(
                     convertLocaldateToDate(convertDateToLocalDate(data.getFirstInstallment().getOperationDate())));
-            responseBody.getFirstInstallment().setAccountingDate(convertLocaldateToDate(data.getFirstInstallment().getAccountingDate()));
+            responseBody.getFirstInstallment().setAccountingDate(Optional.ofNullable(data.getFirstInstallment().getAccountingDate()).map(this::convertLocaldateToDate).orElse(null) );
             responseBody.getFirstInstallment().setOperationNumber(data.getFirstInstallment().getOperationNumber());
             responseBody.getFirstInstallment().setTransactionNumber(data.getFirstInstallment().getTransactionNumber());
 
