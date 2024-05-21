@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl.util;
 
+import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
@@ -54,6 +55,24 @@ public class ValidationUtil {
                     && Objects.nonNull(endorseParticipant.getBenefitPercentage());
         }
         return false;
+    }
+
+
+    public static String getKindOfAccount(RelatedContractASO relatedContract){
+        if(relatedContract != null && relatedContract.getProduct() != null && Objects.nonNull(relatedContract.getProduct().getId())){
+            return relatedContract.getProduct().getId().equals("CARD") ? "TARJETA" : "CUENTA";
+        }else{
+            return "";
+        }
+    }
+
+    public static String getAccountNumberInDatoParticular(RelatedContractASO relatedContract){
+        if(relatedContract != null && Objects.nonNull(relatedContract.getNumber())){
+            int beginIndex = relatedContract.getNumber().length() - 4;
+            return "***".concat(relatedContract.getNumber().substring(beginIndex));
+        }else{
+            return "";
+        }
     }
 
     public static boolean validateisNotEmptyOrNull(String parameter){

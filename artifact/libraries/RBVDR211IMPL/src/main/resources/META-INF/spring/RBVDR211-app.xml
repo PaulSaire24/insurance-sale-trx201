@@ -10,6 +10,7 @@
 		<property name="pisdR350" ref="pisdR350"/>
 		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
 		<property name="emissionPolicyNotLifeBusinessImpl" ref="emissionPolicyNotLifeBusiness"/>
+		<property name="emissionPolicyLifeBusinessImpl" ref="emissionPolicyLifeBusiness"/>
 		<property name="pisdR601" ref="pisdR601"/>
 	</bean>
 	<!-- Events -->
@@ -25,6 +26,13 @@
 		<property name="insuranceContractBank" ref="basicProductInsuranceBankNotLife"/>
 		<property name="gifoleEventInternal" ref="gifoleEventInternal"/>
 		<property name="rimacCompanyNotLifeFactory" ref="rimacCompanyNotLifeFactory"/>
+	</bean>
+	<bean id="emissionPolicyLifeBusiness" class="com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyLifeBusinessImpl">
+		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
+		<property name="mapperHelper" ref="mapperHelper"/>
+		<property name="insuranceContractBank" ref="basicProductInsuranceBankLife"/>
+		<property name="gifoleEventInternal" ref="gifoleEventInternal"/>
+		<property name="rimacCompanyLifeFactory" ref="rimacCompanyLifeFactory"/>
 	</bean>
 	<!-- Pattern´s Design -->
 	<bean id="insuranceContractBank" class="com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank" abstract="true"/>
@@ -48,8 +56,30 @@
 		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
 		<property name="crossOperationsBusinessInsuranceContractBank" ref="crossOperationsBusinessInsuranceContractBank"/>
 	</bean>
+	<bean id="basicProductInsuranceBankLife" class="com.bbva.rbvd.lib.r211.impl.pattern.template.BasicProductInsuranceBankLifeImpl" parent="insuranceContractBank">
+		<property name="insrncContractMovDAO" ref="contractMovPISD012DAO"/>
+		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
+		<property name="IEndorsementInsurncCtrDAO" ref="endorsementInsurncPISD012DAO"/>
+		<property name="insrncRoleModalityDAO" ref="insrncRoleModalityPISD012DAO"/>
+		<property name="insuranceCtrReceiptsDAO" ref="insuranceCtrReceiptsPISD012DAO"/>
+		<property name="insurncCtrParticipantDAO" ref="insurncCtrParticipantPISD012DAO"/>
+		<property name="insrncPaymentPeriodDAO" ref="paymentPeriodPISD012DAO"/>
+		<property name="insuranceProductDAO" ref="productPISD401Dao"/>
+		<property name="insrncQuotationModDAO" ref="quotationModPISD012DAO"/>
+		<property name="customerRBVD066InternalService" ref="customerRBVD066InternalService"/>
+		<property name="contractPISD201ServiceInternal" ref="contractPISD201ServiceInternal"/>
+		<property name="mapperHelper" ref="mapperHelper"/>
+		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
+		<property name="crossOperationsBusinessInsuranceContractBank" ref="crossOperationsBusinessInsuranceContractBank"/>
+		<property name="policyServiceExternal" ref="policyRBVDR201ServiceExternal"/>
+		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
+	</bean>
 	<bean id="rimacCompanyNotLifeFactory" class="com.bbva.rbvd.lib.r211.impl.pattern.factory.RimacCompanyNotLifeFactory">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
+		<property name="policyRBVDR201ServiceExternal" ref="policyRBVDR201ServiceExternal"/>
+	</bean>
+	<bean id="rimacCompanyLifeFactory" class="com.bbva.rbvd.lib.r211.impl.pattern.factory.RimacCompanyLifeFactory">
+		<property name="mapperHelper" ref="mapperHelper"/>
 		<property name="policyRBVDR201ServiceExternal" ref="policyRBVDR201ServiceExternal"/>
 	</bean>
 	<!-- Helpers -->
@@ -104,6 +134,7 @@
 	</bean>
 	<bean id="quotationModPISD012DAO" class="com.bbva.rbvd.lib.r211.impl.service.dao.QuotationModPISD012DAOImpl">
 		<property name="pisdR012" ref="pisdR012"/>
+		<property name="pisdR350" ref="pisdR350"/>
 	</bean>
 	<bean id="relatedContractPISD012DAOImpl" class="com.bbva.rbvd.lib.r211.impl.service.dao.RelatedContractPISD012DAOImpl">
 		<property name="pisdR012" ref="pisdR012"/>

@@ -97,6 +97,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 
+import com.bbva.rbvd.lib.r211.impl.service.api.CustomerRBVD066InternalService;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.HolderBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsrcContractParticipantBean;
 
@@ -125,6 +126,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.ERROR_VALID_ADDRESS;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull; //import static java.util.stream.Collectors.counting;
@@ -962,6 +964,95 @@ public class MapperHelper {
         return persona;
     }
 
+
+    public AgregarTerceroBO generateRequestAddParticipantsV2(String businessName, PolicyDTO requestBody, CustomerListASO customerList,
+                                                             Map<String, Object> responseQueryGetRequiredFields, Map<String,Object> dataInsured, CustomerRBVD066InternalService customerRBVD066InternalService){
+        PayloadAgregarTerceroBO payload = new PayloadAgregarTerceroBO();
+        AgregarTerceroBO request = new AgregarTerceroBO();
+        List<PersonaBO> personasList = new ArrayList<>();
+        List<BeneficiarioBO> beneficiarioList = new ArrayList<>();
+        payload.setProducto(businessName);
+
+        if(!isNull(requestBody.getParticipants()) || !isEmpty(requestBody.getParticipants())){
+
+            processParticipants(requestBody, customerList, responseQueryGetRequiredFields, dataInsured, customerRBVD066InternalService, personasList, beneficiarioList);
+
+            if(personasList.size() != ConstantsUtil.Number.TRES){
+                PersonaBO contractorPerson = this.getFillFieldsPerson(
+                        this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
+                contractorPerson.setRol(ConstantsUtil.ParticipantRol.INSURED.getRol());
+                String addressFill3 = fillAddress(customerList,contractorPerson,new StringBuilder(),requestBody.getSaleChannelId());
+                if(StringUtils.isEmpty(addressFill3)){
+                    return null;
+                }
+                personasList.add(contractorPerson);
+            }
+
+            if(!beneficiarioList.isEmpty()){
+                personasList.forEach(persona -> {
+                    if (persona.getRol().equals(ConstantsUtil.ParticipantRol.INSURED.getRol())) {
+                        persona.setBeneficiarios(beneficiarioList);
+                    }
+                });
+            }
+
+        }
+
+        payload.setPersona(personasList);
+
+        request.setPayload(payload);
+        return request;
+    }
+    //////////////////
+    public void processParticipants(PolicyDTO requestBody, CustomerListASO customerList, Map<String, Object> responseQueryGetRequiredFields, Map<String,Object> dataInsured, CustomerRBVD066InternalService customerRBVD066InternalService, List<PersonaBO> personasList, List<BeneficiarioBO> beneficiarioList) {
+        for(ParticipantDTO participant : requestBody.getParticipants()) {
+            if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.Participant.PAYMENT_MANAGER)){
+                processPaymentManagerParticipant(requestBody, customerList, responseQueryGetRequiredFields, personasList, participant);
+            }else if(ValidationUtil.validateOtherParticipants(participant,ConstantsUtil.Participant.INSURED)){
+                processInsuredParticipant(requestBody, customerList, dataInsured, customerRBVD066InternalService, personasList, participant);
+            }else if(ValidationUtil.validateOtherParticipants(participant, ConstantsUtil.Participant.BENEFICIARY)){
+                processBeneficiaryParticipant(beneficiarioList, participant);
+            }
+        }
+    }
+
+    private void processPaymentManagerParticipant(PolicyDTO requestBody, CustomerListASO customerList, Map<String, Object> responseQueryGetRequiredFields, List<PersonaBO> personasList, ParticipantDTO participant) {
+        PersonaBO paymentPerson = this.getFillFieldsPerson(this.constructPerson(requestBody, customerList.getData().get(0), responseQueryGetRequiredFields));
+        paymentPerson.setRol(ConstantsUtil.ParticipantRol.PAYMENT_MANAGER.getRol());
+        String addressFill2 = fillAddress(customerList,paymentPerson,new StringBuilder(),requestBody.getSaleChannelId());
+        if(StringUtils.isEmpty(addressFill2)){
+            return;
+        }
+
+        //Contratante. Si requiere cambios para este participante, agregar propia validacion
+        PersonaBO contractorPerson = this.getFillFieldsPerson(paymentPerson);
+        contractorPerson.setRol(ConstantsUtil.ParticipantRol.CONTRACTOR.getRol());
+
+        String addressFill1 = fillAddress(customerList,contractorPerson,new StringBuilder(), requestBody.getSaleChannelId());
+        if(StringUtils.isEmpty(addressFill1)){
+            return;
+        }
+
+        personasList.add(paymentPerson);
+        personasList.add(contractorPerson);
+    }
+
+    private void processInsuredParticipant(PolicyDTO requestBody, CustomerListASO customerList, Map<String,Object> dataInsured, CustomerRBVD066InternalService customerRBVD066InternalService, List<PersonaBO> personasList, ParticipantDTO participant) {
+        ParticipantDTO participantDTO = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),ConstantsUtil.Participant.INSURED);
+        PersonaBO insuredPerson = generateBasicDataInsuredParticipant(participantDTO, dataInsured);
+        fillAddressInsuredParticipantV2( customerList, participantDTO, insuredPerson,requestBody.getSaleChannelId(),customerRBVD066InternalService);
+
+        personasList.add(insuredPerson);
+    }
+
+    private void processBeneficiaryParticipant(List<BeneficiarioBO> beneficiarioList, ParticipantDTO participant) {
+        BeneficiarioBO beneficiary = generateBenficiaryPayloadRimac(participant);
+        beneficiarioList.add(beneficiary);
+    }
+
+    //////////////////
+
+
     public AgregarTerceroBO generateRequestAddParticipants(String businessName, PolicyDTO requestBody, RBVDR201 rbvdr201,
                                                            Map<String, Object> responseQueryGetRequiredFields, Map<String,Object> dataInsured){
         PayloadAgregarTerceroBO payload = new PayloadAgregarTerceroBO();
@@ -1022,6 +1113,16 @@ public class MapperHelper {
 
         request.setPayload(payload);
         return request;
+    }
+
+    private void fillAddressInsuredParticipantV2(CustomerListASO customerList,
+                                               ParticipantDTO participantDTO, PersonaBO insuredPerson,String saleChannelId,CustomerRBVD066InternalService customerRBVD066InternalService) {
+        if(Objects.nonNull(participantDTO.getCustomerId())){
+            CustomerListASO customerInsured = customerRBVD066InternalService.findCustomerInformationByCustomerId(participantDTO.getCustomerId());
+            validateIfAddressIsNull(fillAddress(customerInsured, insuredPerson,new StringBuilder(),saleChannelId));
+        }else{
+            validateIfAddressIsNull(fillAddress(customerList, insuredPerson,new StringBuilder(),saleChannelId));
+        }
     }
 
     private void fillAddressInsuredParticipant(RBVDR201 rbvdr201, CustomerListASO customerList,
@@ -1088,7 +1189,8 @@ public class MapperHelper {
 
     private static void validateIfAddressIsNull(String filledAddress) {
         if (isNull(filledAddress)) {
-            throw new BusinessException("RBVD10094935", false,"Revisar Datos de Direccion");
+            String message =  String.format( ERROR_VALID_ADDRESS.getMessage(),"N/A");
+            throw new BusinessException(ERROR_VALID_ADDRESS.getAdviceCode(), false,message);
         }
     }
 

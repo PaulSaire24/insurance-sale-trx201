@@ -12,6 +12,12 @@ public class BasicProductInsuranceProperties extends Properties{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicProductInsuranceProperties.class);
 
+    public String obtainProductCodesWithoutPartyValidation(){
+        String productsCodesWithoutPartyValidation = this.getProperty("product.codes.without.third.party.validation");
+        LOGGER.info(" :: BasicProductInsuranceProperties[ obtainProductCodesWithoutPartyValidation :: {} ]",productsCodesWithoutPartyValidation);
+        return productsCodesWithoutPartyValidation;
+    }
+
     public String obtainFrequencyTypeByPeriodId(String periodId){
         String frequencyType = this.getProperty(periodId, StringUtils.EMPTY);
         LOGGER.info(" :: BasicProductInsuranceProperties[ obtainFrequencyTypeByPeriodId :: {} ]",frequencyType);
@@ -32,9 +38,22 @@ public class BasicProductInsuranceProperties extends Properties{
         return enabledRulesValidationQuotationAmount;
     }
 
+    public Boolean enabledFlowEmissionRoyal2_0ByProductLife(String productId){
+        String key = "flow.royal2.enabled.product.life.".concat(StringUtils.defaultString(productId));
+        Boolean enabledRulesValidationQuotationAmount = Boolean.parseBoolean(this.getProperty(key, Boolean.FALSE.toString()));
+        LOGGER.info(" :: BasicProductInsuranceProperties[ enabledFlowEmissionRoyal2_0ByProductLife :: {} ]",enabledRulesValidationQuotationAmount);
+        return enabledRulesValidationQuotationAmount;
+    }
+
     public Boolean enabledAllProductsEmissionRoyal2_0(){
         Boolean enabledRulesValidationQuotationAmount = Boolean.parseBoolean(this.getProperty("flow.royal2.enabled.all.products", Boolean.FALSE.toString()));
         LOGGER.info(" :: BasicProductInsuranceProperties[ enabledAllProductsEmissionRoyal2_0 :: {} ]",enabledRulesValidationQuotationAmount);
+        return enabledRulesValidationQuotationAmount;
+    }
+
+    public Boolean enabledAllProductsEmissionRoyal2_0Life(){
+        Boolean enabledRulesValidationQuotationAmount = Boolean.parseBoolean(this.getProperty("flow.royal2.enabled.all.products.life", Boolean.FALSE.toString()));
+        LOGGER.info(" :: BasicProductInsuranceProperties[ enabledAllProductsEmissionRoyal2_0Life :: {} ]",enabledRulesValidationQuotationAmount);
         return enabledRulesValidationQuotationAmount;
     }
 

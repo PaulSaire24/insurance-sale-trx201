@@ -141,7 +141,7 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		LOGGER.info(" :: executeBusinessLogicEmissionPolicyFlowNew :: [ PolicyDTO :: {} ]",requestBody);
 		if(basicProductInsuranceProperties.enabledAllProductsEmissionRoyal2_0() || basicProductInsuranceProperties.enabledFlowEmissionRoyal2_0ByProduct(requestBody.getProductId())) {
 			ResponseLibrary<PolicyDTO> responseLibrary = this.emissionPolicyNotLifeBusinessImpl.executeEmissionPolicy(requestBody);
-			FunctionsUtils.loggerAutomatic(" :: Response Policy {} ", JsonHelper.getInstance().toJsonString(responseLibrary.getBody()),LOGGER);
+			LOGGER.info(" :: executeBusinessLogicEmissionPolicyFlowNew :: [ PolicyDTO :: {} ]",requestBody);
 			return responseLibrary;
 
 		}
@@ -381,8 +381,14 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	 */
 	@Override
 	public ResponseLibrary<PolicyDTO> executeEmissionPrePolicyLifeProductFlowNew(PolicyDTO requestBody) {
-		LOGGER.info(" :: executeBusinessLogicEmissionPrePolicyLifeProductFlowNew :: [ START ]");
-		LOGGER.info(" :: executeBusinessLogicEmissionPrePolicyLifeProductFlowNew :: [ PolicyDTO :: {} ]",requestBody);
+		LOGGER.info(" :: executeEmissionPrePolicyLifeProductFlowNew :: [ START ]");
+		LOGGER.info(" :: executeEmissionPrePolicyLifeProductFlowNew :: [ PolicyDTO :: {} ]",requestBody);
+		if(basicProductInsuranceProperties.enabledAllProductsEmissionRoyal2_0Life() || basicProductInsuranceProperties.enabledFlowEmissionRoyal2_0ByProductLife(requestBody.getProductId())) {
+			ResponseLibrary<PolicyDTO> responseLibrary = this.emissionPolicyLifeBusinessImpl.executeEmissionPolicy(requestBody);
+			LOGGER.info(" :: executeEmissionPrePolicyLifeProductFlowNew - executeEmissionPolicy :: [ PolicyDTO :: {} ]",requestBody);
+			return responseLibrary;
+
+		}
 		PolicyDTO policyContractBankCompany = this.executeEmissionPrePolicyLifeProductLegacy(requestBody);
 		return ResponseLibrary.ResponseServiceBuilder
 				.an().flowProcess(RBVDInternalConstants.FlowProcess.LEGACY_FLOW_PROCESS).

@@ -275,6 +275,8 @@ public class RBVDR211Test {
 		basicProductInsuranceProperties.setApplicationConfigurationService(applicationConfigurationService);
 
 		rbvdr211.setBasicProductInsuranceProperties(basicProductInsuranceProperties);
+
+
 	}
 
 	@Test

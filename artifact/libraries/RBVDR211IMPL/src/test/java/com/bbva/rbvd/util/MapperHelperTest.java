@@ -40,6 +40,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
+import com.bbva.rbvd.lib.r211.impl.service.api.CustomerRBVD066InternalService;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 
@@ -2624,6 +2625,222 @@ public class MapperHelperTest {
 
         assertNotNull(validation);
 
+    }
+
+
+
+
+
+
+    @Test
+    public void testGenerateRequestAddParticipantsV2() throws IOException {
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+        requiredFieldsEmisionBDResponse.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(),8);
+        CustomerRBVD066InternalService customerRBVD066InternalService = new CustomerRBVD066InternalService();
+        customerRBVD066InternalService.setRbvdR201(rbvdr201);
+        AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipantsV2("EASYYES", apxRequest, customerList, requiredFieldsEmisionBDResponse,new HashMap<>(),customerRBVD066InternalService);
+        assertNotNull(validation);
+        assertEquals(3, validation.getPayload().getPersona().size());
+    }
+
+
+    @Test
+    public void testGenerateRequestAddParticipantsExceptionV2() {
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+
+        when(this.applicationConfigurationService.getProperty("pic.code")).thenReturn("PC");
+
+        apxRequest.setSaleChannelId("PC");
+
+        GeographicGroupsBO geographicGroupsBO1 = new GeographicGroupsBO();
+        geographicGroupsBO1.setName("xxxx");
+        GeographicGroupTypeBO geographicGroupTypeBO1 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO1.setId("xxxx");
+        geographicGroupTypeBO1.setName("xxxx");
+        geographicGroupsBO1.setGeographicGroupType(geographicGroupTypeBO1);
+
+        GeographicGroupsBO geographicGroupsBO2 = new GeographicGroupsBO();
+        geographicGroupsBO2.setName("xxxx");
+        GeographicGroupTypeBO geographicGroupTypeBO2 = new GeographicGroupTypeBO();
+        geographicGroupTypeBO2.setId("xxxx");
+        geographicGroupTypeBO2.setName("xxxx");
+        geographicGroupsBO2.setGeographicGroupType(geographicGroupTypeBO2);
+
+        GeographicGroupsBO geographicGroupsDepartment = new GeographicGroupsBO();
+        geographicGroupsDepartment.setName("LIMA");
+        GeographicGroupTypeBO geographicGroupTypeDepartment = new GeographicGroupTypeBO();
+        geographicGroupTypeDepartment.setId("DEPARTMENT");
+        geographicGroupTypeDepartment.setName("DEPARTMENT");
+        geographicGroupsDepartment.setGeographicGroupType(geographicGroupTypeDepartment);
+        geographicGroupsDepartment.setCode("01");
+
+        GeographicGroupsBO geographicGroupsProvince = new GeographicGroupsBO();
+        geographicGroupsProvince.setName("LIMA");
+        GeographicGroupTypeBO geographicGroupTypeProvince = new GeographicGroupTypeBO();
+        geographicGroupTypeProvince.setId("PROVINCE");
+        geographicGroupTypeProvince.setName("PROVINCE");
+        geographicGroupsProvince.setGeographicGroupType(geographicGroupTypeProvince);
+        geographicGroupsProvince.setCode("01");
+
+        GeographicGroupsBO geographicGroupsDistrict = new GeographicGroupsBO();
+        geographicGroupsDistrict.setName("CHORRILLOS");
+        GeographicGroupTypeBO geographicGroupTypeDistrict = new GeographicGroupTypeBO();
+        geographicGroupTypeDistrict.setId("DISTRICT");
+        geographicGroupTypeDistrict.setName("DISTRICT");
+        geographicGroupsDistrict.setGeographicGroupType(geographicGroupTypeDistrict);
+        geographicGroupsDistrict.setCode("009");
+
+        GeographicGroupsBO geographicGroupsExteriorNumber = new GeographicGroupsBO();
+        geographicGroupsExteriorNumber.setName(NO_EXIST);
+        GeographicGroupTypeBO geographicGroupTypeExteriorNumber = new GeographicGroupTypeBO();
+        geographicGroupTypeExteriorNumber.setId("EXTERIOR_NUMBER");
+        geographicGroupTypeExteriorNumber.setName(NO_EXIST);
+        geographicGroupsExteriorNumber.setGeographicGroupType(geographicGroupTypeExteriorNumber);
+
+        GeographicGroupsBO geographicGroupsUbigeo = new GeographicGroupsBO();
+        GeographicGroupTypeBO geographicGroupTypeUbigeo = new GeographicGroupTypeBO();
+        geographicGroupTypeUbigeo.setId("UBIGEO");
+        geographicGroupTypeUbigeo.setName("UBIGEO");
+        geographicGroupsUbigeo.setGeographicGroupType(geographicGroupTypeUbigeo);
+        geographicGroupsUbigeo.setCode("0101009");
+
+        List<GeographicGroupsBO> geographicGroupsBOs = new ArrayList<>();
+        geographicGroupsBOs.add(geographicGroupsBO1);
+        geographicGroupsBOs.add(geographicGroupsBO2);
+        geographicGroupsBOs.add(geographicGroupsDepartment);
+        geographicGroupsBOs.add(geographicGroupsProvince);
+        geographicGroupsBOs.add(geographicGroupsDistrict);
+        geographicGroupsBOs.add(geographicGroupsExteriorNumber);
+        geographicGroupsBOs.add(geographicGroupsUbigeo);
+
+        customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
+        CustomerRBVD066InternalService customerRBVD066InternalService = new CustomerRBVD066InternalService();
+        customerRBVD066InternalService.setRbvdR201(rbvdr201);
+        AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipantsV2("EASYYES", apxRequest, customerList, requiredFieldsEmisionBDResponse,new HashMap<>(),customerRBVD066InternalService);
+        assertNull(validation);
+    }
+
+    @Test
+    public void testGenerateRequestAddParticipants_WithInsuredParticipantV2(){
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "test.344@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+        requiredFieldsEmisionBDResponse.put(RBVDProperties.FIELD_INSURANCE_PRODUCT_ID.getValue(),9);
+        apxRequest.setProductId("841");
+        apxRequest.setSaleChannelId("PC");
+        apxRequest.getParticipants().get(0).getParticipantType().setId(ConstantsUtil.Participant.PAYMENT_MANAGER);
+        ParticipantDTO insured = new ParticipantDTO();
+        insured.setCustomerId("84948543");
+        ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
+        participantTypeDTO.setId(ConstantsUtil.Participant.INSURED);
+        insured.setParticipantType(participantTypeDTO);
+        IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
+        identityDocumentDTO.setNumber("494830484");
+        DocumentTypeDTO documentTypeDTO = new DocumentTypeDTO();
+        documentTypeDTO.setId("DNI");
+        identityDocumentDTO.setDocumentType(documentTypeDTO);
+        insured.setIdentityDocument(identityDocumentDTO);
+        apxRequest.getParticipants().add(insured);
+
+        Map<String,Object> data = new HashMap<>();
+        data.put("INSURED_ID","894948434");
+        data.put("CUSTOMER_DOCUMENT_TYPE","L");
+        data.put("PERSONAL_ID","489484944");
+        data.put("IS_BBVA_CUSTOMER_TYPE","S");
+        data.put("CUSTOMER_ENTRY_DATE","2019-04-03");
+        data.put("PARTICIPANT_ROLE_ID",2);
+        data.put("INSURED_CUSTOMER_NAME","PETER");
+        data.put("CLIENT_LAST_NAME","PARKER|POTTER");
+        data.put("USER_EMAIL_PERSONAL_DESC","PETER.PARKER@BBVA.COM");
+        data.put("PHONE_ID","909494944");
+        data.put("CUSTOMER_BIRTH_DATE","1927-04-07T00:00:00");
+        data.put("GENDER_ID","M");
+
+        when(applicationConfigurationService.getProperty("DNI")).thenReturn("L");
+
+        apxRequest.getParticipants().get(2).getRelationship().setId("13");
+        CustomerRBVD066InternalService customerRBVD066InternalService = new CustomerRBVD066InternalService();
+        customerRBVD066InternalService.setRbvdR201(rbvdr201);
+        AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipantsV2("VIDADINAMICO", apxRequest, customerList, requiredFieldsEmisionBDResponse,data,customerRBVD066InternalService);
+        assertNotNull(validation);
+        assertEquals(3, validation.getPayload().getPersona().size());
+
+        assertNotNull(validation.getPayload().getPersona().get(0).getApeMaterno());
+        assertNotNull(validation.getPayload().getPersona().get(0).getApePaterno());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNombres());
+        assertNotNull(validation.getPayload().getPersona().get(0).getFechaNacimiento());
+        assertNotNull(validation.getPayload().getPersona().get(0).getSexo());
+        assertNotNull(validation.getPayload().getPersona().get(0).getCelular());
+        assertNotNull(validation.getPayload().getPersona().get(0).getRol());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNroDocumento());
+        assertNotNull(validation.getPayload().getPersona().get(0).getCorreoElectronico());
+        assertNotNull(validation.getPayload().getPersona().get(0).getDireccion());
+        assertNotNull(validation.getPayload().getPersona().get(0).getDistrito());
+        assertNotNull(validation.getPayload().getPersona().get(0).getProvincia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getDepartamento());
+        assertNotNull(validation.getPayload().getPersona().get(0).getUbigeo());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNombreVia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getTipoVia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getNumeroVia());
+        assertNotNull(validation.getPayload().getPersona().get(0).getTipoDocumento());
+
+        assertNotNull(validation.getPayload().getPersona().get(1).getApeMaterno());
+        assertNotNull(validation.getPayload().getPersona().get(1).getApePaterno());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNombres());
+        assertNotNull(validation.getPayload().getPersona().get(1).getFechaNacimiento());
+        assertNotNull(validation.getPayload().getPersona().get(1).getSexo());
+        assertNotNull(validation.getPayload().getPersona().get(1).getCelular());
+        assertNotNull(validation.getPayload().getPersona().get(1).getRol());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNroDocumento());
+        assertNotNull(validation.getPayload().getPersona().get(1).getCorreoElectronico());
+        assertNotNull(validation.getPayload().getPersona().get(1).getDireccion());
+        assertNotNull(validation.getPayload().getPersona().get(1).getDistrito());
+        assertNotNull(validation.getPayload().getPersona().get(1).getProvincia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getDepartamento());
+        assertNotNull(validation.getPayload().getPersona().get(1).getUbigeo());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNombreVia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getTipoVia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getNumeroVia());
+        assertNotNull(validation.getPayload().getPersona().get(1).getTipoDocumento());
+
+        assertNotNull(validation.getPayload().getPersona().get(2).getApeMaterno());
+        assertNotNull(validation.getPayload().getPersona().get(2).getApePaterno());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNombres());
+        assertNotNull(validation.getPayload().getPersona().get(2).getFechaNacimiento());
+        assertNotNull(validation.getPayload().getPersona().get(2).getSexo());
+        assertNotNull(validation.getPayload().getPersona().get(2).getCelular());
+        assertNotNull(validation.getPayload().getPersona().get(2).getRol());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNroDocumento());
+        assertNotNull(validation.getPayload().getPersona().get(2).getCorreoElectronico());
+        assertNotNull(validation.getPayload().getPersona().get(2).getDireccion());
+        assertNotNull(validation.getPayload().getPersona().get(2).getDistrito());
+        assertNotNull(validation.getPayload().getPersona().get(2).getProvincia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getDepartamento());
+        assertNotNull(validation.getPayload().getPersona().get(2).getUbigeo());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNombreVia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getTipoVia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getNumeroVia());
+        assertNotNull(validation.getPayload().getPersona().get(2).getTipoDocumento());
+
+    }
+
+    @Test
+    public void testGenerateRequestAddParticipants_WithParticipantsRequestNullV2(){
+        Map<String,Object> requiredFieldsEmisionBDResponse = new HashMap<>();
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue(), "jose.sandoval.tirado.contractor@bbva.com");
+        requiredFieldsEmisionBDResponse.put(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue(), "993766790");
+        apxRequest.setProductId("841");
+        apxRequest.setParticipants(null);
+        CustomerRBVD066InternalService customerRBVD066InternalService = new CustomerRBVD066InternalService();
+        customerRBVD066InternalService.setRbvdR201(rbvdr201);
+        AgregarTerceroBO validation = mapperHelper.generateRequestAddParticipantsV2("VIDADINAMICO", apxRequest, this.customerList, requiredFieldsEmisionBDResponse,new HashMap<>(),customerRBVD066InternalService);
+
+        assertNotNull(validation);
+        assertEquals(0,validation.getPayload().getPersona().size());
     }
 
 }

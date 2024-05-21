@@ -3,25 +3,18 @@ package com.bbva.rbvd.lib.r211.impl.pattern.template;
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
-import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
-import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
-import com.bbva.pisd.dto.insurance.utils.PISDValidation;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
-import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.*;
-import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
-import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalColumn;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.Period;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
@@ -33,13 +26,14 @@ import com.bbva.rbvd.lib.r211.impl.service.api.BusinessRBVD66ServiceInternal;
 import com.bbva.rbvd.lib.r211.impl.service.api.ContractPISD201ServiceInternal;
 import com.bbva.rbvd.lib.r211.impl.service.api.CryptoServiceInternal;
 import com.bbva.rbvd.lib.r211.impl.service.api.CustomerRBVD066InternalService;
+import com.bbva.rbvd.lib.r211.impl.service.api.interfaces.PolicyServiceExternal;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.*;
 import com.bbva.rbvd.lib.r211.impl.transfor.list.RelatedContractsList;
 import com.bbva.rbvd.lib.r211.impl.transfor.map.InsuranceContractMap;
 import com.bbva.rbvd.lib.r211.impl.transfor.map.InsuranceReceiptMap;
-import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
-import org.apache.commons.lang3.StringUtils;
+import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -49,17 +43,15 @@ import java.util.*;
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.Channel;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.*;
-import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.*;
-import static java.util.Objects.isNull;
-import static java.util.Optional.ofNullable;
+import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.buildValidation;
+import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.validateMap;
 
 
-public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank {
+public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicProductInsuranceBankNotLifeImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicProductInsuranceBankLifeImpl.class);
 
     private IInsuranceContractDAO insuranceContractDAO;
-    private IInsurncRelatedContract insurncRelatedContract;
     private IEndorsementInsurncCtrDAO IEndorsementInsurncCtrDAO;
     private IInsrncContractMovDAO insrncContractMovDAO;
     private IInsuranceCtrReceiptsDAO insuranceCtrReceiptsDAO;
@@ -69,35 +61,52 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
     private IInsurncCtrParticipantDAO insurncCtrParticipantDAO;
     private BasicProductInsuranceProperties basicProductInsuranceProperties;
     private ContractPISD201ServiceInternal contractPISD201ServiceInternal;
-    private CryptoServiceInternal cryptoServiceInternal;
     private CustomerRBVD066InternalService customerRBVD066InternalService;
     private IInsuranceProductDAO insuranceProductDAO;
-    private BusinessRBVD66ServiceInternal businessRBVD66ServiceInternal;
     private ApplicationConfigurationService applicationConfigurationService;
-
     private MapperHelper mapperHelper;
     private CrossOperationsBusinessInsuranceContractBank crossOperationsBusinessInsuranceContractBank;
+    private PolicyServiceExternal policyServiceExternal;
 
 
     @Override
     protected void executeValidateConditions(PolicyDTO requestBody) {
         Boolean existContractWithQuotation = this.insuranceContractDAO.findExistenceInsuranceContract(requestBody.getQuotationId());
+        CustomerListASO customerList = null;
+        String insuranceBusinessName = null;
         if(existContractWithQuotation){
             String messageErrorContractWithQuotation = String.format(ERROR_POLICY_ALREADY_EXISTS.getMessage(),requestBody.getQuotationId());
             this.addAdviceWithDescription(ERROR_POLICY_ALREADY_EXISTS.getAdviceCode(),messageErrorContractWithQuotation);
             throw new BusinessException(ERROR_POLICY_ALREADY_EXISTS.getAdviceCode(), ERROR_POLICY_ALREADY_EXISTS.isRollback(), ERROR_POLICY_ALREADY_EXISTS.getMessage());
         }
+
         Boolean enableValidationQuotationAmount = this.basicProductInsuranceProperties.enableValidationQuotationAmountByProductIdAndChannelId(requestBody.getProductId(),requestBody.getSaleChannelId());
-        Map<String, Object> quotationData = insrncQuotationModDAO.findQuotationByQuotationId(requestBody.getQuotationId());
+        Map<String, Object> quotationData = this.insrncQuotationModDAO.findQuotationByQuotationId(requestBody.getQuotationId());
         crossOperationsBusinessInsuranceContractBank.validateQuotationData(quotationData, requestBody.getQuotationId());
         this.crossOperationsBusinessInsuranceContractBank.validateQuotationAmount(enableValidationQuotationAmount,quotationData,requestBody);
+
+        String productCodesWithoutPartyValidation = this.basicProductInsuranceProperties.obtainProductCodesWithoutPartyValidation();
+        if(!productCodesWithoutPartyValidation.contains(requestBody.getProductId())){
+            customerList = customerRBVD066InternalService.findCustomerInformationByCustomerId(requestBody.getHolder().getId());
+            crossOperationsBusinessInsuranceContractBank.validateCustomerList(customerList);
+            Map<String, Object> dataInsuredQuotationFromDB = this.insrncQuotationModDAO.getDataInsuredParticipantFromDB(requestBody,quotationData);
+            Map<String,Object> responseQueryGetProductById = insuranceProductDAO.findByProductId(requestBody.getProductId());
+            crossOperationsBusinessInsuranceContractBank.validateProductData(responseQueryGetProductById, requestBody.getProductId());
+            insuranceBusinessName = this.mapperHelper.getInsuranceBusinessNameFromDB(responseQueryGetProductById);
+            AgregarTerceroBO requestAddParticipants = this.mapperHelper.generateRequestAddParticipantsV2(insuranceBusinessName, requestBody, customerList, quotationData, dataInsuredQuotationFromDB,customerRBVD066InternalService);
+            this.crossOperationsBusinessInsuranceContractBank.validateFilledAddress(requestAddParticipants);
+            String insuranceQuotationCompany = (String) quotationData.get(RBVDProperties.FIELD_INSURANCE_COMPANY_QUOTA_ID.getValue());
+            AgregarTerceroBO responseValidateParticipants = this.policyServiceExternal.executeAddParticipantsService(requestAddParticipants,insuranceQuotationCompany, requestBody.getProductId(), requestBody.getTraceId());
+            this.crossOperationsBusinessInsuranceContractBank.validateResponseAddParticipantsService(responseValidateParticipants);
+        }
+        ProcessPrePolicyDTO processPrePolicyDTO = new ProcessPrePolicyDTO();
+        processPrePolicyDTO.setCustomerList(customerList);
+        this.setResponseLibrary(ResponseLibrary.ResponseServiceBuilder.an().body(processPrePolicyDTO));
     }
 
 
     @Override
     protected void executeFetchRequiredData(PolicyDTO requestBody) {
-        CustomerListASO customerList = null;
-        ListBusinessesASO listBusinessesASO = null;
         String frequencyType = basicProductInsuranceProperties.obtainFrequencyTypeByPeriodId(requestBody.getInstallmentPlan().getPeriod().getId());
         crossOperationsBusinessInsuranceContractBank.validateFrequencyType(frequencyType);
         Map<String,Object> paymentPeriodData = insrncPaymentPeriodDAO.findPaymentPeriodByFrequencyType(frequencyType);
@@ -106,32 +115,15 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         crossOperationsBusinessInsuranceContractBank.validateQuotationData(quotationData, requestBody.getQuotationId());
         Map<String,Object> responseQueryGetProductById = insuranceProductDAO.findByProductId(requestBody.getProductId());
         crossOperationsBusinessInsuranceContractBank.validateProductData(responseQueryGetProductById, requestBody.getProductId());
-
-        if(!RBVDProperties.INSURANCE_PRODUCT_TYPE_VEH.getValue().equalsIgnoreCase(requestBody.getProductId())){
-            customerList = customerRBVD066InternalService.findCustomerInformationByCustomerId(requestBody.getHolder().getId());
-            crossOperationsBusinessInsuranceContractBank.validateCustomerList(customerList);
-            CustomerBO customer = customerList.getData().get(0);
-            if(crossOperationsBusinessInsuranceContractBank.isRucCustomer(customer)){
-                String customerIdEncrypted = cryptoServiceInternal.encryptCustomerId(requestBody.getHolder().getId());
-                crossOperationsBusinessInsuranceContractBank.validateCustomerIdEncryption(customerIdEncrypted);
-                listBusinessesASO = businessRBVD66ServiceInternal.getListBusinessesByCustomerId(customerIdEncrypted);
-                crossOperationsBusinessInsuranceContractBank.validateListBusinessesASO(listBusinessesASO);
-                PersonaBO persona = mapperHelper.constructPerson(requestBody,customer,quotationData);
-                String filledAddress = EmissionBean.fillAddress(customerList, persona, new StringBuilder(),requestBody.getSaleChannelId(),applicationConfigurationService);
-                crossOperationsBusinessInsuranceContractBank.validateFilledAddress(filledAddress);
-            }
-        }
         RequiredFieldsEmissionDAO requiredFieldsEmissionDAO = PrePolicyTransfor.toRequiredFieldsEmissionDAO(quotationData, paymentPeriodData);
-        ProcessPrePolicyDTO processPrePolicyDTO = new ProcessPrePolicyDTO();
-        processPrePolicyDTO.setCustomerList(customerList);
-        processPrePolicyDTO.setListBusinessesASO(listBusinessesASO);
-        processPrePolicyDTO.setPolicy(requestBody);
-        processPrePolicyDTO.setRequiredFieldsEmission(requiredFieldsEmissionDAO);
-        processPrePolicyDTO.setOperationGlossaryDesc(quotationData.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString());
-        processPrePolicyDTO.setQuotationEmailDesc((String) quotationData.get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()));
-        processPrePolicyDTO.setQuotationCustomerPhoneDesc((String) quotationData.get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()) );
-        processPrePolicyDTO.setResponseQueryGetProductById(responseQueryGetProductById);
-        this.setResponseLibrary(ResponseLibrary.ResponseServiceBuilder.an().body(processPrePolicyDTO));
+        this.getResponseLibrary().getBody().setPolicy(requestBody);
+        this.getResponseLibrary().getBody().setRequiredFieldsEmission(requiredFieldsEmissionDAO);
+        this.getResponseLibrary().getBody().setOperationGlossaryDesc(quotationData.get(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue()).toString());
+        this.getResponseLibrary().getBody().setQuotationEmailDesc((String) quotationData.get(PISDProperties.FIELD_CONTACT_EMAIL_DESC.getValue()));
+        this.getResponseLibrary().getBody().setQuotationCustomerPhoneDesc((String) quotationData.get(PISDProperties.FIELD_CUSTOMER_PHONE_DESC.getValue()) );
+        this.getResponseLibrary().getBody().setRimacPaymentAccount((String) quotationData.get(RBVDProperties.FIELD_ACCOUNT_ID.getValue()) );
+        this.getResponseLibrary().getBody().setResponseQueryGetProductById(responseQueryGetProductById);
+        this.setResponseLibrary(this.getResponseLibrary());
     }
 
     @Override
@@ -152,8 +144,9 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         String saleChannelIdOffice = codeOfficeTelemarketing.equals(asoResponse.getData().getBank().getBranch().getId()) ? Channel.TELEMARKETING_CODE : requestBody.getSaleChannelId();
         requestBody = PrePolicyTransfor.toMapBranchAndSaleChannelIdOfficial(asoResponse.getData().getBank().getBranch().getId(), saleChannelIdOffice, requestBody);
         crossOperationsBusinessInsuranceContractBank.handleNonDigitalSale(requestBody);
-        boolean isEndorsement = CrossOperationsBusinessInsuranceContractBank.validateEndorsement(requestBody);
-        BigDecimal totalNumberInstallments = (requestBody.getFirstInstallment().getIsPaymentRequired()) ? BigDecimal.valueOf(requestBody.getInstallmentPlan().getTotalNumberInstallments() - 1) : BigDecimal.valueOf(requestBody.getInstallmentPlan().getTotalNumberInstallments());
+        boolean isEndorsement = ValidationUtil.validateEndorsementInParticipantsRequest(requestBody);
+        BigDecimal totalNumberInstallments = crossOperationsBusinessInsuranceContractBank.getTotalNumberInstallments(requestBody, emissionDao);
+
         InsuranceContractDAO contractDao = InsuranceContractBean.toInsuranceContractDAO(requestBody,emissionDao,asoResponse.getData().getId(),isEndorsement,totalNumberInstallments) ;
         Map<String, Object> argumentsForSaveContract = InsuranceContractMap.contractDaoToMap(contractDao);
 
@@ -166,12 +159,6 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
             throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
         }
         List<InsuranceCtrReceiptsDAO> receiptsList = InsuranceReceiptBean.toInsuranceCtrReceiptsDAO(asoResponse, requestBody);
-        List<String> productsNotGenerateMonthlyReceipts = this.basicProductInsuranceProperties.obtainProductsNotGenerateMonthlyReceipts();
-        String  operationGlossaryDesc = this.getResponseLibrary().getBody().getOperationGlossaryDesc();
-        if(Period.MONTHLY_LARGE.equalsIgnoreCase(requestBody.getInstallmentPlan().getPeriod().getId()) && !productsNotGenerateMonthlyReceipts.contains(operationGlossaryDesc)){
-            List<InsuranceCtrReceiptsDAO> receipts = InsuranceReceiptBean.toGenerateMonthlyReceipts(receiptsList.get(0));
-            receiptsList.addAll(receipts);
-        }
         Map<String, Object>[] receiptsArguments = InsuranceReceiptMap.receiptsToMaps(receiptsList);
         Boolean isSavedInsuranceReceipts = this.insuranceCtrReceiptsDAO.saveInsuranceReceipts(receiptsArguments);
         if(!isSavedInsuranceReceipts){
@@ -186,8 +173,11 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         this.setResponseLibrary(this.getResponseLibrary());
     }
 
+
+
     @Override
     protected void executeSaveInsuranceData() {
+        List<EndosatarioBO> endosatarios = null;
         PolicyDTO requestBody = this.getResponseLibrary().getBody().getPolicy();
         PolicyASO asoResponse = this.getResponseLibrary().getBody().getAsoResponse();
         RequiredFieldsEmissionDAO emissionDao = this.getResponseLibrary().getBody().getRequiredFieldsEmission();
@@ -210,19 +200,14 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
             }
         }
 
-        if(!CollectionUtils.isEmpty(requestBody.getRelatedContracts())){
-            List<RelatedContractDAO> relatedContractsDao = RelatedContractsList.toRelatedContractDAOList(requestBody, contractDao);
-            boolean isSavedParticipant = insurncRelatedContract.savedContractDetails(relatedContractsDao);
-            if(!isSavedParticipant){
-                String message = String.format(INSERTION_ERROR_IN_TABLE.getMessage(),RBVDInternalConstants.Tables.T_PISD_INSURANCE_CONTRACT);
-                this.addAdviceWithDescription(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
-                throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
-            }
-        }
-
         if(this.getResponseLibrary().getBody().getIsEndorsement()){
-           String endosatarioRuc = requestBody.getParticipants().get(1).getIdentityDocument().getNumber();
-           Double endosatarioPorcentaje = requestBody.getParticipants().get(1).getBenefitPercentage();
+            ParticipantDTO participantEndorse = ValidationUtil.filterParticipantByType(requestBody.getParticipants(),RBVDInternalConstants.Endorsement.ENDORSEMENT);
+            String endosatarioRuc = Objects.isNull(participantEndorse) ? StringUtils.EMPTY : participantEndorse.getIdentityDocument().getNumber();
+            Double endosatarioPorcentaje = Objects.isNull(participantEndorse) ? 0.0 : participantEndorse.getBenefitPercentage();
+            endosatarios = new ArrayList<>();
+            EndosatarioBO endosatario = new EndosatarioBO(endosatarioRuc,endosatarioPorcentaje.intValue());
+            endosatarios.add(endosatario);
+
            boolean isEndorsementSaved = this.IEndorsementInsurncCtrDAO.saveEndosermentInsurncCtr(contractDao,endosatarioRuc,endosatarioPorcentaje);
             if(!isEndorsementSaved){
                 String message = String.format(INSERTION_ERROR_IN_TABLE.getMessage(),RBVDInternalConstants.Tables.T_PISD_ENDORSEMENT_INSRNC_CTR);
@@ -230,6 +215,7 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
                 throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
             }
         }
+        this.getResponseLibrary().getBody().setEndosatarios(endosatarios);
         this.getResponseLibrary().getBody().setPolicy(requestBody);
         this.setResponseLibrary(this.getResponseLibrary());
     }
@@ -250,17 +236,10 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         this.crossOperationsBusinessInsuranceContractBank = crossOperationsBusinessInsuranceContractBank;
     }
 
-    public void setBusinessRBVD66ServiceInternal(BusinessRBVD66ServiceInternal businessRBVD66ServiceInternal) {
-        this.businessRBVD66ServiceInternal = businessRBVD66ServiceInternal;
-    }
-
     public void setMapperHelper(MapperHelper mapperHelper) {
         this.mapperHelper = mapperHelper;
     }
 
-    public void setInsurncRelatedContract(IInsurncRelatedContract insurncRelatedContract) {
-        this.insurncRelatedContract = insurncRelatedContract;
-    }
 
     public void setIEndorsementInsurncCtrDAO(com.bbva.rbvd.lib.r211.impl.service.IEndorsementInsurncCtrDAO IEndorsementInsurncCtrDAO) {
         this.IEndorsementInsurncCtrDAO = IEndorsementInsurncCtrDAO;
@@ -298,10 +277,6 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         this.contractPISD201ServiceInternal = contractPISD201ServiceInternal;
     }
 
-    public void setCryptoServiceInternal(CryptoServiceInternal cryptoServiceInternal) {
-        this.cryptoServiceInternal = cryptoServiceInternal;
-    }
-
     public void setCustomerRBVD066InternalService(CustomerRBVD066InternalService customerRBVD066InternalService) {
         this.customerRBVD066InternalService = customerRBVD066InternalService;
     }
@@ -317,5 +292,10 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
     public void setInsuranceProductDAO(IInsuranceProductDAO insuranceProductDAO) {
         this.insuranceProductDAO = insuranceProductDAO;
     }
+
+    public void setPolicyServiceExternal(PolicyServiceExternal policyServiceExternal) {
+        this.policyServiceExternal = policyServiceExternal;
+    }
+
 }
 

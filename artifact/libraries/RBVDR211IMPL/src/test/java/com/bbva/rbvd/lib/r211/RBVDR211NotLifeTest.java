@@ -68,9 +68,9 @@ import static org.mockito.Mockito.when;
 		"classpath:/META-INF/spring/RBVDR211-arc.xml",
 		"classpath:/META-INF/spring/RBVDR211-arc-test.xml" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class RBVDR211V2Test {
+public class RBVDR211NotLifeTest {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211V2Test.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211NotLifeTest.class);
 	private static final String AGENT_AND_PROMOTER_DEFAULT_CODE = "UCQGSPPP";
 
 	@Spy
@@ -212,6 +212,7 @@ public class RBVDR211V2Test {
 		when(this.applicationConfigurationService.getDefaultProperty("property.range.payment.amount.insurance", "5")).thenReturn("5");
 		when(this.applicationConfigurationService.getDefaultProperty(eq("MONTHLY"),eq(StringUtils.EMPTY))).thenReturn("M");
 		when(this.applicationConfigurationService.getDefaultProperty(eq("flow.royal2.enabled.all.products"),eq(Boolean.FALSE.toString()))).thenReturn(Boolean.TRUE.toString());
+		when(this.applicationConfigurationService.getDefaultProperty(eq("flow.royal2.enabled.all.products.life"),eq(Boolean.FALSE.toString()))).thenReturn(Boolean.TRUE.toString());
 
 		asoResponse = mockData.getEmisionASOResponse();
 		rimacResponse = mockData.getEmisionRimacResponse();

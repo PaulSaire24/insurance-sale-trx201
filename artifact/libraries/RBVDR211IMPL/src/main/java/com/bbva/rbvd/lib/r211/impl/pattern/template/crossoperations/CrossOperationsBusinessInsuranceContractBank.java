@@ -12,9 +12,11 @@ import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDValidation;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
 import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
@@ -26,9 +28,7 @@ import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalColumn;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
-import com.bbva.rbvd.lib.r211.impl.pattern.template.BasicProductInsuranceBankNotLifeImpl;
 import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
-import com.bbva.rbvd.lib.r211.impl.service.IInsrncQuotationModDAO;
 import com.bbva.rbvd.lib.r211.impl.service.api.CryptoServiceInternal;
 import com.bbva.rbvd.lib.r211.impl.service.api.CustomerRBVD066InternalService;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsrcContractParticipantBean;
@@ -68,13 +68,12 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
      * If any of these validations fail, it throws a validation exception.
      *
      * @param enableValidationQuotationAmount A boolean indicating whether the validation of the quotation amount is enabled.
-     * @param insrncQuotationModDAO The DAO used to retrieve the quotation data.
+     * @param quotationData The DAO used to retrieve the quotation data.
      * @param requestBody The policy data transfer object (DTO) that contains the data to be validated.
      * @throws BusinessException If any of the validations fail.
      */
-    public void validateQuotationAmount(boolean enableValidationQuotationAmount, IInsrncQuotationModDAO insrncQuotationModDAO, PolicyDTO requestBody) {
+    public void validateQuotationAmount(boolean enableValidationQuotationAmount, Map<String, Object> quotationData, PolicyDTO requestBody) {
         if(enableValidationQuotationAmount){
-            Map<String, Object> quotationData = validateMap(insrncQuotationModDAO.findQuotationByQuotationId(requestBody.getQuotationId())).orElseThrow(() -> buildValidation(ERROR_EMPTY_RESULT_QUOTATION_DATA));
             String frequencyType = ofNullable(quotationData.get(RBVDInternalColumn.PaymentPeriod.FIELD_POLICY_PAYMENT_FREQUENCY_TYPE)).map(Object::toString).orElseThrow(() -> {
                 String message = String.format(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE.getMessage(), requestBody.getQuotationId());
                 this.addAdviceWithDescription(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE.getAdviceCode(),message);
@@ -217,6 +216,12 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
         return listParticipants;
     }
 
+    public void validateResponseAddParticipantsService(AgregarTerceroBO responseAddParticipants) {
+        if (responseAddParticipants == null || responseAddParticipants.getErrorRimacBO() != null) {
+            throw RBVDValidation.build(RBVDErrors.ERROR_CALL_ADD_PARTICIPANTS_RIMAC_SERVICE);
+        }
+    }
+
     public static List<ContactDTO> obtainContactDetails(String emailEncrypt, String phoneEncrypt,GetContactDetailsASO contactDetails) {
         List<ContactDTO> contacts = new ArrayList<>();
         String emailContact = contactDetails.getData().stream().filter(contact -> emailEncrypt.contains(contact.getContactDetailId()))
@@ -316,7 +321,19 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
         }
     }
 
-    public void validateFilledAddress(String filledAddress) {
+    public BigDecimal getTotalNumberInstallments(PolicyDTO requestBody, RequiredFieldsEmissionDAO emissionDao) {
+        BigDecimal totalNumberInstallments;
+        List<String> lifeProduct = Arrays.asList(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_EASYYES.getValue(), RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_2.getValue());
+        if(lifeProduct.contains(requestBody.getProductId())){
+            totalNumberInstallments = emissionDao.getContractDurationNumber();
+        }else{
+            totalNumberInstallments = (requestBody.getFirstInstallment().getIsPaymentRequired()) ? BigDecimal.valueOf(requestBody.getInstallmentPlan().getTotalNumberInstallments() - 1) : BigDecimal.valueOf(requestBody.getInstallmentPlan().getTotalNumberInstallments());
+        }
+        return totalNumberInstallments;
+    }
+
+
+    public <T> void validateFilledAddress(T filledAddress) {
         if (isNull(filledAddress)) {
             String message =  String.format( ERROR_VALID_ADDRESS.getMessage(),"N/A");
             this.addAdviceWithDescription(ERROR_VALID_ADDRESS.getAdviceCode(),message);

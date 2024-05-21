@@ -4,10 +4,13 @@ package com.bbva.rbvd.dto.insurancemissionsale.dto;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
+
+import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
@@ -37,6 +40,36 @@ public class ProcessPrePolicyDTO {
     private CustomerListASO customerList ;
     private ListBusinessesASO listBusinessesASO ;
     private EmisionBO rimacResponse;
+
+    private String insuranceBusinessName;
+
+    private List<EndosatarioBO> endosatarios;
+
+    private String rimacPaymentAccount;
+
+    public String getRimacPaymentAccount() {
+        return rimacPaymentAccount;
+    }
+
+    public void setRimacPaymentAccount(String rimacPaymentAccount) {
+        this.rimacPaymentAccount = rimacPaymentAccount;
+    }
+
+    public String getInsuranceBusinessName() {
+        return insuranceBusinessName;
+    }
+
+    public void setInsuranceBusinessName(String insuranceBusinessName) {
+        this.insuranceBusinessName = insuranceBusinessName;
+    }
+
+    public List<EndosatarioBO> getEndosatarios() {
+        return endosatarios;
+    }
+
+    public void setEndosatarios(List<EndosatarioBO> endosatarios) {
+        this.endosatarios = endosatarios;
+    }
 
     public EmisionBO getRimacResponse() {
         return rimacResponse;
@@ -166,7 +199,6 @@ public class ProcessPrePolicyDTO {
         return requiredFieldsEmission;
     }
 
-
     @Override
     public String toString() {
         return new StringJoiner(", ", ProcessPrePolicyDTO.class.getSimpleName() + "[", "]")
@@ -185,6 +217,9 @@ public class ProcessPrePolicyDTO {
                 .add("responseQueryGetProductById=" + responseQueryGetProductById)
                 .add("customerList=" + customerList)
                 .add("listBusinessesASO=" + listBusinessesASO)
+                .add("rimacResponse=" + rimacResponse)
+                .add("insuranceBusinessName='" + insuranceBusinessName + "'")
+                .add("endosatarios=" + endosatarios)
                 .toString();
     }
 }

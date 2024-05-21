@@ -12,6 +12,11 @@ public class Properties {
         return this.getApplicationConfigurationService().getDefaultProperty(keyDefault,valueDefault);
     }
 
+    public String getProperty(String key){
+        String keyDefault = StringUtils.isEmpty(key) ? StringUtils.EMPTY : key;
+        return this.getApplicationConfigurationService().getProperty(keyDefault);
+    }
+
     private ApplicationConfigurationService getApplicationConfigurationService() {
         return applicationConfigurationService;
     }
