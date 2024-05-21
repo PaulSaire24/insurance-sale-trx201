@@ -18,9 +18,12 @@ import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
 import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.time.ZoneOffset;
@@ -39,7 +42,48 @@ import static java.util.Objects.nonNull;
 
 public class EmissionBean {
 
+    private static final String PROPERTY_VALIDATE_NATURAL_PARTICIPANT = "invoke.participant.validation.emission.noLife.natural.";
+    private static final String PROPERTY_VALIDATE_LEGAL_PARTICIPANT = "invoke.participant.validation.emission.noLife.legal.";
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmissionBean.class);
 
+
+    public static EmisionBO addNotLifeParticipants(EmisionBO rimacRequest, PolicyDTO requestBody, ApplicationConfigurationService applicationConfigurationService,CustomerListASO customerListASO,
+                                            ProcessPrePolicyDTO processPrePolicyDTO) {
+
+        String productChannelConditionalNaturalPers = applicationConfigurationService.
+                getDefaultProperty(PROPERTY_VALIDATE_NATURAL_PARTICIPANT.
+                        concat(requestBody.getProductId()).concat(".").
+                        concat(requestBody.getSaleChannelId()),"true");
+        String productChannelConditionalLegalPers = applicationConfigurationService.
+                getDefaultProperty(PROPERTY_VALIDATE_LEGAL_PARTICIPANT.
+                        concat(requestBody.getProductId()).concat(".").
+                        concat(requestBody.getSaleChannelId()),"true");
+
+        boolean validateNaturalParticipant = Boolean.parseBoolean(productChannelConditionalNaturalPers);
+        boolean validateLegalParticipant = Boolean.parseBoolean(productChannelConditionalLegalPers);
+
+        if(!validateNaturalParticipant && !validateLegalParticipant){
+            return rimacRequest;
+        }
+
+
+        String tipoDoc = customerListASO.getData().get(0).getIdentityDocuments().get(0).getDocumentType().getId();
+        String nroDoc = customerListASO.getData().get(0).getIdentityDocuments().get(0).getDocumentNumber();
+        boolean isLegalPerson = RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20");
+
+        EmisionBO generalEmisionRequest = null;
+
+        if((validateNaturalParticipant && !isLegalPerson) || (isLegalPerson && validateLegalParticipant)) {
+            generalEmisionRequest = EmissionBean.toRequestGeneralBodyRimac(rimacRequest, requestBody,processPrePolicyDTO,customerListASO,applicationConfigurationService,processPrePolicyDTO.getOperationGlossaryDesc());
+            LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****", generalEmisionRequest);
+        }
+
+        if (isLegalPerson && validateLegalParticipant) {
+            OrganizationBean.setOrganization(generalEmisionRequest,requestBody,customerListASO,processPrePolicyDTO);
+        }
+
+        return Objects.isNull(generalEmisionRequest) ? rimacRequest : generalEmisionRequest;
+    }
 
 
     public static EmisionBO toRequestGeneralBodyRimac(EmisionBO rimacRequest, PolicyDTO requestBody, ProcessPrePolicyDTO processPrePolicyDTO,CustomerListASO customerList, ApplicationConfigurationService applicationConfigurationService,String operationGlossaryDesc){

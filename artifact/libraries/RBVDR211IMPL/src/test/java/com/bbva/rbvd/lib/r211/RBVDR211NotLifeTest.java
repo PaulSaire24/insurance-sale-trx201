@@ -325,7 +325,8 @@ public class RBVDR211NotLifeTest {
 		quotationEntity.setRfqInternalId("R05658");
 		quotationEntity.setPayrollId("P05658");
 		when(pisdR601.executeFindQuotationByReferenceAndPayrollId(anyString())).thenReturn(quotationEntity);
-
+		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.legal.833.BI", "true")).thenReturn("true");
+		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.natural.833.BI", "true")).thenReturn("true");
 
 	}
 
@@ -338,6 +339,7 @@ public class RBVDR211NotLifeTest {
 		}
 		return result;
 	}
+
 
 	@Test
 	public void executeBusinessLogicEmissionPrePolicyWithPolicyAlreadyExistsError() {

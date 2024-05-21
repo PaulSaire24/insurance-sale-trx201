@@ -20,6 +20,7 @@ public class NotLifeDefaultRimacDecorator extends InsuranceDecorator {
     private final ApplicationConfigurationService applicationConfigurationService;
 
 
+
     public NotLifeDefaultRimacDecorator(Insurance decoratedInsurance,ApplicationConfigurationService applicationConfigurationService) {
         super(decoratedInsurance);
         this.applicationConfigurationService = applicationConfigurationService;
@@ -33,8 +34,7 @@ public class NotLifeDefaultRimacDecorator extends InsuranceDecorator {
         RequiredFieldsEmissionDAO emissionDao = processPrePolicy.getRequiredFieldsEmission();
         String secondDataValue = createSecondDataValue(asoResponse);
         EmisionBO rimacRequest = EmissionBean.toRequestBodyRimac(requestBody.getInspection(), secondDataValue, requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
-        EmisionBO generalEmissionRequest = EmissionBean.toRequestGeneralBodyRimac(rimacRequest, requestBody, processPrePolicy,customerList, applicationConfigurationService,processPrePolicy.getOperationGlossaryDesc());
-        OrganizationBean.setOrganization(generalEmissionRequest,requestBody,customerList,processPrePolicy);
+        EmisionBO generalEmissionRequest = EmissionBean.addNotLifeParticipants(rimacRequest,requestBody,applicationConfigurationService,customerList,processPrePolicy);
         processPrePolicy.setRimacRequest(generalEmissionRequest);
         processPrePolicy.setQuotationId(emissionDao.getInsuranceCompanyQuotaId());
         processPrePolicy.setTraceId(requestBody.getTraceId());
