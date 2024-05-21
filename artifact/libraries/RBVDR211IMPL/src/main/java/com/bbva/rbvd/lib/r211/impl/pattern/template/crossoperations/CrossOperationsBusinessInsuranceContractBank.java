@@ -352,7 +352,6 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
 
     public void validateContractGeneration(ResponseLibrary<PolicyASO> responseService) {
         if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseService.getStatusProcess())){
-            this.addAdviceWithDescription(ERROR_RESPONSE_SERVICE_ICR2.getAdviceCode(),ERROR_RESPONSE_SERVICE_ICR2.getMessage());
             throw buildValidation(ERROR_RESPONSE_SERVICE_ICR2);
         }
     }

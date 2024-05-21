@@ -89,7 +89,13 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211Impl.class);
+
+	/**
+	 * Instance of BasicProductInsuranceProperties.
+	 * This property is used to access the configuration properties related to basic insurance products.
+	 */
 	private BasicProductInsuranceProperties basicProductInsuranceProperties;
+
 
 	/**
 	 * This method is responsible for executing the business logic for the emission of non-life insurance policies.
@@ -167,7 +173,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		return emissionPolicyLegacyBusiness.executeEmissionPrePolicyLifeProductLegacy(requestBody);
 	}
 
-
+	/**
+	 * @param basicProductInsuranceProperties the this.basicProductInsuranceProperties to set
+	 */
 	public void setBasicProductInsuranceProperties(BasicProductInsuranceProperties basicProductInsuranceProperties) {
 		this.basicProductInsuranceProperties = basicProductInsuranceProperties;
 	}
