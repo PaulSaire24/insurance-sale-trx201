@@ -1246,9 +1246,9 @@ public class RBVDR211Test {
 		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
 
-		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLifeProductLegacy(requestBody);
+		ResponseLibrary<PolicyDTO> validation = rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(requestBody);
 
-		assertNotNull(validation);
+		assertNotNull(validation.getBody());
 	}
 
 }
