@@ -33,6 +33,7 @@ import com.bbva.rbvd.lib.r211.impl.service.api.CryptoServiceInternal;
 import com.bbva.rbvd.lib.r211.impl.service.api.CustomerRBVD066InternalService;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsrcContractParticipantBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.PrePolicyTransfor;
+import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
 import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
 import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -52,13 +53,14 @@ import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.isValidateRange;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
-public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrary {
+public class CrossOperationsBusinessInsuranceContractBank {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CrossOperationsBusinessInsuranceContractBank.class);
 
     private BasicProductInsuranceProperties basicProductInsuranceProperties;
     private CryptoServiceInternal cryptoServiceInternal;
     private CustomerRBVD066InternalService customerRBVD066InternalService;
+    private final ArchitectureAPXUtils architectureAPXUtils = new ArchitectureAPXUtils();
 
     /**
      * This method is used to validate the quotation amount of a policy.
@@ -76,17 +78,17 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
         if(enableValidationQuotationAmount){
             String frequencyType = ofNullable(quotationData.get(RBVDInternalColumn.PaymentPeriod.FIELD_POLICY_PAYMENT_FREQUENCY_TYPE)).map(Object::toString).orElseThrow(() -> {
                 String message = String.format(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE.getMessage(), requestBody.getQuotationId());
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE.getAdviceCode(),message);
                 return buildValidation(ERROR_NOT_VALUE_QUOTATION_FREQUENCY_TYPE, message);
             });
             String paymentCurrencyId = ofNullable(quotationData.get(RBVDInternalColumn.Quotation.FIELD_PREMIUM_CURRENCY_ID)).map(Object::toString).orElseThrow(() -> {
                 String message = String.format(ERROR_NOT_VALUE_QUOTATION.getMessage(),RBVDInternalColumn.Quotation.FIELD_PREMIUM_CURRENCY_ID, requestBody.getQuotationId());
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_QUOTATION.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_NOT_VALUE_QUOTATION.getAdviceCode(),message);
                 return buildValidation(ERROR_NOT_VALUE_QUOTATION_CURRENCY_ID,message);
             });
             int paymentAmount = ofNullable(quotationData.get(RBVDInternalColumn.Quotation.FIELD_PREMIUM_AMOUNT)).map(premiumAmount -> new BigDecimal(premiumAmount.toString()).intValue()).orElseThrow(() -> {
                 String message = String.format(ERROR_NOT_VALUE_QUOTATION.getMessage(),RBVDInternalColumn.Quotation.FIELD_PREMIUM_AMOUNT, requestBody.getQuotationId());
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_QUOTATION.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_NOT_VALUE_QUOTATION.getAdviceCode(),message);
                 return buildValidation(ERROR_NOT_VALUE_PREMIUM_AMOUNT,message);
             });
 
@@ -105,35 +107,35 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
 
             if(!paymentCurrencyId.equals(totalAmountCurrencyId)){
                 String message = String.format(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getMessage(), paymentCurrencyId, totalAmountCurrencyId);
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
                 throw buildValidation(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID,message);
             }else if(RBVDInternalConstants.Period.ANNUAL.equalsIgnoreCase(frequencyType) && !isValidateRange(totalAmount, amountQuotationMin, amountQuotationMax) ){
                 String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), totalAmount, amountQuotationMin,amountQuotationMax);
-                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
                 throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
             }else if(RBVDInternalConstants.Period.MONTHLY.equalsIgnoreCase(frequencyType) && !isValidateRange(totalAmount, amountTotalAmountMin, amountTotalAmountMax) ){
                 String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), totalAmount, amountTotalAmountMin,amountTotalAmountMax);
-                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
                 throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
             }
 
             if(!paymentCurrencyId.equals(requestBody.getFirstInstallment().getPaymentAmount().getCurrency())){
                 String message = String.format(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getMessage(), paymentCurrencyId, totalAmountCurrencyId);
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
                 throw buildValidation(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID,message);
             }else if(!isValidateRange(requestBody.getFirstInstallment().getPaymentAmount().getAmount().intValue(), amountQuotationMin, amountQuotationMax)){
                 String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), requestBody.getFirstInstallment().getPaymentAmount().getAmount().intValue(), amountQuotationMin,amountQuotationMax);
-                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
                 throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
             }
 
             if(!paymentCurrencyId.equals(requestBody.getInstallmentPlan().getPaymentAmount().getCurrency())){
                 String message = String.format(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getMessage(), paymentCurrencyId, totalAmountCurrencyId);
-                this.addAdviceWithDescription(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID.getAdviceCode(),message);
                 throw buildValidation(ERROR_NOT_VALUE_REQUEST_CURRENCY_ID,message);
             }else if(!isValidateRange(requestBody.getInstallmentPlan().getPaymentAmount().getAmount().intValue(), amountQuotationMin, amountQuotationMax)){
                 String message = String.format(ERROR_VALID_RANGE_AMOUNT.getMessage(), requestBody.getInstallmentPlan().getPaymentAmount().getAmount().intValue(), amountQuotationMin,amountQuotationMax);
-                this.addAdviceWithDescription(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_VALID_RANGE_AMOUNT.getAdviceCode(),message);
                 throw buildValidation(ERROR_VALID_RANGE_AMOUNT,message);
             }
 
@@ -264,7 +266,7 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
     public void validatePaymentPeriodData(Map<String, Object> paymentPeriodData, String frequencyType) {
         if(CollectionUtils.isEmpty(paymentPeriodData)){
             String message =  String.format( ERROR_EMPTY_RESULT_FREQUENCY_TYPE.getMessage(),frequencyType);
-            this.addAdviceWithDescription(ERROR_EMPTY_RESULT_FREQUENCY_TYPE.getAdviceCode(),message);
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_EMPTY_RESULT_FREQUENCY_TYPE.getAdviceCode(),message);
             throw buildValidation(ERROR_EMPTY_RESULT_FREQUENCY_TYPE,message);
         }
     }
@@ -272,7 +274,7 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
     public void validateQuotationData(Map<String, Object> quotationData, String quotationId) {
         if(CollectionUtils.isEmpty(quotationData)){
             String message =  String.format( ERROR_EMPTY_RESULT_QUOTATION_DATA.getMessage(),quotationId);
-            this.addAdviceWithDescription(ERROR_EMPTY_RESULT_QUOTATION_DATA.getAdviceCode(),message);
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_EMPTY_RESULT_QUOTATION_DATA.getAdviceCode(),message);
             throw buildValidation(ERROR_EMPTY_RESULT_QUOTATION_DATA,message);
         }
     }
@@ -280,14 +282,14 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
     public void validateProductData(Map<String, Object> productData, String productId) {
         if(CollectionUtils.isEmpty(productData)){
             String message =  String.format( ERROR_EMPTY_RESULT_PRODUCT_DATA.getMessage(),productId);
-            this.addAdviceWithDescription(ERROR_EMPTY_RESULT_PRODUCT_DATA.getAdviceCode(),message);
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_EMPTY_RESULT_PRODUCT_DATA.getAdviceCode(),message);
             throw buildValidation(ERROR_EMPTY_RESULT_PRODUCT_DATA,message);
         }
     }
 
     public void validateCustomerList(CustomerListASO customerList) {
         if(Objects.isNull(customerList) || CollectionUtils.isEmpty(customerList.getData())){
-            this.addAdviceWithDescription(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getAdviceCode(),PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getMessage());
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getAdviceCode(),PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE.getMessage());
             throw PISDValidation.build(PISDErrors.ERROR_CONNECTION_VALIDATE_CUSTOMER_SERVICE);
         }
     }
@@ -301,7 +303,7 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
     public void validateFrequencyType(String frequencyType) {
         if(StringUtils.isEmpty(frequencyType)){
             String message =  String.format(ERROR_NOT_CONFIG_FREQUENCY_TYPE.getMessage(),frequencyType);
-            this.addAdviceWithDescription(ERROR_NOT_CONFIG_FREQUENCY_TYPE.getAdviceCode(),message);
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_NOT_CONFIG_FREQUENCY_TYPE.getAdviceCode(),message);
             throw buildValidation(ERROR_NOT_CONFIG_FREQUENCY_TYPE,message);
         }
     }
@@ -309,14 +311,14 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
 
     public void validateCustomerIdEncryption(String customerIdEncrypted) {
         if(StringUtils.isEmpty(customerIdEncrypted)){
-            this.addAdviceWithDescription(RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE.getAdviceCode(),RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE.getMessage());
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE.getAdviceCode(),RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE.getMessage());
             throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_CYPHER_SERVICE);
         }
     }
 
     public void validateListBusinessesASO(ListBusinessesASO listBusinessesASO) {
         if(Objects.isNull(listBusinessesASO)  || CollectionUtils.isEmpty(listBusinessesASO.getData())){
-            this.addAdviceWithDescription(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO.getAdviceCode(),RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO.getMessage());
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO.getAdviceCode(),RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO.getMessage());
             throw RBVDValidation.build(RBVDErrors.ERROR_CONNECTION_LIST_BUSINESSES_ASO);
         }
     }
@@ -336,7 +338,7 @@ public class CrossOperationsBusinessInsuranceContractBank extends AbstractLibrar
     public <T> void validateFilledAddress(T filledAddress) {
         if (isNull(filledAddress)) {
             String message =  String.format( ERROR_VALID_ADDRESS.getMessage(),"N/A");
-            this.addAdviceWithDescription(ERROR_VALID_ADDRESS.getAdviceCode(),message);
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_VALID_ADDRESS.getAdviceCode(),message);
             throw buildValidation(ERROR_VALID_ADDRESS,message);
         }
     }

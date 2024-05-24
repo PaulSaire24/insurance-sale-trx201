@@ -4,8 +4,9 @@ import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
+import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
 
-public abstract class InsuranceContractBank extends AbstractLibrary {
+public abstract class InsuranceContractBank {
 
     private ResponseLibrary<ProcessPrePolicyDTO> responseLibrary;
     protected abstract void executeValidateConditions(PolicyDTO requestBody);
@@ -13,6 +14,7 @@ public abstract class InsuranceContractBank extends AbstractLibrary {
     protected abstract void executeGenerateContract();
     protected abstract void executeSaveInsuranceData();
     protected abstract void executeGeneratePayment();
+    protected final ArchitectureAPXUtils architectureAPXUtils = new ArchitectureAPXUtils();
 
     /**
      * This method is responsible for generating an insurance contract.

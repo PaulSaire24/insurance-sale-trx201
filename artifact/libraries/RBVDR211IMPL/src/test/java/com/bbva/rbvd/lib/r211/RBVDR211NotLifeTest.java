@@ -340,6 +340,75 @@ public class RBVDR211NotLifeTest {
 		return result;
 	}
 
+	@Test
+	public void execute_create_create_emission_bank_successful_with_error_rimac() {
+
+		this.requestBody.getBank().getBranch().setId("7794");
+		requestBody.setProductId("833");
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+
+		this.requestBody.getValidityPeriod().setStartDate(calendar.getTime());
+		this.requestBody.getBank().getBranch().setId("0057");
+		this.requestBody.setSaleChannelId("BI");
+
+		Map<String,Object> responseGetHomeInfoForEmissionService = new HashMap<>();
+		responseGetHomeInfoForEmissionService.put("DEPARTMENT_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("PROVINCE_NAME", "LIMA");
+		responseGetHomeInfoForEmissionService.put("DISTRICT_NAME", "LINCE");
+		responseGetHomeInfoForEmissionService.put("HOUSING_TYPE", "A");
+		responseGetHomeInfoForEmissionService.put("AREA_PROPERTY_1_NUMBER", new BigDecimal(2));
+		responseGetHomeInfoForEmissionService.put("PROP_SENIORITY_YEARS_NUMBER", new BigDecimal(10));
+		responseGetHomeInfoForEmissionService.put("FLOOR_NUMBER", new BigDecimal(3));
+		responseGetHomeInfoForEmissionService.put("EDIFICATION_LOAN_AMOUNT", new BigDecimal(111.1));
+		responseGetHomeInfoForEmissionService.put("HOUSING_ASSETS_LOAN_AMOUNT", new BigDecimal(222.2));
+
+		Map<String,Object> responseGetHomeRiskDirectionService = new HashMap<>();
+		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+
+
+		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
+
+		customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("RUC");
+		customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("20999999991");
+
+		requestBody.getHolder().setId("123123123");
+
+		ResponseLibrary<PolicyDTO> validation = null;
+
+
+
+		ListBusinessesASO businesses = new ListBusinessesASO();
+		BusinessASO business = new BusinessASO();
+		FormationASO formation = new FormationASO();
+		formation.setCountry(new CountryASO());
+		business.setBusinessDocuments(Collections.singletonList(new BusinessDocumentASO()));
+		business.setFormation(formation);
+		business.setAnnualSales(new SaleASO());
+		business.setBusinessGroup(new BusinessGroupASO());
+		business.setEconomicActivity(new EconomicActivityASO());
+		businesses.setData(Collections.singletonList(business));
+
+		when(this.rbvdr201.executeGetListBusinesses(anyString(), eq(null))).thenReturn(businesses);
+		when(this.mapperHelper.constructPerson(any(), any(),any())).thenReturn(new PersonaBO());
+		when(applicationConfigurationService.getDefaultProperty(eq("products.modalities.only.first.receipt"), Mockito.anyString())).thenReturn("");
+        String messageError = "Ha ocurrido un evento inesperado en el servicio. Por favor, verifíquelo.";
+
+        // Error Principle 1.0
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenThrow(new NullPointerException(messageError));
+
+		validation = rbvdr211.executeEmissionPolicyNotLifeFlowNew(requestBody);
+		assertNotNull(validation.getBody());
+		assertEquals(validation.getStatusProcess(),RBVDInternalConstants.Status.OK);
+		assertEquals(validation.getFlowProcess(),RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS);
+		assertTrue(context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_GENERIC_APX_IN_CALLED_RIMAC.getAdviceCode().equalsIgnoreCase(advice.getCode())));
+		assertTrue(context.getAdviceList().stream().anyMatch(advice -> advice.getDescription().equalsIgnoreCase(messageError)));
+	}
+
 
 	@Test
 	public void executeBusinessLogicEmissionPrePolicyWithPolicyAlreadyExistsError() {

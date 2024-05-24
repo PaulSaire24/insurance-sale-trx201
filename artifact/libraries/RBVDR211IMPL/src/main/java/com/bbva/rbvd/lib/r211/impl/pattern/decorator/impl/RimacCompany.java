@@ -15,7 +15,7 @@ public class RimacCompany implements Insurance {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RimacCompany.class);
 
-    private final PolicyServiceExternal policyServiceExternal;
+    private PolicyServiceExternal policyServiceExternal;
 
     public RimacCompany(PolicyServiceExternal policyServiceExternal) {
         this.policyServiceExternal = policyServiceExternal;

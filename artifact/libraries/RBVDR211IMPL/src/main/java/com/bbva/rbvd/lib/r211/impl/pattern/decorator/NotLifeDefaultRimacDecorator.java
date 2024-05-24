@@ -17,7 +17,7 @@ import java.util.Objects;
 
 public class NotLifeDefaultRimacDecorator extends InsuranceDecorator {
 
-    private final ApplicationConfigurationService applicationConfigurationService;
+    private ApplicationConfigurationService applicationConfigurationService;
 
 
 

@@ -21,7 +21,8 @@ public enum RBVDInternalErrors {
     ERROR_VALID_RANGE_AMOUNT("RBVD00088054", true, "Se ha identificado un error en la validación del monto de cotización, ya que el valor proporcionado (%s) está fuera del rango permitido para la contratación de un seguro. Rango mínimo: %s, Rango máximo: %s,Variacion: %s. Por favor, revise y ajuste el monto de acuerdo con los rangos especificados."),
     ERROR_POLICY_ALREADY_EXISTS("RBVD00088055", true, "Ya hay un contrato activo con la cotización que enviaste, %s. Por favor, revisa el listado de contratos del cliente."),
     ERROR_NOT_VALUE_QUOTATION("RBVD00088056", true, "Se identificó un problema con el %s, el cual no se registró al efectuar la cotización. Por favor, revise la cotización relacionada en nuestros sistemas: %s."),
-    ERROR_GENERIC_HOST("RBVD00088057", true, "[MESSAGE_GENERIC]");
+    ERROR_GENERIC_HOST("RBVD00088057", true, "[MESSAGE_GENERIC]"),
+    ERROR_GENERIC_APX_IN_CALLED_RIMAC("RBVD00088058", true, "[MESSAGE_GENERIC]");
 
     private final String adviceCode;
     private final boolean rollback;

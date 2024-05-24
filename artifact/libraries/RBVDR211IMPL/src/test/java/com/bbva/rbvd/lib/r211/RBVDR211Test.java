@@ -50,6 +50,7 @@ import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
+import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 import org.junit.Before;
@@ -90,6 +91,7 @@ public class RBVDR211Test {
 	private static final String AGENT_AND_PROMOTER_DEFAULT_CODE = "UCQGSPPP";
 
 	private RBVDR211Impl rbvdr211 = new RBVDR211Impl();
+	private ArchitectureAPXUtils architectureAPXUtils = new ArchitectureAPXUtils();
 
 	private MockData mockData;
 	private MockDTO mockDTO;
@@ -292,7 +294,7 @@ public class RBVDR211Test {
 		ResponseLibrary<PolicyDTO> validation = rbvdr211.executeEmissionPolicyNotLifeFlowNew(requestBody);
 
 		assertNull(validation.getBody());
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.POLICY_ALREADY_EXISTS.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.POLICY_ALREADY_EXISTS.getAdviceCode());
 	}
 
 	@Test
@@ -305,7 +307,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
 	}
 
 	@Test
@@ -339,7 +341,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -351,7 +353,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -364,7 +366,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_MOV_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_MOV_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -386,7 +388,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -429,7 +431,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -445,7 +447,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -460,7 +462,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -501,7 +503,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -750,7 +752,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
 
 	@Test
@@ -767,7 +769,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLifeProductLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
 
 
@@ -786,7 +788,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
 
 	@Test
@@ -803,7 +805,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
 
 	@Test
@@ -821,7 +823,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
 
 	@Test
@@ -838,7 +840,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
 
 	@Test
@@ -856,7 +858,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
 
 	@Test
@@ -873,7 +875,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
 
 	@Test
@@ -891,7 +893,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
 
 	@Test
@@ -908,7 +910,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
 	}
 
 	@Test
@@ -925,7 +927,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
 	}
 
 	@Test
@@ -942,7 +944,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.QUERY_EMPTY_RESULT.getAdviceCode());
 	}
 
 	@Test
@@ -961,7 +963,7 @@ public class RBVDR211Test {
 		requestBody.setSaleChannelId("NN");
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLegacy(requestBody);
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.BAD_REQUEST_CREATEINSURANCE.getAdviceCode());
 	}
 
 	@Test
@@ -1105,7 +1107,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLifeProductLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.POLICY_ALREADY_EXISTS.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.POLICY_ALREADY_EXISTS.getAdviceCode());
 	}
 
 	@Test
@@ -1123,7 +1125,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLifeProductLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_PARTICIPANT_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -1136,7 +1138,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLifeProductLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.NON_EXISTENT_QUOTATION.getAdviceCode());
 	}
 	@Test
 	public void executeBusinessLogicEmissionPrePolicyLifeEasyYesWitContractInsertionError() throws IOException {
@@ -1169,7 +1171,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLifeProductLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -1182,7 +1184,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLifeProductLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
 	}
 
 	@Test
@@ -1195,7 +1197,7 @@ public class RBVDR211Test {
 		PolicyDTO validation = rbvdr211.executeEmissionPrePolicyLifeProductLegacy(requestBody);
 
 		assertNull(validation);
-		assertEquals(this.rbvdr211.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_MOV_TABLE.getAdviceCode());
+		assertEquals(this.architectureAPXUtils.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_MOV_TABLE.getAdviceCode());
 	}
 
 	@Test

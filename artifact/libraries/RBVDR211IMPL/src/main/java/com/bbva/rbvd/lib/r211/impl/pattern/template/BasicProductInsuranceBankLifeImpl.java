@@ -76,7 +76,7 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
         String insuranceBusinessName = null;
         if(existContractWithQuotation){
             String messageErrorContractWithQuotation = String.format(ERROR_POLICY_ALREADY_EXISTS.getMessage(),requestBody.getQuotationId());
-            this.addAdviceWithDescription(ERROR_POLICY_ALREADY_EXISTS.getAdviceCode(),messageErrorContractWithQuotation);
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_POLICY_ALREADY_EXISTS.getAdviceCode(),messageErrorContractWithQuotation);
             throw new BusinessException(ERROR_POLICY_ALREADY_EXISTS.getAdviceCode(), ERROR_POLICY_ALREADY_EXISTS.isRollback(), ERROR_POLICY_ALREADY_EXISTS.getMessage());
         }
 
@@ -155,7 +155,7 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
         Boolean isSavedInsuranceContract = this.insuranceContractDAO.saveInsuranceContract(argumentsForSaveContract);
         if(!isSavedInsuranceContract){
             String message = String.format(INSERTION_ERROR_IN_TABLE.getMessage(),RBVDInternalConstants.Tables.T_PISD_INSURANCE_CONTRACT);
-            this.addAdviceWithDescription(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
             throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
         }
         List<InsuranceCtrReceiptsDAO> receiptsList = InsuranceReceiptBean.toInsuranceCtrReceiptsDAO(asoResponse, requestBody);
@@ -163,7 +163,7 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
         Boolean isSavedInsuranceReceipts = this.insuranceCtrReceiptsDAO.saveInsuranceReceipts(receiptsArguments);
         if(!isSavedInsuranceReceipts){
             String message = String.format(INSERTION_ERROR_IN_TABLE.getMessage(),RBVDInternalConstants.Tables.T_PISD_INSURANCE_CTR_RECEIPTS);
-            this.addAdviceWithDescription(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
             throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
         }
         this.getResponseLibrary().getBody().setAsoResponse(asoResponse);
@@ -186,7 +186,7 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
         boolean isSavedContractMov = this.insrncContractMovDAO.saveInsrncContractmov(contractMovDao);
         if(!isSavedContractMov){
             String message = String.format(INSERTION_ERROR_IN_TABLE.getMessage(),RBVDInternalConstants.Tables.T_PISD_INSRNC_CONTRACT_MOV);
-            this.addAdviceWithDescription(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
             throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
         }
         List<Map<String, Object>> rolesInMap = this.insrncRoleModalityDAO.findByProductIdAndModalityType(emissionDao.getInsuranceProductId(), requestBody.getProductPlan().getId());
@@ -195,7 +195,7 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
             boolean isSavedParticipant = insurncCtrParticipantDAO.savedContractParticipant(participants);
             if(!isSavedParticipant){
                 String message = String.format(INSERTION_ERROR_IN_TABLE.getMessage(),RBVDInternalConstants.Tables.T_PISD_INSRNC_CTR_PARTICIPANT);
-                this.addAdviceWithDescription(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
                 throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
             }
         }
@@ -211,7 +211,7 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
            boolean isEndorsementSaved = this.IEndorsementInsurncCtrDAO.saveEndosermentInsurncCtr(contractDao,endosatarioRuc,endosatarioPorcentaje);
             if(!isEndorsementSaved){
                 String message = String.format(INSERTION_ERROR_IN_TABLE.getMessage(),RBVDInternalConstants.Tables.T_PISD_ENDORSEMENT_INSRNC_CTR);
-                this.addAdviceWithDescription(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
                 throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
             }
         }

@@ -1,35 +1,29 @@
 package com.bbva.rbvd.lib.r211.impl.business;
 
 import com.bbva.apx.exception.business.BusinessException;
-import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.event.GifoleEventInternal;
 import com.bbva.rbvd.lib.r211.impl.pattern.factory.RimacCompanyLifeFactory;
-import com.bbva.rbvd.lib.r211.impl.pattern.factory.RimacCompanyNotLifeFactory;
 import com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank;
 import com.bbva.rbvd.lib.r211.impl.service.IInsuranceContractDAO;
-import com.bbva.rbvd.lib.r211.impl.service.IInsuranceCtrReceiptsDAO;
-import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsuranceReceiptBean;
+import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 
-import static java.util.stream.Collectors.toList;
-
-public class EmissionPolicyLifeBusinessImpl extends AbstractLibrary {
+public class EmissionPolicyLifeBusinessImpl  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmissionPolicyLifeBusinessImpl.class);
 
@@ -38,6 +32,8 @@ public class EmissionPolicyLifeBusinessImpl extends AbstractLibrary {
     private IInsuranceContractDAO insuranceContractDAO;
     private MapperHelper mapperHelper;
     private GifoleEventInternal gifoleEventInternal;
+
+    private final ArchitectureAPXUtils architectureAPXUtils = new ArchitectureAPXUtils();
 
     /**
      * This method is responsible for executing the emission of a policy.
@@ -90,7 +86,7 @@ public class EmissionPolicyLifeBusinessImpl extends AbstractLibrary {
 
             boolean updatedContract = this.insuranceContractDAO.updateInsuranceContract(argumentsRimacContractInformation);
             if(!updatedContract) {
-                this.addAdviceWithDescription(RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getMessage());
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getMessage());
                 throw RBVDValidation.build(RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
             }
 
@@ -100,7 +96,7 @@ public class EmissionPolicyLifeBusinessImpl extends AbstractLibrary {
             if(processPrePolicyDTO.getIsEndorsement()) {
                 boolean updateEndorsement = this.insuranceContractDAO.updateEndorsementInContract(policyNumber,intAccountId);
                 if(!updateEndorsement){
-                    this.addAdviceWithDescription(RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getMessage());
+                    this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getMessage());
                     throw RBVDValidation.build(RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
                 }
             }

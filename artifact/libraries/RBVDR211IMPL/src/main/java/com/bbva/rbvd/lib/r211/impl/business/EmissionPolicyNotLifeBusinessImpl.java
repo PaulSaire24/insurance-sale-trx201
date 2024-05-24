@@ -10,14 +10,17 @@ import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.event.GifoleEventInternal;
 import com.bbva.rbvd.lib.r211.impl.pattern.factory.RimacCompanyNotLifeFactory;
+import com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory;
 import com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank;
 import com.bbva.rbvd.lib.r211.impl.service.IInsuranceContractDAO;
 import com.bbva.rbvd.lib.r211.impl.service.IInsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsuranceReceiptBean;
+import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,18 +32,20 @@ import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 
-public class EmissionPolicyNotLifeBusinessImpl extends AbstractLibrary {
+public class EmissionPolicyNotLifeBusinessImpl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmissionPolicyNotLifeBusinessImpl.class);
 
     private InsuranceContractBank insuranceContractBank;
-    private RimacCompanyNotLifeFactory rimacCompanyNotLifeFactory;
+    private InsuranceCompanyFactory insuranceCompanyFactory;
     private IInsuranceContractDAO insuranceContractDAO;
     private MapperHelper mapperHelper;
     private GifoleEventInternal gifoleEventInternal;
     private ApplicationConfigurationService applicationConfigurationService;
 
     private IInsuranceCtrReceiptsDAO insuranceCtrReceiptsDAO;
+
+    private final ArchitectureAPXUtils architectureAPXUtils = new ArchitectureAPXUtils();
 
     /**
      * This method is responsible for executing the emission of a policy.
@@ -55,9 +60,10 @@ public class EmissionPolicyNotLifeBusinessImpl extends AbstractLibrary {
      */
     public ResponseLibrary<PolicyDTO> executeEmissionPolicy(PolicyDTO requestBody) {
         LOGGER.info(" EmissionPolicyBusinessImpl :: executeEmissionPolicy :: [ START ]");
+        ResponseLibrary<ProcessPrePolicyDTO> responseProcessPrePolicy = ResponseLibrary.ResponseServiceBuilder.an().body(new ProcessPrePolicyDTO());
         try {
-             ResponseLibrary<ProcessPrePolicyDTO> processPrePolicy  = insuranceContractBank.executeGenerateInsuranceContractRoyal(requestBody);
-             ResponseLibrary<ProcessPrePolicyDTO> processRimacPolicy = rimacCompanyNotLifeFactory.createInsuranceByProduct(processPrePolicy.getBody());
+             responseProcessPrePolicy  = insuranceContractBank.executeGenerateInsuranceContractRoyal(requestBody);
+             ResponseLibrary<ProcessPrePolicyDTO> processRimacPolicy = insuranceCompanyFactory.createInsuranceByProduct(responseProcessPrePolicy.getBody());
              afterProcessBusinessExecutionCross(processRimacPolicy.getBody());
              return ResponseLibrary.ResponseServiceBuilder.an()
                      .flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
@@ -65,6 +71,13 @@ public class EmissionPolicyNotLifeBusinessImpl extends AbstractLibrary {
                      .body(processRimacPolicy.getBody().getPolicy());
         }catch (BusinessException exception){
             LOGGER.error(" :: executeEmissionPolicy[ exceptionCode :: {} ,  message :: {}]",exception.getAdviceCode(),exception.getMessage());
+            if(RBVDInternalErrors.ERROR_GENERIC_APX_IN_CALLED_RIMAC.getAdviceCode().equalsIgnoreCase(exception.getAdviceCode())){
+                afterProcessBusinessExecutionCross(responseProcessPrePolicy.getBody());
+                return ResponseLibrary.ResponseServiceBuilder.an()
+                        .statusIndicatorProcess(RBVDInternalConstants.Status.OK)
+                        .flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+                        .body(responseProcessPrePolicy.getBody().getPolicy());
+            }
             return ResponseLibrary.ResponseServiceBuilder.an()
                     .statusIndicatorProcess( exception.isHasRollback() ? RBVDInternalConstants.Status.EWR : RBVDInternalConstants.Status.ENR)
                     .flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
@@ -91,7 +104,7 @@ public class EmissionPolicyNotLifeBusinessImpl extends AbstractLibrary {
 
             boolean updatedContract = this.insuranceContractDAO.updateInsuranceContract(argumentsRimacContractInformation);
             if(!updatedContract) {
-                this.addAdviceWithDescription(RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getMessage());
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getMessage());
                 throw RBVDValidation.build(RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
             }
 
@@ -109,7 +122,7 @@ public class EmissionPolicyNotLifeBusinessImpl extends AbstractLibrary {
 
                 boolean isMultipleInsertion = this.insuranceCtrReceiptsDAO.updateExpirationDateReceipts(receiptUpdateArguments);
                 if(!isMultipleInsertion){
-                    this.addAdviceWithDescription(RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getMessage());
+                    this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getMessage());
                     throw RBVDValidation.build(RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE);
                 }
             }
@@ -121,7 +134,7 @@ public class EmissionPolicyNotLifeBusinessImpl extends AbstractLibrary {
             if(processPrePolicyDTO.getIsEndorsement()) {
                 boolean updateEndorsement = this.insuranceContractDAO.updateEndorsementInContract(policyNumber,intAccountId);
                 if(!updateEndorsement){
-                    this.addAdviceWithDescription(RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getMessage());
+                    this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getMessage());
                     throw RBVDValidation.build(RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE);
                 }
             }
@@ -152,8 +165,8 @@ public class EmissionPolicyNotLifeBusinessImpl extends AbstractLibrary {
         this.insuranceCtrReceiptsDAO = insuranceCtrReceiptsDAO;
     }
 
-    public void setRimacCompanyNotLifeFactory(RimacCompanyNotLifeFactory rimacCompanyNotLifeFactory) {
-        this.rimacCompanyNotLifeFactory = rimacCompanyNotLifeFactory;
+    public void setInsuranceCompanyFactory(InsuranceCompanyFactory insuranceCompanyFactory) {
+        this.insuranceCompanyFactory = insuranceCompanyFactory;
     }
 
     public void setInsuranceContractBank(InsuranceContractBank insuranceContractBank) {

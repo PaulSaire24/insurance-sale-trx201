@@ -16,7 +16,7 @@ import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 /**
  * This class automatically defines the libraries and utilities that it will use.
  */
-public abstract class RBVDR211Abstract extends AbstractLibrary implements RBVDR211 {
+public abstract class RBVDR211Abstract implements RBVDR211 {
 
 	protected ApplicationConfigurationService applicationConfigurationService;
 

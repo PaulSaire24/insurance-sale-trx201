@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xsi:schemaLocation="http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- AOP -->
+    <!-- Define the appearance -->
+    <bean id="errorManagementNotLifeCross" class="com.bbva.rbvd.lib.r211.impl.aspects.errors.ErrorManagementNotLifeCross"/>
+    <!-- Define the cut and appearance -->
+    <!-- Define the cut and appearance  -->
+    <aop:config>
+        <aop:aspect ref="errorManagementNotLifeCross">
+            <aop:pointcut id="createInsuranceByProduct" expression="execution(* com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory.createInsuranceByProduct(..))"/>
+            <aop:after-throwing method="controlCommonFailuresOfUnexpected" pointcut-ref="createInsuranceByProduct" throwing="error"/>
+        </aop:aspect>
+    </aop:config>
+</beans>

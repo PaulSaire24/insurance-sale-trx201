@@ -12,7 +12,7 @@ import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
 
 public class LifeDefaultRimacDecorator extends InsuranceDecorator {
 
-    private final MapperHelper mapperHelper ;
+    private MapperHelper mapperHelper ;
     public LifeDefaultRimacDecorator(MapperHelper mapperHelper, Insurance decoratedInsurance) {
         super(decoratedInsurance);
         this.mapperHelper = mapperHelper;
