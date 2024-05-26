@@ -19,9 +19,9 @@ public class ContractPISD201ServiceInternal {
         return this.rbvdR201.executePrePolicyEmissionCics(requestBody,indicatorPreFormalized);
     }
 
-    public ResponseLibrary<PolicyASO> generateFormalizationContractAndPayment(PolicyASO policyASO){
+    public ResponseLibrary<PolicyASO> generateFormalizationContractAndPayment(PolicyASO policyASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized){
         LOGGER.info(" ContractPISD201ServiceInternal :: executeGenerateContractHost :: [ PolicyASO :: {} ]",policyASO);
-        return this.rbvdR201.executeInsurancePaymentAndFormalization(policyASO);
+        return this.rbvdR201.executeInsurancePaymentAndFormalization(policyASO,indicatorPreFormalized);
     }
 
     public void setRbvdR201(RBVDR201 rbvdR201) {

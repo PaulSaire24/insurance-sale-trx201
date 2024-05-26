@@ -28,6 +28,6 @@ public interface RBVDR201 {
 	Integer executePutEventUpsilonService(CreatedInsrcEventDTO createdInsuranceEvent);
 	AgregarTerceroBO executeAddParticipantsService(AgregarTerceroBO requestBody, String quotationId, String productId, String traceId);
 	ResponseLibrary<PolicyASO> executePrePolicyEmissionCics(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized);
-	ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(PolicyASO policyASO);
+	ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(PolicyASO policyASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized);
 
 }

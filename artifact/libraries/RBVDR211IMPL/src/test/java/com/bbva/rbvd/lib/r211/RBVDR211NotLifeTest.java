@@ -242,7 +242,7 @@ public class RBVDR211NotLifeTest {
 		when(rbvdr201.executePrePolicyEmissionCics(anyObject(),any())).thenReturn(ResponseLibrary.ResponseServiceBuilder
 				.an().statusIndicatorProcess(RBVDInternalConstants.Status.OK).body(asoResponse));
 
-		when(rbvdr201.executeInsurancePaymentAndFormalization(anyObject())).thenReturn(ResponseLibrary.ResponseServiceBuilder
+		when(rbvdr201.executeInsurancePaymentAndFormalization(anyObject(),any())).thenReturn(ResponseLibrary.ResponseServiceBuilder
 				.an().statusIndicatorProcess(RBVDInternalConstants.Status.OK).body(asoResponse));
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);
 		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(rimacResponse);

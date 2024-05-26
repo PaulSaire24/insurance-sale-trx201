@@ -224,7 +224,7 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
     protected void executeGeneratePayment() {
         if(this.basicProductInsuranceProperties.enabledPaymentICR3()){
             PolicyASO asoResponse = this.getResponseLibrary().getBody().getAsoResponse();
-            ResponseLibrary<PolicyASO> responseGeneratePayment = this.contractPISD201ServiceInternal.generateFormalizationContractAndPayment(asoResponse);
+            ResponseLibrary<PolicyASO> responseGeneratePayment = this.contractPISD201ServiceInternal.generateFormalizationContractAndPayment(asoResponse,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
             if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseGeneratePayment.getStatusProcess())){
                 throw buildValidation(ERROR_RESPONSE_SERVICE_ICR2);
             }

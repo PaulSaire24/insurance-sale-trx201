@@ -261,10 +261,10 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	 * @return ResponseLibrary<PolicyASO> A ResponseLibrary object that contains the status of the process and the new PolicyASO object if the process was successful.
 	 */
 	@Override
-	public ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(PolicyASO policyASO) {
+	public ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(PolicyASO policyASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized) {
 		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ START ]");
 		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ Data :: {} ]",policyASO);
-		ICR3Request icr3Request = ICR3Bean.mapIn(policyASO, (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE));
+		ICR3Request icr3Request = ICR3Bean.mapIn(policyASO, (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE),indicatorPreFormalized);
 		ICR3Response icr3Response = this.rbvdR602.executeFormalizationContractAndPayment(icr3Request);
 		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ ICR3Response :: {} ]",icr3Response);
 		if (!CollectionUtils.isEmpty(icr3Response.getHostAdviceCode())) {

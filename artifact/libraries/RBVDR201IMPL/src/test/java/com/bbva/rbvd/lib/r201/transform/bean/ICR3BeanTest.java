@@ -3,6 +3,7 @@ package com.bbva.rbvd.lib.r201.transform.bean;
 import com.bbva.pisd.dto.insurance.utils.PISDConstants;
 import com.bbva.rbvd.dto.cicsconnection.icr3.ICR3Request;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.mock.EntityMock;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +24,7 @@ public class ICR3BeanTest {
     public void mapIn_shouldReturnICR3Request_whenPaymentIsRequired() {
         policyASO.getData().getFirstInstallment().setIsPaymentRequired(true);
 
-        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode);
+        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
 
         assertEquals(PISDConstants.LETTER_SI, result.getCOBRO());
     }
@@ -32,14 +33,14 @@ public class ICR3BeanTest {
     public void mapIn_shouldReturnICR3Request_whenPaymentIsNotRequired() {
         policyASO.getData().getFirstInstallment().setIsPaymentRequired(false);
 
-        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode);
+        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
 
         assertEquals(PISDConstants.LETTER_NO, result.getCOBRO());
     }
 
     @Test
     public void mapIn_shouldReturnICR3Request_withCorrectUserCode() {
-        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode);
+        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
 
         assertEquals(userCode, result.getUSUARIO());
     }
@@ -50,7 +51,7 @@ public class ICR3BeanTest {
         String nrocta = "00110130270299963079";
         policyASO.getData().getPaymentMethod().setPaymentType(paymentType);
 
-        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode);
+        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
         assertEquals(paymentType, result.getMTDPGO());
         assertEquals(nrocta, result.getNROCTA());
     }
