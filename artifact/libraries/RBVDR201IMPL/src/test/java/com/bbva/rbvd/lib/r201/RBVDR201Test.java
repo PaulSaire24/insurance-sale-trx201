@@ -29,6 +29,8 @@ import com.bbva.rbvd.lib.r047.RBVDR047;
 import com.bbva.rbvd.lib.r066.RBVDR066;
 import com.bbva.rbvd.lib.r201.factory.ApiConnectorFactoryMock;
 import com.bbva.rbvd.lib.r201.impl.RBVDR201Impl;
+import com.bbva.rbvd.lib.r201.properties.EmissionServiceProperties;
+import com.bbva.rbvd.lib.r201.properties.Properties;
 import com.bbva.rbvd.lib.r201.util.RimacUrlForker;
 import com.bbva.rbvd.lib.r602.RBVDR602;
 import com.bbva.rbvd.mock.EntityMock;
@@ -92,6 +94,8 @@ public class RBVDR201Test {
 
 	private ApplicationConfigurationService applicationConfigurationService;
 
+	private EmissionServiceProperties emissionServiceProperties;
+
 	private static final String ERROR_SERVICE_ASO_MESSAGE = "Actualmente, estamos experimentando dificultades para establecer conexión con el servicio %s, utilizado en el servicio ASO '%s', debido a un error detectado: '%s'. Por favor, inténtalo de nuevo más tarde. Lamentamos los inconvenientes.";
 	private static final String ERROR_SERVICE_TIMEOUT_ASO_MESSAGE = "Actualmente, el servicio %s no está disponible debido a un tiempo de espera en la conexión, al ser utilizado en el contexto del servicio ASO %s. Te recomendamos intentar acceder a este servicio en unos minutos, gracias.";
 	private static final String PROPERTIES_TIMEOUT_EXCEPTION = "error.message.timeout";
@@ -140,8 +144,33 @@ public class RBVDR201Test {
 		applicationConfigurationService = Mockito.mock(ApplicationConfigurationService.class);
 		rbvdR201.setApplicationConfigurationService(applicationConfigurationService);
 
+		emissionServiceProperties = new EmissionServiceProperties();
+		emissionServiceProperties.setApplicationConfigurationService(applicationConfigurationService);
+
+		rbvdR201.setEmissionServiceProperties(emissionServiceProperties);
+
 		when(this.applicationConfigurationService.getDefaultProperty(eq(PROPERTIES_REST_EXCEPTION), eq(ERROR_SERVICE_ASO_MESSAGE))).thenReturn(ERROR_SERVICE_ASO_MESSAGE);
 		when(this.applicationConfigurationService.getDefaultProperty(eq(PROPERTIES_TIMEOUT_EXCEPTION), eq(ERROR_SERVICE_TIMEOUT_ASO_MESSAGE))).thenReturn(ERROR_SERVICE_TIMEOUT_ASO_MESSAGE);
+		when(this.applicationConfigurationService.getDefaultProperty(eq("enabled.mock.emission.cics"), eq(Boolean.FALSE.toString()))).thenReturn(Boolean.FALSE.toString());
+	}
+
+	@Test
+	public void emission_cics_mock_result() throws IOException {
+		// Given
+		when(this.applicationConfigurationService.getDefaultProperty(eq("enabled.mock.emission.cics"), eq(Boolean.FALSE.toString()))).thenReturn(Boolean.TRUE.toString());
+		DataASO requestBody = new DataASO();
+		RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S;
+		ICR2Response icr2Response = new ICR2Response();
+		icr2Response.setHostAdviceCode(new ArrayList<>());
+		icr2Response.setIcmrys2(EntityMock.getInstance().buildFormatoICMRYS2());
+		when(rbvdR047.executePreFormalizationContract(Mockito.anyObject())).thenReturn(icr2Response);
+
+		// When
+		ResponseLibrary<PolicyASO> result = rbvdR201.executePrePolicyEmissionCics(requestBody, indicatorPreFormalized);
+
+		// Then
+		assertEquals(RBVDInternalConstants.Status.OK, result.getStatusProcess());
+		assertEquals("00110135104001261609", result.getBody().getData().getId());
 	}
 
 

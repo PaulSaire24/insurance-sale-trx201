@@ -32,6 +32,7 @@ import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 
+import com.bbva.rbvd.lib.r201.properties.EmissionServiceProperties;
 import com.bbva.rbvd.lib.r201.transform.bean.ICR2Bean;
 import com.bbva.rbvd.lib.r201.transform.bean.ICR3Bean;
 import com.bbva.rbvd.lib.r201.util.AsoExceptionHandler;
@@ -73,6 +74,12 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	private static final String ICR2_COMMUNICATION_DESC = "con comunicación a la ICR2";
 	private static final String PROPERTIES_TIMEOUT_EXCEPTION = "error.message.timeout";
 	private static final String PROPERTIES_REST_EXCEPTION = "error.message.restException";
+
+	/**
+	 * Instance of BasicProductInsuranceProperties.
+	 * This property is used to access the configuration properties related to basic insurance products.
+	 */
+	private EmissionServiceProperties emissionServiceProperties;
 
 	@Override
 	public GetContactDetailsASO executeGetContactDetailsService(String customerId) {
@@ -223,6 +230,12 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	public ResponseLibrary<PolicyASO> executePrePolicyEmissionCics(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized) {
 		LOGGER.info(" :: executePrePolicyEmissionCics :: [ START ]");
 		LOGGER.info(" :: executePrePolicyEmissionCics :: [ DataASO :: {} ]",requestBody);
+		if(emissionServiceProperties.enabledMockPrePolicyEmissionCics()){
+			return ResponseLibrary.ResponseServiceBuilder
+					.an()
+					.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
+					.body(JsonHelper.getInstance().createMockPolicyASO());
+		}
 		ICR2Request icr2Request = ICR2Bean.mapIn(requestBody,indicatorPreFormalized);
 		ICR2Response icr2Response = this.rbvdR047.executePreFormalizationContract(icr2Request);
 		if(CollectionUtils.isEmpty(icr2Response.getHostAdviceCode())){
@@ -281,5 +294,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		return headers;
 	}
 
-
+	public void setEmissionServiceProperties(EmissionServiceProperties emissionServiceProperties) {
+		this.emissionServiceProperties = emissionServiceProperties;
+	}
 }

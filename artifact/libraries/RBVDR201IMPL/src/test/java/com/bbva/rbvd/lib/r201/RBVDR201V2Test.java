@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r201;
 
+import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.RequestHeaderParamsName;
 import com.bbva.elara.domain.transaction.ThreadContext;
@@ -32,6 +33,7 @@ import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -42,8 +44,6 @@ import static org.mockito.Mockito.when;
 		"classpath:/META-INF/spring/RBVDR201-arc-test.xml" })
 public class RBVDR201V2Test {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR201V2Test.class);
-
 	@Spy
 	private Context context;
 
@@ -52,6 +52,9 @@ public class RBVDR201V2Test {
 
 	@Resource(name = "rbvdR602")
 	private RBVDR602 rbvdR602;
+
+	@Resource(name = "applicationConfigurationService")
+	private ApplicationConfigurationService applicationConfigurationService;
 
 	@Before
 	public void setUp() throws Exception {
@@ -71,6 +74,7 @@ public class RBVDR201V2Test {
 		transactionRequest.setHeader(header);
 		transactionRequest.setBody(bodyRequest);
 		this.context.setTransactionRequest(transactionRequest);
+		when(this.applicationConfigurationService.getDefaultProperty(eq("enabled.mock.emission.cics"), eq(Boolean.FALSE.toString()))).thenReturn(Boolean.FALSE.toString());
 	}
 
 	private Object getObjectIntrospection() throws Exception{
@@ -81,6 +85,8 @@ public class RBVDR201V2Test {
 		}
 		return result;
 	}
+
+
 
 
 	@Test

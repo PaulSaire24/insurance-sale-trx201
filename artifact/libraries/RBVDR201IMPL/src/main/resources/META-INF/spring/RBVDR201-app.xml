@@ -8,8 +8,13 @@
 		<property name="rbvdR066" ref="rbvdR066"/>
 		<property name="rbvdR046" ref="rbvdR046"/>
 		<property name="pisdR352" ref="pisdR352"/>
+		<property name="emissionServiceProperties" ref="emissionServiceProperties"/>
 	</bean>
 	<bean id="rimacUrlForker" class="com.bbva.rbvd.lib.r201.util.RimacUrlForker">
+		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
+	</bean>
+	<bean id="emissionServiceProperties" class="com.bbva.rbvd.lib.r201.properties.EmissionServiceProperties" parent="properties"/>
+	<bean id="properties" class="com.bbva.rbvd.lib.r201.properties.Properties">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 	</bean>
 </beans>

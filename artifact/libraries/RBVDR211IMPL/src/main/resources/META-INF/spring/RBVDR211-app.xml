@@ -74,7 +74,6 @@
 		<property name="policyServiceExternal" ref="policyRBVDR201ServiceExternal"/>
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 	</bean>
-	<!-- Habilita el soporte de AspectJ AOP -->
 	<bean id="rimacCompanyNotLifeFactory" class="com.bbva.rbvd.lib.r211.impl.pattern.factory.RimacCompanyNotLifeFactory">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 		<property name="policyRBVDR201ServiceExternal" ref="policyRBVDR201ServiceExternal"/>
