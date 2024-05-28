@@ -77,7 +77,7 @@ public class EmissionPolicyLifeBusinessImpl  {
         PolicyDTO policy        = processPrePolicyDTO.getPolicy();
         PolicyASO policyASO        = processPrePolicyDTO.getAsoResponse();
 
-        if(Objects.nonNull(rimacResponse)) {
+        if(Objects.nonNull(rimacResponse)  && Objects.isNull(rimacResponse.getErrorRimacBO())) {
             LOGGER.info(" :: PolicyEmissionService | afterProcessBusinessExecutionCross rimacResponse cuotasFinanciamiento => {} ",rimacResponse.getPayload().getCuotasFinanciamiento());
 
             Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformationLifeEasyYes(rimacResponse, policyASO.getData().getId());

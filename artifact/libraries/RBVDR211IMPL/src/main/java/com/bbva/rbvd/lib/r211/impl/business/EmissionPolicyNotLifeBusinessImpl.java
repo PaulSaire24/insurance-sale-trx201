@@ -96,7 +96,7 @@ public class EmissionPolicyNotLifeBusinessImpl {
         EmisionBO rimacResponse = processPrePolicyDTO.getRimacResponse();
         PolicyDTO policy        = processPrePolicyDTO.getPolicy();
         String policyNumber;
-        if(Objects.nonNull(rimacResponse)) {
+        if(Objects.nonNull(rimacResponse) && Objects.isNull(rimacResponse.getErrorRimacBO())) {
             LOGGER.info("RBVDR211 rimacResponse cuotasFinanciamiento => {}",rimacResponse.getPayload().getCuotasFinanciamiento());
 
             Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformation(rimacResponse, processPrePolicyDTO.getAsoResponse().getData().getId());

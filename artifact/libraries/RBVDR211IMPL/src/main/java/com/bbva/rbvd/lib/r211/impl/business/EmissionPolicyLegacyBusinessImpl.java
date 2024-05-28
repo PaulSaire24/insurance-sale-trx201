@@ -278,7 +278,7 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
 
             LOGGER.info("rimacResponse => {}",rimacResponse);
 
-            if(nonNull(rimacResponse)) {
+            if(nonNull(rimacResponse) && Objects.isNull(rimacResponse.getErrorRimacBO())) {
                 LOGGER.info("RBVDR211 rimacResponse cuotasFinanciamiento => {}",rimacResponse.getPayload().getCuotasFinanciamiento());
 
                 Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformation(rimacResponse, asoResponse.getData().getId());
@@ -506,7 +506,7 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
 
             LOGGER.info("**** RBVDR211Impl - executePrePolicyEmissionService | rimacResponse => {} ****",rimacResponse);
 
-            if(nonNull(rimacResponse)) {
+            if(nonNull(rimacResponse)  && Objects.isNull(rimacResponse.getErrorRimacBO())) {
                 LOGGER.info("**** RBVDR211  PolicyEmissionService | rimacResponse cuotasFinanciamiento => {} ****",rimacResponse.getPayload().getCuotasFinanciamiento());
 
                 Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformationLifeEasyYes(rimacResponse, asoResponse.getData().getId());
