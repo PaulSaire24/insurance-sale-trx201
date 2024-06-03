@@ -7,13 +7,18 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
     <!-- AOP -->
     <!-- Define the appearance -->
-    <bean id="errorManagementNotLifeCross" class="com.bbva.rbvd.lib.r211.impl.aspects.errors.ErrorManagementNotLifeCross"/>
+    <bean id="errorManagementCross" class="com.bbva.rbvd.lib.r211.impl.aspects.errors.ErrorManagementCross"/>
     <!-- Define the cut and appearance -->
-    <!-- Define the cut and appearance  -->
+    <!-- Define the cut and appearance OperationsCross  -->
     <aop:config>
-        <aop:aspect ref="errorManagementNotLifeCross">
+        <aop:aspect ref="errorManagementCross" >
+            <!-- Primer pointcut y after-throwing -->
             <aop:pointcut id="createInsuranceByProduct" expression="execution(* com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory.createInsuranceByProduct(..))"/>
-            <aop:after-throwing method="controlCommonFailuresOfUnexpected" pointcut-ref="createInsuranceByProduct" throwing="error"/>
+            <aop:after-throwing method="controlCommonCompanyFailuresOfUnexpected" pointcut-ref="createInsuranceByProduct" throwing="error"/>
+            <!-- Segundo pointcut y after-throwing -->
+            <aop:after-throwing method="controlCommonCompanyFailuresOfUnexpected" pointcut="execution(* com.bbva.rbvd.lib.r211.impl.aspects.interfaces.ManagementOperation.afterProcessBusinessExecutionLifeCross(..))" throwing="error"/>
+            <!-- Tercero pointcut y after-throwing -->
+            <aop:after-throwing method="controlCommonCompanyFailuresOfUnexpected" pointcut="execution(* com.bbva.rbvd.lib.r211.impl.aspects.interfaces.ManagementOperation.afterProcessBusinessExecutionNotLifeCross(..))" throwing="error"/>
         </aop:aspect>
     </aop:config>
 </beans>

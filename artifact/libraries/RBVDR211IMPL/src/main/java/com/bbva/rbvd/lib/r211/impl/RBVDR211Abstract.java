@@ -1,7 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
-import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.ksmk.lib.r002.KSMKR002;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.pisd.lib.r350.PISDR350;
@@ -94,7 +93,9 @@ public abstract class RBVDR211Abstract implements RBVDR211 {
 	public void setPisdR601(PISDR601 pisdR601) {
 		this.pisdR601 = pisdR601;
 	}
-
+	/**
+	 * @param emissionPolicyLifeBusinessImpl the this.pisdR601 to set
+	 */
 	public void setEmissionPolicyLifeBusinessImpl(EmissionPolicyLifeBusinessImpl emissionPolicyLifeBusinessImpl) {
 		this.emissionPolicyLifeBusinessImpl = emissionPolicyLifeBusinessImpl;
 	}

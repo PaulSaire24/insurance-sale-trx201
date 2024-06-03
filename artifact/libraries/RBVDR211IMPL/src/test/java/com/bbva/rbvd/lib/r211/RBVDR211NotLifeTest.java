@@ -594,7 +594,7 @@ public class RBVDR211NotLifeTest {
 
 		ResponseLibrary<PolicyDTO> validation = rbvdr211.executeEmissionPolicyNotLifeFlowNew(requestBody);
 
-		assertNull(validation.getBody());
+		assertNotNull(validation.getBody());
 		assertEquals(this.context.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE.getAdviceCode());
 	}
 
@@ -609,7 +609,7 @@ public class RBVDR211NotLifeTest {
 
 		ResponseLibrary<PolicyDTO> validation = rbvdr211.executeEmissionPolicyNotLifeFlowNew(requestBody);
 
-		assertNull(validation.getBody());
+		assertNotNull(validation.getBody());
 		assertEquals(this.context.getAdviceList().get(0).getCode(), RBVDErrors.INSERTION_ERROR_IN_RECEIPTS_TABLE.getAdviceCode());
 	}
 

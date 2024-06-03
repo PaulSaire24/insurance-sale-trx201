@@ -417,7 +417,7 @@ public class RBVDR211LifeTest {
 
 		validation = rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(requestBody);
 
-		assertNull(validation.getBody());
+		assertNotNull(validation.getBody());
 	}
 
 	private static ParticipantDTO getParticipantEndorse() {

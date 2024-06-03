@@ -9,7 +9,7 @@ import com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFa
 import com.bbva.rbvd.lib.r211.impl.service.api.PolicyRBVDR201ServiceExternal;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
-public class RimacCompanyLifeFactory {
+public class RimacCompanyLifeFactory implements InsuranceCompanyFactory {
 
     private PolicyRBVDR201ServiceExternal policyRBVDR201ServiceExternal;
     private MapperHelper mapperHelper;
@@ -23,7 +23,7 @@ public class RimacCompanyLifeFactory {
      * @param processPrePolicyDTO This is the data transfer object containing the details of the product for which the policy is to be created.
      * @return ResponseLibrary<ProcessPrePolicyDTO> This returns the response of the policy creation process wrapped in a ResponseLibrary object.
      */
-
+    @Override
     public ResponseLibrary<ProcessPrePolicyDTO> createInsuranceByProduct(ProcessPrePolicyDTO processPrePolicyDTO){
         Insurance rimacCompany = new RimacCompany(policyRBVDR201ServiceExternal);
         rimacCompany = new LifeDefaultRimacDecorator(mapperHelper,rimacCompany);

@@ -19,20 +19,16 @@
 	</bean>
 	<!-- Business -->
 	<bean id="emissionPolicyNotLifeBusiness" class="com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyNotLifeBusinessImpl">
-		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
 		<property name="mapperHelper" ref="mapperHelper"/>
-		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
-		<property name="insuranceCtrReceiptsDAO" ref="insuranceCtrReceiptsPISD012DAO"/>
 		<property name="insuranceContractBank" ref="basicProductInsuranceBankNotLife"/>
-		<property name="gifoleEventInternal" ref="gifoleEventInternal"/>
 		<property name="insuranceCompanyFactory" ref="rimacCompanyNotLifeFactory"/>
+		<property name="managementOperationsCross" ref="managementOperationsCross"/>
 	</bean>
 	<bean id="emissionPolicyLifeBusiness" class="com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyLifeBusinessImpl">
-		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
 		<property name="mapperHelper" ref="mapperHelper"/>
 		<property name="insuranceContractBank" ref="basicProductInsuranceBankLife"/>
-		<property name="gifoleEventInternal" ref="gifoleEventInternal"/>
 		<property name="rimacCompanyLifeFactory" ref="rimacCompanyLifeFactory"/>
+		<property name="managementOperationsCross" ref="managementOperationsCross"/>
 	</bean>
 	<!-- Pattern´s Design -->
 	<bean id="insuranceContractBank" class="com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank" abstract="true"/>
@@ -143,6 +139,14 @@
 	<bean id="basicProductInsuranceProperties" class="com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties" parent="properties"/>
 	<bean id="properties" class="com.bbva.rbvd.lib.r211.impl.properties.Properties">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
+	</bean>
+	<!-- AOP -->
+	<bean id="managementOperationsCross" class="com.bbva.rbvd.lib.r211.impl.aspects.ManagementOperationsCross">
+		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
+		<property name="mapperHelper" ref="mapperHelper"/>
+		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
+		<property name="insuranceCtrReceiptsDAO" ref="insuranceCtrReceiptsPISD012DAO"/>
+		<property name="gifoleEventInternal" ref="gifoleEventInternal"/>
 	</bean>
 	<import resource="classpath:META-INF/spring/insurance-emission-aspect.xml"/>
 </beans>
