@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>com.bbva.rbvd</groupId>
 		<artifactId>LIBRARIES-insurance-sale-trx201</artifactId>
-		<version>0.20.8</version>
+		<version>0.20.9</version>
 	</parent>
 	<groupId>com.bbva.rbvd</groupId>
 	<artifactId>RBVDR211IMPL</artifactId>
 	<name>RBVDR211IMPL</name>
-	<version>0.20.8</version>
+	<version>0.20.9</version>
 	<packaging>bundle</packaging>
 	<description>Library to execute business logic</description>
 	<properties>
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
 			<artifactId>RBVDR211</artifactId>
-			<version>0.20.8</version>
+			<version>0.20.9</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.elara</groupId>
@@ -86,7 +86,7 @@
 		<dependency>
 			<groupId>com.bbva.rbvd</groupId>
 			<artifactId>RBVDR201</artifactId>
-			<version>0.20.8</version>
+			<version>0.20.9</version>
 		</dependency>
 		<dependency>
 			<groupId>com.bbva.pisd</groupId>
