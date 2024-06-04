@@ -841,8 +841,26 @@ public class MapperHelper {
         return arguments;
     }
 
-    public EmisionBO mapRimacEmisionRequest(EmisionBO rimacRequest,PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields,
-                                            Map<String, Object> responseQueryGetProductById,CustomerListASO customerList){
+    public AgregarPersonaBO mapRimacEmisionRequestParticipant(PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields, CustomerListASO customerList){
+        CustomerBO customer = customerList.getData().get(0);
+        List<PersonaBO> personasList = new ArrayList<>();
+        PersonaBO persona = this.constructPerson(requestBody,customer,responseQueryGetRequiredFields);
+
+        StringBuilder stringAddress  = new StringBuilder();
+
+        String filledAddress = fillAddress(customerList, persona, stringAddress,requestBody.getSaleChannelId());
+        validateIfAddressIsNull(filledAddress);
+
+        constructListPersons(persona, personasList);
+
+        AgregarPersonaBO agregarPersonaBO = new AgregarPersonaBO();
+        agregarPersonaBO.setPersona(personasList);
+
+        return agregarPersonaBO;
+    }
+
+    public EmisionBO mapRimacNoLifeEmisionRequest(EmisionBO rimacRequest, PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields,
+                                                       Map<String, Object> responseQueryGetProductById){
         EmisionBO generalEmisionRimacRequest = new EmisionBO();
         PayloadEmisionBO emisionBO = new PayloadEmisionBO();
         emisionBO.setEmision(rimacRequest.getPayload());
@@ -872,22 +890,6 @@ public class MapperHelper {
         crearCronogramaBO.setFinanciamiento(financiamientoBOs);
 
         generalEmisionRimacRequest.getPayload().setCrearCronograma(crearCronogramaBO);
-
-        CustomerBO customer = customerList.getData().get(0);
-        List<PersonaBO> personasList = new ArrayList<>();
-        PersonaBO persona = this.constructPerson(requestBody,customer,responseQueryGetRequiredFields);
-
-        StringBuilder stringAddress  = new StringBuilder();
-
-        String filledAddress = fillAddress(customerList, persona, stringAddress,requestBody.getSaleChannelId());
-        validateIfAddressIsNull(filledAddress);
-
-        constructListPersons(persona, personasList);
-
-        AgregarPersonaBO agregarPersonaBO = new AgregarPersonaBO();
-        agregarPersonaBO.setPersona(personasList);
-
-        generalEmisionRimacRequest.getPayload().setAgregarPersona(agregarPersonaBO);
 
         if(Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)){
             DatoParticularBO quintoDatoParticular = new DatoParticularBO();

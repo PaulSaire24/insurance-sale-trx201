@@ -30,8 +30,6 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
 
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
@@ -62,9 +60,6 @@ import java.io.IOException;
 
 import java.math.BigDecimal;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static java.util.Collections.singletonList;
@@ -192,8 +187,53 @@ public class RBVDR211Test {
 		rimacResponse = mockData.getEmisionRimacResponse();
 		EmisionBO emision = new EmisionBO();
 		emision.setPayload(new PayloadEmisionBO());
+		ContactoInspeccionBO contactoInspeccionBO = new ContactoInspeccionBO();
+		contactoInspeccionBO.setNombre("Nombre");
+		contactoInspeccionBO.setCorreo("Correo@bbva.com");
+		contactoInspeccionBO.setTelefono("123456789");
+		emision.getPayload().setContactoInspeccion(contactoInspeccionBO);
+
+		List<DatoParticularBO> datoParticularBOList = new ArrayList<>();
+		DatoParticularBO datoParticularBO1 = new DatoParticularBO();
+		datoParticularBO1.setEtiqueta("CANAL_TERCERO");
+		datoParticularBO1.setCodigo("");
+		datoParticularBO1.setValor("PC");
+		DatoParticularBO datoParticularBO2 = new DatoParticularBO();
+		datoParticularBO2.setEtiqueta("DATOS_DE_CUENTA");
+		datoParticularBO2.setCodigo("");
+		datoParticularBO2.setValor("CUENTA||***6997||USD");
+		DatoParticularBO datoParticularBO3 = new DatoParticularBO();
+		datoParticularBO3.setEtiqueta("NRO_CERT_BANCO");
+		datoParticularBO3.setCodigo("");
+		datoParticularBO3.setValor("00116354844000017493");
+		DatoParticularBO datoParticularBO4 = new DatoParticularBO();
+		datoParticularBO4.setEtiqueta("OFICINA_VENTA");
+		datoParticularBO4.setCodigo("");
+		datoParticularBO4.setValor("6354");
+
+		datoParticularBOList.add(datoParticularBO1);
+		datoParticularBOList.add(datoParticularBO2);
+		datoParticularBOList.add(datoParticularBO3);
+		datoParticularBOList.add(datoParticularBO4);
+		emision.getPayload().setDatosParticulares(datoParticularBOList);
+
+		emision.getPayload().setEnvioElectronico("N");
+		emision.getPayload().setIndCobro("N");
+		emision.getPayload().setIndInspeccion(new Long(1));
+		emision.getPayload().setIndValidaciones("N");
+
 		when(this.mapperHelper.buildRequestBodyRimac(anyObject(), anyString(), anyString(), anyString(), anyString())).thenReturn(emision);
 
+		emision.getPayload().setEmision(new PayloadEmisionBO());
+		emision.getPayload().getEmision().setCrearCronograma(new CrearCronogramaBO());
+		FinanciamientoBO financiamientoBO = new FinanciamientoBO();
+		financiamientoBO.setFrecuencia("A");
+		financiamientoBO.setFechaInicio("2024-06-04");
+		financiamientoBO.setNumeroCuotas(new Long(1));
+		List<FinanciamientoBO> financiamientoBOList = new ArrayList<>();
+		financiamientoBOList.add(financiamientoBO);
+		emision.getPayload().getEmision().getCrearCronograma().setFinanciamiento(financiamientoBOList);
+		when(this.mapperHelper.mapRimacNoLifeEmisionRequest(anyObject(), anyObject(), anyMap(), anyMap())).thenReturn(emision);
 		EmisionBO generalEmisionRequest = new EmisionBO();
 		PayloadEmisionBO payload = new PayloadEmisionBO();
 		AgregarPersonaBO agregarPersona = new AgregarPersonaBO();
@@ -201,7 +241,7 @@ public class RBVDR211Test {
 		agregarPersona.setOrganizacion(Collections.singletonList(new OrganizacionBO()));
 		payload.setAgregarPersona(agregarPersona);
 		generalEmisionRequest.setPayload(payload);
-		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(),anyMap(), anyObject())).thenReturn(generalEmisionRequest);
+		when(mapperHelper.mapRimacEmisionRequestParticipant(anyObject(), anyMap(),anyObject())).thenReturn(agregarPersona);
 		when(mapperHelper.generateRimacRequestLife(anyString(),anyString(),anyString(),anyString(),anyString(),anyString(),anyString(), anyObject(), anyString())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.getPersonType(anyObject())).thenReturn(PersonTypeEnum.NATURAL);
 
@@ -601,8 +641,8 @@ public class RBVDR211Test {
 
 		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(businesses);
 		when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt", "")).thenReturn("");
-		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.natural.833.BI", "")).thenReturn("true");
-		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.legal.833.BI", "")).thenReturn("true");
+		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.natural.833.BI", "true")).thenReturn("true");
+		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.legal.833.BI", "true")).thenReturn("true");
 		validation = rbvdr211.executeBusinessLogicEmissionPrePolicy(requestBody);
 		assertNotNull(validation);
 	}

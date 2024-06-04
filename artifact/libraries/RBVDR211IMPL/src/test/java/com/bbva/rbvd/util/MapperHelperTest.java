@@ -4,7 +4,6 @@ import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
-import com.bbva.pisd.dto.insurance.aso.email.CreateEmailASO;
 
 import com.bbva.pisd.dto.insurance.bo.DocumentTypeBO;
 import com.bbva.pisd.dto.insurance.bo.GenderBO;
@@ -18,7 +17,6 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 
 import com.bbva.pisd.lib.r350.PISDR350;
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -55,9 +53,6 @@ import java.io.IOException;
 
 import java.math.BigDecimal;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.util.Collections.singletonList;
@@ -1083,7 +1078,7 @@ public class MapperHelperTest {
         identityDocumentsBOs1.add(identityDocumentsBO1);
         customerList.getData().get(0).setSecondLastName("An");
         customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs1);
-        EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById ,customerList);
+        AgregarPersonaBO validation1 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse ,customerList);
         when(filledAddress).thenReturn("JR. UNION 233, URB UNION ");
         assertNotNull(validation1);
 
@@ -1163,7 +1158,7 @@ public class MapperHelperTest {
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
         when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("RC");
-        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation2 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation2);
         customerList.getData().get(0).setGender(null);
 
@@ -1229,7 +1224,7 @@ public class MapperHelperTest {
         geographicGroupsBOs1.add(geographicGroupsExteriorNumber1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs1);
-        EmisionBO validation3 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation3 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation3);
 
         GeographicGroupsBO geographicGroupsBO5 = new GeographicGroupsBO();
@@ -1279,11 +1274,11 @@ public class MapperHelperTest {
         geographicGroupsBOs2.add(geographicGroupsUbigeo1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs2);
-        EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation4 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation4);
 
         apxRequest.setHolder(null);
-        EmisionBO validation5 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation5 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation5);
 
         GeographicGroupsBO geographicGroupsBO9 = new GeographicGroupsBO();
@@ -1303,7 +1298,7 @@ public class MapperHelperTest {
         geographicGroupsBOs3.add(geographicGroupsUbigeo1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs3);
-        EmisionBO validation6 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation6 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation6);
 
         GeographicGroupsBO geographicGroupsBO10 = new GeographicGroupsBO();
@@ -1325,7 +1320,7 @@ public class MapperHelperTest {
         geographicGroupsBOs4.add(geographicGroupsUbigeo1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
-        EmisionBO validation7 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation7 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation7);
 
         List<GeographicGroupsBO> geographicGroupsBOs5 = new ArrayList<>();
@@ -1340,7 +1335,7 @@ public class MapperHelperTest {
         geographicGroupsBOs5.add(geographicGroupsUbigeo1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs5);
-        EmisionBO validation8 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation8 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation8);
 
         List<GeographicGroupsBO> geographicGroupsBOs6 = new ArrayList<>();
@@ -1353,7 +1348,7 @@ public class MapperHelperTest {
         geographicGroupsBOs6.add(geographicGroupsUbigeo1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs6);
-        EmisionBO validation9 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation9 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation9);
 
         apxRequest.setSaleChannelId("PC");
@@ -1384,7 +1379,7 @@ public class MapperHelperTest {
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOsNull);
         try {
-            EmisionBO validationNull = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+            AgregarPersonaBO validationNull = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
             fail("Se esperaba una BusinessException, pero no se lanzó.");
         } catch (BusinessException e) {
             assertNotNull(e);
@@ -1418,7 +1413,7 @@ public class MapperHelperTest {
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOsNull);
 
-        EmisionBO validationNull = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validationNull = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
 
         assertNotNull(validationNull);
 
@@ -1550,13 +1545,13 @@ public class MapperHelperTest {
         identityDocumentsBOs1.add(identityDocumentsBO1);
         customerList.getData().get(0).setSecondLastName(null);
         customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs1);
-        EmisionBO validation1 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById ,customerList);
+        AgregarPersonaBO validation1 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse,customerList);
         assertNotNull(validation1);
         apxRequest.getInstallmentPlan().getPeriod().setId("ANNUAL");
-        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById ,customerList);
+        AgregarPersonaBO validation2 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse,customerList);
         assertNotNull(validation2);
         requiredFieldsEmisionBDResponse.put(RBVDProperties.FIELD_OPERATION_GLOSSARY_DESC.getValue(),"VIDA");
-        EmisionBO validation3 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById ,customerList);
+        AgregarPersonaBO validation3 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse,customerList);
         assertNotNull(validation3);
     }
 
@@ -2629,6 +2624,50 @@ public class MapperHelperTest {
 
         assertNotNull(validation);
 
+    }
+
+    @Test
+    public void mapRimacNoLifeEmisionRequestTestOk(){
+
+        EmisionBO emision = new EmisionBO();
+        emision.setPayload(new PayloadEmisionBO());
+        ContactoInspeccionBO contactoInspeccionBO = new ContactoInspeccionBO();
+        contactoInspeccionBO.setNombre("Nombre");
+        contactoInspeccionBO.setCorreo("Correo@bbva.com");
+        contactoInspeccionBO.setTelefono("123456789");
+        emision.getPayload().setContactoInspeccion(contactoInspeccionBO);
+
+        List<DatoParticularBO> datoParticularBOList = new ArrayList<>();
+        DatoParticularBO datoParticularBO1 = new DatoParticularBO();
+        datoParticularBO1.setEtiqueta("CANAL_TERCERO");
+        datoParticularBO1.setCodigo("");
+        datoParticularBO1.setValor("PC");
+        DatoParticularBO datoParticularBO2 = new DatoParticularBO();
+        datoParticularBO2.setEtiqueta("DATOS_DE_CUENTA");
+        datoParticularBO2.setCodigo("");
+        datoParticularBO2.setValor("CUENTA||***6997||USD");
+        DatoParticularBO datoParticularBO3 = new DatoParticularBO();
+        datoParticularBO3.setEtiqueta("NRO_CERT_BANCO");
+        datoParticularBO3.setCodigo("");
+        datoParticularBO3.setValor("00116354844000017493");
+        DatoParticularBO datoParticularBO4 = new DatoParticularBO();
+        datoParticularBO4.setEtiqueta("OFICINA_VENTA");
+        datoParticularBO4.setCodigo("");
+        datoParticularBO4.setValor("6354");
+
+        datoParticularBOList.add(datoParticularBO1);
+        datoParticularBOList.add(datoParticularBO2);
+        datoParticularBOList.add(datoParticularBO3);
+        datoParticularBOList.add(datoParticularBO4);
+        emision.getPayload().setDatosParticulares(datoParticularBOList);
+
+        emision.getPayload().setEnvioElectronico("N");
+        emision.getPayload().setIndCobro("N");
+        emision.getPayload().setIndInspeccion(new Long(1));
+        emision.getPayload().setIndValidaciones("N");
+
+        EmisionBO validation = this.mapperHelper.mapRimacNoLifeEmisionRequest(emision, apxRequest, responseQueryGetRequiredFields, responseQueryGetProductById);
+        assertNotNull(validation);
     }
 
 }
