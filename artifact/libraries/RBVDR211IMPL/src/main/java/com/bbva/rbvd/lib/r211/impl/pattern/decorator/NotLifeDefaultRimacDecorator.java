@@ -10,7 +10,6 @@ import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.EmissionBean;
-import com.bbva.rbvd.lib.r211.impl.transfor.bean.OrganizationBean;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Objects;
@@ -34,7 +33,7 @@ public class NotLifeDefaultRimacDecorator extends InsuranceDecorator {
         RequiredFieldsEmissionDAO emissionDao = processPrePolicy.getRequiredFieldsEmission();
         String secondDataValue = createSecondDataValue(asoResponse);
         EmisionBO rimacRequest = EmissionBean.toRequestBodyRimac(requestBody.getInspection(), secondDataValue, requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
-        EmisionBO generalEmissionRequest = EmissionBean.addNotLifeParticipants(rimacRequest,requestBody,applicationConfigurationService,customerList,processPrePolicy);
+        EmisionBO generalEmissionRequest = EmissionBean.addNotLifeAdditionalRequestData(rimacRequest,requestBody,applicationConfigurationService,customerList,processPrePolicy);
         processPrePolicy.setRimacRequest(generalEmissionRequest);
         processPrePolicy.setQuotationId(emissionDao.getInsuranceCompanyQuotaId());
         processPrePolicy.setTraceId(requestBody.getTraceId());

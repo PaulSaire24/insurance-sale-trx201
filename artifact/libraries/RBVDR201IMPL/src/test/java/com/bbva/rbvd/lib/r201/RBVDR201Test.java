@@ -30,7 +30,7 @@ import com.bbva.rbvd.lib.r066.RBVDR066;
 import com.bbva.rbvd.lib.r201.factory.ApiConnectorFactoryMock;
 import com.bbva.rbvd.lib.r201.impl.RBVDR201Impl;
 import com.bbva.rbvd.lib.r201.properties.EmissionServiceProperties;
-import com.bbva.rbvd.lib.r201.properties.Properties;
+
 import com.bbva.rbvd.lib.r201.util.RimacUrlForker;
 import com.bbva.rbvd.lib.r602.RBVDR602;
 import com.bbva.rbvd.mock.EntityMock;

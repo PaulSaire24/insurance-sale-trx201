@@ -1,4 +1,4 @@
-package com.bbva.rbvd.util;
+package com.bbva.rbvd.lib.r211.impl.transfor.bean;
 
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
@@ -17,38 +17,29 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
 
 import com.bbva.pisd.lib.r350.PISDR350;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 
-import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
 import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
 
 import com.bbva.rbvd.dto.insrncsale.dao.*;
 
-import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 
 import com.bbva.rbvd.dto.insrncsale.policy.*;
 
-import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
-import com.bbva.rbvd.lib.r211.impl.service.api.CustomerRBVD066InternalService;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.EmissionBean;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
-
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -59,8 +50,6 @@ import java.math.BigDecimal;
 
 import java.util.*;
 
-import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.of;
 
 import static org.junit.Assert.*;
@@ -411,7 +400,7 @@ public class EmissionBeanTest {
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs);
         when(this.applicationConfigurationService.getProperty("RUC")).thenReturn("RC");
-        EmisionBO validation2 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation2 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation2);
         customerList.getData().get(0).setGender(null);
 
@@ -477,7 +466,7 @@ public class EmissionBeanTest {
         geographicGroupsBOs1.add(geographicGroupsExteriorNumber1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs1);
-        EmisionBO validation3 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation3 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation3);
 
         GeographicGroupsBO geographicGroupsBO5 = new GeographicGroupsBO();
@@ -527,11 +516,11 @@ public class EmissionBeanTest {
         geographicGroupsBOs2.add(geographicGroupsUbigeo1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs2);
-        EmisionBO validation4 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation4 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation4);
 
         apxRequest.setHolder(null);
-        EmisionBO validation5 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation5 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation5);
 
         GeographicGroupsBO geographicGroupsBO9 = new GeographicGroupsBO();
@@ -551,7 +540,7 @@ public class EmissionBeanTest {
         geographicGroupsBOs3.add(geographicGroupsUbigeo1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs3);
-        EmisionBO validation6 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation6 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation6);
 
         GeographicGroupsBO geographicGroupsBO10 = new GeographicGroupsBO();
@@ -573,7 +562,7 @@ public class EmissionBeanTest {
         geographicGroupsBOs4.add(geographicGroupsUbigeo1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs4);
-        EmisionBO validation7 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation7 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation7);
 
         List<GeographicGroupsBO> geographicGroupsBOs5 = new ArrayList<>();
@@ -588,7 +577,7 @@ public class EmissionBeanTest {
         geographicGroupsBOs5.add(geographicGroupsUbigeo1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs5);
-        EmisionBO validation8 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation8 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation8);
 
         List<GeographicGroupsBO> geographicGroupsBOs6 = new ArrayList<>();
@@ -601,7 +590,7 @@ public class EmissionBeanTest {
         geographicGroupsBOs6.add(geographicGroupsUbigeo1);
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOs6);
-        EmisionBO validation9 = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validation9 = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
         assertNotNull(validation9);
 
         apxRequest.setSaleChannelId("PC");
@@ -632,7 +621,7 @@ public class EmissionBeanTest {
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOsNull);
         try {
-            EmisionBO validationNull = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+            AgregarPersonaBO validationNull = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
             fail("Se esperaba una BusinessException, pero no se lanzó.");
         } catch (BusinessException e) {
             assertNotNull(e);
@@ -666,7 +655,7 @@ public class EmissionBeanTest {
 
         customerList.getData().get(0).getAddresses().get(0).getLocation().setGeographicGroups(geographicGroupsBOsNull);
 
-        EmisionBO validationNull = mapperHelper.mapRimacEmisionRequest(emisionInput, apxRequest, requiredFieldsEmisionBDResponse,responseQueryGetProductById, customerList);
+        AgregarPersonaBO validationNull = mapperHelper.mapRimacEmisionRequestParticipant(apxRequest, requiredFieldsEmisionBDResponse, customerList);
 
         assertNotNull(validationNull);
 

@@ -210,7 +210,7 @@ public class RBVDR211Test {
 		agregarPersona.setOrganizacion(Collections.singletonList(new OrganizacionBO()));
 		payload.setAgregarPersona(agregarPersona);
 		generalEmisionRequest.setPayload(payload);
-		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(),anyMap(), anyObject())).thenReturn(generalEmisionRequest);
+		when(mapperHelper.mapRimacNoLifeEmisionRequest(anyObject(), anyObject(), anyMap(),anyMap())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.generateRimacRequestLife(anyString(),anyString(),anyString(),anyString(),anyString(),anyString(),anyString(), anyObject(), anyString())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.getPersonType(anyObject())).thenReturn(PersonTypeEnum.NATURAL);
 
@@ -607,6 +607,10 @@ public class RBVDR211Test {
 
 		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
 
+		AgregarPersonaBO agregarPersona = new AgregarPersonaBO();
+		agregarPersona.setPersona(Collections.singletonList(new PersonaBO()));
+		agregarPersona.setOrganizacion(Collections.singletonList(new OrganizacionBO()));
+		when(mapperHelper.mapRimacEmisionRequestParticipant(anyObject(), anyMap(),anyObject())).thenReturn(agregarPersona);
 		customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("RUC");
 		customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("20999999991");
 
@@ -667,6 +671,11 @@ public class RBVDR211Test {
 		when(rbvdr201.executeGetListBusinesses(anyString(), anyString())).thenReturn(null);
 
 		when(mapperHelper.createSaveRelatedContractsArguments(anyList())).thenReturn(argumentsForMultipleInsertion);
+
+		AgregarPersonaBO agregarPersona = new AgregarPersonaBO();
+		agregarPersona.setPersona(Collections.singletonList(new PersonaBO()));
+		agregarPersona.setOrganizacion(Collections.singletonList(new OrganizacionBO()));
+		when(mapperHelper.mapRimacEmisionRequestParticipant(anyObject(), anyMap(),anyObject())).thenReturn(agregarPersona);
 
 		customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("RUC");
 		customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("20999999991");

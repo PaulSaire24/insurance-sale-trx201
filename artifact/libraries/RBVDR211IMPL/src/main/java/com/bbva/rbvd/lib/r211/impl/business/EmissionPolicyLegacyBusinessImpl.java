@@ -267,11 +267,13 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
             }
 
             if (!requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VEH.getValue())) {
-                EmisionBO generalEmissionRequest = addNotLifeParticipants(rimacRequest,requestBody,responseQueryGetRequiredFields,responseQueryGetProductById);
-                if(Objects.isNull(generalEmissionRequest)){
+                EmisionBO generalEmissionRequest = this.mapperHelper.mapRimacNoLifeEmisionRequest(rimacRequest, requestBody,
+                        responseQueryGetRequiredFields, responseQueryGetProductById);
+                EmisionBO enrichedEmissionRequest = addNotLifeParticipants(generalEmissionRequest,requestBody,responseQueryGetRequiredFields);
+                if(Objects.isNull(enrichedEmissionRequest)){
                     return null;
                 }
-                rimacResponse = rbvdR201.executePrePolicyEmissionService(generalEmissionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
+                rimacResponse = rbvdR201.executePrePolicyEmissionService(enrichedEmissionRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
             } else {
                 rimacResponse = rbvdR201.executePrePolicyEmissionService(rimacRequest, emissionDao.getInsuranceCompanyQuotaId(), requestBody.getTraceId(), requestBody.getProductId());
             }
@@ -932,8 +934,7 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
     }
 
-    public EmisionBO addNotLifeParticipants(EmisionBO rimacRequest, PolicyDTO requestBody,  Map<String, Object> responseQueryGetRequiredFields,
-                                            Map<String, Object> responseQueryGetProductById) {
+    public EmisionBO addNotLifeParticipants(EmisionBO rimacNoLifeRequest, PolicyDTO requestBody,  Map<String, Object> responseQueryGetRequiredFields) {
 
         String productChannelConditionalNaturalPers = this.applicationConfigurationService.
                 getDefaultProperty(PROPERTY_VALIDATE_NATURAL_PARTICIPANT.
@@ -948,7 +949,7 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
         Boolean validateLegalParticipant = Boolean.valueOf(productChannelConditionalLegalPers);
 
         if(!validateNaturalParticipant && !validateLegalParticipant){
-            return rimacRequest;
+            return rimacNoLifeRequest;
         }
 
         CustomerListASO customerList = this.rbvdR201.executeGetCustomerInformation(requestBody.getHolder().getId());
@@ -963,19 +964,18 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
         String nroDoc = customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentNumber();
         boolean isLegalPerson = RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20");
 
-        EmisionBO generalEmisionRequest = null;
-
         if((validateNaturalParticipant && !isLegalPerson) || (isLegalPerson && validateLegalParticipant)) {
-            generalEmisionRequest = this.mapperHelper.mapRimacEmisionRequest(rimacRequest, requestBody,
-                    responseQueryGetRequiredFields, responseQueryGetProductById, customerList);
-            LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****", generalEmisionRequest);
+            AgregarPersonaBO personaBO = this.mapperHelper.mapRimacEmisionRequestParticipant(requestBody,
+                    responseQueryGetRequiredFields, customerList);
+            rimacNoLifeRequest.getPayload().setAgregarPersona(personaBO);
+            LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****", rimacNoLifeRequest);
         }
 
         if (isLegalPerson && validateLegalParticipant) {
-            setOrganization(generalEmisionRequest, requestBody, customerList);
+            setOrganization(rimacNoLifeRequest, requestBody, customerList);
         }
 
-        return Objects.isNull(generalEmisionRequest) ? rimacRequest : generalEmisionRequest;
+        return rimacNoLifeRequest;
     }
 
 

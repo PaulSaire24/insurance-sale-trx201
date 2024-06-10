@@ -3,7 +3,6 @@ package com.bbva.rbvd.lib.r201.impl;
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.apx.exception.io.network.TimeoutException;
 import com.bbva.elara.domain.transaction.RequestHeaderParamsName;
-import com.bbva.pisd.dto.insurance.amazon.SignatureAWS;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
@@ -18,7 +17,6 @@ import com.bbva.rbvd.dto.cicsconnection.icr3.ICR3Response;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
-import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 
 import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
@@ -26,7 +24,6 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 
 import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
@@ -38,7 +35,6 @@ import com.bbva.rbvd.lib.r201.transform.bean.ICR3Bean;
 import com.bbva.rbvd.lib.r201.util.AsoExceptionHandler;
 import com.bbva.rbvd.lib.r201.util.FunctionsUtils;
 import com.bbva.rbvd.lib.r201.util.JsonHelper;
-import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +52,6 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.util.Collections.singletonMap;
 
 public class RBVDR201Impl extends RBVDR201Abstract {
 
@@ -265,7 +259,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ START ]");
 		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ Data :: {} ]",policyASO);
 		ICR3Request icr3Request = ICR3Bean.mapIn(policyASO, (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE),indicatorPreFormalized);
-		ICR3Response icr3Response = this.rbvdR602.executeFormalizationContractAndPayment(icr3Request);
+		ICR3Response icr3Response = this.rbvdR602.executePreFormalizationInsurance(icr3Request);
 		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ ICR3Response :: {} ]",icr3Response);
 		if (!CollectionUtils.isEmpty(icr3Response.getHostAdviceCode())) {
 			this.addAdviceWithDescription(RBVDInternalErrors.ERROR_GENERIC_HOST.getAdviceCode(), FunctionsUtils.getAdviceListOfString(icr3Response.getHostAdviceCode()));

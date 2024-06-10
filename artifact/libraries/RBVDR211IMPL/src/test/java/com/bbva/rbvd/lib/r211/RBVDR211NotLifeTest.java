@@ -227,7 +227,7 @@ public class RBVDR211NotLifeTest {
 		agregarPersona.setOrganizacion(Collections.singletonList(new OrganizacionBO()));
 		payload.setAgregarPersona(agregarPersona);
 		generalEmisionRequest.setPayload(payload);
-		when(mapperHelper.mapRimacEmisionRequest(anyObject(), anyObject(), anyMap(),anyMap(), anyObject())).thenReturn(generalEmisionRequest);
+		when(mapperHelper.mapRimacNoLifeEmisionRequest(anyObject(), anyObject(), anyMap(),anyMap())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.generateRimacRequestLife(anyString(),anyString(),anyString(),anyString(),anyString(),anyString(),anyString(), anyObject(), anyString())).thenReturn(generalEmisionRequest);
 		when(mapperHelper.getPersonType(anyObject())).thenReturn(PersonTypeEnum.NATURAL);
 		when(pisdR012.executeGetASingleRow(RBVDProperties.QUERY_VALIDATE_IF_POLICY_EXISTS.getValue(), argumentValidateIfPolicyExists)).

@@ -20,8 +20,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.Advised;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -95,7 +93,7 @@ public class RBVDR201V2Test {
 		PolicyASO policyASO =  EntityMock.getInstance().createMockPolicyASO();
 		ICR3Response icr3Response = new ICR3Response();
 		icr3Response.setIcmrys2(EntityMock.getInstance().buildFormatoICMRYS2());
-		when(rbvdR602.executeFormalizationContractAndPayment(Mockito.anyObject())).thenReturn(icr3Response);
+		when(rbvdR602.executePreFormalizationInsurance(Mockito.anyObject())).thenReturn(icr3Response);
 
 		// When
 		ResponseLibrary<PolicyASO> result = rbvdR201.executeInsurancePaymentAndFormalization(policyASO,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
@@ -113,7 +111,7 @@ public class RBVDR201V2Test {
 
 		ICR3Response icr3Response = new ICR3Response();
 		icr3Response.setHostAdviceCode(Collections.singletonList(new HostAdvice("IC123123","Error")));
-		when(rbvdR602.executeFormalizationContractAndPayment(Mockito.anyObject())).thenReturn(icr3Response);
+		when(rbvdR602.executePreFormalizationInsurance(Mockito.anyObject())).thenReturn(icr3Response);
 
 		// When
 		ResponseLibrary<PolicyASO> result = rbvdR201.executeInsurancePaymentAndFormalization(policyASO,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);

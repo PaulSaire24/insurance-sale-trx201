@@ -41,20 +41,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuranceCompanyASO;
 
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EntidadBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.FacturacionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.DatoParticularBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.ContactoInspeccionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadEmisionBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarTerceroBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.BeneficiarioBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.CrearCronogramaBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.FinanciamientoBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.CuotaFinancimientoBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PayloadAgregarTerceroBO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.AgregarPersonaBO;
+import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
 
 import com.bbva.rbvd.dto.insrncsale.dao.RelatedContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
@@ -844,8 +831,26 @@ public class MapperHelper {
         return arguments;
     }
 
-    public EmisionBO mapRimacEmisionRequest(EmisionBO rimacRequest,PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields,
-                                            Map<String, Object> responseQueryGetProductById,CustomerListASO customerList){
+    public AgregarPersonaBO mapRimacEmisionRequestParticipant(PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields, CustomerListASO customerList){
+        CustomerBO customer = customerList.getData().get(0);
+        List<PersonaBO> personasList = new ArrayList<>();
+        PersonaBO persona = this.constructPerson(requestBody,customer,responseQueryGetRequiredFields);
+
+        StringBuilder stringAddress  = new StringBuilder();
+
+        String filledAddress = fillAddress(customerList, persona, stringAddress,requestBody.getSaleChannelId());
+        validateIfAddressIsNull(filledAddress);
+
+        constructListPersons(persona, personasList);
+
+        AgregarPersonaBO agregarPersonaBO = new AgregarPersonaBO();
+        agregarPersonaBO.setPersona(personasList);
+
+        return agregarPersonaBO;
+    }
+
+    public EmisionBO mapRimacNoLifeEmisionRequest(EmisionBO rimacRequest, PolicyDTO requestBody, Map<String, Object> responseQueryGetRequiredFields,
+                                                  Map<String, Object> responseQueryGetProductById){
         EmisionBO generalEmisionRimacRequest = new EmisionBO();
         PayloadEmisionBO emisionBO = new PayloadEmisionBO();
         emisionBO.setEmision(rimacRequest.getPayload());
@@ -875,22 +880,6 @@ public class MapperHelper {
         crearCronogramaBO.setFinanciamiento(financiamientoBOs);
 
         generalEmisionRimacRequest.getPayload().setCrearCronograma(crearCronogramaBO);
-
-        CustomerBO customer = customerList.getData().get(0);
-        List<PersonaBO> personasList = new ArrayList<>();
-        PersonaBO persona = this.constructPerson(requestBody,customer,responseQueryGetRequiredFields);
-
-        StringBuilder stringAddress  = new StringBuilder();
-
-        String filledAddress = fillAddress(customerList, persona, stringAddress,requestBody.getSaleChannelId());
-        validateIfAddressIsNull(filledAddress);
-
-        constructListPersons(persona, personasList);
-
-        AgregarPersonaBO agregarPersonaBO = new AgregarPersonaBO();
-        agregarPersonaBO.setPersona(personasList);
-
-        generalEmisionRimacRequest.getPayload().setAgregarPersona(agregarPersonaBO);
 
         if(Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)){
             DatoParticularBO quintoDatoParticular = new DatoParticularBO();

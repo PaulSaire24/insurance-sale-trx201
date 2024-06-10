@@ -18,7 +18,6 @@ import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
-import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
 import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
@@ -47,8 +46,8 @@ public class EmissionBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmissionBean.class);
 
 
-    public static EmisionBO addNotLifeParticipants(EmisionBO rimacRequest, PolicyDTO requestBody, ApplicationConfigurationService applicationConfigurationService,CustomerListASO customerListASO,
-                                            ProcessPrePolicyDTO processPrePolicyDTO) {
+    public static EmisionBO addNotLifeAdditionalRequestData(EmisionBO rimacRequest, PolicyDTO requestBody, ApplicationConfigurationService applicationConfigurationService, CustomerListASO customerListASO,
+                                                            ProcessPrePolicyDTO processPrePolicyDTO) {
 
         String productChannelConditionalNaturalPers = applicationConfigurationService.
                 getDefaultProperty(PROPERTY_VALIDATE_NATURAL_PARTICIPANT.
@@ -62,6 +61,7 @@ public class EmissionBean {
         boolean validateNaturalParticipant = Boolean.parseBoolean(productChannelConditionalNaturalPers);
         boolean validateLegalParticipant = Boolean.parseBoolean(productChannelConditionalLegalPers);
 
+        rimacRequest = EmissionBean.mapRimacFinancingEmisionRequest(rimacRequest, requestBody, processPrePolicyDTO, applicationConfigurationService);
         if(!validateNaturalParticipant && !validateLegalParticipant){
             return rimacRequest;
         }
@@ -71,20 +71,78 @@ public class EmissionBean {
         String nroDoc = customerListASO.getData().get(0).getIdentityDocuments().get(0).getDocumentNumber();
         boolean isLegalPerson = RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20");
 
-        EmisionBO generalEmisionRequest = null;
-
         if((validateNaturalParticipant && !isLegalPerson) || (isLegalPerson && validateLegalParticipant)) {
-            generalEmisionRequest = EmissionBean.toRequestGeneralBodyRimac(rimacRequest, requestBody,processPrePolicyDTO,customerListASO,applicationConfigurationService,processPrePolicyDTO.getOperationGlossaryDesc());
-            LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****", generalEmisionRequest);
+            AgregarPersonaBO personaBO = mapRimacEmisionRequestParticipant(requestBody,processPrePolicyDTO,customerListASO,applicationConfigurationService,processPrePolicyDTO.getOperationGlossaryDesc());
+            rimacRequest.getPayload().setAgregarPersona(personaBO);
+            LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****", rimacRequest);
         }
 
         if (isLegalPerson && validateLegalParticipant) {
-            OrganizationBean.setOrganization(generalEmisionRequest,requestBody,customerListASO,processPrePolicyDTO);
+            OrganizationBean.setOrganization(rimacRequest,requestBody,customerListASO,processPrePolicyDTO);
         }
 
-        return Objects.isNull(generalEmisionRequest) ? rimacRequest : generalEmisionRequest;
+        return rimacRequest;
     }
 
+    public static AgregarPersonaBO mapRimacEmisionRequestParticipant(PolicyDTO requestBody, ProcessPrePolicyDTO processPrePolicyDTO,CustomerListASO customerList, ApplicationConfigurationService applicationConfigurationService,String operationGlossaryDesc){
+        CustomerBO customer = customerList.getData().get(0);
+        List<PersonaBO> personasList = new ArrayList<>();
+        PersonaBO persona = constructPerson(requestBody,customer,processPrePolicyDTO,applicationConfigurationService);
+
+        StringBuilder stringAddress  = new StringBuilder();
+
+        String filledAddress = fillAddress(customerList, persona, stringAddress, requestBody.getSaleChannelId(), applicationConfigurationService);
+        validateIfAddressIsNull(filledAddress);
+
+        constructListPersons(persona, personasList);
+
+        AgregarPersonaBO agregarPersonaBO = new AgregarPersonaBO();
+        agregarPersonaBO.setPersona(personasList);
+
+        return agregarPersonaBO;
+    }
+
+    public static EmisionBO mapRimacFinancingEmisionRequest(EmisionBO rimacRequest, PolicyDTO requestBody, ProcessPrePolicyDTO processPrePolicyDTO, ApplicationConfigurationService applicationConfigurationService){
+        EmisionBO generalEmisionRimacRequest = new EmisionBO();
+        PayloadEmisionBO emisionBO = new PayloadEmisionBO();
+        emisionBO.setEmision(rimacRequest.getPayload());
+        String productsCalculateValidityMonths = applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","");
+        emisionBO.getEmision().setProducto(getInsuranceBusinessNameFromDB(processPrePolicyDTO.getResponseQueryGetProductById()));
+        generalEmisionRimacRequest.setPayload(emisionBO);
+
+        FinanciamientoBO financiamiento = new FinanciamientoBO();
+        financiamiento.setFrecuencia(applicationConfigurationService.getProperty(requestBody.getInstallmentPlan().getPeriod().getId()));
+        String strDate = requestBody.getValidityPeriod().getStartDate().toInstant()
+                .atOffset(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        financiamiento.setFechaInicio(strDate);
+        financiamiento.setNumeroCuotas(requestBody.getInstallmentPlan().getTotalNumberInstallments());
+
+        String operacionGlossaryDesc = processPrePolicyDTO.getOperationGlossaryDesc();
+        if (Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)) {
+            if(Period.MONTHLY_LARGE.equals(requestBody.getInstallmentPlan().getPeriod().getId())){
+                financiamiento.setFrecuencia(Period.FREE_PERIOD);
+            }
+            financiamiento.setNumeroCuotas((long) PISDConstants.Number.UNO);
+        }
+
+        List<FinanciamientoBO> financiamientoBOs = new ArrayList<>();
+        financiamientoBOs.add(financiamiento);
+        CrearCronogramaBO crearCronogramaBO = new CrearCronogramaBO();
+        crearCronogramaBO.setFinanciamiento(financiamientoBOs);
+
+        generalEmisionRimacRequest.getPayload().setCrearCronograma(crearCronogramaBO);
+
+        if(Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)){
+            DatoParticularBO quintoDatoParticular = new DatoParticularBO();
+            quintoDatoParticular.setEtiqueta(LabelRimac.PARTICULAR_DATA_MESES_DE_VIGENCIA);
+            quintoDatoParticular.setCodigo("");
+            quintoDatoParticular.setValor(String.valueOf(getMonthsOfValidity(requestBody.getInstallmentPlan().getMaturityDate())));
+            generalEmisionRimacRequest.getPayload().getEmision().getDatosParticulares().add(quintoDatoParticular);
+        }
+
+        return generalEmisionRimacRequest;
+    }
 
     public static EmisionBO toRequestGeneralBodyRimac(EmisionBO rimacRequest, PolicyDTO requestBody, ProcessPrePolicyDTO processPrePolicyDTO,CustomerListASO customerList, ApplicationConfigurationService applicationConfigurationService,String operationGlossaryDesc){
         EmisionBO generalEmisionRimacRequest = new EmisionBO();

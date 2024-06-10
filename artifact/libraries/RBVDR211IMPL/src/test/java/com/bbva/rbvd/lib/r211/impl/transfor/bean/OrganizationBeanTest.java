@@ -85,7 +85,7 @@ public class OrganizationBeanTest {
         assertNotNull(emision.getPayload().getAgregarPersona().getOrganizacion());
     }
 
-    @Test
+    /*@Test
     public void setOrganizationDoesNotSetOrganizationsForRucIdNotStartingWith20() {
         // Given
         EmisionBO emision = new EmisionBO();
@@ -140,7 +140,7 @@ public class OrganizationBeanTest {
         // Then
         assertNotNull(emision.getPayload().getAgregarPersona().getPersona());
         assertNull(emision.getPayload().getAgregarPersona().getOrganizacion());
-    }
+    }*/
 
     @Test
     public void mapOrganizationsReturnsCorrectOrganizationsForBusinessWithFormation() throws IOException {

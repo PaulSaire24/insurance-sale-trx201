@@ -26,13 +26,10 @@ public class OrganizationBean {
     public static void setOrganization(EmisionBO emision, PolicyDTO requestBody, CustomerListASO customerList, ProcessPrePolicyDTO processPrePolicy){
         PersonaBO persona = emision.getPayload().getAgregarPersona().getPersona().get(0);
         CustomerBO customer = customerList.getData().get(0);
-        String tipoDoc = customer.getIdentityDocuments().get(0).getDocumentType().getId();
-        String nroDoc = customer.getIdentityDocuments().get(0).getDocumentNumber();
-        if (Endorsement.RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20")){
-            List<OrganizacionBO> organizaciones = mapOrganizations(processPrePolicy.getListBusinessesASO().getData().get(0), persona, customer, requestBody);
-            emision.getPayload().getAgregarPersona().setOrganizacion(organizaciones);
-            emision.getPayload().getAgregarPersona().setPersona(null);
-        }
+
+        List<OrganizacionBO> organizaciones = mapOrganizations(processPrePolicy.getListBusinessesASO().getData().get(0), persona, customer, requestBody);
+        emision.getPayload().getAgregarPersona().setOrganizacion(organizaciones);
+        emision.getPayload().getAgregarPersona().setPersona(null);
     }
 
     public static List<OrganizacionBO> mapOrganizations(final BusinessASO business, PersonaBO persona, CustomerBO customer, PolicyDTO requestBody) {
