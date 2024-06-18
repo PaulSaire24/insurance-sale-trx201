@@ -936,8 +936,9 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 						concat(requestBody.getProductId()).concat(".").
 						concat(requestBody.getSaleChannelId()),"true");
 
-		Boolean validateNaturalParticipant = Boolean.valueOf(productChannelConditionalNaturalPers);
-		Boolean validateLegalParticipant = Boolean.valueOf(productChannelConditionalLegalPers);
+		boolean validateNaturalParticipant = Boolean.parseBoolean(productChannelConditionalNaturalPers);
+		boolean validateLegalParticipant = Boolean.parseBoolean(productChannelConditionalLegalPers);
+
 
 		if(!validateNaturalParticipant && !validateLegalParticipant){
 			return rimacNoLifeRequest;
