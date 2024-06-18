@@ -412,6 +412,24 @@ public class RBVDR201Test {
 	}
 
 	@Test
+	public void executePutEventUpsilonServiceWithTimeoutException() {
+		LOGGER.info("RBVDR201Test - Executing executePutEventUpsilonServiceOK...");
+
+		when(this.internalApiConnectorImpersonation.exchange(anyString(), any(HttpMethod.class), anyObject(), (Class<Integer>)any())).
+				thenThrow(new TimeoutException("TIMEOUT"));
+
+		CreatedInsrcEventDTO createdInsrcEvent = new CreatedInsrcEventDTO();
+		CreatedInsuranceDTO createdInsurance = new CreatedInsuranceDTO();
+		createdInsurance.setOperationDate(Calendar.getInstance());
+		createdInsrcEvent.setCreatedInsurance(createdInsurance);
+
+		Integer validation = rbvdR201.executePutEventUpsilonService(createdInsrcEvent);
+
+		assertNotNull(validation);
+		assertEquals(0, validation.intValue());
+	}
+
+	@Test
 	public void executePutEventUpsilonServiceWithRestClientException() {
 		LOGGER.info("RBVDR201Test - Executing executePutEventUpsilonServiceWithRestClientException...");
 

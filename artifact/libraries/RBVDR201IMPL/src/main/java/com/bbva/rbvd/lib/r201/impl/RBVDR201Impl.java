@@ -241,6 +241,9 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 		} catch(RestClientException ex) {
 			LOGGER.info("***** RBVDR201Impl - executePutEventUpsilonService ***** Exception: {}", ex.getMessage());
 			return 0;
+		} catch (TimeoutException toex) {
+			LOGGER.info("*** RBVDR201Impl - executePutEventUpsilonService *** TimeoutException: {}", toex.getAdviceCode());
+			return 0;
 		}
 
 	}
