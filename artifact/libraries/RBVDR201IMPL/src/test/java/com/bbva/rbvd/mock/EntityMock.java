@@ -3,16 +3,15 @@ package com.bbva.rbvd.mock;
 
 import com.bbva.rbvd.dto.cicsconnection.icr2.ICMRYS2;
 import com.bbva.rbvd.dto.insrncsale.aso.*;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BusinessAgentASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.*;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.LocalDate;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 

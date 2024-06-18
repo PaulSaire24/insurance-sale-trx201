@@ -1,5 +1,6 @@
 package com.bbva.rbvd.lib.r201.transform.bean;
 
+import com.bbva.rbvd.dto.cicsconnection.ic.ICContract;
 import com.bbva.rbvd.dto.cicsconnection.icr2.ICMRYS2;
 import com.bbva.rbvd.dto.cicsconnection.icr2.ICR2Request;
 import com.bbva.rbvd.dto.cicsconnection.icr2.enums.YesNoIndicator;
@@ -43,14 +44,14 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.StatusASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.TotalAmountASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.ValidityPeriodASO;
 
-public class ICR2Bean {
+public class ICRBean {
 
 
-    private ICR2Bean(){}
+    private ICRBean(){}
 
 
-    public static ICR2Request mapIn(final DataASO inputCreateInsurance, final RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized) {
-        ICR2Request format = new ICR2Request();
+    public static ICContract mapIn(final DataASO inputCreateInsurance, final RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized) {
+        ICContract format = new ICContract();
         format.setCODPRO(inputCreateInsurance.getProductId());
         mapInProductPlan(format, inputCreateInsurance.getProductPlan());
         mapInPaymentMethod(format, inputCreateInsurance.getPaymentMethod());
@@ -71,14 +72,14 @@ public class ICR2Bean {
         return format;
     }
 
-    private static void mapInSalesSupplier(final ICR2Request format, final SalesSupplierASO salesSupplier) {
+    private static void mapInSalesSupplier(final ICContract format, final SalesSupplierASO salesSupplier) {
         if (salesSupplier == null) {
             return;
         }
         format.setSUBCANA(salesSupplier.getId());
     }
 
-    private static void mapInInsuranceCompany(final ICR2Request format, final InsuranceCompanyASO insuranceCompany) {
+    private static void mapInInsuranceCompany(final ICContract format, final InsuranceCompanyASO insuranceCompany) {
         if (insuranceCompany == null) {
             return;
         }
@@ -86,7 +87,7 @@ public class ICR2Bean {
         format.setCODCIA(insuranceCompany.getId());
     }
 
-    public static void mapInBank(final ICR2Request format, final com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO bank) {
+    public static void mapInBank(final ICContract format, final com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO bank) {
         if (bank == null) {
             return;
         }
@@ -95,7 +96,7 @@ public class ICR2Bean {
         format.setOFICON(bank.getBranch() == null ? null : bank.getBranch().getId());
     }
 
-    private static void mapInPromoter(final ICR2Request format, final PromoterASO promoter) {
+    private static void mapInPromoter(final ICContract format, final PromoterASO promoter) {
         if (promoter == null) {
             return;
         }
@@ -103,7 +104,7 @@ public class ICR2Bean {
         format.setPRESEN(promoter.getId());
     }
 
-    private static void mapInBusinessAgent(final ICR2Request format, final BusinessAgentASO businessAgent) {
+    private static void mapInBusinessAgent(final ICContract format, final BusinessAgentASO businessAgent) {
         if (businessAgent == null) {
             return;
         }
@@ -111,7 +112,7 @@ public class ICR2Bean {
         format.setGESTOR(businessAgent.getId());
     }
 
-    public static void mapInParticipants(final ICR2Request format, final List<ParticipantASO> participants) {
+    public static void mapInParticipants(final ICContract format, final List<ParticipantASO> participants) {
         if (CollectionUtils.isEmpty(participants) ||
                 participants.get(0).getParticipantType() == null) {
             return;
@@ -128,7 +129,7 @@ public class ICR2Bean {
         }
     }
 
-    private static void mapInParticipantsIdentityDocument(final ICR2Request format, final IdentityDocumentASO identityDocument) {
+    private static void mapInParticipantsIdentityDocument(final ICContract format, final IdentityDocumentASO identityDocument) {
         if (identityDocument == null) {
             return;
         }
@@ -137,7 +138,7 @@ public class ICR2Bean {
         format.setTIPDO1(identityDocument.getDocumentType() == null ? null : identityDocument.getDocumentType().getId());
     }
 
-    private static void mapInParticipantsIdentityDocumentLegal(final ICR2Request format, final IdentityDocumentASO identityDocument) {
+    private static void mapInParticipantsIdentityDocumentLegal(final ICContract format, final IdentityDocumentASO identityDocument) {
         if (identityDocument == null) {
             return;
         }
@@ -146,7 +147,7 @@ public class ICR2Bean {
         format.setTIPDOR(identityDocument.getDocumentType() == null ? null : identityDocument.getDocumentType().getId());
     }
 
-    private static void mapInFirstInstallment(final ICR2Request format, final FirstInstallmentASO firstInstallment) {
+    private static void mapInFirstInstallment(final ICContract format, final FirstInstallmentASO firstInstallment) {
         if (firstInstallment == null) {
             return;
         }
@@ -154,7 +155,7 @@ public class ICR2Bean {
         format.setCOBRO(yesNoIndicator);
     }
 
-    private static void mapInInstallmentPlan(final ICR2Request format, final InstallmentPlanASO installmentPlan) {
+    private static void mapInInstallmentPlan(final ICContract format, final InstallmentPlanASO installmentPlan) {
         if (installmentPlan == null) {
             return;
         }
@@ -165,7 +166,7 @@ public class ICR2Bean {
         mapInInstallmentPaymentAmount(format, installmentPlan.getPaymentAmount());
     }
 
-    private static void mapInInstallmentPaymentAmount(final ICR2Request format, final PaymentAmountASO paymentAmount) {
+    private static void mapInInstallmentPaymentAmount(final ICContract format, final PaymentAmountASO paymentAmount) {
         if (paymentAmount == null) {
             return;
         }
@@ -174,7 +175,7 @@ public class ICR2Bean {
         format.setDIVCUO(paymentAmount.getCurrency());
     }
 
-    private static void mapInInstallmentPeriod(final ICR2Request format, final PaymentPeriodASO period) {
+    private static void mapInInstallmentPeriod(final ICContract format, final PaymentPeriodASO period) {
         if (period == null) {
             return;
         }
@@ -182,7 +183,7 @@ public class ICR2Bean {
         format.setTFOPAG(period.getId());
     }
 
-    private static void mapInRelatedContracts(final ICR2Request format, final List<RelatedContractASO> relatedContracts) {
+    private static void mapInRelatedContracts(final ICContract format, final List<RelatedContractASO> relatedContracts) {
         if (CollectionUtils.isEmpty(relatedContracts) || relatedContracts.get(0).getRelatedContracts() == null) {
             return;
         }
@@ -194,7 +195,7 @@ public class ICR2Bean {
         }
     }
 
-    private static void mapInHolder(final ICR2Request format, final HolderASO holder) {
+    private static void mapInHolder(final ICContract format, final HolderASO holder) {
         if (holder == null) {
             return;
         }
@@ -204,7 +205,7 @@ public class ICR2Bean {
 
     }
 
-    private static void mapInHolderIdentityDocument(final ICR2Request format, final IdentityDocumentASO identityDocument) {
+    private static void mapInHolderIdentityDocument(final ICContract format, final IdentityDocumentASO identityDocument) {
         if (identityDocument == null) {
             return;
         }
@@ -213,7 +214,7 @@ public class ICR2Bean {
         format.setTIPDOC(identityDocument.getDocumentType() == null ? null : identityDocument.getDocumentType().getId());
     }
 
-    private static void mapInInsuredAmount(final ICR2Request format, final InsuredAmountASO insuredAmount) {
+    private static void mapInInsuredAmount(final ICContract format, final InsuredAmountASO insuredAmount) {
         if (insuredAmount == null) {
             return;
         }
@@ -222,7 +223,7 @@ public class ICR2Bean {
         format.setDIVSUM(insuredAmount.getCurrency());
     }
 
-    private static void mapInTotalAmount(final ICR2Request format, final TotalAmountASO totalAmount) {
+    private static void mapInTotalAmount(final ICContract format, final TotalAmountASO totalAmount) {
         if (totalAmount == null) {
             return;
         }
@@ -231,7 +232,7 @@ public class ICR2Bean {
         format.setDIVPRI(totalAmount.getCurrency());
     }
 
-    private static void mapInValidityPeriod(final ICR2Request format, final ValidityPeriodASO validityPeriod) {
+    private static void mapInValidityPeriod(final ICContract format, final ValidityPeriodASO validityPeriod) {
         if (validityPeriod == null) {
             return;
         }
@@ -239,7 +240,7 @@ public class ICR2Bean {
         format.setFECINI(FunctionsUtils.generateCorrectDateFormat(validityPeriod.getStartDate()));
     }
 
-    public static void mapInPaymentMethod(final ICR2Request format, final PaymentMethodASO paymentMethod) {
+    public static void mapInPaymentMethod(final ICContract format, final PaymentMethodASO paymentMethod) {
         if (paymentMethod == null) {
             return;
         }
@@ -254,7 +255,7 @@ public class ICR2Bean {
         mapInPaymentMethodRelatedContracts(format, paymentMethod.getRelatedContracts().get(0));
     }
 
-    private static void mapInPaymentMethodRelatedContracts(final ICR2Request format, final RelatedContractASO dtoIntRelatedContract) {
+    private static void mapInPaymentMethodRelatedContracts(final ICContract format, final RelatedContractASO dtoIntRelatedContract) {
         if (dtoIntRelatedContract == null || dtoIntRelatedContract.getProduct() == null) {
             return;
         }
@@ -263,7 +264,7 @@ public class ICR2Bean {
         }
     }
 
-    private static void mapInProductPlan(final ICR2Request format, final ProductPlanASO productPlan) {
+    private static void mapInProductPlan(final ICContract format, final ProductPlanASO productPlan) {
         if (productPlan == null) {
             return;
         }

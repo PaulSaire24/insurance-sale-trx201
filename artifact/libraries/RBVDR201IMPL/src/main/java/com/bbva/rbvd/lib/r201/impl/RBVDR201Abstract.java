@@ -6,11 +6,9 @@ import com.bbva.elara.utility.api.connector.APIConnector;
 import com.bbva.elara.utility.api.connector.APIConnectorBuilder;
 import com.bbva.pisd.lib.r352.PISDR352;
 import com.bbva.rbvd.lib.r046.RBVDR046;
-import com.bbva.rbvd.lib.r047.RBVDR047;
 import com.bbva.rbvd.lib.r066.RBVDR066;
 import com.bbva.rbvd.lib.r201.RBVDR201;
-import com.bbva.rbvd.lib.r201.util.RimacUrlForker;
-import com.bbva.rbvd.lib.r602.RBVDR602;
+import com.bbva.rbvd.lib.r609.RBVDR609;
 
 /**
  * This class automatically defines the libraries and utilities that it will use.
@@ -25,17 +23,13 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 
 	protected ApplicationConfigurationService applicationConfigurationService;
 
-	protected RBVDR047 rbvdR047;
-
-	protected RBVDR602 rbvdR602;
-
 	protected RBVDR066 rbvdR066;
 
 	protected RBVDR046 rbvdR046;
 
 	protected PISDR352 pisdR352;
 
-	protected RimacUrlForker rimacUrlForker;
+	protected RBVDR609 rbvdR609;
 
 	protected APIConnector internalApiConnectorImpersonation;
 
@@ -69,20 +63,6 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 	}
 
 	/**
-	* @param rbvdR047 the this.rbvdR047 to set
-	*/
-	public void setRbvdR047(RBVDR047 rbvdR047) {
-		this.rbvdR047 = rbvdR047;
-	}
-
-	/**
-	* @param rbvdR602 the this.rbvdR602 to set
-	*/
-	public void setRbvdR602(RBVDR602 rbvdR602) {
-		this.rbvdR602 = rbvdR602;
-	}
-
-	/**
 	* @param rbvdR066 the this.rbvdR066 to set
 	*/
 	public void setRbvdR066(RBVDR066 rbvdR066) {
@@ -103,11 +83,18 @@ public abstract class RBVDR201Abstract extends AbstractLibrary implements RBVDR2
 		this.pisdR352 = pisdR352;
 	}
 
+	/**
+	* @param rbvdR609 the this.rbvdR609 to set
+	*/
+	public void setRbvdR609(RBVDR609 rbvdR609) {
+		this.rbvdR609 = rbvdR609;
+	}
+
+	/**
+	 * @param internalApiConnectorImpersonation the this.internalApiConnectorImpersonation to set
+	 */
 	public void setInternalApiConnectorImpersonation(APIConnector internalApiConnectorImpersonation) {
 		this.internalApiConnectorImpersonation = internalApiConnectorImpersonation;
 	}
-
-	public void setRimacUrlForker(RimacUrlForker rimacUrlForker) { this.rimacUrlForker = rimacUrlForker; }
-
 
 }

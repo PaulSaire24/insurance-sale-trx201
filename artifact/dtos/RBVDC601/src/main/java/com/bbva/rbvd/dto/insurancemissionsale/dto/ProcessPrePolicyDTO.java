@@ -1,6 +1,7 @@
 package com.bbva.rbvd.dto.insurancemissionsale.dto;
 
 
+import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
@@ -46,6 +47,16 @@ public class ProcessPrePolicyDTO {
     private List<EndosatarioBO> endosatarios;
 
     private String rimacPaymentAccount;
+
+    private DataASO dataASO;
+
+    public DataASO getDataASO() {
+        return dataASO;
+    }
+
+    public void setDataASO(DataASO dataASO) {
+        this.dataASO = dataASO;
+    }
 
     public String getRimacPaymentAccount() {
         return rimacPaymentAccount;

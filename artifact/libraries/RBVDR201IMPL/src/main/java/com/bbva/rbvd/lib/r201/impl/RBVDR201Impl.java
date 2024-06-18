@@ -2,7 +2,6 @@ package com.bbva.rbvd.lib.r201.impl;
 
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.apx.exception.io.network.TimeoutException;
-import com.bbva.elara.domain.transaction.RequestHeaderParamsName;
 
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
@@ -10,10 +9,8 @@ import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 
-import com.bbva.rbvd.dto.cicsconnection.icr2.ICR2Request;
+import com.bbva.rbvd.dto.cicsconnection.ic.ICContract;
 import com.bbva.rbvd.dto.cicsconnection.icr2.ICR2Response;
-import com.bbva.rbvd.dto.cicsconnection.icr3.ICR3Request;
-import com.bbva.rbvd.dto.cicsconnection.icr3.ICR3Response;
 import com.bbva.rbvd.dto.insrncsale.aso.cypher.CypherASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
@@ -30,8 +27,7 @@ import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 
 import com.bbva.rbvd.lib.r201.properties.EmissionServiceProperties;
-import com.bbva.rbvd.lib.r201.transform.bean.ICR2Bean;
-import com.bbva.rbvd.lib.r201.transform.bean.ICR3Bean;
+import com.bbva.rbvd.lib.r201.transform.bean.ICRBean;
 import com.bbva.rbvd.lib.r201.util.AsoExceptionHandler;
 import com.bbva.rbvd.lib.r201.util.FunctionsUtils;
 import com.bbva.rbvd.lib.r201.util.JsonHelper;
@@ -221,7 +217,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	 * @return ResponseLibrary<PolicyASO> A ResponseLibrary object that contains the status of the process and the new PolicyASO object if the process was successful.
 	 */
 	@Override
-	public ResponseLibrary<PolicyASO> executePrePolicyEmissionCics(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized) {
+	public ResponseLibrary<PolicyASO> executePreFormalizationContract(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized) {
 		LOGGER.info(" :: executePrePolicyEmissionCics :: [ START ]");
 		LOGGER.info(" :: executePrePolicyEmissionCics :: [ DataASO :: {} ]",requestBody);
 		if(emissionServiceProperties.enabledMockPrePolicyEmissionCics()){
@@ -230,11 +226,11 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 					.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
 					.body(JsonHelper.getInstance().createMockPolicyASO());
 		}
-		ICR2Request icr2Request = ICR2Bean.mapIn(requestBody,indicatorPreFormalized);
-		ICR2Response icr2Response = this.rbvdR047.executePreFormalizationContract(icr2Request);
+		ICContract icrRequest = ICRBean.mapIn(requestBody,indicatorPreFormalized);
+		ICR2Response icr2Response = this.rbvdR609.executePreFormalizationContractInsurance(icrRequest);
 		if(CollectionUtils.isEmpty(icr2Response.getHostAdviceCode())){
 			PolicyASO policyASO = new PolicyASO();
-			policyASO.setData(ICR2Bean.mapOut(icr2Response.getIcmrys2()));
+			policyASO.setData(ICRBean.mapOut(icr2Response.getIcmrys2()));
 			return ResponseLibrary.ResponseServiceBuilder.an()
 					.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
 					.body(policyASO);
@@ -251,27 +247,27 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	 * If there are any host advice codes in the ICR3Response, it adds them to the advice list and returns a ResponseLibrary object with a status of EWR.
 	 * If there are no host advice codes, it maps the ICR3Response to a new PolicyASO object and returns a ResponseLibrary object with a status of OK and the new PolicyASO object as the body.
 	 *
-	 * @param policyASO The PolicyASO object that contains the policy details.
+	 * @param requestBody The DataASO object that contains the policy details.
 	 * @return ResponseLibrary<PolicyASO> A ResponseLibrary object that contains the status of the process and the new PolicyASO object if the process was successful.
 	 */
 	@Override
-	public ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(PolicyASO policyASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized) {
+	public ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized) {
 		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ START ]");
-		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ Data :: {} ]",policyASO);
-		ICR3Request icr3Request = ICR3Bean.mapIn(policyASO, (String) this.getRequestHeader().getHeaderParameter(RequestHeaderParamsName.USERCODE),indicatorPreFormalized);
-		ICR3Response icr3Response = this.rbvdR602.executePreFormalizationInsurance(icr3Request);
-		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ ICR3Response :: {} ]",icr3Response);
-		if (!CollectionUtils.isEmpty(icr3Response.getHostAdviceCode())) {
-			this.addAdviceWithDescription(RBVDInternalErrors.ERROR_GENERIC_HOST.getAdviceCode(), FunctionsUtils.getAdviceListOfString(icr3Response.getHostAdviceCode()));
+		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ DataASO :: {} ]",requestBody);
+		ICContract icr3Request = ICRBean.mapIn(requestBody,indicatorPreFormalized);
+		ICR2Response icResponse = this.rbvdR609.executeFormalizationContractInsurance(icr3Request);
+		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ ICR3Response :: {} ]",icResponse);
+		if (!CollectionUtils.isEmpty(icResponse.getHostAdviceCode())) {
+			this.addAdviceWithDescription(RBVDInternalErrors.ERROR_GENERIC_HOST.getAdviceCode(), FunctionsUtils.getAdviceListOfString(icResponse.getHostAdviceCode()));
 			return ResponseLibrary.ResponseServiceBuilder.an()
 					.statusIndicatorProcess(RBVDInternalConstants.Status.EWR)
 					.build();
 		}
 		PolicyASO policy = new PolicyASO();
-		policy.setData(ICR2Bean.mapOut(icr3Response.getIcmrys2()));
+		policy.setData(ICRBean.mapOut(icResponse.getIcmrys2()));
 		return ResponseLibrary.ResponseServiceBuilder.an()
 				.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
-				.body(policyASO);
+				.body(policy);
 	}
 
 	private String getRequestBodyAsJsonFormat(Object requestBody) {

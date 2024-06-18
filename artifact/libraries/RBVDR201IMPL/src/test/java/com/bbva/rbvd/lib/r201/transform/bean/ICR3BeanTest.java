@@ -1,57 +1,53 @@
 package com.bbva.rbvd.lib.r201.transform.bean;
 
 import com.bbva.pisd.dto.insurance.utils.PISDConstants;
-import com.bbva.rbvd.dto.cicsconnection.icr3.ICR3Request;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
+import com.bbva.rbvd.dto.cicsconnection.ic.ICContract;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.mock.EntityMock;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static org.junit.Assert.assertEquals;
 
 public class ICR3BeanTest {
-    private PolicyASO policyASO;
+    private DataASO input ;
     private String userCode;
 
     @Before
-    public void setUp() {
-        policyASO = EntityMock.getInstance().createMockPolicyASO();
+    public void setUp() throws IOException {
+        input = EntityMock.getInstance().buildInputCreateInsurance();
         userCode = "testUserCode";
     }
 
     @Test
     public void mapIn_shouldReturnICR3Request_whenPaymentIsRequired() {
-        policyASO.getData().getFirstInstallment().setIsPaymentRequired(true);
+        input.getFirstInstallment().setIsPaymentRequired(true);
 
-        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+        ICContract result = ICRBean.mapIn(input, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
 
-        assertEquals(PISDConstants.LETTER_SI, result.getCOBRO());
+        assertEquals(PISDConstants.LETTER_SI, result.getCOBRO().getValue());
     }
 
     @Test
     public void mapIn_shouldReturnICR3Request_whenPaymentIsNotRequired() {
-        policyASO.getData().getFirstInstallment().setIsPaymentRequired(false);
+        input.getFirstInstallment().setIsPaymentRequired(false);
 
-        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+        ICContract result = ICRBean.mapIn(input,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
 
-        assertEquals(PISDConstants.LETTER_NO, result.getCOBRO());
+        assertEquals(PISDConstants.LETTER_NO, result.getCOBRO().getValue());
     }
 
-    @Test
-    public void mapIn_shouldReturnICR3Request_withCorrectUserCode() {
-        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
-
-        assertEquals(userCode, result.getUSUARIO());
-    }
 
     @Test
     public void mapIn_shouldReturnICR3Request_withCorrectPaymentType() {
         String paymentType = "testPaymentType";
-        String nrocta = "00110130270299963079";
-        policyASO.getData().getPaymentMethod().setPaymentType(paymentType);
+        String nrocta = "2131231213";
+        input.getPaymentMethod().setPaymentType(paymentType);
 
-        ICR3Request result = ICR3Bean.mapIn(policyASO, userCode,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+        ICContract result = ICRBean.mapIn(input,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
         assertEquals(paymentType, result.getMTDPGO());
         assertEquals(nrocta, result.getNROCTA());
     }

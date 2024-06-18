@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
+import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -166,6 +167,7 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
             this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
             throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
         }
+        this.getResponseLibrary().getBody().setDataASO(dataASO);
         this.getResponseLibrary().getBody().setAsoResponse(asoResponse);
         this.getResponseLibrary().getBody().setPolicy(requestBody);
         this.getResponseLibrary().getBody().setContractDao(contractDao);
@@ -223,7 +225,7 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
     @Override
     protected void executeGeneratePayment() {
         if(this.basicProductInsuranceProperties.enabledPaymentICR3()){
-            PolicyASO asoResponse = this.getResponseLibrary().getBody().getAsoResponse();
+            DataASO asoResponse = this.getResponseLibrary().getBody().getDataASO();
             ResponseLibrary<PolicyASO> responseGeneratePayment = this.contractPISD201ServiceInternal.generateFormalizationContractAndPayment(asoResponse,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
             if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseGeneratePayment.getStatusProcess())){
                 throw buildValidation(ERROR_RESPONSE_SERVICE_ICR2);

@@ -2,16 +2,11 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 	<bean id="rbvdR201" class="com.bbva.rbvd.lib.r201.impl.RBVDR201Impl" parent="rbvdR201Abstract">
-		<property name="rimacUrlForker" ref="rimacUrlForker"/>
-		<property name="rbvdR047" ref="rbvdR047"/>
-		<property name="rbvdR602" ref="rbvdR602"/>
 		<property name="rbvdR066" ref="rbvdR066"/>
 		<property name="rbvdR046" ref="rbvdR046"/>
 		<property name="pisdR352" ref="pisdR352"/>
 		<property name="emissionServiceProperties" ref="emissionServiceProperties"/>
-	</bean>
-	<bean id="rimacUrlForker" class="com.bbva.rbvd.lib.r201.util.RimacUrlForker">
-		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
+		<property name="rbvdR609" ref="rbvdR609"/>
 	</bean>
 	<bean id="emissionServiceProperties" class="com.bbva.rbvd.lib.r201.properties.EmissionServiceProperties" parent="properties"/>
 	<bean id="properties" class="com.bbva.rbvd.lib.r201.properties.Properties">

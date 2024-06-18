@@ -27,7 +27,7 @@ public interface RBVDR201 {
 	String executeCypherService(CypherASO input);
 	Integer executePutEventUpsilonService(CreatedInsrcEventDTO createdInsuranceEvent);
 	AgregarTerceroBO executeAddParticipantsService(AgregarTerceroBO requestBody, String quotationId, String productId, String traceId);
-	ResponseLibrary<PolicyASO> executePrePolicyEmissionCics(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized);
-	ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(PolicyASO policyASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized);
+	ResponseLibrary<PolicyASO> executePreFormalizationContract(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized);
+	ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized);
 
 }

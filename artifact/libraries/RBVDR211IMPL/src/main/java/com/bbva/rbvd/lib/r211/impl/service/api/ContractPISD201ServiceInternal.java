@@ -16,12 +16,12 @@ public class ContractPISD201ServiceInternal {
 
     public ResponseLibrary<PolicyASO> generateContractHost(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized){
         LOGGER.info(" ContractPISD201ServiceInternal :: executeGenerateContractHost :: [ RequestBody :: {} ]",requestBody);
-        return this.rbvdR201.executePrePolicyEmissionCics(requestBody,indicatorPreFormalized);
+        return this.rbvdR201.executePreFormalizationContract(requestBody,indicatorPreFormalized);
     }
 
-    public ResponseLibrary<PolicyASO> generateFormalizationContractAndPayment(PolicyASO policyASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized){
-        LOGGER.info(" ContractPISD201ServiceInternal :: executeGenerateContractHost :: [ PolicyASO :: {} ]",policyASO);
-        return this.rbvdR201.executeInsurancePaymentAndFormalization(policyASO,indicatorPreFormalized);
+    public ResponseLibrary<PolicyASO> generateFormalizationContractAndPayment(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized){
+        LOGGER.info(" ContractPISD201ServiceInternal :: executeGenerateContractHost :: [ DataASO :: {} ]",requestBody);
+        return this.rbvdR201.executeInsurancePaymentAndFormalization(requestBody,indicatorPreFormalized);
     }
 
     public void setRbvdR201(RBVDR201 rbvdR201) {

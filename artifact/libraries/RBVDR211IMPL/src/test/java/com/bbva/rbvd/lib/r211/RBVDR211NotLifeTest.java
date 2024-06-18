@@ -239,7 +239,7 @@ public class RBVDR211NotLifeTest {
 
 		/* P030557 */
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
-		when(rbvdr201.executePrePolicyEmissionCics(anyObject(),any())).thenReturn(ResponseLibrary.ResponseServiceBuilder
+		when(rbvdr201.executePreFormalizationContract(anyObject(),any())).thenReturn(ResponseLibrary.ResponseServiceBuilder
 				.an().statusIndicatorProcess(RBVDInternalConstants.Status.OK).body(asoResponse));
 
 		when(rbvdr201.executeInsurancePaymentAndFormalization(anyObject(),any())).thenReturn(ResponseLibrary.ResponseServiceBuilder

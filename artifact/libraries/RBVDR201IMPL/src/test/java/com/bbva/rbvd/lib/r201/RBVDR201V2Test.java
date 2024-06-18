@@ -7,12 +7,13 @@ import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.elara.domain.transaction.request.TransactionRequest;
 import com.bbva.elara.domain.transaction.request.body.CommonRequestBody;
 import com.bbva.elara.domain.transaction.request.header.CommonRequestHeader;
-import com.bbva.rbvd.dto.cicsconnection.icr3.ICR3Response;
+import com.bbva.rbvd.dto.cicsconnection.icr2.ICR2Response;
 import com.bbva.rbvd.dto.cicsconnection.utils.HostAdvice;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
-import com.bbva.rbvd.lib.r602.RBVDR602;
+import com.bbva.rbvd.lib.r609.RBVDR609;
 import com.bbva.rbvd.mock.EntityMock;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,8 +49,8 @@ public class RBVDR201V2Test {
 	@Resource(name = "rbvdR201")
 	private RBVDR201 rbvdR201;
 
-	@Resource(name = "rbvdR602")
-	private RBVDR602 rbvdR602;
+	@Resource(name = "rbvdR609")
+	private RBVDR609 rbvdr609;
 
 	@Resource(name = "applicationConfigurationService")
 	private ApplicationConfigurationService applicationConfigurationService;
@@ -90,13 +91,13 @@ public class RBVDR201V2Test {
 	@Test
 	public void insurancePaymentAndFormalizationReturnsExpectedResult() throws IOException {
 		// Given
-		PolicyASO policyASO =  EntityMock.getInstance().createMockPolicyASO();
-		ICR3Response icr3Response = new ICR3Response();
-		icr3Response.setIcmrys2(EntityMock.getInstance().buildFormatoICMRYS2());
-		when(rbvdR602.executePreFormalizationInsurance(Mockito.anyObject())).thenReturn(icr3Response);
+		DataASO requestBody = new DataASO();
+		ICR2Response icContract = new ICR2Response();
+		icContract.setIcmrys2(EntityMock.getInstance().buildFormatoICMRYS2());
+		when(rbvdr609.executeFormalizationContractInsurance(Mockito.anyObject())).thenReturn(icContract);
 
 		// When
-		ResponseLibrary<PolicyASO> result = rbvdR201.executeInsurancePaymentAndFormalization(policyASO,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+		ResponseLibrary<PolicyASO> result = rbvdR201.executeInsurancePaymentAndFormalization(requestBody,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
 
 		// Then
 		assertNotNull(result);
@@ -106,15 +107,15 @@ public class RBVDR201V2Test {
 	@Test
 	public void insurancePaymentAndFormalizationReturnsErrorResult() {
 		// Given
-		PolicyASO policyASO = EntityMock.getInstance().createMockPolicyASO();
+		DataASO requestBody = new DataASO();
 
 
-		ICR3Response icr3Response = new ICR3Response();
+		ICR2Response icr3Response = new ICR2Response();
 		icr3Response.setHostAdviceCode(Collections.singletonList(new HostAdvice("IC123123","Error")));
-		when(rbvdR602.executePreFormalizationInsurance(Mockito.anyObject())).thenReturn(icr3Response);
+		when(rbvdr609.executeFormalizationContractInsurance(Mockito.anyObject())).thenReturn(icr3Response);
 
 		// When
-		ResponseLibrary<PolicyASO> result = rbvdR201.executeInsurancePaymentAndFormalization(policyASO,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+		ResponseLibrary<PolicyASO> result = rbvdR201.executeInsurancePaymentAndFormalization(requestBody,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
 
 		// Then
 		assertNotNull(result);

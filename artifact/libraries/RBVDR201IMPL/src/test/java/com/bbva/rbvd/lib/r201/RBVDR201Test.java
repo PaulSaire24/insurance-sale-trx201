@@ -25,14 +25,11 @@ import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r046.RBVDR046;
-import com.bbva.rbvd.lib.r047.RBVDR047;
 import com.bbva.rbvd.lib.r066.RBVDR066;
 import com.bbva.rbvd.lib.r201.factory.ApiConnectorFactoryMock;
 import com.bbva.rbvd.lib.r201.impl.RBVDR201Impl;
 import com.bbva.rbvd.lib.r201.properties.EmissionServiceProperties;
-
-import com.bbva.rbvd.lib.r201.util.RimacUrlForker;
-import com.bbva.rbvd.lib.r602.RBVDR602;
+import com.bbva.rbvd.lib.r609.RBVDR609;
 import com.bbva.rbvd.mock.EntityMock;
 import com.bbva.rbvd.mock.MockBundleContext;
 import org.junit.Before;
@@ -80,7 +77,6 @@ public class RBVDR201Test {
 	private APIConnector internalApiConnector;
 	private APIConnector externalApiConnector;
 	private APIConnector internalApiConnectorImpersonation;
-	private RimacUrlForker rimacUrlForker;
 	private CustomerListASO customerList;
 	private MockDTO mockDTO;
 
@@ -88,9 +84,9 @@ public class RBVDR201Test {
 
 	private RBVDR066 rbvdR066;
 
-	private RBVDR602 rbvdR602;
 	private RBVDR046 rbvdR046;
-	private RBVDR047 rbvdR047;
+
+	private RBVDR609 rbvdR609;
 
 	private ApplicationConfigurationService applicationConfigurationService;
 
@@ -119,10 +115,6 @@ public class RBVDR201Test {
 		internalApiConnectorImpersonation = apiConnectorFactoryMock.getAPIConnector(mockBundleContext, true, true);
 		rbvdR201.setInternalApiConnectorImpersonation(internalApiConnectorImpersonation);
 
-
-		rimacUrlForker = mock(RimacUrlForker.class);
-		rbvdR201.setRimacUrlForker(rimacUrlForker);
-
 		mockDTO = MockDTO.getInstance();
 		customerList = mockDTO.getCustomerDataResponse();
 
@@ -132,14 +124,12 @@ public class RBVDR201Test {
 		rbvdR066 = mock(RBVDR066.class);
 		rbvdR201.setRbvdR066(rbvdR066);
 
-		rbvdR602 = mock(RBVDR602.class);
-		rbvdR201.setRbvdR602(rbvdR602);
-
 		rbvdR046 = mock(RBVDR046.class);
 		rbvdR201.setRbvdR046(rbvdR046);
 
-		rbvdR047 = mock(RBVDR047.class);
-		rbvdR201.setRbvdR047(rbvdR047);
+		rbvdR609 = mock(RBVDR609.class);
+		rbvdR201.setRbvdR609(rbvdR609);
+
 
 		applicationConfigurationService = Mockito.mock(ApplicationConfigurationService.class);
 		rbvdR201.setApplicationConfigurationService(applicationConfigurationService);
@@ -163,10 +153,10 @@ public class RBVDR201Test {
 		ICR2Response icr2Response = new ICR2Response();
 		icr2Response.setHostAdviceCode(new ArrayList<>());
 		icr2Response.setIcmrys2(EntityMock.getInstance().buildFormatoICMRYS2());
-		when(rbvdR047.executePreFormalizationContract(Mockito.anyObject())).thenReturn(icr2Response);
+		when(rbvdR609.executePreFormalizationContractInsurance(Mockito.anyObject())).thenReturn(icr2Response);
 
 		// When
-		ResponseLibrary<PolicyASO> result = rbvdR201.executePrePolicyEmissionCics(requestBody, indicatorPreFormalized);
+		ResponseLibrary<PolicyASO> result = rbvdR201.executePreFormalizationContract(requestBody, indicatorPreFormalized);
 
 		// Then
 		assertEquals(RBVDInternalConstants.Status.OK, result.getStatusProcess());
@@ -182,10 +172,10 @@ public class RBVDR201Test {
 		ICR2Response icr2Response = new ICR2Response();
 		icr2Response.setHostAdviceCode(new ArrayList<>());
 		icr2Response.setIcmrys2(EntityMock.getInstance().buildFormatoICMRYS2());
-		when(rbvdR047.executePreFormalizationContract(Mockito.anyObject())).thenReturn(icr2Response);
+		when(rbvdR609.executePreFormalizationContractInsurance(Mockito.anyObject())).thenReturn(icr2Response);
 
 		// When
-		ResponseLibrary<PolicyASO> result = rbvdR201.executePrePolicyEmissionCics(requestBody, indicatorPreFormalized);
+		ResponseLibrary<PolicyASO> result = rbvdR201.executePreFormalizationContract(requestBody, indicatorPreFormalized);
 
 		// Then
 		assertEquals(RBVDInternalConstants.Status.OK, result.getStatusProcess());
@@ -198,10 +188,10 @@ public class RBVDR201Test {
 		RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.NOT_PRE_FORMALIZED_N;
 		ICR2Response icr2Response = new ICR2Response();
 		icr2Response.setHostAdviceCode(Collections.singletonList(new HostAdvice("IC123123","ERROR ABEND")));
-		when(rbvdR047.executePreFormalizationContract(Mockito.anyObject())).thenReturn(icr2Response);
+		when(rbvdR609.executePreFormalizationContractInsurance(Mockito.anyObject())).thenReturn(icr2Response);
 
 		// When
-		ResponseLibrary<PolicyASO> result = rbvdR201.executePrePolicyEmissionCics(requestBody, indicatorPreFormalized);
+		ResponseLibrary<PolicyASO> result = rbvdR201.executePreFormalizationContract(requestBody, indicatorPreFormalized);
 
 		// Then
 		assertEquals(RBVDInternalConstants.Status.ENR, result.getStatusProcess());

@@ -1,8 +1,8 @@
 package com.bbva.rbvd.lib.r201.transform.bean;
 
 
+import com.bbva.rbvd.dto.cicsconnection.ic.ICContract;
 import com.bbva.rbvd.dto.cicsconnection.icr2.ICMRYS2;
-import com.bbva.rbvd.dto.cicsconnection.icr2.ICR2Request;
 import com.bbva.rbvd.dto.insrncsale.aso.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
@@ -31,7 +31,7 @@ public class ICR2BeanTest {
     @Test
     public void mapOutFirstInstallment_returnsNull_whenAllParametersAreNull() {
         ICMRYS2 formato = mock(ICMRYS2.class);
-        FirstInstallmentASO result = ICR2Bean.mapOutFirstInstallment(formato);
+        FirstInstallmentASO result = ICRBean.mapOutFirstInstallment(formato);
         assertNull(result);
     }
 
@@ -40,7 +40,7 @@ public class ICR2BeanTest {
     public void mapOutPaymentAmount_returnsNull_whenAmountAndCurrencyAreNull() {
         BigDecimal amount = null;
         String currency = null;
-        PaymentAmountASO result = ICR2Bean.mapOutPaymenAmount(amount, currency);
+        PaymentAmountASO result = ICRBean.mapOutPaymenAmount(amount, currency);
 
         assertNull(result);
     }
@@ -49,7 +49,7 @@ public class ICR2BeanTest {
     public void mapOutPaymentAmount_returnsPaymentAmount_withNullAmount_whenCurrencyIsNotNull() {
         BigDecimal amount = null;
         String currency = "USD";
-        PaymentAmountASO result = ICR2Bean.mapOutPaymenAmount(amount, currency);
+        PaymentAmountASO result = ICRBean.mapOutPaymenAmount(amount, currency);
 
         assertNotNull(result);
         assertNull(result.getAmount());
@@ -60,7 +60,7 @@ public class ICR2BeanTest {
     public void mapOutPaymentAmount_returnsPaymentAmount_withAmountAndCurrency() {
         BigDecimal amount = new BigDecimal(100);
         String currency = "USD";
-        PaymentAmountASO result = ICR2Bean.mapOutPaymenAmount(amount, currency);
+        PaymentAmountASO result = ICRBean.mapOutPaymenAmount(amount, currency);
 
         assertNotNull(result);
         assertEquals(amount.doubleValue(), result.getAmount(), 0.01);
@@ -69,14 +69,14 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutPeriod_returnsNull_whenPeriodIdAndPeriodNameAreNull() {
-        PaymentPeriodASO result = ICR2Bean.mapOutPeriod(null, null);
+        PaymentPeriodASO result = ICRBean.mapOutPeriod(null, null);
         assertNull(result);
     }
 
     @Test
     public void mapOutPeriod_returnsPaymentPeriod_withOnlyId_whenPeriodNameIsNull() {
         String periodId = "MONTHLY";
-        PaymentPeriodASO result = ICR2Bean.mapOutPeriod(periodId, null);
+        PaymentPeriodASO result = ICRBean.mapOutPeriod(periodId, null);
 
         assertNotNull(result);
         assertEquals(periodId, result.getId());
@@ -86,7 +86,7 @@ public class ICR2BeanTest {
     @Test
     public void mapOutPeriod_returnsPaymentPeriod_withOnlyName_whenPeriodIdIsNull() {
         String periodName = "Monthly Payment";
-        PaymentPeriodASO result = ICR2Bean.mapOutPeriod(null, periodName);
+        PaymentPeriodASO result = ICRBean.mapOutPeriod(null, periodName);
 
         assertNotNull(result);
         assertNull(result.getId());
@@ -97,7 +97,7 @@ public class ICR2BeanTest {
     public void mapOutPeriod_returnsPaymentPeriod_whenPeriodIdAndPeriodNameAreNotNull() {
         String periodId = "MONTHLY";
         String periodName = "Monthly Payment";
-        PaymentPeriodASO result = ICR2Bean.mapOutPeriod(periodId, periodName);
+        PaymentPeriodASO result = ICRBean.mapOutPeriod(periodId, periodName);
 
         assertNotNull(result);
         assertEquals(periodId, result.getId());
@@ -106,7 +106,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutRelatedContracts_returnsNull_whenContractTypeAndContractNumberIdAreNull() {
-        List<RelatedContractASO> result = ICR2Bean.mapOutRelatedContracts(null, null);
+        List<RelatedContractASO> result = ICRBean.mapOutRelatedContracts(null, null);
         assertNull(result);
     }
 
@@ -115,7 +115,7 @@ public class ICR2BeanTest {
         String contractType = INTERNAL_CONTRACT_OUT;
         String contractNumberId = "123";
 
-        List<RelatedContractASO> result = ICR2Bean.mapOutRelatedContracts(contractType, contractNumberId);
+        List<RelatedContractASO> result = ICRBean.mapOutRelatedContracts(contractType, contractNumberId);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -126,7 +126,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutContractDetails_returnsNull_whenContractTypeAndContractNumberIdAreNull() {
-        ContractDetailsASO result = ICR2Bean.mapOutContractDeatils(null, null);
+        ContractDetailsASO result = ICRBean.mapOutContractDeatils(null, null);
         assertNull(result);
     }
 
@@ -135,7 +135,7 @@ public class ICR2BeanTest {
         String contractType = INTERNAL_CONTRACT_OUT;
         String contractNumberId = "123";
 
-        ContractDetailsASO result = ICR2Bean.mapOutContractDeatils(contractType, contractNumberId);
+        ContractDetailsASO result = ICRBean.mapOutContractDeatils(contractType, contractNumberId);
 
         assertNotNull(result);
         assertEquals(contractType, result.getContractType());
@@ -147,7 +147,7 @@ public class ICR2BeanTest {
         String contractType = EXTERNAL_CONTRACT_OUT;
         String contractNumberId = "456";
 
-        ContractDetailsASO result = ICR2Bean.mapOutContractDeatils(contractType, contractNumberId);
+        ContractDetailsASO result = ICRBean.mapOutContractDeatils(contractType, contractNumberId);
 
         assertNotNull(result);
         assertEquals(contractType, result.getContractType());
@@ -156,14 +156,14 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutHolder_returnsNull_whenAllParametersAreNull() {
-        HolderASO result = ICR2Bean.mapOutHolder(null, null, null);
+        HolderASO result = ICRBean.mapOutHolder(null, null, null);
         assertNull(result);
     }
 
     @Test
     public void mapOutHolder_returnsHolder_withNullIdentityDocument_whenDocumentTypeAndIdentityDocumentNumberAreNull() {
         String id = "123";
-        HolderASO result = ICR2Bean.mapOutHolder(id, null, null);
+        HolderASO result = ICRBean.mapOutHolder(id, null, null);
 
         assertNotNull(result);
         assertEquals(id, result.getId());
@@ -176,7 +176,7 @@ public class ICR2BeanTest {
         String documentType = "DNI";
         String identityDocumentNumber = "456789";
 
-        HolderASO result = ICR2Bean.mapOutHolder(id, documentType, identityDocumentNumber);
+        HolderASO result = ICRBean.mapOutHolder(id, documentType, identityDocumentNumber);
 
         assertNotNull(result);
         assertEquals(id, result.getId());
@@ -187,7 +187,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutIdentityDocument_returnsNull_whenDocumentTypeAndIdentityDocumentNumberAreNull() {
-        IdentityDocumentASO result = ICR2Bean.mapOutIdentityDocument(null, null);
+        IdentityDocumentASO result = ICRBean.mapOutIdentityDocument(null, null);
         assertNull(result);
     }
 
@@ -196,7 +196,7 @@ public class ICR2BeanTest {
         String documentType = "DNI";
         String identityDocumentNumber = "12345678";
 
-        IdentityDocumentASO result = ICR2Bean.mapOutIdentityDocument(documentType, identityDocumentNumber);
+        IdentityDocumentASO result = ICRBean.mapOutIdentityDocument(documentType, identityDocumentNumber);
 
         assertNotNull(result);
         assertEquals(documentType, result.getDocumentType().getId());
@@ -207,7 +207,7 @@ public class ICR2BeanTest {
     public void mapOutIdentityDocument_returnsIdentityDocument_withNullDocumentType_whenDocumentTypeIsNull() {
         String identityDocumentNumber = "12345678";
 
-        IdentityDocumentASO result = ICR2Bean.mapOutIdentityDocument(null, identityDocumentNumber);
+        IdentityDocumentASO result = ICRBean.mapOutIdentityDocument(null, identityDocumentNumber);
 
         assertNotNull(result);
         assertNull(result.getDocumentType());
@@ -218,7 +218,7 @@ public class ICR2BeanTest {
     public void mapOutIdentityDocument_returnsIdentityDocument_withNullNumber_whenIdentityDocumentNumberIsNull() {
         String documentType = "DNI";
 
-        IdentityDocumentASO result = ICR2Bean.mapOutIdentityDocument(documentType, null);
+        IdentityDocumentASO result = ICRBean.mapOutIdentityDocument(documentType, null);
 
         assertNotNull(result);
         assertEquals(documentType, result.getDocumentType().getId());
@@ -227,14 +227,14 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutDocumentType_returnsNull_whenDocumentTypeIsNull() {
-        DocumentTypeASO result = ICR2Bean.mapOutDocumentType(null);
+        DocumentTypeASO result = ICRBean.mapOutDocumentType(null);
         assertNull(result);
     }
 
     @Test
     public void mapOutDocumentType_returnsDocumentType_whenDocumentTypeIsNotNull() {
         String documentType = "DNI";
-        DocumentTypeASO result = ICR2Bean.mapOutDocumentType(documentType);
+        DocumentTypeASO result = ICRBean.mapOutDocumentType(documentType);
 
         assertNotNull(result);
         assertEquals(documentType, result.getId());
@@ -242,7 +242,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutInsuredAmount_returnsNull_whenAmountAndCurrencyAreNull() {
-        InsuredAmountASO result = ICR2Bean.mapOutInsuredAmount(null, null);
+        InsuredAmountASO result = ICRBean.mapOutInsuredAmount(null, null);
 
         assertNull(result);
     }
@@ -251,7 +251,7 @@ public class ICR2BeanTest {
     public void mapOutInsuredAmount_returnsInsuredAmount_withNullAmount_whenAmountIsNull() {
         String currency = "USD";
 
-        InsuredAmountASO result = ICR2Bean.mapOutInsuredAmount(null, currency);
+        InsuredAmountASO result = ICRBean.mapOutInsuredAmount(null, currency);
 
         assertNotNull(result);
         assertNull(result.getAmount());
@@ -262,7 +262,7 @@ public class ICR2BeanTest {
     public void mapOutInsuredAmount_returnsInsuredAmount_withNullCurrency_whenCurrencyIsNull() {
         BigDecimal amount = BigDecimal.valueOf(100);
 
-        InsuredAmountASO result = ICR2Bean.mapOutInsuredAmount(amount, null);
+        InsuredAmountASO result = ICRBean.mapOutInsuredAmount(amount, null);
 
         assertNotNull(result);
         assertEquals(amount.doubleValue(), result.getAmount(), 0.001);
@@ -274,7 +274,7 @@ public class ICR2BeanTest {
         BigDecimal amount = BigDecimal.valueOf(100);
         String currency = "USD";
 
-        InsuredAmountASO result = ICR2Bean.mapOutInsuredAmount(amount, currency);
+        InsuredAmountASO result = ICRBean.mapOutInsuredAmount(amount, currency);
 
         assertNotNull(result);
         assertEquals(amount.doubleValue(), result.getAmount(), 0.001);
@@ -283,14 +283,14 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutTotalAmount_returnsNull_whenAmountAndCurrencyAreNull() {
-        TotalAmountASO result = ICR2Bean.mapOutTotalAmount(null, null, "2022-01-01", "USD", "EUR", BigDecimal.valueOf(1.2), BigDecimal.valueOf(1.1), "priceType");
+        TotalAmountASO result = ICRBean.mapOutTotalAmount(null, null, "2022-01-01", "USD", "EUR", BigDecimal.valueOf(1.2), BigDecimal.valueOf(1.1), "priceType");
 
         assertNull(result);
     }
 
     @Test
     public void mapOutTotalAmount_returnsTotalAmount_whenAmountAndCurrencyAreNotNull() {
-        TotalAmountASO result = ICR2Bean.mapOutTotalAmount(BigDecimal.valueOf(100), "USD", "2022-01-01", "USD", "EUR", BigDecimal.valueOf(1.2), BigDecimal.valueOf(1.1), "priceType");
+        TotalAmountASO result = ICRBean.mapOutTotalAmount(BigDecimal.valueOf(100), "USD", "2022-01-01", "USD", "EUR", BigDecimal.valueOf(1.2), BigDecimal.valueOf(1.1), "priceType");
 
         assertNotNull(result);
         assertEquals(BigDecimal.valueOf(100).doubleValue(), result.getAmount(), 0.001);
@@ -300,7 +300,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutTotalAmount_returnsTotalAmount_withNullExchangeRate_whenExchangeRateParametersAreNull() {
-        TotalAmountASO result = ICR2Bean.mapOutTotalAmount(BigDecimal.valueOf(100), "USD", null, null, null, null, null, null);
+        TotalAmountASO result = ICRBean.mapOutTotalAmount(BigDecimal.valueOf(100), "USD", null, null, null, null, null, null);
 
         assertNotNull(result);
         assertEquals(BigDecimal.valueOf(100).doubleValue(), result.getAmount(), 0.001);
@@ -310,7 +310,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutValidityPeriod_returnsNull_whenStartDateAndEndDateAreNull() {
-        ValidityPeriodASO result = ICR2Bean.mapOutValidityPeriod(null, null);
+        ValidityPeriodASO result = ICRBean.mapOutValidityPeriod(null, null);
         assertNull(result);
     }
 
@@ -319,7 +319,7 @@ public class ICR2BeanTest {
         String startDate = "2022-01-01";
         String endDate = "2022-12-31";
 
-        ValidityPeriodASO result = ICR2Bean.mapOutValidityPeriod(startDate, endDate);
+        ValidityPeriodASO result = ICRBean.mapOutValidityPeriod(startDate, endDate);
 
         assertNotNull(result);
         assertEquals(startDate, result.getStartDate().toString());
@@ -329,14 +329,14 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutPaymentMethod_returnsNull_whenAllParametersAreNull() {
-        PaymentMethodASO result = ICR2Bean.mapOutPaymentMethod(null, null, null, null);
+        PaymentMethodASO result = ICRBean.mapOutPaymentMethod(null, null, null, null);
         assertNull(result);
     }
 
 
     @Test
     public void mapOutPaymentMethod_returnsPaymentMethod_withNullRelatedContracts_whenRelatedContractNumberAndProductIdAreNull() {
-        PaymentMethodASO result = ICR2Bean.mapOutPaymentMethod("paymentType", "installmentFrequency", null, null);
+        PaymentMethodASO result = ICRBean.mapOutPaymentMethod("paymentType", "installmentFrequency", null, null);
 
         assertNotNull(result);
         assertEquals("paymentType", result.getPaymentType());
@@ -346,7 +346,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutPaymentMethodRelatedContracts_returnsNull_whenRelatedContractNumberAndProductIdAreNull() {
-        List<RelatedContractASO> result = ICR2Bean.mapOutPaymentMethodRelatedContracts(null, null);
+        List<RelatedContractASO> result = ICRBean.mapOutPaymentMethodRelatedContracts(null, null);
         assertNull(result);
     }
 
@@ -355,7 +355,7 @@ public class ICR2BeanTest {
         String relatedContractNumber = "123";
         String relatedContractProductId = "456";
 
-        List<RelatedContractASO> result = ICR2Bean.mapOutPaymentMethodRelatedContracts(relatedContractNumber, relatedContractProductId);
+        List<RelatedContractASO> result = ICRBean.mapOutPaymentMethodRelatedContracts(relatedContractNumber, relatedContractProductId);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -367,7 +367,7 @@ public class ICR2BeanTest {
     public void mapOutPaymentMethodRelatedContracts_returnsRelatedContract_withNullProduct_whenRelatedContractProductIdIsNull() {
         String relatedContractNumber = "123";
 
-        List<RelatedContractASO> result = ICR2Bean.mapOutPaymentMethodRelatedContracts(relatedContractNumber, null);
+        List<RelatedContractASO> result = ICRBean.mapOutPaymentMethodRelatedContracts(relatedContractNumber, null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -379,7 +379,7 @@ public class ICR2BeanTest {
     public void mapOutPaymentMethodRelatedContracts_returnsRelatedContract_withNullNumber_whenRelatedContractNumberIsNull() {
         String relatedContractProductId = "456";
 
-        List<RelatedContractASO> result = ICR2Bean.mapOutPaymentMethodRelatedContracts(null, relatedContractProductId);
+        List<RelatedContractASO> result = ICRBean.mapOutPaymentMethodRelatedContracts(null, relatedContractProductId);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -389,13 +389,13 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutExchangeRate_returnsNull_whenAllParametersAreNull() {
-        ExchangeRateASO result = ICR2Bean.mapOutExchangeRate(null, null, null, null, null, null);
+        ExchangeRateASO result = ICRBean.mapOutExchangeRate(null, null, null, null, null, null);
         assertNull(result);
     }
 
     @Test
     public void mapOutExchangeRate_returnsExchangeRate_whenParametersAreNotNull() {
-        ExchangeRateASO result = ICR2Bean.mapOutExchangeRate("2022-01-01", "USD", "EUR", BigDecimal.ONE, BigDecimal.ONE, "priceType");
+        ExchangeRateASO result = ICRBean.mapOutExchangeRate("2022-01-01", "USD", "EUR", BigDecimal.ONE, BigDecimal.ONE, "priceType");
         assertNotNull(result);
         assertEquals("2022-01-01", result.getDate().toString());
         assertEquals("USD", result.getBaseCurrency());
@@ -405,13 +405,13 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutDetail_returnsNull_whenAllParametersAreNull() {
-        DetailASO result = ICR2Bean.mapOutDetail(null, null, null);
+        DetailASO result = ICRBean.mapOutDetail(null, null, null);
         assertNull(result);
     }
 
     @Test
     public void mapOutDetail_returnsDetail_whenParametersAreNotNull() {
-        DetailASO result = ICR2Bean.mapOutDetail(BigDecimal.ONE, BigDecimal.ONE, "priceType");
+        DetailASO result = ICRBean.mapOutDetail(BigDecimal.ONE, BigDecimal.ONE, "priceType");
         assertNotNull(result);
         assertEquals("priceType", result.getPriceType());
         assertNotNull(result.getFactor());
@@ -419,13 +419,13 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutFactor_returnsNull_whenAllParametersAreNull() {
-        FactorASO result = ICR2Bean.mapOutFactor(null, null);
+        FactorASO result = ICRBean.mapOutFactor(null, null);
         assertNull(result);
     }
 
     @Test
     public void mapOutFactor_returnsFactor_whenParametersAreNotNull() {
-        FactorASO result = ICR2Bean.mapOutFactor(BigDecimal.ONE, BigDecimal.ONE);
+        FactorASO result = ICRBean.mapOutFactor(BigDecimal.ONE, BigDecimal.ONE);
         assertNotNull(result);
         assertEquals(1.0, result.getValue(), 0.0);
         assertEquals(1.0, result.getRatio(), 0.0);
@@ -433,13 +433,13 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutPaymentAmount_returnsNull_whenAllParametersAreNull() {
-        PaymentAmountASO result = ICR2Bean.mapOutPaymentAmount(null, null);
+        PaymentAmountASO result = ICRBean.mapOutPaymentAmount(null, null);
         assertNull(result);
     }
 
     @Test
     public void mapOutPaymentAmount_returnsPaymentAmount_whenParametersAreNotNull() {
-        PaymentAmountASO result = ICR2Bean.mapOutPaymentAmount(BigDecimal.ONE, "USD");
+        PaymentAmountASO result = ICRBean.mapOutPaymentAmount(BigDecimal.ONE, "USD");
         assertNotNull(result);
         assertEquals(1.0, result.getAmount(), 0.0);
         assertEquals("USD", result.getCurrency());
@@ -447,7 +447,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapOutInstallmentPlan_returnsNull_whenFormatoIsNull() {
-        InstallmentPlanASO result = ICR2Bean.mapOutInstallmentPlan(new ICMRYS2());
+        InstallmentPlanASO result = ICRBean.mapOutInstallmentPlan(new ICMRYS2());
         assertNull(result);
     }
 
@@ -466,7 +466,7 @@ public class ICR2BeanTest {
         when(formato.getTIPCAM()).thenReturn(BigDecimal.ONE);
         when(formato.getCVCAMB()).thenReturn("CVCAMB");
 
-        InstallmentPlanASO result = ICR2Bean.mapOutInstallmentPlan(formato);
+        InstallmentPlanASO result = ICRBean.mapOutInstallmentPlan(formato);
         assertNotNull(result);
         assertEquals("2022-01-01", result.getStartDate().toString());
         assertEquals(1L, result.getTotalNumberInstallments().longValue());
@@ -479,7 +479,7 @@ public class ICR2BeanTest {
     public void mapOutPaymentMethodRelatedContractsProduct_returnsNull_whenProductIdIsNull() {
         String productId = null;
 
-        RelatedContractProductASO result = ICR2Bean.mapOutPaymentMethodRelatedContractsProduct(productId);
+        RelatedContractProductASO result = ICRBean.mapOutPaymentMethodRelatedContractsProduct(productId);
 
         assertNull(result);
     }
@@ -488,7 +488,7 @@ public class ICR2BeanTest {
     public void mapOutPaymentMethodRelatedContractsProduct_returnsProduct_whenProductIdIsNotNull() {
         String productId = "123";
 
-        RelatedContractProductASO result = ICR2Bean.mapOutPaymentMethodRelatedContractsProduct(productId);
+        RelatedContractProductASO result = ICRBean.mapOutPaymentMethodRelatedContractsProduct(productId);
 
         assertNotNull(result);
         assertEquals(productId, result.getId());
@@ -499,7 +499,7 @@ public class ICR2BeanTest {
         String id = null;
         String description = null;
 
-        ProductPlanASO result = ICR2Bean.mapOutProductPlan(id, description);
+        ProductPlanASO result = ICRBean.mapOutProductPlan(id, description);
 
         assertNull(result);
     }
@@ -509,7 +509,7 @@ public class ICR2BeanTest {
         String id = "123";
         String description = "Test Description";
 
-        ProductPlanASO result = ICR2Bean.mapOutProductPlan(id, description);
+        ProductPlanASO result = ICRBean.mapOutProductPlan(id, description);
 
         assertNotNull(result);
         assertEquals(id, result.getId());
@@ -518,7 +518,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapInPaymentMethod_setsPaymentDetails_whenPaymentMethodIsNotNull() {
-        ICR2Request format = new ICR2Request();
+        ICContract format = new ICContract();
         PaymentMethodASO paymentMethod = mock(PaymentMethodASO.class);
         RelatedContractASO relatedContract = mock(RelatedContractASO.class);
 
@@ -527,7 +527,7 @@ public class ICR2BeanTest {
         when(paymentMethod.getRelatedContracts()).thenReturn(Collections.singletonList(relatedContract));
         when(relatedContract.getNumber()).thenReturn("123456");
 
-        ICR2Bean.mapInPaymentMethod(format, paymentMethod);
+        ICRBean.mapInPaymentMethod(format, paymentMethod);
 
         assertEquals("DIRECT_DEBIT", format.getMTDPGO());
         assertEquals("MONTHLY", format.getTFOPAG());
@@ -536,9 +536,9 @@ public class ICR2BeanTest {
 
     @Test
     public void mapInPaymentMethod_doesNotSetPaymentDetails_whenPaymentMethodIsNull() {
-        ICR2Request format = new ICR2Request();
+        ICContract format = new ICContract();
 
-        ICR2Bean.mapInPaymentMethod(format, null);
+        ICRBean.mapInPaymentMethod(format, null);
 
         assertNull(format.getMTDPGO());
         assertNull(format.getTFOPAG());
@@ -547,14 +547,14 @@ public class ICR2BeanTest {
 
     @Test
     public void mapInPaymentMethod_doesNotSetRelatedContracts_whenRelatedContractsListIsEmpty() {
-        ICR2Request format = new ICR2Request();
+        ICContract format = new ICContract();
         PaymentMethodASO paymentMethod = mock(PaymentMethodASO.class);
 
         when(paymentMethod.getPaymentType()).thenReturn("DIRECT_DEBIT");
         when(paymentMethod.getInstallmentFrequency()).thenReturn("MONTHLY");
         when(paymentMethod.getRelatedContracts()).thenReturn(Collections.emptyList());
 
-        ICR2Bean.mapInPaymentMethod(format, paymentMethod);
+        ICRBean.mapInPaymentMethod(format, paymentMethod);
 
         assertEquals("DIRECT_DEBIT", format.getMTDPGO());
         assertEquals("MONTHLY", format.getTFOPAG());
@@ -563,7 +563,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapInBank_shouldSetBankDetails_whenBankIsNotNull() {
-        ICR2Request format = new ICR2Request();
+        ICContract format = new ICContract();
         BankASO bank = mock(BankASO.class);
         BranchASO branch = mock(BranchASO.class);
 
@@ -571,7 +571,7 @@ public class ICR2BeanTest {
         when(bank.getBranch()).thenReturn(branch);
         when(branch.getId()).thenReturn("456");
 
-        ICR2Bean.mapInBank(format, bank);
+        ICRBean.mapInBank(format, bank);
 
         assertEquals("123", format.getCODBAN());
         assertEquals("456", format.getOFICON());
@@ -579,9 +579,9 @@ public class ICR2BeanTest {
 
     @Test
     public void mapInBank_shouldNotSetBankDetails_whenBankIsNull() {
-        ICR2Request format = new ICR2Request();
+        ICContract format = new ICContract();
 
-        ICR2Bean.mapInBank(format, null);
+        ICRBean.mapInBank(format, null);
 
         assertNull(format.getCODBAN());
         assertNull(format.getOFICON());
@@ -589,13 +589,13 @@ public class ICR2BeanTest {
 
     @Test
     public void mapInBank_shouldNotSetBranchId_whenBranchIsNull() {
-        ICR2Request format = new ICR2Request();
+        ICContract format = new ICContract();
         BankASO bank = mock(BankASO.class);
 
         when(bank.getId()).thenReturn("123");
         when(bank.getBranch()).thenReturn(null);
 
-        ICR2Bean.mapInBank(format, bank);
+        ICRBean.mapInBank(format, bank);
 
         assertEquals("123", format.getCODBAN());
         assertNull(format.getOFICON());
@@ -604,7 +604,7 @@ public class ICR2BeanTest {
 
     @Test
     public void mapInParticipants_shouldSetPaymentManagerDetails_whenParticipantTypeIsPaymentManager() {
-        ICR2Request format = new ICR2Request();
+        ICContract format = new ICContract();
         ParticipantASO participant = new ParticipantASO();
         IdentityDocumentASO identityDocument = mock(IdentityDocumentASO.class);
 
@@ -613,14 +613,14 @@ public class ICR2BeanTest {
         participant.setCustomerId("123");
         participant.setIdentityDocument(identityDocument);
 
-        ICR2Bean.mapInParticipants(format, Arrays.asList(participant));
+        ICRBean.mapInParticipants(format, Arrays.asList(participant));
 
         assertEquals("123", format.getCODRSP());
     }
 
     @Test
     public void mapInParticipants_shouldSetLegalRepresentativeDetails_whenParticipantTypeIsLegalRepresentative() {
-        ICR2Request format = new ICR2Request();
+        ICContract format = new ICContract();
         ParticipantASO participant = new ParticipantASO();
         IdentityDocumentASO identityDocument = mock(IdentityDocumentASO.class);
 
@@ -629,16 +629,16 @@ public class ICR2BeanTest {
         participant.setCustomerId("456");
         participant.setIdentityDocument(identityDocument);
 
-        ICR2Bean.mapInParticipants(format, Arrays.asList(participant));
+        ICRBean.mapInParticipants(format, Arrays.asList(participant));
 
         assertEquals("456", format.getCODRPL());
     }
 
     @Test
     public void mapInParticipants_shouldNotSetAnyDetails_whenParticipantsListIsEmpty() {
-        ICR2Request format = new ICR2Request();
+        ICContract format = new ICContract();
 
-        ICR2Bean.mapInParticipants(format, Collections.emptyList());
+        ICRBean.mapInParticipants(format, Collections.emptyList());
 
         assertNull(format.getCODRSP());
         assertNull(format.getCODRPL());
@@ -646,12 +646,12 @@ public class ICR2BeanTest {
 
     @Test
     public void mapInParticipants_shouldNotSetAnyDetails_whenParticipantTypeIsNull() {
-        ICR2Request format = new ICR2Request();
+        ICContract format = new ICContract();
         ParticipantASO participant = mock(ParticipantASO.class);
 
         when(participant.getParticipantType()).thenReturn(null);
 
-        ICR2Bean.mapInParticipants(format, Arrays.asList(participant));
+        ICRBean.mapInParticipants(format, Arrays.asList(participant));
 
         assertNull(format.getCODRSP());
         assertNull(format.getCODRPL());
@@ -660,7 +660,7 @@ public class ICR2BeanTest {
     @Test
     public void mapInFullTest() throws IOException {
         DataASO input = EntityMock.getInstance().buildInputCreateInsurance();
-        ICR2Request result = ICR2Bean.mapIn(input, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+        ICContract result = ICRBean.mapIn(input, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
         assertNotNull(result);
 
         // Verificar que todos los campos de result no sean nulos
@@ -728,7 +728,7 @@ public class ICR2BeanTest {
     @Test
     public void mapOutFullTest() throws IOException {
         ICMRYS2 input = EntityMock.getInstance().buildFormatoICMRYS2();
-        DataASO result = ICR2Bean.mapOut(input);
+        DataASO result = ICRBean.mapOut(input);
 
         assertNotNull(result);
         assertNotNull(result.getId());
@@ -898,7 +898,7 @@ public class ICR2BeanTest {
         DataASO input = EntityMock.getInstance().buildInputCreateInsurance_supportArrayList();
         input.getParticipants().remove(1);
         ICR2Bean icr2Bean = new ICR2Bean();
-        ICR2Request result = icr2Bean.mapIn(input);
+        ICContract result = icr2Bean.mapIn(input);
 
         assertNotNull(result);
         // WHEN IS PAYMENT_MANAGER
