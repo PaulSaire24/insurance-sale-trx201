@@ -97,7 +97,7 @@ public class RBVDR201V2Test {
 		when(rbvdr609.executeFormalizationContractInsurance(Mockito.anyObject())).thenReturn(icContract);
 
 		// When
-		ResponseLibrary<PolicyASO> result = rbvdR201.executeInsurancePaymentAndFormalization(requestBody,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+		ResponseLibrary<PolicyASO> result = rbvdR201.executeInsurancePaymentAndFormalization(requestBody,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
 
 		// Then
 		assertNotNull(result);
@@ -115,7 +115,7 @@ public class RBVDR201V2Test {
 		when(rbvdr609.executeFormalizationContractInsurance(Mockito.anyObject())).thenReturn(icr3Response);
 
 		// When
-		ResponseLibrary<PolicyASO> result = rbvdR201.executeInsurancePaymentAndFormalization(requestBody,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+		ResponseLibrary<PolicyASO> result = rbvdR201.executeInsurancePaymentAndFormalization(requestBody,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
 
 		// Then
 		assertNotNull(result);

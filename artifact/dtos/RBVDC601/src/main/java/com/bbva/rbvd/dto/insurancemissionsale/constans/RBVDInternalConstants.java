@@ -165,8 +165,9 @@ public class RBVDInternalConstants  {
 	}
 
 	public enum INDICATOR_PRE_FORMALIZED{
-		PRE_FORMALIZED_S ("S","Se realiza la formalización parcial de un contrato."),
-		NOT_PRE_FORMALIZED_N ("N","Se debe seguir el flujo antiguo de formalización ."),
+		PRE_FORMALIZED_COLLECT("T","PreFormaliza + Formaliza + Cobro (status:01) envía contabilidad (alta, cobro) y MIS"),
+		FORMALIZED_COLLECT_ACCOUNTING("C","Formaliza + Cobro (status:01) envía contabilidad (alta, cobro) y MIS"),
+		FORMALIZED_ACCOUNTING("F","(Formaliza + envía contabilidad (alta) y MIS)")
 		;
 
 		private final String value;

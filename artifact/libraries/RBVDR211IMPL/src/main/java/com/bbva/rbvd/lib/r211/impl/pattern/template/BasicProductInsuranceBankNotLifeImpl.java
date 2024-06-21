@@ -3,25 +3,15 @@ package com.bbva.rbvd.lib.r211.impl.pattern.template;
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
-import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
-import com.bbva.pisd.dto.insurance.utils.PISDErrors;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
-import com.bbva.pisd.dto.insurance.utils.PISDValidation;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
-import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.dao.*;
-import com.bbva.rbvd.dto.insrncsale.policy.BusinessAgentDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insrncsale.policy.PromoterDTO;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
-import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
-import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalColumn;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.Period;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
@@ -37,22 +27,17 @@ import com.bbva.rbvd.lib.r211.impl.transfor.bean.*;
 import com.bbva.rbvd.lib.r211.impl.transfor.list.RelatedContractsList;
 import com.bbva.rbvd.lib.r211.impl.transfor.map.InsuranceContractMap;
 import com.bbva.rbvd.lib.r211.impl.transfor.map.InsuranceReceiptMap;
-import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
-import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.util.*;
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.Channel;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.*;
 import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.*;
-import static java.util.Objects.isNull;
-import static java.util.Optional.ofNullable;
 
 
 public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank {
@@ -145,7 +130,7 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         requestBody = PrePolicyTransfor.toIsPaymentRequired(requestBody,isPaymentRequired);
         DataASO dataASO = PrePolicyTransfor.toDataASO(requestBody);
 
-        ResponseLibrary<PolicyASO> responseService = contractPISD201ServiceInternal.generateContractHost(dataASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+        ResponseLibrary<PolicyASO> responseService = contractPISD201ServiceInternal.generateContractHost(dataASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
         crossOperationsBusinessInsuranceContractBank.validateContractGeneration(responseService);
 
         PolicyASO asoResponse = responseService.getBody();
@@ -240,10 +225,11 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
     protected void executeGeneratePayment() {
         if(this.basicProductInsuranceProperties.enabledPaymentICR3()){
             DataASO asoRequest = this.getResponseLibrary().getBody().getDataASO();
-            ResponseLibrary<PolicyASO> responseGeneratePayment = this.contractPISD201ServiceInternal.generateFormalizationContractAndPayment(asoRequest, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+            ResponseLibrary<PolicyASO> responseGeneratePayment = this.contractPISD201ServiceInternal.generateFormalizationContractAndPayment(asoRequest, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
             if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseGeneratePayment.getStatusProcess())){
                 throw buildValidation(ERROR_RESPONSE_SERVICE_ICR2);
             }
+            this.getResponseLibrary().getBody().setAsoResponse(responseGeneratePayment.getBody());
         }
         this.setResponseLibrary(this.getResponseLibrary());
     }

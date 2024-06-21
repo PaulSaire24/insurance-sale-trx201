@@ -660,7 +660,7 @@ public class ICR2BeanTest {
     @Test
     public void mapInFullTest() throws IOException {
         DataASO input = EntityMock.getInstance().buildInputCreateInsurance();
-        ICContract result = ICRBean.mapIn(input, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_S);
+        ICContract result = ICRBean.mapIn(input, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
         assertNotNull(result);
 
         // Verificar que todos los campos de result no sean nulos

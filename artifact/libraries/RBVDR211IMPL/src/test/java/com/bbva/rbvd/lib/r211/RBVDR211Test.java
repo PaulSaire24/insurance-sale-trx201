@@ -45,6 +45,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
@@ -224,6 +225,11 @@ public class RBVDR211Test {
 				thenReturn(responseQueryGetRequiredFields);
 
 		when(rbvdr201.executePrePolicyEmissionASO(anyObject())).thenReturn(asoResponse);
+		when(rbvdr201.executeInsurancePaymentAndFormalization(anyObject(),any())).thenReturn(
+				ResponseLibrary.ResponseServiceBuilder.an()
+						.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
+						.body(asoResponse)
+		);
 
 		when(pisdR012.executeInsertSingleRow(PISDProperties.QUERY_INSERT_INSURANCE_CONTRACT.getValue(), new HashMap<>(),
 				RBVDProperties.FIELD_INSURANCE_CONTRACT_ENTITY_ID.getValue(), RBVDProperties.FIELD_INSURANCE_CONTRACT_BRANCH_ID.getValue(),

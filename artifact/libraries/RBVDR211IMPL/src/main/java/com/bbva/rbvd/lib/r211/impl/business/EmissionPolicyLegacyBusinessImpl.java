@@ -38,6 +38,8 @@ import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
@@ -53,6 +55,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.temporal.ValueRange;
 import java.util.*;
 
+import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.ERROR_RESPONSE_SERVICE_ICR2;
+import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.buildValidation;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;
@@ -172,7 +176,15 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
             LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Required payment evaluation *****");
             evaluateRequiredPayment(requestBody);
 
-            PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
+
+
+            ResponseLibrary<PolicyASO> responseService = rbvdR201.executeInsurancePaymentAndFormalization(this.mapperHelper.buildAsoRequest(requestBody), RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
+            if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseService.getStatusProcess())){
+                String message = this.getAdvice().getDescription();
+                throw new BusinessException(ERROR_RESPONSE_SERVICE_ICR2.getAdviceCode(), ERROR_RESPONSE_SERVICE_ICR2.isRollback(),message);
+            }
+
+            PolicyASO asoResponse = responseService.getBody();
 
             LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Setting branchId provided by HOST *****");
             String hostBranchId = asoResponse.getData().getBank().getBranch().getId();
@@ -389,7 +401,13 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
             LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes | Required payment evaluation *****");
             evaluateRequiredPayment(requestBody);
 
-            PolicyASO asoResponse = rbvdR201.executePrePolicyEmissionASO(this.mapperHelper.buildAsoRequest(requestBody));
+            ResponseLibrary<PolicyASO> responseService = rbvdR201.executeInsurancePaymentAndFormalization(this.mapperHelper.buildAsoRequest(requestBody), RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
+            if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseService.getStatusProcess())){
+                String message = this.getAdvice().getDescription();
+                throw new BusinessException(ERROR_RESPONSE_SERVICE_ICR2.getAdviceCode(), ERROR_RESPONSE_SERVICE_ICR2.isRollback(),message);
+            }
+
+            PolicyASO asoResponse = responseService.getBody();
 
             LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes | Setting branchId provided by HOST *****");
             String hostBranchId = asoResponse.getData().getBank().getBranch().getId();
