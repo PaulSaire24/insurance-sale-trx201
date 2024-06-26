@@ -69,6 +69,7 @@ public class ICRBean {
         mapInInsuranceCompany(format, inputCreateInsurance.getInsuranceCompany());
         mapInSalesSupplier(format,inputCreateInsurance.getSalesSupplier());
         format.setINDPREF(indicatorPreFormalized.getValue());
+        format.setNUMPOL(StringUtils.defaultString(inputCreateInsurance.getId(),StringUtils.EMPTY));
         return format;
     }
 

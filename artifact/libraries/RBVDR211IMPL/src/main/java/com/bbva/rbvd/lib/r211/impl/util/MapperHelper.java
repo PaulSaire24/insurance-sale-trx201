@@ -1382,7 +1382,7 @@ public class MapperHelper {
         responseBody.getHolder().getIdentityDocument().setDocumentNumber(responseBody.getHolder().getIdentityDocument().getNumber());
         responseBody.getHolder().getIdentityDocument().setNumber(null);
 
-        if(nonNull(rimacResponse)) {
+        if(nonNull(rimacResponse) && isNull(rimacResponse.getErrorRimacBO())) {
             LocalDate endDate = Objects.nonNull(rimacResponse.getPayload().getFechaFinal()) ? rimacResponse.getPayload().getFechaFinal()
                     : rimacResponse.getPayload().getFechaFinVigencia();
             responseBody.getValidityPeriod().setEndDate(convertLocaldateToDate(endDate));

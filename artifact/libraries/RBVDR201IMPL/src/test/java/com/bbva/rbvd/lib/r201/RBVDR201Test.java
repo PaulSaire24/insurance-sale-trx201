@@ -149,7 +149,7 @@ public class RBVDR201Test {
 		// Given
 		when(this.applicationConfigurationService.getDefaultProperty(eq("enabled.mock.emission.cics"), eq(Boolean.FALSE.toString()))).thenReturn(Boolean.TRUE.toString());
 		DataASO requestBody = new DataASO();
-		RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT;
+		RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT_ICR2;
 		ICR2Response icr2Response = new ICR2Response();
 		icr2Response.setHostAdviceCode(new ArrayList<>());
 		icr2Response.setIcmrys2(EntityMock.getInstance().buildFormatoICMRYS2());
@@ -168,7 +168,7 @@ public class RBVDR201Test {
 	public void prePolicyEmissionCicsReturnsExpectedResult() throws IOException {
 		// Given
 		DataASO requestBody = new DataASO();
-		RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT;
+		RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT_ICR2;
 		ICR2Response icr2Response = new ICR2Response();
 		icr2Response.setHostAdviceCode(new ArrayList<>());
 		icr2Response.setIcmrys2(EntityMock.getInstance().buildFormatoICMRYS2());
@@ -185,7 +185,7 @@ public class RBVDR201Test {
 	public void prePolicyEmissionCicsReturnsErrorResult() {
 		// Given
 		DataASO requestBody = new DataASO();
-		RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.FORMALIZED_COLLECT_ACCOUNTING;
+		RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.FORMALIZED_COLLECT_ACCOUNTING_ICR2;
 		ICR2Response icr2Response = new ICR2Response();
 		icr2Response.setHostAdviceCode(Collections.singletonList(new HostAdvice("IC123123","ERROR ABEND")));
 		when(rbvdR609.executePreFormalizationContractInsurance(Mockito.anyObject())).thenReturn(icr2Response);

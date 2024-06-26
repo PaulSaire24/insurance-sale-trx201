@@ -195,6 +195,13 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	}
 
 	/**
+	 * Return value for input parameter preformalizationId
+	 */
+	protected String getPreformalizationid(){
+		return (String)this.getParameter("preformalizationId");
+	}
+
+	/**
 	 * Set value for String output parameter id
 	 */
 	protected void setId(final String field){
@@ -405,7 +412,7 @@ public abstract class AbstractRBVDT20101PETransaction extends AbstractTransactio
 	}
 
 	/**
-	 * Set value for PaymentAmountDTO output parameter totalAmountWithoutTax
+	 * Set value for TotalAmountDTO output parameter totalAmountWithoutTax
 	 */
 	protected void setTotalamountwithouttax(final TotalAmountDTO field){
 		this.addParameter("totalAmountWithoutTax", field);

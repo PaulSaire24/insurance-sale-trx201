@@ -167,6 +167,7 @@
 		<dto order="23" name="saleSupplier" mandatory="0" package="com.bbva.rbvd.dto.insrncsale.policy.SaleSupplierDTO" artifactId="RBVDC201">
 			<parameter order="1" name="id" mandatory="1" type="String" size="20"/>
 		</dto>
+		<parameter order="24" name="preformalizationId" mandatory="0" type="String" size="20"/>
 	</paramsIn>
 	<paramsOut>
 		<parameter order="1" name="id" mandatory="1" type="String" size="20"/>

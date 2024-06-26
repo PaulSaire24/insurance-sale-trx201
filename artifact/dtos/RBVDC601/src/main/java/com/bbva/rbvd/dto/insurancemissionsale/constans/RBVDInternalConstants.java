@@ -165,9 +165,11 @@ public class RBVDInternalConstants  {
 	}
 
 	public enum INDICATOR_PRE_FORMALIZED{
-		PRE_FORMALIZED_COLLECT("T","PreFormaliza + Formaliza + Cobro (status:01) envía contabilidad (alta, cobro) y MIS"),
-		FORMALIZED_COLLECT_ACCOUNTING("C","Formaliza + Cobro (status:01) envía contabilidad (alta, cobro) y MIS"),
-		FORMALIZED_ACCOUNTING("F","(Formaliza + envía contabilidad (alta) y MIS)")
+		PRE_FORMALIZED_COLLECT_ICR2("T","PreFormaliza + Formaliza + Cobro (status:01) envía contabilidad (alta, cobro) y MIS"),
+		FORMALIZED_COLLECT_ACCOUNTING_ICR2("C","Formaliza + Cobro (status:01) envía contabilidad (alta, cobro) y MIS"),
+		FORMALIZED_ACCOUNTING_ICR2("F","(Formaliza + envía contabilidad (alta) y MIS)"),
+		PRE_FORMALIZED_CONTRACT_ICR3("S","Pre-Formalización de contrato royal ICR3 ."),
+		FORMALIZED_CONTRACT_ICR3("N","Formalización de contrato royal ICR3.")
 		;
 
 		private final String value;

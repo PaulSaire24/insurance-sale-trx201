@@ -174,11 +174,9 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
                 validateAmountQuotation(responseQueryGetRequiredFields, requestBody);
 
             LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicy | Required payment evaluation *****");
-            evaluateRequiredPayment(requestBody);
+            RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized =  evaluateRequiredPayment(requestBody);
 
-
-
-            ResponseLibrary<PolicyASO> responseService = rbvdR201.executeInsurancePaymentAndFormalization(this.mapperHelper.buildAsoRequest(requestBody), RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
+            ResponseLibrary<PolicyASO> responseService = rbvdR201.executeInsurancePaymentAndFormalization(this.mapperHelper.buildAsoRequest(requestBody), indicatorPreFormalized);
             if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseService.getStatusProcess())){
                 String message = this.getAdvice().getDescription();
                 throw new BusinessException(ERROR_RESPONSE_SERVICE_ICR2.getAdviceCode(), ERROR_RESPONSE_SERVICE_ICR2.isRollback(),message);
@@ -399,9 +397,9 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
                 validateAmountQuotation(responseQueryGetRequiredFields, requestBody);
 
             LOGGER.info("***** RBVDR211Impl - executeBusinessLogicEmissionPrePolicyLifeEasyYes | Required payment evaluation *****");
-            evaluateRequiredPayment(requestBody);
+            RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized =  evaluateRequiredPayment(requestBody);
 
-            ResponseLibrary<PolicyASO> responseService = rbvdR201.executeInsurancePaymentAndFormalization(this.mapperHelper.buildAsoRequest(requestBody), RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
+            ResponseLibrary<PolicyASO> responseService = rbvdR201.executeInsurancePaymentAndFormalization(this.mapperHelper.buildAsoRequest(requestBody), indicatorPreFormalized);
             if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseService.getStatusProcess())){
                 String message = this.getAdvice().getDescription();
                 throw new BusinessException(ERROR_RESPONSE_SERVICE_ICR2.getAdviceCode(), ERROR_RESPONSE_SERVICE_ICR2.isRollback(),message);
@@ -627,7 +625,7 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
         return emissionDao;
     }
 
-    private void evaluateRequiredPayment(PolicyDTO requestBody) {
+    private RBVDInternalConstants.INDICATOR_PRE_FORMALIZED evaluateRequiredPayment(PolicyDTO requestBody) {
         DateTimeZone dateTimeZone = DateTimeZone.forID(LIMA_TIME_ZONE);
 
         DateTime currentLocalDate = new DateTime(new Date(), dateTimeZone);
@@ -642,9 +640,11 @@ public class EmissionPolicyLegacyBusinessImpl extends AbstractLibrary {
         if(startDate.after(currentDate)) {
             LOGGER.info("***** Deferred policy *****");
             requestBody.getFirstInstallment().setIsPaymentRequired(false);
+            return RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.FORMALIZED_ACCOUNTING_ICR2;
         } else {
             LOGGER.info("***** Not deferred policy *****");
             requestBody.getFirstInstallment().setIsPaymentRequired(true);
+            return RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT_ICR2;
         }
 
     }

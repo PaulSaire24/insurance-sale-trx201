@@ -40,7 +40,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 			return responseLibrary;
 
 		}
-
 		PolicyDTO policyContractBankCompany = this.executeEmissionPrePolicyLegacy(requestBody);
 		return ResponseLibrary.ResponseServiceBuilder
 				.an().flowProcess(RBVDInternalConstants.FlowProcess.LEGACY_FLOW_PROCESS).

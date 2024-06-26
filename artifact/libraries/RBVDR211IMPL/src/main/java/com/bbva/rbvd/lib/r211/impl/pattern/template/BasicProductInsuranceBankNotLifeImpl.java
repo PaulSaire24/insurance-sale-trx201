@@ -130,7 +130,7 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         requestBody = PrePolicyTransfor.toIsPaymentRequired(requestBody,isPaymentRequired);
         DataASO dataASO = PrePolicyTransfor.toDataASO(requestBody);
 
-        ResponseLibrary<PolicyASO> responseService = contractPISD201ServiceInternal.generateContractHost(dataASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
+        ResponseLibrary<PolicyASO> responseService = contractPISD201ServiceInternal.generateContractHost(dataASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT_ICR2);
         crossOperationsBusinessInsuranceContractBank.validateContractGeneration(responseService);
 
         PolicyASO asoResponse = responseService.getBody();
@@ -223,9 +223,14 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
 
     @Override
     protected void executeGeneratePayment() {
-        if(this.basicProductInsuranceProperties.enabledPaymentICR3()){
+        if(this.basicProductInsuranceProperties.enabledPaymentICR2()){
             DataASO asoRequest = this.getResponseLibrary().getBody().getDataASO();
-            ResponseLibrary<PolicyASO> responseGeneratePayment = this.contractPISD201ServiceInternal.generateFormalizationContractAndPayment(asoRequest, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
+            asoRequest.setId(this.getResponseLibrary().getBody().getAsoResponse().getData().getId());
+            RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.FORMALIZED_ACCOUNTING_ICR2;
+            if(this.getResponseLibrary().getBody().getPolicy().getFirstInstallment().getIsPaymentRequired()){
+                indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.FORMALIZED_COLLECT_ACCOUNTING_ICR2;
+            }
+            ResponseLibrary<PolicyASO> responseGeneratePayment = this.contractPISD201ServiceInternal.generateFormalizationContractAndPayment(asoRequest, indicatorPreFormalized);
             if(!RBVDInternalConstants.Status.OK.equalsIgnoreCase(responseGeneratePayment.getStatusProcess())){
                 throw buildValidation(ERROR_RESPONSE_SERVICE_ICR2);
             }

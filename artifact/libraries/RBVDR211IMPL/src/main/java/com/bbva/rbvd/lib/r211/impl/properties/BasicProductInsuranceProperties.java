@@ -57,7 +57,7 @@ public class BasicProductInsuranceProperties extends Properties{
         return enabledRulesValidationQuotationAmount;
     }
 
-    public Boolean enabledPaymentICR3(){
+    public Boolean enabledPaymentICR2(){
         Boolean enabledRulesValidationQuotationAmount = Boolean.parseBoolean(this.getProperty("flow.royal2.enabled.payment.icr3", Boolean.TRUE.toString()));
         LOGGER.info(" :: BasicProductInsuranceProperties[ enabledPaymentICR3 :: {} ]",enabledRulesValidationQuotationAmount);
         return enabledRulesValidationQuotationAmount;

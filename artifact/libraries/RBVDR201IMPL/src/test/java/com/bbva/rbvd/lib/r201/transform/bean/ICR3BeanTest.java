@@ -26,7 +26,7 @@ public class ICR3BeanTest {
     public void mapIn_shouldReturnICR3Request_whenPaymentIsRequired() {
         input.getFirstInstallment().setIsPaymentRequired(true);
 
-        ICContract result = ICRBean.mapIn(input, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
+        ICContract result = ICRBean.mapIn(input, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT_ICR2);
 
         assertEquals(PISDConstants.LETTER_SI, result.getCOBRO().getValue());
     }
@@ -35,7 +35,7 @@ public class ICR3BeanTest {
     public void mapIn_shouldReturnICR3Request_whenPaymentIsNotRequired() {
         input.getFirstInstallment().setIsPaymentRequired(false);
 
-        ICContract result = ICRBean.mapIn(input,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
+        ICContract result = ICRBean.mapIn(input,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT_ICR2);
 
         assertEquals(PISDConstants.LETTER_NO, result.getCOBRO().getValue());
     }
@@ -47,7 +47,7 @@ public class ICR3BeanTest {
         String nrocta = "2131231213";
         input.getPaymentMethod().setPaymentType(paymentType);
 
-        ICContract result = ICRBean.mapIn(input,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT);
+        ICContract result = ICRBean.mapIn(input,RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT_ICR2);
         assertEquals(paymentType, result.getMTDPGO());
         assertEquals(nrocta, result.getNROCTA());
     }

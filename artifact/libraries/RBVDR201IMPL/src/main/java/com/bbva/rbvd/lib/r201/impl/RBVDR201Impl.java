@@ -253,7 +253,7 @@ public class RBVDR201Impl extends RBVDR201Abstract {
 	@Override
 	public ResponseLibrary<PolicyASO> executeInsurancePaymentAndFormalization(DataASO requestBody, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized) {
 		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ START ]");
-		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ DataASO :: {} ]",requestBody);
+		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ DataASO :: {} ]",getRequestBodyAsJsonFormat(requestBody));
 		ICContract icr3Request = ICRBean.mapIn(requestBody,indicatorPreFormalized);
 		ICR2Response icResponse = this.rbvdR609.executeFormalizationContractInsurance(icr3Request);
 		LOGGER.info(" :: executeInsurancePaymentAndFormalization :: [ ICR3Response :: {} ]",icResponse);
