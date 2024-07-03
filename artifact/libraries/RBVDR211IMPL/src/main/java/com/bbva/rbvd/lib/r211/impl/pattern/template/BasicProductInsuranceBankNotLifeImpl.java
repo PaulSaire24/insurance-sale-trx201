@@ -130,7 +130,7 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
         requestBody = PrePolicyTransfor.toIsPaymentRequired(requestBody,isPaymentRequired);
         DataASO dataASO = PrePolicyTransfor.toDataASO(requestBody);
 
-        ResponseLibrary<PolicyASO> responseService = contractPISD201ServiceInternal.generateContractHost(dataASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_COLLECT_ICR2);
+        ResponseLibrary<PolicyASO> responseService = contractPISD201ServiceInternal.generateContractHost(dataASO, RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.PRE_FORMALIZED_CONTRACT_ICR3);
         crossOperationsBusinessInsuranceContractBank.validateContractGeneration(responseService);
 
         PolicyASO asoResponse = responseService.getBody();
