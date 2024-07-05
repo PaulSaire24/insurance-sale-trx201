@@ -188,6 +188,26 @@ public class RBVDInternalConstants  {
 		}
 	}
 
+	public enum CONTRACT_STATUS_ID{
+		ANU ("ANU", "El contrato fue anulado y si aplica extorno ."),
+		BAJ ("BAJ", "El contrato fue dado de baja y no aplica extorno ."),
+		PEN("PEN", "El contrato se encuentra  pendiente de formalización . "),
+		FOR ("FOR", "Contrato Formalizado.");
+
+		private final String value;
+		private final String description;
+
+		CONTRACT_STATUS_ID(String value, String description) {
+			this.value = value;
+			this.description = description;
+		}
+		public String getValue() { return value; }
+
+		public String getDescription() {
+			return description;
+		}
+	}
+
 	public static final class Status {
 		public static final String OK = "OK";
 		public static final String ENR = "ENR";

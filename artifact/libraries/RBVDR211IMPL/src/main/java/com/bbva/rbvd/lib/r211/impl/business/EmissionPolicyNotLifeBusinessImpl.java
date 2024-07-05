@@ -9,7 +9,9 @@ import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.aspects.interfaces.ManagementOperation;
 import com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory;
 import com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank;
+import com.bbva.rbvd.lib.r211.impl.pattern.template.crossoperations.CrossOperationsBusinessInsuranceContractBank;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +23,7 @@ public class EmissionPolicyNotLifeBusinessImpl {
     private InsuranceCompanyFactory insuranceCompanyFactory;
     private ManagementOperation managementOperationsCross;
     private MapperHelper mapperHelper;
+    private EmissionFlowPrePolicyBusinessImpl emissionFlowPrePolicyBusiness;
 
 
     /**
@@ -38,7 +41,15 @@ public class EmissionPolicyNotLifeBusinessImpl {
         LOGGER.info(" EmissionPolicyBusinessImpl :: executeEmissionPolicy :: [ START ]");
         ResponseLibrary<ProcessPrePolicyDTO> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(new ProcessPrePolicyDTO());
         try {
-             contractRoyalGenerated  = insuranceContractBank.executeGenerateInsuranceContractRoyal(requestBody);
+             if(StringUtils.isNotEmpty(requestBody.getId())){
+                 contractRoyalGenerated = emissionFlowPrePolicyBusiness.executeFlowPreEmissionPolicy(requestBody);
+                 boolean isEndorsement = CrossOperationsBusinessInsuranceContractBank.validateEndorsement(requestBody);
+                 contractRoyalGenerated.getBody().setEndorsement(isEndorsement);
+             }else{
+                 contractRoyalGenerated  = insuranceContractBank.executeGenerateInsuranceContractRoyal(requestBody);
+                 boolean isEndorsement = CrossOperationsBusinessInsuranceContractBank.validateEndorsement(requestBody);
+                 contractRoyalGenerated.getBody().setEndorsement(isEndorsement);
+             }
              ResponseLibrary<ProcessPrePolicyDTO> contractRoyalAndPolicyGenerated = insuranceCompanyFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
              managementOperationsCross.afterProcessBusinessExecutionNotLifeCross(contractRoyalAndPolicyGenerated.getBody());
              return ResponseLibrary.ResponseServiceBuilder.an()
@@ -59,6 +70,10 @@ public class EmissionPolicyNotLifeBusinessImpl {
                     .flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
                     .build();
         }
+    }
+
+    public void setEmissionFlowPrePolicyBusiness(EmissionFlowPrePolicyBusinessImpl emissionFlowPrePolicyBusiness) {
+        this.emissionFlowPrePolicyBusiness = emissionFlowPrePolicyBusiness;
     }
 
     public void setMapperHelper(MapperHelper mapperHelper) {

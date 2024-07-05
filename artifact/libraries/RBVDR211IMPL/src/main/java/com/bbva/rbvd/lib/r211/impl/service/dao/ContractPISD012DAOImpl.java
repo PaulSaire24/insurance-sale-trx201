@@ -1,9 +1,16 @@
 package com.bbva.rbvd.lib.r211.impl.service.dao;
 
+import com.bbva.apx.exception.business.BusinessException;
+import com.bbva.pisd.dto.contract.constants.PISDErrors;
+import com.bbva.pisd.dto.contract.search.CertifyBankCriteria;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.pisd.dto.insurancedao.entities.ContractEntity;
 import com.bbva.pisd.lib.r012.PISDR012;
+import com.bbva.pisd.lib.r226.PISDR226;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
 import com.bbva.rbvd.lib.r211.impl.service.IInsuranceContractDAO;
+import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
 import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
 
 import java.math.BigDecimal;
@@ -14,6 +21,9 @@ import java.util.Objects;
 public class ContractPISD012DAOImpl implements IInsuranceContractDAO {
 
     private PISDR012 pisdR012;
+    private PISDR226 pisdR226;
+
+    private final ArchitectureAPXUtils architectureAPXUtils = new ArchitectureAPXUtils();
 
 
     @Override
@@ -64,6 +74,31 @@ public class ContractPISD012DAOImpl implements IInsuranceContractDAO {
             return Boolean.FALSE;
         }
         return Boolean.TRUE;
+    }
+
+    @Override
+    public ContractEntity executeFindByCertifiedBank(CertifyBankCriteria certifyBankCriteria) {
+        ContractEntity contractEntity;
+        try{
+            contractEntity = this.pisdR226.executeFindByCertifiedBank(certifyBankCriteria);
+            if(Objects.isNull(contractEntity)){
+                throw new BusinessException(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode(),PISDErrors.QUERY_EMPTY_RESULT.isRollback(),PISDErrors.QUERY_EMPTY_RESULT.getMessage());
+            }
+        }catch (BusinessException businessException){
+           if(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode().equalsIgnoreCase(businessException.getAdviceCode())){
+               String certifyBank = certifyBankCriteria.getInsuranceContractEntityId() + certifyBankCriteria.getInsuranceContractBranchId() + certifyBankCriteria.getContractFirstVerfnDigitId() + certifyBankCriteria.getContractSecondVerfnDigitId() + certifyBankCriteria.getInsrcContractIntAccountId();
+               String message = String.format(RBVDInternalErrors.ERROR_NOT_RESULT_CONTRACT.getMessage(), certifyBank);
+               this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDInternalErrors.ERROR_NOT_RESULT_CONTRACT.getAdviceCode(),message);
+               throw FunctionsUtils.buildValidation(RBVDInternalErrors.ERROR_NOT_RESULT_CONTRACT,message);
+           }
+           this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDInternalErrors.ERROR_NOT_TIMEOUT_GENERAL.getAdviceCode(),RBVDInternalErrors.ERROR_NOT_TIMEOUT_GENERAL.getMessage());
+           throw FunctionsUtils.buildValidation(RBVDInternalErrors.ERROR_NOT_TIMEOUT_GENERAL);
+        }
+        return contractEntity;
+    }
+
+    public void setPisdR226(PISDR226 pisdR226) {
+        this.pisdR226 = pisdR226;
     }
 
     public void setPisdR012(PISDR012 pisdR012) {

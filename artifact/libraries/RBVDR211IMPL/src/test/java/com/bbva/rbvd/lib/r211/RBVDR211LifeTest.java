@@ -1,16 +1,20 @@
 package com.bbva.rbvd.lib.r211;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.elara.domain.transaction.Context;
 import com.bbva.elara.domain.transaction.ThreadContext;
 import com.bbva.ksmk.dto.caas.OutputDTO;
 import com.bbva.ksmk.lib.r002.KSMKR002;
+import com.bbva.pisd.dto.contract.constants.PISDErrors;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.mock.MockDTO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
+import com.bbva.pisd.dto.insurancedao.entities.ContractEntity;
 import com.bbva.pisd.dto.insurancedao.entities.QuotationEntity;
 import com.bbva.pisd.lib.r012.PISDR012;
+import com.bbva.pisd.lib.r226.PISDR226;
 import com.bbva.pisd.lib.r350.PISDR350;
 import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.pisd.lib.r601.PISDR601;
@@ -98,6 +102,9 @@ public class RBVDR211LifeTest {
 
 	@Resource(name = "pisdR401")
 	private PISDR401 pisdr401;
+
+	@Resource(name = "pisdR226")
+	private PISDR226 pisdR226;
 
 	private PolicyDTO requestBody;
 
@@ -333,6 +340,218 @@ public class RBVDR211LifeTest {
 			result = advised.getTargetSource().getTarget();
 		}
 		return result;
+	}
+
+	@Test
+	public void execute_flow_pre_emission_with_error_not_result_null_exception() {
+		/**
+		 * Preparación de data
+		 * */
+		this.requestBody.setId("00110284764000025977");
+		String messageExceptionNotResultExpected = "El contrato '00110284764000025977' no se encuentra en nuestra base de datos. Por favor, verifica la información proporcionada y vuelve a intentarlo.";
+		/**
+		 * Mocks
+		 * */
+		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
+				.thenReturn(null);
+		/**
+		 * Ejecución de proceso
+		 * */
+
+		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
+		assertNull(contractAndPolicyGenerated.getBody());
+		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
+		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_NOT_RESULT_CONTRACT.getAdviceCode().equalsIgnoreCase(advice.getCode())));
+		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
+		assertEquals(1,this.context.getAdviceList().size());
+
+	}
+
+
+	@Test
+	public void execute_flow_pre_emission_with_error_not_result_exception() {
+		/**
+		 * Preparación de data
+		 * */
+		this.requestBody.setId("00110284764000025977");
+		String messageExceptionNotResultExpected = "El contrato '00110284764000025977' no se encuentra en nuestra base de datos. Por favor, verifica la información proporcionada y vuelve a intentarlo.";
+		/**
+		 * Mocks
+		 * */
+		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
+				.thenThrow(new BusinessException(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode(),PISDErrors.QUERY_EMPTY_RESULT.isRollback(),PISDErrors.QUERY_EMPTY_RESULT.getMessage()));
+		/**
+		 * Ejecución de proceso
+		 * */
+
+		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
+		assertNull(contractAndPolicyGenerated.getBody());
+		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
+		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_NOT_RESULT_CONTRACT.getAdviceCode().equalsIgnoreCase(advice.getCode())));
+		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
+		assertEquals(1,this.context.getAdviceList().size());
+
+	}
+
+	@Test
+	public void execute_flow_pre_emission_with_error_timeout_exception() {
+		/**
+		 * Preparación de data
+		 * */
+		this.requestBody.setId("00110284764000025977");
+		String messageExceptionNotResultExpected = RBVDInternalErrors.ERROR_NOT_TIMEOUT_GENERAL.getMessage();
+		/**
+		 * Mocks
+		 * */
+		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
+				.thenThrow(new BusinessException(PISDErrors.ERROR_TIME_OUT.getAdviceCode(),PISDErrors.ERROR_TIME_OUT.isRollback(),PISDErrors.ERROR_TIME_OUT.getMessage()));
+		/**
+		 * Ejecución de proceso
+		 * */
+
+		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
+		assertNull(contractAndPolicyGenerated.getBody());
+		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
+		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_NOT_TIMEOUT_GENERAL.getAdviceCode().equalsIgnoreCase(advice.getCode())));
+		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
+		assertEquals(1,this.context.getAdviceList().size());
+
+	}
+
+	@Test
+	public void execute_flow_pre_emission_error_contract_status_id_for() {
+		/**
+		 * Preparación de data
+		 * */
+		this.requestBody.setId("00110284764000025977");
+		String messageExceptionNotResultExpected = RBVDInternalErrors.ERROR_STATUS_CONTRACT_FOR.getMessage();
+		/**
+		 * Mocks
+		 * */
+		ContractEntity contractEntity = ContractEntity.ContractBuilder.an()
+				.withContractStatusId(RBVDInternalConstants.CONTRACT_STATUS_ID.FOR.getValue()).build();
+		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
+				.thenReturn(contractEntity);
+		/**
+		 * Ejecución de flujo con estado ContractStatusId = 'FOR'
+		 * */
+		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
+		assertNull(contractAndPolicyGenerated.getBody());
+		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
+		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_STATUS_CONTRACT_FOR.getAdviceCode().equalsIgnoreCase(advice.getCode())));
+		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
+		assertEquals(1,this.context.getAdviceList().size());
+
+	}
+
+	@Test
+	public void execute_flow_pre_emission_error_contract_status_id_baj() {
+		/**
+		 * Preparación de data
+		 * */
+		this.requestBody.setId("00110284764000025977");
+		String messageExceptionNotResultExpected = RBVDInternalErrors.ERROR_STATUS_CONTRACT_BAJ.getMessage();
+		/**
+		 * Mocks
+		 * */
+		ContractEntity contractEntity = ContractEntity.ContractBuilder.an()
+				.withContractStatusId(RBVDInternalConstants.CONTRACT_STATUS_ID.BAJ.getValue()).build();
+		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
+				.thenReturn(contractEntity);
+		/**
+		 * Ejecución de flujo con estado ContractStatusId = 'FOR'
+		 * */
+		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
+		assertNull(contractAndPolicyGenerated.getBody());
+		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
+		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_STATUS_CONTRACT_BAJ.getAdviceCode().equalsIgnoreCase(advice.getCode())));
+		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
+		assertEquals(1,this.context.getAdviceList().size());
+
+	}
+
+	@Test
+	public void execute_flow_pre_emission_error_contract_status_id_anu() {
+		/**
+		 * Preparación de data
+		 * */
+		this.requestBody.setId("00110284764000025977");
+		String messageExceptionNotResultExpected = RBVDInternalErrors.ERROR_STATUS_CONTRACT_ANU.getMessage();
+		/**
+		 * Mocks
+		 * */
+		ContractEntity contractEntity = ContractEntity.ContractBuilder.an()
+				.withContractStatusId(RBVDInternalConstants.CONTRACT_STATUS_ID.ANU.getValue()).build();
+		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
+				.thenReturn(contractEntity);
+		/**
+		 * Ejecución de flujo con estado ContractStatusId = 'FOR'
+		 * */
+		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
+		assertNull(contractAndPolicyGenerated.getBody());
+		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
+		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_STATUS_CONTRACT_ANU.getAdviceCode().equalsIgnoreCase(advice.getCode())));
+		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
+		assertEquals(1,this.context.getAdviceList().size());
+
+	}
+
+	@Test
+	public void execute_flow_pre_emission_error_contract_status_id_default() {
+		/**
+		 * Preparación de data
+		 * */
+		this.requestBody.setId("00110284764000025977");
+		String messageExceptionNotResultExpected = "El contrato '00110284764000025977' esta en estado 'X' y no se puede realizar la preformalización. Por favor, verifica el contrato proporcionado .";
+		/**
+		 * Mocks
+		 * */
+		ContractEntity contractEntity = ContractEntity.ContractBuilder.an()
+				.withContractStatusId("X").build();
+		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
+				.thenReturn(contractEntity);
+		/**
+		 * Ejecución de flujo con estado ContractStatusId = 'FOR'
+		 * */
+		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
+		assertNull(contractAndPolicyGenerated.getBody());
+		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
+		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_STATUS_CONTRACT_FLOW_PRE_FORMALIZATION.getAdviceCode().equalsIgnoreCase(advice.getCode())));
+		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
+		assertEquals(1,this.context.getAdviceList().size());
+
+	}
+
+	@Test
+	public void execute_flow_pre_emission_sucessfull() {
+		/**
+		 * Preparación de data
+		 * */
+		this.requestBody.setId("00110284764000025977");
+		/**
+		 * Mocks
+		 * */
+		ContractEntity contractEntity = ContractEntity.ContractBuilder.an()
+				.withContractStatusId(RBVDInternalConstants.CONTRACT_STATUS_ID.PEN.getValue()).build();
+		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
+				.thenReturn(contractEntity);
+		/**
+		 * Ejecución de proceso
+		 * */
+
+		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
+		assertNotNull(contractAndPolicyGenerated.getBody());
+		assertEquals(RBVDInternalConstants.Status.OK,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
+		assertEquals(0,this.context.getAdviceList().size());
+
 	}
 
 

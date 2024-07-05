@@ -10,6 +10,8 @@ import com.bbva.rbvd.lib.r211.impl.aspects.interfaces.ManagementOperation;
 import com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory;
 import com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
+import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +23,8 @@ public class EmissionPolicyLifeBusinessImpl  {
     private InsuranceCompanyFactory rimacCompanyLifeFactory;
     private MapperHelper mapperHelper;
     private ManagementOperation managementOperationsCross;
+
+    private EmissionFlowPrePolicyBusinessImpl emissionFlowPrePolicyBusiness;
 
     /**
      * This method is responsible for executing the emission of a policy.
@@ -37,7 +41,13 @@ public class EmissionPolicyLifeBusinessImpl  {
         LOGGER.info(" EmissionPolicyLifeBusinessImpl :: executeEmissionPolicy :: [ START ]");
         ResponseLibrary<ProcessPrePolicyDTO> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(new ProcessPrePolicyDTO());
         try {
-             contractRoyalGenerated  = insuranceContractBank.executeGenerateInsuranceContractRoyal(requestBody);
+            if(StringUtils.isNotEmpty(requestBody.getId())){
+                contractRoyalGenerated = emissionFlowPrePolicyBusiness.executeFlowPreEmissionPolicy(requestBody);
+                boolean isEndorsement = ValidationUtil.validateEndorsementInParticipantsRequest(requestBody);
+                contractRoyalGenerated.getBody().setEndorsement(isEndorsement);
+            }else{
+                contractRoyalGenerated  = insuranceContractBank.executeGenerateInsuranceContractRoyal(requestBody);
+            }
              ResponseLibrary<ProcessPrePolicyDTO> contractRoyalAndPolicyGenerated = rimacCompanyLifeFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
              managementOperationsCross.afterProcessBusinessExecutionLifeCross(contractRoyalAndPolicyGenerated.getBody());
              return ResponseLibrary.ResponseServiceBuilder.an()
@@ -58,6 +68,10 @@ public class EmissionPolicyLifeBusinessImpl  {
                     .flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
                     .build();
         }
+    }
+
+    public void setEmissionFlowPrePolicyBusiness(EmissionFlowPrePolicyBusinessImpl emissionFlowPrePolicyBusiness) {
+        this.emissionFlowPrePolicyBusiness = emissionFlowPrePolicyBusiness;
     }
 
     public void setMapperHelper(MapperHelper mapperHelper) {

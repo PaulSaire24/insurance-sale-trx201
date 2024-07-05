@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
-	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 	<bean id="rbvdR211" class="com.bbva.rbvd.lib.r211.impl.RBVDR211Impl" parent="rbvdR211Abstract">
 		<property name="rbvdR201" ref="rbvdR201"/>
 		<property name="mapperHelper" ref="mapperHelper"/>
@@ -12,6 +11,7 @@
 		<property name="emissionPolicyNotLifeBusinessImpl" ref="emissionPolicyNotLifeBusiness"/>
 		<property name="emissionPolicyLifeBusinessImpl" ref="emissionPolicyLifeBusiness"/>
 		<property name="pisdR601" ref="pisdR601"/>
+		<property name="pisdR226" ref="pisdR226"/>
 	</bean>
 	<!-- Events -->
 	<bean id="gifoleEventInternal" class="com.bbva.rbvd.lib.r211.impl.event.GifoleEventInternal">
@@ -23,12 +23,22 @@
 		<property name="insuranceContractBank" ref="basicProductInsuranceBankNotLife"/>
 		<property name="insuranceCompanyFactory" ref="rimacCompanyNotLifeFactory"/>
 		<property name="managementOperationsCross" ref="managementOperationsCross"/>
+		<property name="emissionFlowPrePolicyBusiness" ref="emissionFlowPrePolicyBusiness"/>
 	</bean>
 	<bean id="emissionPolicyLifeBusiness" class="com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyLifeBusinessImpl">
 		<property name="mapperHelper" ref="mapperHelper"/>
 		<property name="insuranceContractBank" ref="basicProductInsuranceBankLife"/>
 		<property name="rimacCompanyLifeFactory" ref="rimacCompanyLifeFactory"/>
 		<property name="managementOperationsCross" ref="managementOperationsCross"/>
+		<property name="emissionFlowPrePolicyBusiness" ref="emissionFlowPrePolicyBusiness"/>
+	</bean>
+	<bean id="emissionFlowPrePolicyBusiness" class="com.bbva.rbvd.lib.r211.impl.business.EmissionFlowPrePolicyBusinessImpl">
+		<property name="contractPISD201ServiceInternal" ref="contractPISD201ServiceInternal"/>
+		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
+		<property name="insrncQuotationModDAO" ref="quotationModPISD012DAO"/>
+		<property name="insrncPaymentPeriodDAO" ref="paymentPeriodPISD012DAO"/>
+		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
+		<property name="crossOperationsBusinessInsuranceContractBank" ref="crossOperationsBusinessInsuranceContractBank"/>
 	</bean>
 	<!-- Pattern´s Design -->
 	<bean id="insuranceContractBank" class="com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank" abstract="true"/>
@@ -109,6 +119,7 @@
 	</bean>
 	<bean id="contractPISD012DAO2" class="com.bbva.rbvd.lib.r211.impl.service.dao.ContractPISD012DAOImpl">
 		<property name="pisdR012" ref="pisdR012"/>
+		<property name="pisdR226" ref="pisdR226"/>
 	</bean>
 	<bean id="endorsementInsurncPISD012DAO" class="com.bbva.rbvd.lib.r211.impl.service.dao.EndorsementInsurncPISD012DAOImpl">
 		<property name="pisdR012" ref="pisdR012"/>

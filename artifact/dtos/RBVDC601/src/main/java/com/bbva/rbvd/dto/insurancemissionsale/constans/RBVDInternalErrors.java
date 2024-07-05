@@ -22,7 +22,13 @@ public enum RBVDInternalErrors {
     ERROR_POLICY_ALREADY_EXISTS("RBVD00088055", true, "Ya hay un contrato activo con la cotización que enviaste, %s. Por favor, revisa el listado de contratos del cliente."),
     ERROR_NOT_VALUE_QUOTATION("RBVD00088056", true, "Se identificó un problema con el %s, el cual no se registró al efectuar la cotización. Por favor, revise la cotización relacionada en nuestros sistemas: %s."),
     ERROR_GENERIC_HOST("RBVD00088057", true, "[MESSAGE_GENERIC]"),
-    ERROR_GENERIC_APX_IN_CALLED_RIMAC("RBVD00088058", true, "[MESSAGE_GENERIC]");
+    ERROR_GENERIC_APX_IN_CALLED_RIMAC("RBVD00088058", true, "[MESSAGE_GENERIC]"),
+    ERROR_NOT_RESULT_CONTRACT("RBVD00088059", false, "El contrato '%s' no se encuentra en nuestra base de datos. Por favor, verifica la información proporcionada y vuelve a intentarlo."),
+    ERROR_NOT_TIMEOUT_GENERAL("RBVD00088060", false, "Se produjo un error debido a un tiempo de espera excesivo con la base de datos. Por favor, intenta de nuevo."),
+    ERROR_STATUS_CONTRACT_FLOW_PRE_FORMALIZATION("RBVD00088061", false, "El contrato '%s' esta en estado '%s' y no se puede realizar la preformalización. Por favor, verifica el contrato proporcionado ."),
+    ERROR_STATUS_CONTRACT_BAJ("RBVD00088062", false, "Debido a que el contrato está dado de baja, la preformalización no puede ser realizada."),
+    ERROR_STATUS_CONTRACT_ANU("RBVD00088063", false, "Debido a que el contrato está anulado, la preformalización no puede ser realizada."),
+    ERROR_STATUS_CONTRACT_FOR("RBVD00088064", false, "La formalización del contrato ya ha sido realizada.");
 
     private final String adviceCode;
     private final boolean rollback;

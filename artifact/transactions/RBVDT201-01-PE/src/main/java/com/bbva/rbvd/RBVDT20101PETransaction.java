@@ -117,6 +117,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 
 	private PolicyDTO getPolicyDTO() {
 		PolicyDTO requestBody = new PolicyDTO();
+		requestBody.setId(this.getPreformalizationid());
 		requestBody.setQuotationId(this.getQuotationid());
 		requestBody.setProductId(this.getProductid());
 		requestBody.setProductPlan(this.getProductplan());

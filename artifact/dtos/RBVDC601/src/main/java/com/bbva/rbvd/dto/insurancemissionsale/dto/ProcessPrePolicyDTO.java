@@ -186,7 +186,7 @@ public class ProcessPrePolicyDTO {
         this.asoResponse = asoResponse;
     }
 
-    public PolicyDTO getPolicy() {
+    public com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO getPolicy() {
         return policy;
     }
 

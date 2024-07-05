@@ -1,8 +1,10 @@
 package com.bbva.rbvd.lib.r211.impl;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
+import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.ksmk.lib.r002.KSMKR002;
 import com.bbva.pisd.lib.r012.PISDR012;
+import com.bbva.pisd.lib.r226.PISDR226;
 import com.bbva.pisd.lib.r350.PISDR350;
 import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.pisd.lib.r601.PISDR601;
@@ -33,6 +35,8 @@ public abstract class RBVDR211Abstract implements RBVDR211 {
 	protected EmissionPolicyNotLifeBusinessImpl emissionPolicyNotLifeBusinessImpl;
 	protected EmissionPolicyLifeBusinessImpl emissionPolicyLifeBusinessImpl;
 	protected PISDR601 pisdR601;
+
+	protected PISDR226 pisdR226;
 
 
 	/**
@@ -77,8 +81,25 @@ public abstract class RBVDR211Abstract implements RBVDR211 {
 		this.pisdR350 = pisdR350;
 	}
 
-	public void setMapperHelper(MapperHelper mapperHelper) {
-		this.mapperHelper = mapperHelper;
+	/**
+	* @param pisdR601 the this.pisdR601 to set
+	*/
+	public void setPisdR601(PISDR601 pisdR601) {
+		this.pisdR601 = pisdR601;
+	}
+
+	/**
+	* @param pisdR226 the this.pisdR226 to set
+	*/
+	public void setPisdR226(PISDR226 pisdR226) {
+		this.pisdR226 = pisdR226;
+	}
+
+	/**
+	 * @param emissionPolicyLifeBusinessImpl the this.pisdR601 to set
+	 */
+	public void setEmissionPolicyLifeBusinessImpl(EmissionPolicyLifeBusinessImpl emissionPolicyLifeBusinessImpl) {
+		this.emissionPolicyLifeBusinessImpl = emissionPolicyLifeBusinessImpl;
 	}
 
 	/**
@@ -87,16 +108,9 @@ public abstract class RBVDR211Abstract implements RBVDR211 {
 	public void setEmissionPolicyNotLifeBusinessImpl(EmissionPolicyNotLifeBusinessImpl emissionPolicyNotLifeBusinessImpl) {
 		this.emissionPolicyNotLifeBusinessImpl = emissionPolicyNotLifeBusinessImpl;
 	}
-	/**
-	 * @param pisdR601 the this.pisdR601 to set
-	 */
-	public void setPisdR601(PISDR601 pisdR601) {
-		this.pisdR601 = pisdR601;
+
+	public void setMapperHelper(MapperHelper mapperHelper) {
+		this.mapperHelper = mapperHelper;
 	}
-	/**
-	 * @param emissionPolicyLifeBusinessImpl the this.pisdR601 to set
-	 */
-	public void setEmissionPolicyLifeBusinessImpl(EmissionPolicyLifeBusinessImpl emissionPolicyLifeBusinessImpl) {
-		this.emissionPolicyLifeBusinessImpl = emissionPolicyLifeBusinessImpl;
-	}
+
 }

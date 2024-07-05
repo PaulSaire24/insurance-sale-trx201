@@ -62,6 +62,16 @@ public class FunctionsUtils {
         return day + "/" + month + "/" + localDate.getYear();
     }
 
+    public static String[] generateCodeToSearchContractInOracle(String certifyBank){
+       String[] codeToSearchContractInOracle = new String[5];
+       codeToSearchContractInOracle[0] = certifyBank.substring(0,4);
+       codeToSearchContractInOracle[1] = certifyBank.substring(4,8);
+       codeToSearchContractInOracle[2] = certifyBank.substring(8,9);
+       codeToSearchContractInOracle[3] = certifyBank.substring(9,10);
+       codeToSearchContractInOracle[4] = certifyBank.substring(10,20);
+       return codeToSearchContractInOracle;
+    }
+
     public static void loggerAutomatic(String message,String body, Logger LOGGER){
         int limit = 10124;
         int total = body.length();

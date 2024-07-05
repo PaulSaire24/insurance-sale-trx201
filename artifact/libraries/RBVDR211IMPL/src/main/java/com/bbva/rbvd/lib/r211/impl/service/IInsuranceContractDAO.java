@@ -1,5 +1,8 @@
 package com.bbva.rbvd.lib.r211.impl.service;
 
+import com.bbva.pisd.dto.contract.search.CertifyBankCriteria;
+import com.bbva.pisd.dto.insurancedao.entities.ContractEntity;
+
 import java.util.Map;
 
 public interface IInsuranceContractDAO {
@@ -9,4 +12,5 @@ public interface IInsuranceContractDAO {
     Boolean updateEndorsementInContract(String policyNumber, String intAccountId);
 
     Boolean updateInsuranceContract(Map<String, Object> argumentContract);
+    ContractEntity executeFindByCertifiedBank(CertifyBankCriteria certifyBankCriteria) ;
 }
