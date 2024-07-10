@@ -9,7 +9,12 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
-import com.bbva.rbvd.dto.insrncsale.dao.*;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RelatedContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
@@ -24,7 +29,11 @@ import com.bbva.rbvd.lib.r211.impl.service.api.ContractPISD201ServiceInternal;
 import com.bbva.rbvd.lib.r211.impl.service.api.CryptoServiceInternal;
 import com.bbva.rbvd.lib.r211.impl.service.api.CustomerRBVD066InternalService;
 import com.bbva.rbvd.lib.r211.impl.service.api.interfaces.PolicyServiceExternal;
-import com.bbva.rbvd.lib.r211.impl.transfor.bean.*;
+import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsuranceReceiptBean;
+import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsuranceContractBean;
+import com.bbva.rbvd.lib.r211.impl.transfor.bean.IsrcContractMovBean;
+import com.bbva.rbvd.lib.r211.impl.transfor.bean.PrePolicyTransfor;
+import com.bbva.rbvd.lib.r211.impl.transfor.bean.EmissionBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.list.RelatedContractsList;
 import com.bbva.rbvd.lib.r211.impl.transfor.map.InsuranceContractMap;
 import com.bbva.rbvd.lib.r211.impl.transfor.map.InsuranceReceiptMap;
@@ -68,7 +77,7 @@ public class BasicProduct extends InsuranceContractBank {
     @Override
     protected void executeValidateConditions(PolicyDTO requestBody) {
         Boolean existContractWithQuotation = this.insuranceContractDAO.findExistenceInsuranceContract(requestBody.getQuotationId());
-        if(existContractWithQuotation){
+        if(Boolean.TRUE.equals(existContractWithQuotation)){
             String messageErrorContractWithQuotation = String.format(ERROR_POLICY_ALREADY_EXISTS.getMessage(),requestBody.getQuotationId());
             this.architectureAPXUtils.addAdviceWithDescriptionLibrary(ERROR_POLICY_ALREADY_EXISTS.getAdviceCode(),messageErrorContractWithQuotation);
             throw new BusinessException(ERROR_POLICY_ALREADY_EXISTS.getAdviceCode(), ERROR_POLICY_ALREADY_EXISTS.isRollback(), ERROR_POLICY_ALREADY_EXISTS.getMessage());
@@ -153,31 +162,46 @@ public class BasicProduct extends InsuranceContractBank {
         argumentsForSaveContract.forEach((key, value) -> LOGGER.info(" :: executeGenerateContract | argumentsForSaveContract [ key {} with value: {} ] ", key, value));
 
         Boolean isSavedInsuranceContract = this.insuranceContractDAO.saveInsuranceContract(argumentsForSaveContract);
-        if(!isSavedInsuranceContract){
+        if(Boolean.TRUE.equals(!isSavedInsuranceContract)){
             String message = String.format(INSERTION_ERROR_IN_TABLE.getMessage(),RBVDInternalConstants.Tables.T_PISD_INSURANCE_CONTRACT);
             this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
             throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
         }
         List<InsuranceCtrReceiptsDAO> receiptsList = InsuranceReceiptBean.toInsuranceCtrReceiptsDAO(asoResponse, requestBody);
+        
+        this.getResponseLibrary().getBody().setDataASO(dataASO);
+        this.getResponseLibrary().getBody().setAsoResponse(asoResponse);
+        this.getResponseLibrary().getBody().setPolicy(requestBody);
+        this.getResponseLibrary().getBody().setContractDao(contractDao);
+        this.getResponseLibrary().getBody().setEndorsement(isEndorsement);
+        this.getResponseLibrary().getBody().setReceiptsList(receiptsList);
+        this.setResponseLibrary(this.getResponseLibrary());
+    }
+
+    @Override
+    protected void getListReceipts() {
+        PolicyDTO requestBody = this.getResponseLibrary().getBody().getPolicy();
+        List<InsuranceCtrReceiptsDAO> receiptsList = this.getResponseLibrary().getBody().getReceiptsList();
         List<String> productsNotGenerateMonthlyReceipts = this.basicProductInsuranceProperties.obtainProductsNotGenerateMonthlyReceipts();
         String  operationGlossaryDesc = this.getResponseLibrary().getBody().getOperationGlossaryDesc();
         if(RBVDInternalConstants.Period.MONTHLY_LARGE.equalsIgnoreCase(requestBody.getInstallmentPlan().getPeriod().getId()) && !productsNotGenerateMonthlyReceipts.contains(operationGlossaryDesc)){
             List<InsuranceCtrReceiptsDAO> receipts = InsuranceReceiptBean.toGenerateMonthlyReceipts(receiptsList.get(0));
             receiptsList.addAll(receipts);
         }
+        this.getResponseLibrary().getBody().setReceiptsList(receiptsList);
+        this.setResponseLibrary(this.getResponseLibrary());
+    }
+
+    @Override
+    protected void saveListReceipts() {
+        List<InsuranceCtrReceiptsDAO> receiptsList = this.getResponseLibrary().getBody().getReceiptsList();
         Map<String, Object>[] receiptsArguments = InsuranceReceiptMap.receiptsToMaps(receiptsList);
         Boolean isSavedInsuranceReceipts = this.insuranceCtrReceiptsDAO.saveInsuranceReceipts(receiptsArguments);
-        if(!isSavedInsuranceReceipts){
+        if(Boolean.TRUE.equals(!isSavedInsuranceReceipts)){
             String message = String.format(INSERTION_ERROR_IN_TABLE.getMessage(),RBVDInternalConstants.Tables.T_PISD_INSURANCE_CTR_RECEIPTS);
             this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
             throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
         }
-        this.getResponseLibrary().getBody().setDataASO(dataASO);
-        this.getResponseLibrary().getBody().setAsoResponse(asoResponse);
-        this.getResponseLibrary().getBody().setPolicy(requestBody);
-        this.getResponseLibrary().getBody().setContractDao(contractDao);
-        this.getResponseLibrary().getBody().setEndorsement(isEndorsement);
-        this.setResponseLibrary(this.getResponseLibrary());
     }
 
     @Override
@@ -219,7 +243,7 @@ public class BasicProduct extends InsuranceContractBank {
             }
         }
 
-        if(this.getResponseLibrary().getBody().getIsEndorsement()){
+        if(Boolean.TRUE.equals(this.getResponseLibrary().getBody().getIsEndorsement())){
             String endosatarioRuc = requestBody.getParticipants().get(1).getIdentityDocument().getNumber();
             Double endosatarioPorcentaje = requestBody.getParticipants().get(1).getBenefitPercentage();
             boolean isEndorsementSaved = this.IEndorsementInsurncCtrDAO.saveEndosermentInsurncCtr(contractDao,endosatarioRuc,endosatarioPorcentaje);
@@ -236,7 +260,7 @@ public class BasicProduct extends InsuranceContractBank {
 
     @Override
     protected void executeGeneratePayment() {
-        if(this.basicProductInsuranceProperties.enabledPaymentICR2()){
+        if(Boolean.TRUE.equals(this.basicProductInsuranceProperties.enabledPaymentICR2())){
             DataASO asoRequest = this.getResponseLibrary().getBody().getDataASO();
             asoRequest.setId(this.getResponseLibrary().getBody().getAsoResponse().getData().getId());
             RBVDInternalConstants.INDICATOR_PRE_FORMALIZED indicatorPreFormalized = RBVDInternalConstants.INDICATOR_PRE_FORMALIZED.FORMALIZED_ACCOUNTING_ICR2;

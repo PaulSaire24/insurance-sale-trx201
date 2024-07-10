@@ -179,6 +179,16 @@ public class BasicProductInsuranceBankNotLifeImpl extends InsuranceContractBank 
     }
 
     @Override
+    protected void getListReceipts() {
+
+    }
+
+    @Override
+    protected void saveListReceipts() {
+
+    }
+
+    @Override
     protected void executeSaveInsuranceData() {
         PolicyDTO requestBody = this.getResponseLibrary().getBody().getPolicy();
         PolicyASO asoResponse = this.getResponseLibrary().getBody().getAsoResponse();

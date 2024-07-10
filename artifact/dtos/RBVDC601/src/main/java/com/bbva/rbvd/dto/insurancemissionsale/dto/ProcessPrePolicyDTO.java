@@ -7,6 +7,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
@@ -39,6 +40,7 @@ public class ProcessPrePolicyDTO {
     private String rimacPaymentAccount;
     private DataASO dataASO;
     private Map<String, Object> quotationData = new HashMap<>();
+    private List<InsuranceCtrReceiptsDAO> receiptsList;
 
     public Boolean getEndorsement() {
         return isEndorsement;
@@ -207,27 +209,39 @@ public class ProcessPrePolicyDTO {
         return requiredFieldsEmission;
     }
 
+    public List<InsuranceCtrReceiptsDAO> getReceiptsList() {
+        return receiptsList;
+    }
+
+    public void setReceiptsList(List<InsuranceCtrReceiptsDAO> receiptsList) {
+        this.receiptsList = receiptsList;
+    }
+
     @Override
     public String toString() {
-        return new StringJoiner(", ", ProcessPrePolicyDTO.class.getSimpleName() + "[", "]")
-                .add("policy=" + policy)
-                .add("requiredFieldsEmission=" + requiredFieldsEmission)
-                .add("asoResponse=" + asoResponse)
-                .add("contractDao=" + contractDao)
-                .add("operationGlossaryDesc='" + operationGlossaryDesc + "'")
-                .add("isEndorsement=" + isEndorsement)
-                .add("rimacRequest=" + rimacRequest)
-                .add("quotationId='" + quotationId + "'")
-                .add("traceId='" + traceId + "'")
-                .add("productId='" + productId + "'")
-                .add("quotationEmailDesc='" + quotationEmailDesc + "'")
-                .add("quotationCustomerPhoneDesc='" + quotationCustomerPhoneDesc + "'")
-                .add("responseQueryGetProductById=" + responseQueryGetProductById)
-                .add("customerList=" + customerList)
-                .add("listBusinessesASO=" + listBusinessesASO)
-                .add("rimacResponse=" + rimacResponse)
-                .add("insuranceBusinessName='" + insuranceBusinessName + "'")
-                .add("endosatarios=" + endosatarios)
-                .toString();
+        return "ProcessPrePolicyDTO{" +
+                "policy=" + policy +
+                ", requiredFieldsEmission=" + requiredFieldsEmission +
+                ", asoResponse=" + asoResponse +
+                ", contractDao=" + contractDao +
+                ", operationGlossaryDesc='" + operationGlossaryDesc + '\'' +
+                ", isEndorsement=" + isEndorsement +
+                ", rimacRequest=" + rimacRequest +
+                ", quotationId='" + quotationId + '\'' +
+                ", traceId='" + traceId + '\'' +
+                ", productId='" + productId + '\'' +
+                ", quotationEmailDesc='" + quotationEmailDesc + '\'' +
+                ", quotationCustomerPhoneDesc='" + quotationCustomerPhoneDesc + '\'' +
+                ", responseQueryGetProductById=" + responseQueryGetProductById +
+                ", customerList=" + customerList +
+                ", listBusinessesASO=" + listBusinessesASO +
+                ", rimacResponse=" + rimacResponse +
+                ", insuranceBusinessName='" + insuranceBusinessName + '\'' +
+                ", endosatarios=" + endosatarios +
+                ", rimacPaymentAccount='" + rimacPaymentAccount + '\'' +
+                ", dataASO=" + dataASO +
+                ", quotationData=" + quotationData +
+                ", receiptsList=" + receiptsList +
+                '}';
     }
 }

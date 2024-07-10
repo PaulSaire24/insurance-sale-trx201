@@ -1,6 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl.pattern.template;
 
-import com.bbva.elara.library.AbstractLibrary;
+
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
@@ -13,6 +13,8 @@ public abstract class InsuranceContractBank {
     protected abstract void validateAdress(PolicyDTO requestBody);
     protected abstract void executeFetchRequiredData(PolicyDTO requestBody);
     protected abstract void executeGenerateContract();
+    protected abstract void getListReceipts();
+    protected abstract void saveListReceipts();
     protected abstract void executeSaveInsuranceData();
     protected abstract void saveContractDetailsAndEndoserment();
     protected abstract void executeGeneratePayment();
@@ -36,6 +38,8 @@ public abstract class InsuranceContractBank {
         this.validateAdress(requestBody);
         this.executeFetchRequiredData(requestBody);
         this.executeGenerateContract();
+        this.getListReceipts();
+        this.saveListReceipts();
         this.executeSaveInsuranceData();
         this.saveContractDetailsAndEndoserment();
         this.executeGeneratePayment();

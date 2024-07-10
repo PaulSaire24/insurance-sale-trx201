@@ -171,6 +171,15 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
         this.setResponseLibrary(this.getResponseLibrary());
     }
 
+    @Override
+    protected void getListReceipts() {
+
+    }
+
+    @Override
+    protected void saveListReceipts() {
+
+    }
 
 
     @Override
