@@ -18,6 +18,12 @@ public class BasicProductInsuranceProperties extends Properties{
         return productsCodesWithoutPartyValidation;
     }
 
+    public String obtainProductCodesLife(){
+        String productsCodesLife = this.getProperty("product.codes.life");
+        LOGGER.info(" :: BasicProductInsuranceProperties[ productsCodesLife :: {} ]",productsCodesLife);
+        return productsCodesLife;
+    }
+
     public String obtainFrequencyTypeByPeriodId(String periodId){
         String frequencyType = this.getProperty(periodId, StringUtils.EMPTY);
         LOGGER.info(" :: BasicProductInsuranceProperties[ obtainFrequencyTypeByPeriodId :: {} ]",frequencyType);

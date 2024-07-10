@@ -19,13 +19,20 @@ public class ResponseLibrary<T> implements Serializable  {
 		return this.body;
 	}
 
-
 	public String getStatusProcess() {
 		return this.statusProcess;
 	}
 
 	public String getFlowProcess() {
 		return flowProcess;
+	}
+
+	public void setStatusProcess(String statusProcess) {
+		this.statusProcess = statusProcess;
+	}
+
+	public void setFlowProcess(String flowProcess) {
+		this.flowProcess = flowProcess;
 	}
 
 	public static final class ResponseServiceBuilder {

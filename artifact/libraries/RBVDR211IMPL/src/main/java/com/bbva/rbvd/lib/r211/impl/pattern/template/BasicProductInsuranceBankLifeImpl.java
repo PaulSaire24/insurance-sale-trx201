@@ -96,6 +96,11 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
         this.setResponseLibrary(ResponseLibrary.ResponseServiceBuilder.an().body(processPrePolicyDTO));
     }
 
+    @Override
+    protected void validateAdress(PolicyDTO requestBody) {
+
+    }
+
 
     @Override
     protected void executeFetchRequiredData(PolicyDTO requestBody) {
@@ -211,6 +216,11 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
         this.getResponseLibrary().getBody().setEndosatarios(endosatarios);
         this.getResponseLibrary().getBody().setPolicy(requestBody);
         this.setResponseLibrary(this.getResponseLibrary());
+    }
+
+    @Override
+    protected void saveContractDetailsAndEndoserment() {
+
     }
 
     @Override

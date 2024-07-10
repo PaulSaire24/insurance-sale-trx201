@@ -10,9 +10,11 @@ public abstract class InsuranceContractBank {
 
     private ResponseLibrary<ProcessPrePolicyDTO> responseLibrary;
     protected abstract void executeValidateConditions(PolicyDTO requestBody);
+    protected abstract void validateAdress(PolicyDTO requestBody);
     protected abstract void executeFetchRequiredData(PolicyDTO requestBody);
     protected abstract void executeGenerateContract();
     protected abstract void executeSaveInsuranceData();
+    protected abstract void saveContractDetailsAndEndoserment();
     protected abstract void executeGeneratePayment();
     protected final ArchitectureAPXUtils architectureAPXUtils = new ArchitectureAPXUtils();
 
@@ -31,9 +33,11 @@ public abstract class InsuranceContractBank {
      */
     public final ResponseLibrary<ProcessPrePolicyDTO> executeGenerateInsuranceContractRoyal(PolicyDTO requestBody){
         this.executeValidateConditions(requestBody);
+        this.validateAdress(requestBody);
         this.executeFetchRequiredData(requestBody);
         this.executeGenerateContract();
         this.executeSaveInsuranceData();
+        this.saveContractDetailsAndEndoserment();
         this.executeGeneratePayment();
         return this.getResponseLibrary();
     }

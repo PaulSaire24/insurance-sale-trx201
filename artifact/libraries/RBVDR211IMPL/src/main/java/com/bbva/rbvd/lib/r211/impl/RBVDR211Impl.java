@@ -1,18 +1,27 @@
 package com.bbva.rbvd.lib.r211.impl;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
+import com.bbva.rbvd.lib.r211.impl.aspects.interfaces.ManagementOperation;
 import com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyLegacyBusinessImpl;
+import com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory;
+import com.bbva.rbvd.lib.r211.impl.pattern.facttory.PipelineFactory;
+import com.bbva.rbvd.lib.r211.impl.pattern.facttory.impl.FactoryProductImpl;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.Pipeline;
 import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-
 public class RBVDR211Impl extends RBVDR211Abstract {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RBVDR211Impl.class);
+	private InsuranceCompanyFactory insuranceCompanyFactory;
+	private ManagementOperation managementOperationsCross;
 
 	/**
 	 * Instance of BasicProductInsuranceProperties.
@@ -96,6 +105,37 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		return emissionPolicyLegacyBusiness.executeEmissionPrePolicyLifeProductLegacy(requestBody);
 	}
 
+	@Override
+	public ResponseLibrary<PolicyDTO> executeEmissionPipeline(PolicyDTO requestBody) {
+		ResponseLibrary<ProcessPrePolicyDTO> cotexto = ResponseLibrary.ResponseServiceBuilder.an().body(new ProcessPrePolicyDTO());
+		try {
+			cotexto.getBody().setPolicy(requestBody);
+			PipelineFactory pipelineFactory = FactoryProductImpl.createFactory(requestBody.getProductId());
+			Pipeline pipeline = pipelineFactory.crearPipeline(requestBody.getSaleChannelId(), requestBody.getId());
+			pipeline.ejecutar(cotexto);
+			ResponseLibrary<ProcessPrePolicyDTO> contractRoyalAndPolicyGenerated = insuranceCompanyFactory.createInsuranceByProduct(cotexto.getBody());
+			managementOperationsCross.afterProcessBusinessExecutionNotLifeCross(contractRoyalAndPolicyGenerated.getBody());
+
+			return ResponseLibrary.ResponseServiceBuilder.an()
+					.flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+					.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
+					.body(contractRoyalAndPolicyGenerated.getBody().getPolicy());
+		}catch (BusinessException exception){
+			LOGGER.error(" :: executeEmissionPolicy[ exceptionCode :: {} ,  message :: {}]",exception.getAdviceCode(),exception.getMessage());
+			if(RBVDInternalErrors.ERROR_GENERIC_APX_IN_CALLED_RIMAC.getAdviceCode().equalsIgnoreCase(exception.getAdviceCode())){
+				this.mapperHelper.mappingOutputFields(cotexto.getBody().getPolicy(), cotexto.getBody().getAsoResponse(), cotexto.getBody().getRimacResponse(), cotexto.getBody().getRequiredFieldsEmission());
+				return ResponseLibrary.ResponseServiceBuilder.an()
+						.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
+						.flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+						.body(cotexto.getBody().getPolicy());
+			}
+			return ResponseLibrary.ResponseServiceBuilder.an()
+					.statusIndicatorProcess( exception.isHasRollback() ? RBVDInternalConstants.Status.EWR : RBVDInternalConstants.Status.ENR)
+					.flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+					.build();
+		}
+	}
+
 	/**
 	 * @param basicProductInsuranceProperties the this.basicProductInsuranceProperties to set
 	 */
@@ -103,4 +143,11 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 		this.basicProductInsuranceProperties = basicProductInsuranceProperties;
 	}
 
+	public void setInsuranceCompanyFactory(InsuranceCompanyFactory insuranceCompanyFactory) {
+		this.insuranceCompanyFactory = insuranceCompanyFactory;
+	}
+
+	public void setManagementOperationsCross(ManagementOperation managementOperationsCross) {
+		this.managementOperationsCross = managementOperationsCross;
+	}
 }

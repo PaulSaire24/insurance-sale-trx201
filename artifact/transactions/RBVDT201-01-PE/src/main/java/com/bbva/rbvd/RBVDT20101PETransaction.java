@@ -10,6 +10,8 @@ import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConsta
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.FlowProcess;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.Status;
+
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.RBVDR211;
 import org.slf4j.Logger;
@@ -51,6 +53,7 @@ public class RBVDT20101PETransaction extends AbstractRBVDT20101PETransaction {
 		InsuranceFactory insuranceFactory = new InsuranceFactory();
 
 		ResponseLibrary<PolicyDTO> responseBody = insuranceFactory.createInsuranceBankAndCompany(this.getProductid(), rbvdR211, listOfLifeProductCodes, requestBody);
+		//ResponseLibrary<PolicyDTO> responseBody = rbvdR211.executeEmissionPipeline(requestBody);
 		LOGGER.info(" :: InsuranceEmission :: [ ResponseBody :: {} ]",responseBody.getBody());
 
 		if(FlowProcess.LEGACY_FLOW_PROCESS.equalsIgnoreCase(responseBody.getFlowProcess())){

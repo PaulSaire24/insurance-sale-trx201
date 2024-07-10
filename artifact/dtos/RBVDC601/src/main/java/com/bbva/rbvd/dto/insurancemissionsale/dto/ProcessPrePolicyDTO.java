@@ -11,6 +11,7 @@ import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -19,57 +20,53 @@ public class ProcessPrePolicyDTO {
 
     private PolicyDTO policy;
     private RequiredFieldsEmissionDAO requiredFieldsEmission;
-
     private PolicyASO asoResponse;
     private InsuranceContractDAO contractDao;
-
     private String  operationGlossaryDesc;
     private Boolean isEndorsement;
-
     private EmisionBO rimacRequest;
     private String quotationId;
-
     private String traceId;
-
     private String productId;
-
     private String quotationEmailDesc;
     private String quotationCustomerPhoneDesc;
-
     private Map<String,Object> responseQueryGetProductById;
-
     private CustomerListASO customerList ;
     private ListBusinessesASO listBusinessesASO ;
     private EmisionBO rimacResponse;
-
     private String insuranceBusinessName;
-
     private List<EndosatarioBO> endosatarios;
-
     private String rimacPaymentAccount;
-
     private DataASO dataASO;
+    private Map<String, Object> quotationData = new HashMap<>();
+
+    public Boolean getEndorsement() {
+        return isEndorsement;
+    }
+
+    public Map<String, Object> getQuotationData() {
+        return quotationData;
+    }
+
+    public void setQuotationData(Map<String, Object> quotationData) {
+        this.quotationData = quotationData;
+    }
 
     public DataASO getDataASO() {
         return dataASO;
     }
-
     public void setDataASO(DataASO dataASO) {
         this.dataASO = dataASO;
     }
-
     public String getRimacPaymentAccount() {
         return rimacPaymentAccount;
     }
-
     public void setRimacPaymentAccount(String rimacPaymentAccount) {
         this.rimacPaymentAccount = rimacPaymentAccount;
     }
-
     public String getInsuranceBusinessName() {
         return insuranceBusinessName;
     }
-
     public void setInsuranceBusinessName(String insuranceBusinessName) {
         this.insuranceBusinessName = insuranceBusinessName;
     }
@@ -186,7 +183,7 @@ public class ProcessPrePolicyDTO {
         this.asoResponse = asoResponse;
     }
 
-    public com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO getPolicy() {
+    public PolicyDTO getPolicy() {
         return policy;
     }
 
