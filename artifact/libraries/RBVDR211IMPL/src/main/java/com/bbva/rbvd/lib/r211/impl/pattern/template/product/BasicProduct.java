@@ -179,7 +179,7 @@ public class BasicProduct extends InsuranceContractBank {
     }
 
     @Override
-    protected void getListReceipts() {
+    protected void generateMonthlyReceipts() {
         PolicyDTO requestBody = this.getResponseLibrary().getBody().getPolicy();
         List<InsuranceCtrReceiptsDAO> receiptsList = this.getResponseLibrary().getBody().getReceiptsList();
         List<String> productsNotGenerateMonthlyReceipts = this.basicProductInsuranceProperties.obtainProductsNotGenerateMonthlyReceipts();
@@ -193,7 +193,7 @@ public class BasicProduct extends InsuranceContractBank {
     }
 
     @Override
-    protected void saveListReceipts() {
+    protected void saveReceiptsOfContract() {
         List<InsuranceCtrReceiptsDAO> receiptsList = this.getResponseLibrary().getBody().getReceiptsList();
         Map<String, Object>[] receiptsArguments = InsuranceReceiptMap.receiptsToMaps(receiptsList);
         Boolean isSavedInsuranceReceipts = this.insuranceCtrReceiptsDAO.saveInsuranceReceipts(receiptsArguments);
@@ -205,7 +205,7 @@ public class BasicProduct extends InsuranceContractBank {
     }
 
     @Override
-    protected void executeSaveInsuranceData() {
+    protected void executeSaveAdditionalInsuranceInformation() {
         PolicyDTO requestBody = this.getResponseLibrary().getBody().getPolicy();
         PolicyASO asoResponse = this.getResponseLibrary().getBody().getAsoResponse();
         RequiredFieldsEmissionDAO emissionDao = this.getResponseLibrary().getBody().getRequiredFieldsEmission();

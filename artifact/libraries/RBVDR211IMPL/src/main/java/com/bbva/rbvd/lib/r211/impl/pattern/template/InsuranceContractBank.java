@@ -13,9 +13,9 @@ public abstract class InsuranceContractBank {
     protected abstract void validateAdress(PolicyDTO requestBody);
     protected abstract void executeFetchRequiredData(PolicyDTO requestBody);
     protected abstract void executeGenerateContract();
-    protected abstract void getListReceipts();
-    protected abstract void saveListReceipts();
-    protected abstract void executeSaveInsuranceData();
+    protected abstract void generateMonthlyReceipts();
+    protected abstract void saveReceiptsOfContract();
+    protected abstract void executeSaveAdditionalInsuranceInformation();
     protected abstract void saveContractDetailsAndEndoserment();
     protected abstract void executeGeneratePayment();
     protected final ArchitectureAPXUtils architectureAPXUtils = new ArchitectureAPXUtils();
@@ -38,9 +38,9 @@ public abstract class InsuranceContractBank {
         this.validateAdress(requestBody);
         this.executeFetchRequiredData(requestBody);
         this.executeGenerateContract();
-        this.getListReceipts();
-        this.saveListReceipts();
-        this.executeSaveInsuranceData();
+        this.generateMonthlyReceipts();
+        this.saveReceiptsOfContract();
+        this.executeSaveAdditionalInsuranceInformation();
         this.saveContractDetailsAndEndoserment();
         this.executeGeneratePayment();
         return this.getResponseLibrary();

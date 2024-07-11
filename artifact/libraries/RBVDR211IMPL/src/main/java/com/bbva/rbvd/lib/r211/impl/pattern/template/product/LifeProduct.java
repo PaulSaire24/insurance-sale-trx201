@@ -62,13 +62,13 @@ public class LifeProduct extends BasicProduct{
         super.executeGenerateContract();
     }
     @Override
-    protected void saveListReceipts() {
-        super.saveListReceipts();
+    protected void saveReceiptsOfContract() {
+        super.saveReceiptsOfContract();
     }
 
     @Override
-    protected void executeSaveInsuranceData() {
-        super.executeSaveInsuranceData();
+    protected void executeSaveAdditionalInsuranceInformation() {
+        super.executeSaveAdditionalInsuranceInformation();
     }
 
     @Override
