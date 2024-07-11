@@ -10,7 +10,7 @@ public abstract class InsuranceContractBank {
 
     private ResponseLibrary<ProcessPrePolicyDTO> responseLibrary;
     protected abstract void executeValidateConditions(PolicyDTO requestBody);
-    protected abstract void validateAdress(PolicyDTO requestBody);
+    protected abstract void validateAddress(PolicyDTO requestBody);
     protected abstract void executeFetchRequiredData(PolicyDTO requestBody);
     protected abstract void executeGenerateContract();
     protected abstract void generateMonthlyReceipts();
@@ -35,7 +35,7 @@ public abstract class InsuranceContractBank {
      */
     public final ResponseLibrary<ProcessPrePolicyDTO> executeGenerateInsuranceContractRoyal(PolicyDTO requestBody){
         this.executeValidateConditions(requestBody);
-        this.validateAdress(requestBody);
+        this.validateAddress(requestBody);
         this.executeFetchRequiredData(requestBody);
         this.executeGenerateContract();
         this.generateMonthlyReceipts();

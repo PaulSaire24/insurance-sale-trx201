@@ -97,7 +97,7 @@ public class BasicProductInsuranceBankLifeImpl extends InsuranceContractBank {
     }
 
     @Override
-    protected void validateAdress(PolicyDTO requestBody) {
+    protected void validateAddress(PolicyDTO requestBody) {
 
     }
 

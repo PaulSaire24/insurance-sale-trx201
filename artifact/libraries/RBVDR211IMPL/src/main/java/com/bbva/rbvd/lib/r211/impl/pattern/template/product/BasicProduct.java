@@ -90,7 +90,7 @@ public class BasicProduct extends InsuranceContractBank {
     }
 
     @Override
-    protected void validateAdress(PolicyDTO requestBody) {
+    protected void validateAddress(PolicyDTO requestBody) {
         CustomerListASO customerList = null;
         ListBusinessesASO listBusinessesASO = null;
         Map<String, Object> quotationData = this.getResponseLibrary().getBody().getQuotationData();
