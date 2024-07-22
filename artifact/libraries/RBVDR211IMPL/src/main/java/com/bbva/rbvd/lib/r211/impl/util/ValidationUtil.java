@@ -1,8 +1,8 @@
 package com.bbva.rbvd.lib.r211.impl.util;
 
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.policy.ParticipantDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import org.springframework.util.CollectionUtils;
 
@@ -58,7 +58,7 @@ public class ValidationUtil {
     }
 
 
-    public static String getKindOfAccount(RelatedContractASO relatedContract){
+    public static String getKindOfAccount(RelatedContractDTO relatedContract){
         if(relatedContract != null && relatedContract.getProduct() != null && Objects.nonNull(relatedContract.getProduct().getId())){
             return relatedContract.getProduct().getId().equals("CARD") ? "TARJETA" : "CUENTA";
         }else{
@@ -66,7 +66,7 @@ public class ValidationUtil {
         }
     }
 
-    public static String getAccountNumberInDatoParticular(RelatedContractASO relatedContract){
+    public static String getAccountNumberInDatoParticular(RelatedContractDTO relatedContract){
         if(relatedContract != null && Objects.nonNull(relatedContract.getNumber())){
             int beginIndex = relatedContract.getNumber().length() - 4;
             return "***".concat(relatedContract.getNumber().substring(beginIndex));

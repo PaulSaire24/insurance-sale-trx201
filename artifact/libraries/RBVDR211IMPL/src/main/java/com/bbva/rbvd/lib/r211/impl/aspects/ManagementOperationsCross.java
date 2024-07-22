@@ -8,7 +8,7 @@ import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
 import com.bbva.rbvd.lib.r211.impl.aspects.interfaces.ManagementOperation;
 import com.bbva.rbvd.lib.r211.impl.event.GifoleEventInternal;
 import com.bbva.rbvd.lib.r211.impl.service.IInsuranceContractDAO;
@@ -43,17 +43,17 @@ public class ManagementOperationsCross implements ManagementOperation {
      * It updates the insurance contract, calculates the validity months of the product, updates the receipts, and updates the endorsement if necessary.
      * It also maps the output fields and generates an event.
      *
-     * @param processPrePolicyDTO The ProcessPrePolicyDTO object containing the details of the pre-policy process.
+     * @param processContextContractAndPolicyDTO The ProcessContextContractAndPolicyDTO object containing the details of the pre-policy process.
      */
     @Override
-    public void afterProcessBusinessExecutionNotLifeCross(ProcessPrePolicyDTO processPrePolicyDTO){
-        EmisionBO rimacResponse = processPrePolicyDTO.getRimacResponse();
-        PolicyDTO policy        = processPrePolicyDTO.getPolicy();
+    public void afterProcessBusinessExecutionNotLifeCross(ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO){
+        EmisionBO rimacResponse = processContextContractAndPolicyDTO.getRimacResponse();
+        PolicyDTO policy        = processContextContractAndPolicyDTO.getPolicy();
         String policyNumber;
         if(Objects.nonNull(rimacResponse) && Objects.isNull(rimacResponse.getErrorRimacBO())) {
             LOGGER.info("RBVDR211 rimacResponse cuotasFinanciamiento => {}",rimacResponse.getPayload().getCuotasFinanciamiento());
 
-            Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformation(rimacResponse, processPrePolicyDTO.getAsoResponse().getData().getId());
+            Map<String, Object> argumentsRimacContractInformation = this.mapperHelper.getRimacContractInformation(rimacResponse, processContextContractAndPolicyDTO.getAsoResponse().getData().getId());
             argumentsRimacContractInformation.forEach((key, value) -> LOGGER.info("***** executeBusinessLogicEmissionPrePolicy - UpdateContract parameter {} with value: {} *****", key, value));
 
             boolean updatedContract = this.insuranceContractDAO.updateInsuranceContract(argumentsRimacContractInformation);
@@ -63,11 +63,11 @@ public class ManagementOperationsCross implements ManagementOperation {
             }
 
             String productsCalculateValidityMonths = this.applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","");
-            String operacionGlossaryDesc =  processPrePolicyDTO.getOperationGlossaryDesc() ;
+            String operacionGlossaryDesc =  processContextContractAndPolicyDTO.getOperationGlossaryDesc() ;
 
             if (!Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)) {
                 List<InsuranceCtrReceiptsDAO> otherReceipts = rimacResponse.getPayload().getCuotasFinanciamiento().stream().
-                        filter(cuota -> cuota.getCuota().compareTo(1L) > 0).map(cuota -> InsuranceReceiptBean.generateNextReceipt(processPrePolicyDTO.getAsoResponse(), cuota)).
+                        filter(cuota -> cuota.getCuota().compareTo(1L) > 0).map(cuota -> InsuranceReceiptBean.generateNextReceipt(processContextContractAndPolicyDTO.getAsoResponse(), cuota)).
                         collect(toList());
 
                 Map<String, Object>[] receiptUpdateArguments = this.mapperHelper.createSaveReceiptsArguments(otherReceipts);
@@ -83,9 +83,9 @@ public class ManagementOperationsCross implements ManagementOperation {
 
             policyNumber = rimacResponse.getPayload().getNumeroPoliza();
 
-            String intAccountId = processPrePolicyDTO.getAsoResponse().getData().getId().substring(10);
+            String intAccountId = processContextContractAndPolicyDTO.getAsoResponse().getData().getId().substring(10);
 
-            if(processPrePolicyDTO.getIsEndorsement()) {
+            if(processContextContractAndPolicyDTO.getIsEndorsement()) {
                 boolean updateEndorsement = this.insuranceContractDAO.updateEndorsementInContract(policyNumber,intAccountId);
                 if(!updateEndorsement){
                     this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getMessage());
@@ -94,7 +94,7 @@ public class ManagementOperationsCross implements ManagementOperation {
             }
 
         }
-        this.mapperHelper.mappingOutputFields(policy, processPrePolicyDTO.getAsoResponse(), rimacResponse, processPrePolicyDTO.getRequiredFieldsEmission());
+        this.mapperHelper.mappingOutputFields(policy, processContextContractAndPolicyDTO.getAsoResponse(), rimacResponse, processContextContractAndPolicyDTO.getRequiredFieldsEmission());
         CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(policy);
         this.gifoleEventInternal.executePutEventUpsilonGenerateLeadGifole(createdInsrcEventDTO);
     }
@@ -104,13 +104,13 @@ public class ManagementOperationsCross implements ManagementOperation {
      * It updates the insurance contract, calculates the validity months of the product, updates the receipts, and updates the endorsement if necessary.
      * It also maps the output fields and generates an event.
      *
-     * @param processPrePolicyDTO The ProcessPrePolicyDTO object containing the details of the pre-policy process.
+     * @param processContextContractAndPolicyDTO The ProcessContextContractAndPolicyDTO object containing the details of the pre-policy process.
      */
     @Override
-    public void afterProcessBusinessExecutionLifeCross(ProcessPrePolicyDTO processPrePolicyDTO){
-        EmisionBO rimacResponse = processPrePolicyDTO.getRimacResponse();
-        PolicyDTO policy        = processPrePolicyDTO.getPolicy();
-        PolicyASO policyASO        = processPrePolicyDTO.getAsoResponse();
+    public void afterProcessBusinessExecutionLifeCross(ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO){
+        EmisionBO rimacResponse = processContextContractAndPolicyDTO.getRimacResponse();
+        PolicyDTO policy        = processContextContractAndPolicyDTO.getPolicy();
+        PolicyASO policyASO        = processContextContractAndPolicyDTO.getAsoResponse();
 
         if(Objects.nonNull(rimacResponse)  && Objects.isNull(rimacResponse.getErrorRimacBO())) {
             LOGGER.info(" :: PolicyEmissionService | afterProcessBusinessExecutionCross rimacResponse cuotasFinanciamiento => {} ",rimacResponse.getPayload().getCuotasFinanciamiento());
@@ -128,7 +128,7 @@ public class ManagementOperationsCross implements ManagementOperation {
             String policyNumber = rimacResponse.getPayload().getNumeroPoliza();
             String intAccountId = policyASO.getData().getId().substring(10);
 
-            if(processPrePolicyDTO.getIsEndorsement()) {
+            if(processContextContractAndPolicyDTO.getIsEndorsement()) {
                 boolean updateEndorsement = this.insuranceContractDAO.updateEndorsementInContract(policyNumber,intAccountId);
                 if(!updateEndorsement){
                     this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getAdviceCode(), RBVDErrors.INSERTION_ERROR_IN_ENDORSEMENT_TABLE.getMessage());
@@ -137,7 +137,7 @@ public class ManagementOperationsCross implements ManagementOperation {
             }
 
         }
-        this.mapperHelper.mappingOutputFields(policy, processPrePolicyDTO.getAsoResponse(), rimacResponse, processPrePolicyDTO.getRequiredFieldsEmission());
+        this.mapperHelper.mappingOutputFields(policy, processContextContractAndPolicyDTO.getAsoResponse(), rimacResponse, processContextContractAndPolicyDTO.getRequiredFieldsEmission());
         CreatedInsrcEventDTO createdInsrcEventDTO = this.mapperHelper.buildCreatedInsuranceEventObject(policy);
         this.gifoleEventInternal.executePutEventUpsilonGenerateLeadGifole(createdInsrcEventDTO);
     }

@@ -1,7 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
-import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.ksmk.lib.r002.KSMKR002;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.pisd.lib.r226.PISDR226;
@@ -109,6 +108,9 @@ public abstract class RBVDR211Abstract implements RBVDR211 {
 		this.emissionPolicyNotLifeBusinessImpl = emissionPolicyNotLifeBusinessImpl;
 	}
 
+	/**
+	 * @param mapperHelper the this.mapperHelper to set
+	 */
 	public void setMapperHelper(MapperHelper mapperHelper) {
 		this.mapperHelper = mapperHelper;
 	}

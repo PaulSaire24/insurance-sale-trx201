@@ -2,12 +2,12 @@ package com.bbva.rbvd.lib.r211.impl.pattern.decorator;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.EmissionBean;
 import org.springframework.util.CollectionUtils;
@@ -26,12 +26,12 @@ public class NotLifeDefaultRimacDecorator extends InsuranceDecorator {
     }
 
     @Override
-    public ResponseLibrary<ProcessPrePolicyDTO> createPolicyOfCompany(ProcessPrePolicyDTO processPrePolicy) {
+    public ResponseLibrary<ProcessContextContractAndPolicyDTO> createPolicyOfCompany(ProcessContextContractAndPolicyDTO processPrePolicy) {
         CustomerListASO customerList = processPrePolicy.getCustomerList();
         PolicyASO asoResponse = processPrePolicy.getAsoResponse();
         PolicyDTO requestBody = processPrePolicy.getPolicy();
         RequiredFieldsEmissionDAO emissionDao = processPrePolicy.getRequiredFieldsEmission();
-        String secondDataValue = createSecondDataValue(asoResponse);
+        String secondDataValue = createSecondDataValue(requestBody);
         EmisionBO rimacRequest = EmissionBean.toRequestBodyRimac(requestBody.getInspection(), secondDataValue, requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
         EmisionBO generalEmissionRequest = EmissionBean.addNotLifeAdditionalRequestData(rimacRequest,requestBody,applicationConfigurationService,customerList,processPrePolicy);
         processPrePolicy.setRimacRequest(generalEmissionRequest);
@@ -41,15 +41,15 @@ public class NotLifeDefaultRimacDecorator extends InsuranceDecorator {
         return super.createPolicyOfCompany(processPrePolicy);
     }
 
-    private String createSecondDataValue(PolicyASO asoResponse) {
-        RelatedContractASO relatedContract = CollectionUtils.isEmpty(asoResponse.getData().getPaymentMethod().getRelatedContracts()) ? null : asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0);
+    private String createSecondDataValue(PolicyDTO requestBody) {
+        RelatedContractDTO relatedContract = CollectionUtils.isEmpty(requestBody.getPaymentMethod().getRelatedContracts()) ? null : requestBody.getPaymentMethod().getRelatedContracts().get(0);
         String kindOfAccount = getKindOfAccount(relatedContract);
         String accountNumber = getAccountNumberInDatoParticular(relatedContract);
-        String accountCurrency = asoResponse.getData().getTotalAmount().getExchangeRate().getTargetCurrency();
+        String accountCurrency = requestBody.getTotalAmount().getCurrency();
         return kindOfAccount.concat("||").concat(accountNumber).concat("||").concat(accountCurrency);
     }
 
-    private String getKindOfAccount(RelatedContractASO relatedContract){
+    private String getKindOfAccount(RelatedContractDTO relatedContract){
         if(relatedContract != null && relatedContract.getProduct() != null && Objects.nonNull(relatedContract.getProduct().getId())){
             return relatedContract.getProduct().getId().equals("CARD") ? "TARJETA" : "CUENTA";
         }else{
@@ -57,7 +57,7 @@ public class NotLifeDefaultRimacDecorator extends InsuranceDecorator {
         }
     }
 
-    private String getAccountNumberInDatoParticular(RelatedContractASO relatedContract){
+    private String getAccountNumberInDatoParticular(RelatedContractDTO relatedContract){
         if(relatedContract != null && Objects.nonNull(relatedContract.getNumber())){
             int beginIndex = relatedContract.getNumber().length() - 4;
             return "***".concat(relatedContract.getNumber().substring(beginIndex));

@@ -330,6 +330,9 @@ public class RBVDR211LifeTest {
 		AgregarTerceroBO responseAddParticipants = mockData.getAddParticipantsRimacResponse();
 		responseAddParticipants.setErrorRimacBO(null);
 		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
+		when(this.applicationConfigurationService.getDefaultProperty("flow.royal2.enabled.payment.icr3", "true")).thenReturn("true");
+		when(this.pisdR226.executeUpdateInsuranceContractByCertifyBank(Mockito.anyObject()))
+				.thenReturn(true);
 	}
 
 
@@ -354,6 +357,24 @@ public class RBVDR211LifeTest {
 		 * */
 		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
 				.thenReturn(null);
+		int[] array = new int[12];
+		array[0] = 1;
+		array[1] = 1;
+		array[2] = 1;
+		array[3] = 1;
+		array[4] = 1;
+		array[5] = 1;
+		array[6] = 1;
+		array[7] = 1;
+		array[8] = 1;
+		array[9] = 1;
+		array[10] = 1;
+		array[11] = 1;
+
+		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue()), Mockito.any())).
+				thenReturn(array);
+
+
 		/**
 		 * Ejecución de proceso
 		 * */
@@ -379,6 +400,22 @@ public class RBVDR211LifeTest {
 		/**
 		 * Mocks
 		 * */
+		int[] array = new int[12];
+		array[0] = 1;
+		array[1] = 1;
+		array[2] = 1;
+		array[3] = 1;
+		array[4] = 1;
+		array[5] = 1;
+		array[6] = 1;
+		array[7] = 1;
+		array[8] = 1;
+		array[9] = 1;
+		array[10] = 1;
+		array[11] = 1;
+
+		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue()), Mockito.any())).
+				thenReturn(array);
 		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
 				.thenThrow(new BusinessException(PISDErrors.QUERY_EMPTY_RESULT.getAdviceCode(),PISDErrors.QUERY_EMPTY_RESULT.isRollback(),PISDErrors.QUERY_EMPTY_RESULT.getMessage()));
 		/**
@@ -405,6 +442,22 @@ public class RBVDR211LifeTest {
 		/**
 		 * Mocks
 		 * */
+		int[] array = new int[12];
+		array[0] = 1;
+		array[1] = 1;
+		array[2] = 1;
+		array[3] = 1;
+		array[4] = 1;
+		array[5] = 1;
+		array[6] = 1;
+		array[7] = 1;
+		array[8] = 1;
+		array[9] = 1;
+		array[10] = 1;
+		array[11] = 1;
+
+		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue()), Mockito.any())).
+				thenReturn(array);
 		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
 				.thenThrow(new BusinessException(PISDErrors.ERROR_TIME_OUT.getAdviceCode(),PISDErrors.ERROR_TIME_OUT.isRollback(),PISDErrors.ERROR_TIME_OUT.getMessage()));
 		/**
@@ -435,6 +488,22 @@ public class RBVDR211LifeTest {
 				.withContractStatusId(RBVDInternalConstants.CONTRACT_STATUS_ID.FOR.getValue()).build();
 		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
 				.thenReturn(contractEntity);
+		int[] array = new int[12];
+		array[0] = 1;
+		array[1] = 1;
+		array[2] = 1;
+		array[3] = 1;
+		array[4] = 1;
+		array[5] = 1;
+		array[6] = 1;
+		array[7] = 1;
+		array[8] = 1;
+		array[9] = 1;
+		array[10] = 1;
+		array[11] = 1;
+
+		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue()), Mockito.any())).
+				thenReturn(array);
 		/**
 		 * Ejecución de flujo con estado ContractStatusId = 'FOR'
 		 * */
@@ -462,6 +531,22 @@ public class RBVDR211LifeTest {
 				.withContractStatusId(RBVDInternalConstants.CONTRACT_STATUS_ID.BAJ.getValue()).build();
 		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
 				.thenReturn(contractEntity);
+		int[] array = new int[12];
+		array[0] = 1;
+		array[1] = 1;
+		array[2] = 1;
+		array[3] = 1;
+		array[4] = 1;
+		array[5] = 1;
+		array[6] = 1;
+		array[7] = 1;
+		array[8] = 1;
+		array[9] = 1;
+		array[10] = 1;
+		array[11] = 1;
+
+		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue()), Mockito.any())).
+				thenReturn(array);
 		/**
 		 * Ejecución de flujo con estado ContractStatusId = 'FOR'
 		 * */
@@ -489,6 +574,22 @@ public class RBVDR211LifeTest {
 				.withContractStatusId(RBVDInternalConstants.CONTRACT_STATUS_ID.ANU.getValue()).build();
 		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
 				.thenReturn(contractEntity);
+		int[] array = new int[12];
+		array[0] = 1;
+		array[1] = 1;
+		array[2] = 1;
+		array[3] = 1;
+		array[4] = 1;
+		array[5] = 1;
+		array[6] = 1;
+		array[7] = 1;
+		array[8] = 1;
+		array[9] = 1;
+		array[10] = 1;
+		array[11] = 1;
+
+		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue()), Mockito.any())).
+				thenReturn(array);
 		/**
 		 * Ejecución de flujo con estado ContractStatusId = 'FOR'
 		 * */
@@ -516,6 +617,22 @@ public class RBVDR211LifeTest {
 				.withContractStatusId("X").build();
 		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
 				.thenReturn(contractEntity);
+		int[] array = new int[12];
+		array[0] = 1;
+		array[1] = 1;
+		array[2] = 1;
+		array[3] = 1;
+		array[4] = 1;
+		array[5] = 1;
+		array[6] = 1;
+		array[7] = 1;
+		array[8] = 1;
+		array[9] = 1;
+		array[10] = 1;
+		array[11] = 1;
+
+		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue()), Mockito.any())).
+				thenReturn(array);
 		/**
 		 * Ejecución de flujo con estado ContractStatusId = 'FOR'
 		 * */
@@ -542,6 +659,23 @@ public class RBVDR211LifeTest {
 				.withContractStatusId(RBVDInternalConstants.CONTRACT_STATUS_ID.PEN.getValue()).build();
 		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
 				.thenReturn(contractEntity);
+		int[] array = new int[12];
+		array[0] = 1;
+		array[1] = 1;
+		array[2] = 1;
+		array[3] = 1;
+		array[4] = 1;
+		array[5] = 1;
+		array[6] = 1;
+		array[7] = 1;
+		array[8] = 1;
+		array[9] = 1;
+		array[10] = 1;
+		array[11] = 1;
+
+		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue()), Mockito.any())).
+				thenReturn(array);
+
 		/**
 		 * Ejecución de proceso
 		 * */

@@ -20,65 +20,80 @@
 	<!-- Business -->
 	<bean id="emissionPolicyNotLifeBusiness" class="com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyNotLifeBusinessImpl">
 		<property name="mapperHelper" ref="mapperHelper"/>
-		<property name="insuranceContractBank" ref="basicProductInsuranceBankNotLife"/>
 		<property name="insuranceCompanyFactory" ref="rimacCompanyNotLifeFactory"/>
 		<property name="managementOperationsCross" ref="managementOperationsCross"/>
-		<property name="emissionFlowPrePolicyBusiness" ref="emissionFlowPrePolicyBusiness"/>
+		<property name="pipInsuranceBankNotLife" ref="pipInsuranceBankNotLife"/>
+		<property name="pipInsuranceBankFlowPreEmission" ref="pipInsuranceBankFlowPreEmission"/>
 	</bean>
 	<bean id="emissionPolicyLifeBusiness" class="com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyLifeBusinessImpl">
 		<property name="mapperHelper" ref="mapperHelper"/>
-		<property name="insuranceContractBank" ref="basicProductInsuranceBankLife"/>
 		<property name="rimacCompanyLifeFactory" ref="rimacCompanyLifeFactory"/>
 		<property name="managementOperationsCross" ref="managementOperationsCross"/>
-		<property name="emissionFlowPrePolicyBusiness" ref="emissionFlowPrePolicyBusiness"/>
-	</bean>
-	<bean id="emissionFlowPrePolicyBusiness" class="com.bbva.rbvd.lib.r211.impl.business.EmissionFlowPrePolicyBusinessImpl">
-		<property name="contractPISD201ServiceInternal" ref="contractPISD201ServiceInternal"/>
-		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
-		<property name="insrncQuotationModDAO" ref="quotationModPISD012DAO"/>
-		<property name="insrncPaymentPeriodDAO" ref="paymentPeriodPISD012DAO"/>
-		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
-		<property name="crossOperationsBusinessInsuranceContractBank" ref="crossOperationsBusinessInsuranceContractBank"/>
+		<property name="pipelineInsuranceContractLifeFactory" ref="pipInsuranceBankLife"/>
+		<property name="pipInsuranceBankFlowPreEmission" ref="pipInsuranceBankFlowPreEmission"/>
 	</bean>
 	<!-- Pattern´s Design -->
-	<bean id="insuranceContractBank" class="com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank" abstract="true"/>
-	<bean id="basicProductInsuranceBankNotLife" class="com.bbva.rbvd.lib.r211.impl.pattern.template.BasicProductInsuranceBankNotLifeImpl" parent="insuranceContractBank">
-		<property name="insrncContractMovDAO" ref="contractMovPISD012DAO"/>
-		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
-		<property name="IEndorsementInsurncCtrDAO" ref="endorsementInsurncPISD012DAO"/>
-		<property name="insrncRoleModalityDAO" ref="insrncRoleModalityPISD012DAO"/>
-		<property name="insuranceCtrReceiptsDAO" ref="insuranceCtrReceiptsPISD012DAO"/>
-		<property name="insurncCtrParticipantDAO" ref="insurncCtrParticipantPISD012DAO"/>
-		<property name="insrncPaymentPeriodDAO" ref="paymentPeriodPISD012DAO"/>
-		<property name="insuranceProductDAO" ref="productPISD401Dao"/>
-		<property name="insrncQuotationModDAO" ref="quotationModPISD012DAO"/>
-		<property name="insurncRelatedContract" ref="relatedContractPISD012DAOImpl"/>
-		<property name="customerRBVD066InternalService" ref="customerRBVD066InternalService"/>
-		<property name="cryptoServiceInternal" ref="cryptoServiceInternal"/>
-		<property name="contractPISD201ServiceInternal" ref="contractPISD201ServiceInternal"/>
-		<property name="businessRBVD66ServiceInternal" ref="businessRBVD66ServiceInternal"/>
-		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
-		<property name="mapperHelper" ref="mapperHelper"/>
-		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
-		<property name="crossOperationsBusinessInsuranceContractBank" ref="crossOperationsBusinessInsuranceContractBank"/>
+	<bean id="pipInsuranceBankFlowPreEmission" class="com.bbva.rbvd.lib.r211.impl.pattern.pipeline.PipInsuranceBankFlowPreEmission">
+		<constructor-arg index="0" ref="contractPISD012DAO2"/>
+		<constructor-arg index="1" ref="relatedContractPISD012DAOImpl"/>
+		<constructor-arg index="2" ref="endorsementInsurncPISD012DAO"/>
+		<constructor-arg index="3" ref="contractMovPISD012DAO"/>
+		<constructor-arg index="4" ref="insuranceCtrReceiptsPISD012DAO"/>
+		<constructor-arg index="5" ref="insrncRoleModalityPISD012DAO"/>
+		<constructor-arg index="6" ref="quotationModPISD012DAO"/>
+		<constructor-arg index="7" ref="paymentPeriodPISD012DAO"/>
+		<constructor-arg index="8" ref="insurncCtrParticipantPISD012DAO"/>
+		<constructor-arg index="9" ref="basicProductInsuranceProperties"/>
+		<constructor-arg index="10" ref="contractPISD201ServiceInternal"/>
+		<constructor-arg index="11" ref="cryptoServiceInternal"/>
+		<constructor-arg index="12" ref="customerRBVD066InternalService"/>
+		<constructor-arg index="13" ref="productPISD401Dao"/>
+		<constructor-arg index="14" ref="businessRBVD66ServiceInternal"/>
+		<constructor-arg index="15" ref="applicationConfigurationService"/>
+		<constructor-arg index="16" ref="mapperHelper"/>
+		<constructor-arg index="17" ref="crossOperationsBusinessInsuranceContractBank"/>
+		<constructor-arg index="18" ref="policyRBVDR201ServiceExternal"/>
 	</bean>
-	<bean id="basicProductInsuranceBankLife" class="com.bbva.rbvd.lib.r211.impl.pattern.template.BasicProductInsuranceBankLifeImpl" parent="insuranceContractBank">
-		<property name="insrncContractMovDAO" ref="contractMovPISD012DAO"/>
-		<property name="insuranceContractDAO" ref="contractPISD012DAO2"/>
-		<property name="IEndorsementInsurncCtrDAO" ref="endorsementInsurncPISD012DAO"/>
-		<property name="insrncRoleModalityDAO" ref="insrncRoleModalityPISD012DAO"/>
-		<property name="insuranceCtrReceiptsDAO" ref="insuranceCtrReceiptsPISD012DAO"/>
-		<property name="insurncCtrParticipantDAO" ref="insurncCtrParticipantPISD012DAO"/>
-		<property name="insrncPaymentPeriodDAO" ref="paymentPeriodPISD012DAO"/>
-		<property name="insuranceProductDAO" ref="productPISD401Dao"/>
-		<property name="insrncQuotationModDAO" ref="quotationModPISD012DAO"/>
-		<property name="customerRBVD066InternalService" ref="customerRBVD066InternalService"/>
-		<property name="contractPISD201ServiceInternal" ref="contractPISD201ServiceInternal"/>
-		<property name="mapperHelper" ref="mapperHelper"/>
-		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
-		<property name="crossOperationsBusinessInsuranceContractBank" ref="crossOperationsBusinessInsuranceContractBank"/>
-		<property name="policyServiceExternal" ref="policyRBVDR201ServiceExternal"/>
-		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
+	<bean id="pipInsuranceBankNotLife" class="com.bbva.rbvd.lib.r211.impl.pattern.pipeline.PipInsuranceBankNotLife">
+		<constructor-arg index="0" ref="contractPISD012DAO2"/>
+		<constructor-arg index="1" ref="relatedContractPISD012DAOImpl"/>
+		<constructor-arg index="2" ref="endorsementInsurncPISD012DAO"/>
+		<constructor-arg index="3" ref="contractMovPISD012DAO"/>
+		<constructor-arg index="4" ref="insuranceCtrReceiptsPISD012DAO"/>
+		<constructor-arg index="5" ref="insrncRoleModalityPISD012DAO"/>
+		<constructor-arg index="6" ref="quotationModPISD012DAO"/>
+		<constructor-arg index="7" ref="paymentPeriodPISD012DAO"/>
+		<constructor-arg index="8" ref="insurncCtrParticipantPISD012DAO"/>
+		<constructor-arg index="9" ref="basicProductInsuranceProperties"/>
+		<constructor-arg index="10" ref="contractPISD201ServiceInternal"/>
+		<constructor-arg index="11" ref="cryptoServiceInternal"/>
+		<constructor-arg index="12" ref="customerRBVD066InternalService"/>
+		<constructor-arg index="13" ref="productPISD401Dao"/>
+		<constructor-arg index="14" ref="businessRBVD66ServiceInternal"/>
+		<constructor-arg index="15" ref="applicationConfigurationService"/>
+		<constructor-arg index="16" ref="mapperHelper"/>
+		<constructor-arg index="17" ref="crossOperationsBusinessInsuranceContractBank"/>
+	</bean>
+	<bean id="pipInsuranceBankLife" class="com.bbva.rbvd.lib.r211.impl.pattern.pipeline.PipInsuranceBankLife">
+		<constructor-arg index="0" ref="contractPISD012DAO2"/>
+		<constructor-arg index="1" ref="relatedContractPISD012DAOImpl"/>
+		<constructor-arg index="2" ref="endorsementInsurncPISD012DAO"/>
+		<constructor-arg index="3" ref="contractMovPISD012DAO"/>
+		<constructor-arg index="4" ref="insuranceCtrReceiptsPISD012DAO"/>
+		<constructor-arg index="5" ref="insrncRoleModalityPISD012DAO"/>
+		<constructor-arg index="6" ref="quotationModPISD012DAO"/>
+		<constructor-arg index="7" ref="paymentPeriodPISD012DAO"/>
+		<constructor-arg index="8" ref="insurncCtrParticipantPISD012DAO"/>
+		<constructor-arg index="9" ref="basicProductInsuranceProperties"/>
+		<constructor-arg index="10" ref="contractPISD201ServiceInternal"/>
+		<constructor-arg index="11" ref="cryptoServiceInternal"/>
+		<constructor-arg index="12" ref="customerRBVD066InternalService"/>
+		<constructor-arg index="13" ref="productPISD401Dao"/>
+		<constructor-arg index="14" ref="businessRBVD66ServiceInternal"/>
+		<constructor-arg index="15" ref="applicationConfigurationService"/>
+		<constructor-arg index="16" ref="mapperHelper"/>
+		<constructor-arg index="17" ref="crossOperationsBusinessInsuranceContractBank"/>
+		<constructor-arg index="18" ref="policyRBVDR201ServiceExternal"/>
 	</bean>
 	<bean id="rimacCompanyNotLifeFactory" class="com.bbva.rbvd.lib.r211.impl.pattern.factory.RimacCompanyNotLifeFactory">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
@@ -92,7 +107,7 @@
 	<bean id="mapperHelper" class="com.bbva.rbvd.lib.r211.impl.util.MapperHelper">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 	</bean>
-	<bean id="crossOperationsBusinessInsuranceContractBank" class="com.bbva.rbvd.lib.r211.impl.pattern.template.crossoperations.CrossOperationsBusinessInsuranceContractBank">
+	<bean id="crossOperationsBusinessInsuranceContractBank" class="com.bbva.rbvd.lib.r211.impl.pattern.crossoperations.CrossOperationsBusinessInsuranceContractBank">
 		<property name="basicProductInsuranceProperties" ref="basicProductInsuranceProperties"/>
 		<property name="cryptoServiceInternal" ref="cryptoServiceInternal"/>
 		<property name="customerRBVD066InternalService" ref="customerRBVD066InternalService"/>

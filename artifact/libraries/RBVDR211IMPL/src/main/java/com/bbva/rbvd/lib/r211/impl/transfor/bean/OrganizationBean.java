@@ -14,7 +14,7 @@ import com.bbva.rbvd.dto.insrncsale.utils.ContactTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.Endorsement;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.Objects;
 
 public class OrganizationBean {
 
-    public static void setOrganization(EmisionBO emision, PolicyDTO requestBody, CustomerListASO customerList, ProcessPrePolicyDTO processPrePolicy){
+    public static void setOrganization(EmisionBO emision, PolicyDTO requestBody, CustomerListASO customerList, ProcessContextContractAndPolicyDTO processPrePolicy){
         PersonaBO persona = emision.getPayload().getAgregarPersona().getPersona().get(0);
         CustomerBO customer = customerList.getData().get(0);
 

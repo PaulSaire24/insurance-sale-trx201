@@ -10,21 +10,16 @@ import com.bbva.rbvd.dto.insrncsale.aso.*;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.BusinessASO;
 import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
-import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
 import com.bbva.rbvd.dto.insrncsale.mock.MockData;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.ContactTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
 import org.joda.time.LocalDate;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -73,7 +68,7 @@ public class OrganizationBeanTest {
         business.setEconomicActivity(new EconomicActivityASO());
         business.getEconomicActivity().setId("1");
 
-        ProcessPrePolicyDTO processPrePolicy = new ProcessPrePolicyDTO();
+        ProcessContextContractAndPolicyDTO processPrePolicy = new ProcessContextContractAndPolicyDTO();
         processPrePolicy.setListBusinessesASO(new ListBusinessesASO());
         processPrePolicy.getListBusinessesASO().setData(Collections.singletonList(business));
 
@@ -102,7 +97,7 @@ public class OrganizationBeanTest {
         customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId(RBVDInternalConstants.Endorsement.RUC_ID);
         customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("10");
 
-        ProcessPrePolicyDTO processPrePolicy = new ProcessPrePolicyDTO();
+        ProcessContextContractAndPolicyDTO processPrePolicy = new ProcessContextContractAndPolicyDTO();
         processPrePolicy.setListBusinessesASO(new ListBusinessesASO());
         processPrePolicy.getListBusinessesASO().setData(Collections.singletonList(new BusinessASO()));
 
@@ -130,7 +125,7 @@ public class OrganizationBeanTest {
         customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentType(new DocumentTypeBO());
         customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("nonRucId");
 
-        ProcessPrePolicyDTO processPrePolicy = new ProcessPrePolicyDTO();
+        ProcessContextContractAndPolicyDTO processPrePolicy = new ProcessContextContractAndPolicyDTO();
         processPrePolicy.setListBusinessesASO(new ListBusinessesASO());
         processPrePolicy.getListBusinessesASO().setData(Collections.singletonList(new BusinessASO()));
 

@@ -4,13 +4,12 @@ import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.aspects.interfaces.ManagementOperation;
 import com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory;
-import com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.factory.PipelineInsuranceContractFactory;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
-import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +18,12 @@ public class EmissionPolicyLifeBusinessImpl  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmissionPolicyLifeBusinessImpl.class);
 
-    private InsuranceContractBank insuranceContractBank;
     private InsuranceCompanyFactory rimacCompanyLifeFactory;
     private MapperHelper mapperHelper;
     private ManagementOperation managementOperationsCross;
 
-    private EmissionFlowPrePolicyBusinessImpl emissionFlowPrePolicyBusiness;
+    private PipelineInsuranceContractFactory pipelineInsuranceContractLifeFactory;
+    private PipelineInsuranceContractFactory pipInsuranceBankFlowPreEmission;
 
     /**
      * This method is responsible for executing the emission of a policy.
@@ -39,16 +38,16 @@ public class EmissionPolicyLifeBusinessImpl  {
      */
     public ResponseLibrary<PolicyDTO> executeEmissionPolicy(PolicyDTO requestBody) {
         LOGGER.info(" EmissionPolicyLifeBusinessImpl :: executeEmissionPolicy :: [ START ]");
-        ResponseLibrary<ProcessPrePolicyDTO> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(new ProcessPrePolicyDTO());
+        ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO = new ProcessContextContractAndPolicyDTO();
+        processContextContractAndPolicyDTO.setPolicy(requestBody);
+        ResponseLibrary<ProcessContextContractAndPolicyDTO> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(processContextContractAndPolicyDTO);
         try {
             if(StringUtils.isNotEmpty(requestBody.getId())){
-                contractRoyalGenerated = emissionFlowPrePolicyBusiness.executeFlowPreEmissionPolicy(requestBody);
-                boolean isEndorsement = ValidationUtil.validateEndorsementInParticipantsRequest(requestBody);
-                contractRoyalGenerated.getBody().setEndorsement(isEndorsement);
+                contractRoyalGenerated = pipInsuranceBankFlowPreEmission.configureRoyalContract().executeGenerateInsuranceContractRoyal(contractRoyalGenerated);
             }else{
-                contractRoyalGenerated  = insuranceContractBank.executeGenerateInsuranceContractRoyal(requestBody);
+                contractRoyalGenerated = pipelineInsuranceContractLifeFactory.configureRoyalContract().executeGenerateInsuranceContractRoyal(contractRoyalGenerated);
             }
-             ResponseLibrary<ProcessPrePolicyDTO> contractRoyalAndPolicyGenerated = rimacCompanyLifeFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
+             ResponseLibrary<ProcessContextContractAndPolicyDTO> contractRoyalAndPolicyGenerated = rimacCompanyLifeFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
              managementOperationsCross.afterProcessBusinessExecutionLifeCross(contractRoyalAndPolicyGenerated.getBody());
              return ResponseLibrary.ResponseServiceBuilder.an()
                      .flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
@@ -70,8 +69,12 @@ public class EmissionPolicyLifeBusinessImpl  {
         }
     }
 
-    public void setEmissionFlowPrePolicyBusiness(EmissionFlowPrePolicyBusinessImpl emissionFlowPrePolicyBusiness) {
-        this.emissionFlowPrePolicyBusiness = emissionFlowPrePolicyBusiness;
+    public void setPipInsuranceBankFlowPreEmission(PipelineInsuranceContractFactory pipInsuranceBankFlowPreEmission) {
+        this.pipInsuranceBankFlowPreEmission = pipInsuranceBankFlowPreEmission;
+    }
+
+    public void setPipelineInsuranceContractLifeFactory(PipelineInsuranceContractFactory pipelineInsuranceContractLifeFactory) {
+        this.pipelineInsuranceContractLifeFactory = pipelineInsuranceContractLifeFactory;
     }
 
     public void setMapperHelper(MapperHelper mapperHelper) {
@@ -86,7 +89,4 @@ public class EmissionPolicyLifeBusinessImpl  {
         this.rimacCompanyLifeFactory = rimacCompanyLifeFactory;
     }
 
-    public void setInsuranceContractBank(InsuranceContractBank insuranceContractBank) {
-        this.insuranceContractBank = insuranceContractBank;
-    }
 }

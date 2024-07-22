@@ -6,10 +6,12 @@ import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,11 +48,19 @@ public class InsuranceReceiptBean {
             firstReceipt.setPremiumCurrencyExchAmount(BigDecimal.ZERO);
         }
 
-        firstReceipt.setPremiumChargeOperationId(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_4.getValue().equals(requestBody.getProductId()) ? null : asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
+        if(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_4.getValue().equals(requestBody.getProductId()) || StringUtils.isEmpty(asoResponse.getData().getFirstInstallment().getOperationNumber())){
+            firstReceipt.setPremiumChargeOperationId(null);
+        }else{
+            firstReceipt.setPremiumChargeOperationId(asoResponse.getData().getFirstInstallment().getOperationNumber().substring(1));
+        }
+
+
         firstReceipt.setCurrencyId(requestBody.getFirstInstallment().getPaymentAmount().getCurrency());
 
         if(requestBody.getFirstInstallment().getIsPaymentRequired()) {
-            String correctFormatDate = FunctionsUtils.generateCorrectDateFormat(FunctionsUtils.convertDateToLocalDate(asoResponse.getData().getFirstInstallment().getOperationDate()));
+            Date operationDate = Objects.isNull(asoResponse.getData().getFirstInstallment().getOperationDate()) ? new Date() : asoResponse.getData().getFirstInstallment().getOperationDate();
+
+            String correctFormatDate = FunctionsUtils.generateCorrectDateFormat(FunctionsUtils.convertDateToLocalDate(operationDate));
 
             firstReceipt.setReceiptIssueDate(correctFormatDate);
             firstReceipt.setReceiptCollectionDate(correctFormatDate);

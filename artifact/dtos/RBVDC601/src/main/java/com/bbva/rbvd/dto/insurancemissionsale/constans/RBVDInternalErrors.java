@@ -28,7 +28,8 @@ public enum RBVDInternalErrors {
     ERROR_STATUS_CONTRACT_FLOW_PRE_FORMALIZATION("RBVD00088061", false, "El contrato '%s' esta en estado '%s' y no se puede realizar la preformalización. Por favor, verifica el contrato proporcionado ."),
     ERROR_STATUS_CONTRACT_BAJ("RBVD00088062", false, "Debido a que el contrato está dado de baja, la preformalización no puede ser realizada."),
     ERROR_STATUS_CONTRACT_ANU("RBVD00088063", false, "Debido a que el contrato está anulado, la preformalización no puede ser realizada."),
-    ERROR_STATUS_CONTRACT_FOR("RBVD00088064", false, "La formalización del contrato ya ha sido realizada.");
+    ERROR_STATUS_CONTRACT_FOR("RBVD00088064", false, "La formalización del contrato ya ha sido realizada."),
+    UPDATE_ERROR_IN_CONTRACT_TABLE("RBVD00088065", false, "No se actualizo el registro en la tabla [T_PISD_INSURANCE_CONTRACT]");
 
     private final String adviceCode;
     private final boolean rollback;

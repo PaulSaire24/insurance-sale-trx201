@@ -1,123 +1,48 @@
 package com.bbva.rbvd.lib.r211.impl.util;
 
 import com.bbva.apx.exception.business.BusinessException;
-
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
-
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
-
 import com.bbva.pisd.dto.insurance.bo.CommonBO;
 import com.bbva.pisd.dto.insurance.bo.GeographicGroupsBO;
 import com.bbva.pisd.dto.insurance.bo.LocationBO;
 import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
-
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
-
-import com.bbva.rbvd.dto.insrncsale.aso.RelationTypeASO;
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractProductASO;
-import com.bbva.rbvd.dto.insrncsale.aso.HolderASO;
-import com.bbva.rbvd.dto.insrncsale.aso.PaymentAmountASO;
-import com.bbva.rbvd.dto.insrncsale.aso.IdentityDocumentASO;
-import com.bbva.rbvd.dto.insrncsale.aso.DocumentTypeASO;
-import com.bbva.rbvd.dto.insrncsale.aso.ExchangeRateASO;
-import com.bbva.rbvd.dto.insrncsale.aso.ContractDetailsASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.ProductPlanASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.PaymentMethodASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.ValidityPeriodASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.TotalAmountASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuredAmountASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.InstallmentPlanASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.PaymentPeriodASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.FirstInstallmentASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.ParticipantASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.ParticipantTypeASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.BusinessAgentASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.PromoterASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.SalesSupplierASO;
+import com.bbva.rbvd.dto.insrncsale.aso.*;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BankASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.BranchASO;
-import com.bbva.rbvd.dto.insrncsale.aso.emision.InsuranceCompanyASO;
-
+import com.bbva.rbvd.dto.insrncsale.aso.emision.BusinessAgentASO;
+import com.bbva.rbvd.dto.insrncsale.aso.emision.*;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.*;
-
-import com.bbva.rbvd.dto.insrncsale.dao.RelatedContractDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractParticipantDAO;
-
-import com.bbva.rbvd.dto.insrncsale.events.CreatedInsrcEventDTO;
-import com.bbva.rbvd.dto.insrncsale.events.CreatedInsuranceDTO;
-import com.bbva.rbvd.dto.insrncsale.events.ProductCreatedInsrcEventDTO;
-import com.bbva.rbvd.dto.insrncsale.events.PlanCreatedInsrcEventDTO;
-import com.bbva.rbvd.dto.insrncsale.events.InstallmentPlansCreatedInsrcEvent;
-
-import com.bbva.rbvd.dto.insrncsale.events.header.EventDTO;
-import com.bbva.rbvd.dto.insrncsale.events.header.OriginDTO;
-import com.bbva.rbvd.dto.insrncsale.events.header.BranchEventDTO;
-import com.bbva.rbvd.dto.insrncsale.events.header.BankEventDTO;
-import com.bbva.rbvd.dto.insrncsale.events.header.ResultDTO;
-import com.bbva.rbvd.dto.insrncsale.events.header.TraceDTO;
-import com.bbva.rbvd.dto.insrncsale.events.header.HeaderDTO;
-import com.bbva.rbvd.dto.insrncsale.events.header.FlagDTO;
-
+import com.bbva.rbvd.dto.insrncsale.commons.*;
+import com.bbva.rbvd.dto.insrncsale.dao.*;
+import com.bbva.rbvd.dto.insrncsale.events.*;
+import com.bbva.rbvd.dto.insrncsale.events.header.*;
 import com.bbva.rbvd.dto.insrncsale.policy.*;
-
-import com.bbva.rbvd.dto.insrncsale.commons.PolicyInspectionDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.ContactDetailDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.QuotationStatusDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.PaymentAmountDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.ValidityPeriodDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.HolderDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.IdentityDocumentDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.DocumentTypeDTO;
-import com.bbva.rbvd.dto.insrncsale.commons.ContactDTO;
-
 import com.bbva.rbvd.dto.insrncsale.utils.LifeInsuranceInsuredData;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
-
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import com.bbva.rbvd.lib.r201.RBVDR201;
-
 import com.bbva.rbvd.lib.r211.impl.service.api.CustomerRBVD066InternalService;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.HolderBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsrcContractParticipantBean;
-
 import org.apache.commons.lang3.StringUtils;
-
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 
 import java.math.BigDecimal;
-
 import java.text.SimpleDateFormat;
-
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.ERROR_VALID_ADDRESS;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull; //import static java.util.stream.Collectors.counting;
-
+import static java.util.Objects.nonNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 public class MapperHelper {

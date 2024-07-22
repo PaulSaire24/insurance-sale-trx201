@@ -1,6 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl.pattern.decorator;
 
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 
 public class InsuranceDecorator implements Insurance {
@@ -11,8 +11,8 @@ public class InsuranceDecorator implements Insurance {
     }
 
     @Override
-    public ResponseLibrary<ProcessPrePolicyDTO> createPolicyOfCompany(ProcessPrePolicyDTO processPrePolicyDTO) {
-        return decoratedInsurance.createPolicyOfCompany(processPrePolicyDTO);
+    public ResponseLibrary<ProcessContextContractAndPolicyDTO> createPolicyOfCompany(ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO) {
+        return decoratedInsurance.createPolicyOfCompany(processContextContractAndPolicyDTO);
     }
 
 }

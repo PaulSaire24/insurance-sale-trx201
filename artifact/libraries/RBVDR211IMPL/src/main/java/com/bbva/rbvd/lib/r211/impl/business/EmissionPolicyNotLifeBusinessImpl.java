@@ -4,12 +4,12 @@ import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.aspects.interfaces.ManagementOperation;
 import com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory;
-import com.bbva.rbvd.lib.r211.impl.pattern.template.InsuranceContractBank;
-import com.bbva.rbvd.lib.r211.impl.pattern.template.crossoperations.CrossOperationsBusinessInsuranceContractBank;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.PipInsuranceBankNotLife;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.factory.PipelineInsuranceContractFactory;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -19,11 +19,11 @@ public class EmissionPolicyNotLifeBusinessImpl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmissionPolicyNotLifeBusinessImpl.class);
 
-    private InsuranceContractBank insuranceContractBank;
     private InsuranceCompanyFactory insuranceCompanyFactory;
     private ManagementOperation managementOperationsCross;
     private MapperHelper mapperHelper;
-    private EmissionFlowPrePolicyBusinessImpl emissionFlowPrePolicyBusiness;
+    private PipelineInsuranceContractFactory pipInsuranceBankNotLife;
+    private PipelineInsuranceContractFactory pipInsuranceBankFlowPreEmission;
 
 
     /**
@@ -39,18 +39,16 @@ public class EmissionPolicyNotLifeBusinessImpl {
      */
     public ResponseLibrary<PolicyDTO> executeEmissionPolicy(PolicyDTO requestBody) {
         LOGGER.info(" EmissionPolicyBusinessImpl :: executeEmissionPolicy :: [ START ]");
-        ResponseLibrary<ProcessPrePolicyDTO> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(new ProcessPrePolicyDTO());
+        ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO = new ProcessContextContractAndPolicyDTO();
+        processContextContractAndPolicyDTO.setPolicy(requestBody);
+        ResponseLibrary<ProcessContextContractAndPolicyDTO> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(processContextContractAndPolicyDTO);
         try {
              if(StringUtils.isNotEmpty(requestBody.getId())){
-                 contractRoyalGenerated = emissionFlowPrePolicyBusiness.executeFlowPreEmissionPolicy(requestBody);
-                 boolean isEndorsement = CrossOperationsBusinessInsuranceContractBank.validateEndorsement(requestBody);
-                 contractRoyalGenerated.getBody().setEndorsement(isEndorsement);
+                 contractRoyalGenerated = pipInsuranceBankFlowPreEmission.configureRoyalContract().executeGenerateInsuranceContractRoyal(contractRoyalGenerated);
              }else{
-                 contractRoyalGenerated  = insuranceContractBank.executeGenerateInsuranceContractRoyal(requestBody);
-                 boolean isEndorsement = CrossOperationsBusinessInsuranceContractBank.validateEndorsement(requestBody);
-                 contractRoyalGenerated.getBody().setEndorsement(isEndorsement);
+                 contractRoyalGenerated = pipInsuranceBankNotLife.configureRoyalContract().executeGenerateInsuranceContractRoyal(contractRoyalGenerated);
              }
-             ResponseLibrary<ProcessPrePolicyDTO> contractRoyalAndPolicyGenerated = insuranceCompanyFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
+             ResponseLibrary<ProcessContextContractAndPolicyDTO> contractRoyalAndPolicyGenerated = insuranceCompanyFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
              managementOperationsCross.afterProcessBusinessExecutionNotLifeCross(contractRoyalAndPolicyGenerated.getBody());
              return ResponseLibrary.ResponseServiceBuilder.an()
                      .flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
@@ -72,8 +70,12 @@ public class EmissionPolicyNotLifeBusinessImpl {
         }
     }
 
-    public void setEmissionFlowPrePolicyBusiness(EmissionFlowPrePolicyBusinessImpl emissionFlowPrePolicyBusiness) {
-        this.emissionFlowPrePolicyBusiness = emissionFlowPrePolicyBusiness;
+    public void setPipInsuranceBankFlowPreEmission(PipelineInsuranceContractFactory pipInsuranceBankFlowPreEmission) {
+        this.pipInsuranceBankFlowPreEmission = pipInsuranceBankFlowPreEmission;
+    }
+
+    public void setPipInsuranceBankNotLife(PipInsuranceBankNotLife pipInsuranceBankNotLife) {
+        this.pipInsuranceBankNotLife = pipInsuranceBankNotLife;
     }
 
     public void setMapperHelper(MapperHelper mapperHelper) {
@@ -88,7 +90,4 @@ public class EmissionPolicyNotLifeBusinessImpl {
         this.managementOperationsCross = managementOperationsCross;
     }
 
-    public void setInsuranceContractBank(InsuranceContractBank insuranceContractBank) {
-        this.insuranceContractBank = insuranceContractBank;
-    }
 }

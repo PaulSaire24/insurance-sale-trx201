@@ -335,6 +335,10 @@ public class RBVDR211NotLifeTest {
 		when(pisdR601.executeFindQuotationByReferenceAndPayrollId(anyString())).thenReturn(quotationEntity);
 		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.legal.833.BI", "true")).thenReturn("true");
 		when(this.applicationConfigurationService.getDefaultProperty("invoke.participant.validation.emission.noLife.natural.833.BI", "true")).thenReturn("true");
+		when(this.applicationConfigurationService.getDefaultProperty("flow.royal2.enabled.payment.icr3", "true")).thenReturn("true");
+
+		when(this.pisdR226.executeUpdateInsuranceContractByCertifyBank(Mockito.anyObject()))
+				.thenReturn(true);
 
 	}
 
@@ -360,6 +364,7 @@ public class RBVDR211NotLifeTest {
 		 * */
 		when(this.pisdR226.executeFindByCertifiedBank(Mockito.anyObject()))
 				.thenReturn(null);
+
 		/**
 		 * Ejecución de proceso
 		 * */

@@ -1,14 +1,17 @@
 package com.bbva.rbvd.lib.r211.impl.pattern.decorator;
 
-import com.bbva.rbvd.dto.insrncsale.aso.RelatedContractASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 import com.bbva.rbvd.lib.r211.impl.util.ValidationUtil;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Objects;
 
 public class LifeDefaultRimacDecorator extends InsuranceDecorator {
 
@@ -19,30 +22,32 @@ public class LifeDefaultRimacDecorator extends InsuranceDecorator {
     }
 
     @Override
-    public ResponseLibrary<ProcessPrePolicyDTO> createPolicyOfCompany(ProcessPrePolicyDTO processPrePolicyDTO) {
-        PolicyASO asoResponse = processPrePolicyDTO.getAsoResponse();
-        String insuranceBusinessName = processPrePolicyDTO.getInsuranceBusinessName();
-        String rimacPaymentAccount = processPrePolicyDTO.getRimacPaymentAccount();
-        PolicyDTO requestBody = processPrePolicyDTO.getPolicy();
+    public ResponseLibrary<ProcessContextContractAndPolicyDTO> createPolicyOfCompany(ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO) {
+        PolicyASO asoResponse = processContextContractAndPolicyDTO.getAsoResponse();
+        String insuranceBusinessName = processContextContractAndPolicyDTO.getInsuranceBusinessName();
+        String rimacPaymentAccount = processContextContractAndPolicyDTO.getRimacPaymentAccount();
+        PolicyDTO requestBody = processContextContractAndPolicyDTO.getPolicy();
         String branchRequest = requestBody.getBank().getBranch().getId();
-        RequiredFieldsEmissionDAO emissionDao = processPrePolicyDTO.getRequiredFieldsEmission();
-        RelatedContractASO relatedContractASO = asoResponse.getData().getPaymentMethod().getRelatedContracts().get(0);
+        RequiredFieldsEmissionDAO emissionDao = processContextContractAndPolicyDTO.getRequiredFieldsEmission();
+        RelatedContractDTO relatedContractASO = requestBody.getPaymentMethod().getRelatedContracts().get(0);
+
+        String operationNumber = Objects.isNull(asoResponse.getData().getFirstInstallment()) ? StringUtils.EMPTY : asoResponse.getData().getFirstInstallment().getOperationNumber();
         EmisionBO requestEmisionLife = this.mapperHelper.generateRimacRequestLife(
                 insuranceBusinessName, requestBody.getSaleChannelId(),
                 asoResponse.getData().getId(),
                 branchRequest	,
                 ValidationUtil.getKindOfAccount(relatedContractASO),
                 ValidationUtil.getAccountNumberInDatoParticular(relatedContractASO),
-                asoResponse.getData().getFirstInstallment().getOperationNumber(),
+                operationNumber,
                 requestBody,
                 rimacPaymentAccount);
-        if(processPrePolicyDTO.getIsEndorsement()){
-            requestEmisionLife.getPayload().setEndosatarios(processPrePolicyDTO.getEndosatarios());
+        if(processContextContractAndPolicyDTO.getIsEndorsement()){
+            requestEmisionLife.getPayload().setEndosatarios(processContextContractAndPolicyDTO.getEndosatarios());
         }
-        processPrePolicyDTO.setRimacRequest(requestEmisionLife);
-        processPrePolicyDTO.setQuotationId(emissionDao.getInsuranceCompanyQuotaId());
-        processPrePolicyDTO.setTraceId(requestBody.getTraceId());
-        processPrePolicyDTO.setProductId(requestBody.getProductId());
-        return super.createPolicyOfCompany(processPrePolicyDTO);
+        processContextContractAndPolicyDTO.setRimacRequest(requestEmisionLife);
+        processContextContractAndPolicyDTO.setQuotationId(emissionDao.getInsuranceCompanyQuotaId());
+        processContextContractAndPolicyDTO.setTraceId(requestBody.getTraceId());
+        processContextContractAndPolicyDTO.setProductId(requestBody.getProductId());
+        return super.createPolicyOfCompany(processContextContractAndPolicyDTO);
     }
 }

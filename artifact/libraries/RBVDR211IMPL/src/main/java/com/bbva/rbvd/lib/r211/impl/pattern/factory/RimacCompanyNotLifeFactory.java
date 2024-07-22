@@ -1,7 +1,7 @@
 package com.bbva.rbvd.lib.r211.impl.pattern.factory;
 
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.pattern.decorator.Insurance;
 import com.bbva.rbvd.lib.r211.impl.pattern.decorator.NotLifeDefaultRimacDecorator;
@@ -25,19 +25,19 @@ public class RimacCompanyNotLifeFactory implements InsuranceCompanyFactory {
      * and decorates this instance with NotLifeDefaultRimacDecorator.
      * Finally, it calls the createPolicyOfCompany method on the decorated instance to create the policy.
      *
-     * @param processPrePolicyDTO This is the data transfer object containing the details of the product for which the policy is to be created.
-     * @return ResponseLibrary<ProcessPrePolicyDTO> This returns the response of the policy creation process wrapped in a ResponseLibrary object.
+     * @param processContextContractAndPolicyDTO This is the data transfer object containing the details of the product for which the policy is to be created.
+     * @return ResponseLibrary<ProcessContextContractAndPolicyDTO> This returns the response of the policy creation process wrapped in a ResponseLibrary object.
      */
     @Override
-    public ResponseLibrary<ProcessPrePolicyDTO> createInsuranceByProduct(ProcessPrePolicyDTO processPrePolicyDTO){
-        if(INSURANCE_PRODUCT_TYPE_VEH.getValue().equalsIgnoreCase(processPrePolicyDTO.getPolicy().getProductId())){
+    public ResponseLibrary<ProcessContextContractAndPolicyDTO> createInsuranceByProduct(ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO){
+        if(INSURANCE_PRODUCT_TYPE_VEH.getValue().equalsIgnoreCase(processContextContractAndPolicyDTO.getPolicy().getProductId())){
             Insurance rimacCompany = new RimacCompany(policyRBVDR201ServiceExternal);
             rimacCompany = new VehicleInsuranceRimacDecorator(rimacCompany);
-            return rimacCompany.createPolicyOfCompany(processPrePolicyDTO);
+            return rimacCompany.createPolicyOfCompany(processContextContractAndPolicyDTO);
         }
         Insurance rimacCompany = new RimacCompany(policyRBVDR201ServiceExternal);
         rimacCompany = new NotLifeDefaultRimacDecorator(rimacCompany,applicationConfigurationService);
-        return rimacCompany.createPolicyOfCompany(processPrePolicyDTO);
+        return rimacCompany.createPolicyOfCompany(processContextContractAndPolicyDTO);
     }
 
     public void setApplicationConfigurationService(ApplicationConfigurationService applicationConfigurationService) {

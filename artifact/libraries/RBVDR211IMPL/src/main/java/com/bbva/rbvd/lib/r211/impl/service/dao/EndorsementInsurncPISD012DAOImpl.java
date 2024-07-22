@@ -3,11 +3,8 @@ package com.bbva.rbvd.lib.r211.impl.service.dao;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
-import com.bbva.rbvd.lib.r211.impl.RBVDR211Impl;
 import com.bbva.rbvd.lib.r211.impl.service.IEndorsementInsurncCtrDAO;
 import com.bbva.rbvd.lib.r211.impl.transfor.map.EndosermentInsurncCtrMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 

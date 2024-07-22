@@ -13,4 +13,5 @@ public interface IInsuranceContractDAO {
 
     Boolean updateInsuranceContract(Map<String, Object> argumentContract);
     ContractEntity executeFindByCertifiedBank(CertifyBankCriteria certifyBankCriteria) ;
+    void updateInsuranceContractByCertifyBank(ContractEntity contractEntity);
 }

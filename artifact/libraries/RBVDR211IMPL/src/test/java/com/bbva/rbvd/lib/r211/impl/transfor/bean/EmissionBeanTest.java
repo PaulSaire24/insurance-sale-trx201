@@ -34,10 +34,9 @@ import com.bbva.rbvd.dto.insrncsale.policy.*;
 
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
 
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessPrePolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
-import com.bbva.rbvd.lib.r211.impl.transfor.bean.EmissionBean;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 
@@ -81,7 +80,7 @@ public class EmissionBeanTest {
     private RBVDR201 rbvdr201;
     private PISDR350 pisdr350;
 
-    private ProcessPrePolicyDTO processPrePolicyDTO;
+    private ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO;
 
     @Before
     public void setUp() throws IOException {
@@ -177,46 +176,46 @@ public class EmissionBeanTest {
         when(applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","")).thenReturn("DESEMPLEO_PRESTAMO");
 
 
-        processPrePolicyDTO = new ProcessPrePolicyDTO();
+        processContextContractAndPolicyDTO = new ProcessContextContractAndPolicyDTO();
 
         // Setting mock data
-        processPrePolicyDTO.setPolicy(new PolicyDTO(/*mock parameters*/));
-        processPrePolicyDTO.setRequiredFieldsEmission(new RequiredFieldsEmissionDAO(/*mock parameters*/));
-        processPrePolicyDTO.setAsoResponse(new PolicyASO(/*mock parameters*/));
-        processPrePolicyDTO.setContractDao(new InsuranceContractDAO(/*mock parameters*/));
+        processContextContractAndPolicyDTO.setPolicy(new PolicyDTO(/*mock parameters*/));
+        processContextContractAndPolicyDTO.setRequiredFieldsEmission(new RequiredFieldsEmissionDAO(/*mock parameters*/));
+        processContextContractAndPolicyDTO.setAsoResponse(new PolicyASO(/*mock parameters*/));
+        processContextContractAndPolicyDTO.setContractDao(new InsuranceContractDAO(/*mock parameters*/));
 
-        processPrePolicyDTO.setOperationGlossaryDesc("Mock Operation Glossary Description");
-        processPrePolicyDTO.setEndorsement(true);
+        processContextContractAndPolicyDTO.setOperationGlossaryDesc("Mock Operation Glossary Description");
+        processContextContractAndPolicyDTO.setEndorsement(true);
 
         EmisionBO mockEmisionBORequest = new EmisionBO(/*mock parameters*/);
-        processPrePolicyDTO.setRimacRequest(mockEmisionBORequest);
+        processContextContractAndPolicyDTO.setRimacRequest(mockEmisionBORequest);
 
-        processPrePolicyDTO.setQuotationId("QUOTATION12345");
-        processPrePolicyDTO.setTraceId("TRACE12345");
-        processPrePolicyDTO.setProductId("PRODUCT12345");
+        processContextContractAndPolicyDTO.setQuotationId("QUOTATION12345");
+        processContextContractAndPolicyDTO.setTraceId("TRACE12345");
+        processContextContractAndPolicyDTO.setProductId("PRODUCT12345");
 
-        processPrePolicyDTO.setQuotationEmailDesc("mockemail@example.com");
-        processPrePolicyDTO.setQuotationCustomerPhoneDesc("123-456-7890");
+        processContextContractAndPolicyDTO.setQuotationEmailDesc("mockemail@example.com");
+        processContextContractAndPolicyDTO.setQuotationCustomerPhoneDesc("123-456-7890");
 
         Map<String, Object> mockResponseQueryGetProductById = new HashMap<>();
         mockResponseQueryGetProductById.put("key1", "value1");
         mockResponseQueryGetProductById.put("key2", "value2");
-        processPrePolicyDTO.setResponseQueryGetProductById(mockResponseQueryGetProductById);
+        processContextContractAndPolicyDTO.setResponseQueryGetProductById(mockResponseQueryGetProductById);
 
-        processPrePolicyDTO.setCustomerList(new CustomerListASO(/*mock parameters*/));
-        processPrePolicyDTO.setListBusinessesASO(new ListBusinessesASO(/*mock parameters*/));
+        processContextContractAndPolicyDTO.setCustomerList(new CustomerListASO(/*mock parameters*/));
+        processContextContractAndPolicyDTO.setListBusinessesASO(new ListBusinessesASO(/*mock parameters*/));
 
         EmisionBO mockEmisionBOResponse = new EmisionBO(/*mock parameters*/);
-        processPrePolicyDTO.setRimacResponse(mockEmisionBOResponse);
+        processContextContractAndPolicyDTO.setRimacResponse(mockEmisionBOResponse);
 
-        processPrePolicyDTO.setInsuranceBusinessName("Mock Insurance Business");
+        processContextContractAndPolicyDTO.setInsuranceBusinessName("Mock Insurance Business");
 
         List<EndosatarioBO> mockEndosatarios = new ArrayList<>();
         mockEndosatarios.add(new EndosatarioBO(/*mock parameters*/));
         mockEndosatarios.add(new EndosatarioBO(/*mock parameters*/));
-        processPrePolicyDTO.setEndosatarios(mockEndosatarios);
+        processContextContractAndPolicyDTO.setEndosatarios(mockEndosatarios);
 
-        processPrePolicyDTO.setRimacPaymentAccount("MOCKACCOUNT12345");
+        processContextContractAndPolicyDTO.setRimacPaymentAccount("MOCKACCOUNT12345");
     }
 
 
@@ -320,7 +319,7 @@ public class EmissionBeanTest {
         customerList.getData().get(0).setSecondLastName("An");
         customerList.getData().get(0).setIdentityDocuments(identityDocumentsBOs1);
 
-        EmisionBO validation1 = EmissionBean.toRequestGeneralBodyRimac(emisionInput, apxRequest,processPrePolicyDTO,customerList,this.applicationConfigurationService,"DESEMPLEO");
+        EmisionBO validation1 = EmissionBean.toRequestGeneralBodyRimac(emisionInput, apxRequest, processContextContractAndPolicyDTO,customerList,this.applicationConfigurationService,"DESEMPLEO");
         when(filledAddress).thenReturn("JR. UNION 233, URB UNION ");
         assertNotNull(validation1);
 

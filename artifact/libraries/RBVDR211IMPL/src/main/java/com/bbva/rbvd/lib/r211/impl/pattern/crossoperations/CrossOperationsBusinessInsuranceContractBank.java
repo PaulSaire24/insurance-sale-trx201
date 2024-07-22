@@ -1,8 +1,7 @@
-package com.bbva.rbvd.lib.r211.impl.pattern.template.crossoperations;
+package com.bbva.rbvd.lib.r211.impl.pattern.crossoperations;
 
 import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
-import com.bbva.elara.library.AbstractLibrary;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
 import com.bbva.pisd.dto.insurance.aso.GetContactDetailsASO;
 import com.bbva.pisd.dto.insurance.bo.ContactDetailsBO;
@@ -47,8 +46,7 @@ import java.util.stream.Collectors;
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants.Endorsement;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.*;
-import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.ERROR_EMPTY_RESULT_QUOTATION_DATA;
-import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.*;
+import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.buildValidation;
 import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.isValidateRange;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;

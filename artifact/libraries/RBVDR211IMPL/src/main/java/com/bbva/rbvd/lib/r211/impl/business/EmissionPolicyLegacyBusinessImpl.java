@@ -56,7 +56,6 @@ import java.time.temporal.ValueRange;
 import java.util.*;
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.ERROR_RESPONSE_SERVICE_ICR2;
-import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.buildValidation;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.isNull;

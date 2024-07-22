@@ -7,7 +7,9 @@ import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.pisd.dto.insurancedao.entities.ContractEntity;
 import com.bbva.pisd.lib.r012.PISDR012;
 import com.bbva.pisd.lib.r226.PISDR226;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDErrors;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
+import com.bbva.rbvd.dto.insrncsale.utils.RBVDValidation;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
 import com.bbva.rbvd.lib.r211.impl.service.IInsuranceContractDAO;
 import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
@@ -95,6 +97,25 @@ public class ContractPISD012DAOImpl implements IInsuranceContractDAO {
            throw FunctionsUtils.buildValidation(RBVDInternalErrors.ERROR_NOT_TIMEOUT_GENERAL);
         }
         return contractEntity;
+    }
+
+    @Override
+    public void updateInsuranceContractByCertifyBank(ContractEntity contractEntity) {
+        boolean isUpdateInsuranceContract;
+        try{
+            isUpdateInsuranceContract = this.pisdR226.executeUpdateInsuranceContractByCertifyBank(contractEntity);
+        }catch (BusinessException businessException){
+            if(PISDErrors.VALIDATE_FIELD_CONTRACT.getAdviceCode().equalsIgnoreCase(businessException.getAdviceCode())){
+                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(businessException.getAdviceCode(),businessException.getMessage());
+                throw new BusinessException(businessException.getAdviceCode(), true, businessException.getMessage());
+            }
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDInternalErrors.ERROR_NOT_TIMEOUT_GENERAL.getAdviceCode(),RBVDInternalErrors.ERROR_NOT_TIMEOUT_GENERAL.getMessage());
+            throw FunctionsUtils.buildValidation(RBVDInternalErrors.ERROR_NOT_TIMEOUT_GENERAL);
+        }
+        if(!isUpdateInsuranceContract) {
+            this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDInternalErrors.UPDATE_ERROR_IN_CONTRACT_TABLE.getAdviceCode(), RBVDInternalErrors.UPDATE_ERROR_IN_CONTRACT_TABLE.getMessage());
+            throw RBVDValidation.build(RBVDErrors.INSERTION_ERROR_IN_CONTRACT_TABLE);
+        }
     }
 
     public void setPisdR226(PISDR226 pisdR226) {
