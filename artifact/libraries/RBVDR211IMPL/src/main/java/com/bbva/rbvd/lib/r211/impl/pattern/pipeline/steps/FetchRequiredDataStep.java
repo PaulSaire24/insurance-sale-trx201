@@ -9,7 +9,7 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.crossoperations.CrossOperationsBusinessInsuranceContractBank;
@@ -19,10 +19,10 @@ import com.bbva.rbvd.lib.r211.impl.transfor.bean.PrePolicyTransfor;
 
 import java.util.Map;
 
-public class FetchRequiredDataNotLifeStep implements Step {
+public class FetchRequiredDataStep implements Step {
     private final DependencyBuilder dependencyBuilder;
 
-    public FetchRequiredDataNotLifeStep(DependencyBuilder dependencyBuilder) {
+    public FetchRequiredDataStep(DependencyBuilder dependencyBuilder) {
         this.dependencyBuilder = dependencyBuilder;
     }
 
@@ -40,7 +40,7 @@ public class FetchRequiredDataNotLifeStep implements Step {
      * @param stepsBankContract The next step in the bank contract generation process.
      */
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ProcessContextContractAndPolicyDTO> processContextContractAndPolicy, Step stepsBankContract) {
+    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         // Fetch the policy data from the process context
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         CustomerListASO customerList = null;

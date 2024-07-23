@@ -17,7 +17,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.ConstantsUtil;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
@@ -47,7 +47,7 @@ public class EmissionBean {
 
 
     public static EmisionBO addNotLifeAdditionalRequestData(EmisionBO rimacRequest, PolicyDTO requestBody, ApplicationConfigurationService applicationConfigurationService, CustomerListASO customerListASO,
-                                                            ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO) {
+                                                            ContextEmission contextEmission) {
 
         String productChannelConditionalNaturalPers = applicationConfigurationService.
                 getDefaultProperty(PROPERTY_VALIDATE_NATURAL_PARTICIPANT.
@@ -61,7 +61,7 @@ public class EmissionBean {
         boolean validateNaturalParticipant = Boolean.parseBoolean(productChannelConditionalNaturalPers);
         boolean validateLegalParticipant = Boolean.parseBoolean(productChannelConditionalLegalPers);
 
-        rimacRequest = EmissionBean.mapRimacFinancingEmisionRequest(rimacRequest, requestBody, processContextContractAndPolicyDTO, applicationConfigurationService);
+        rimacRequest = EmissionBean.mapRimacFinancingEmisionRequest(rimacRequest, requestBody, contextEmission, applicationConfigurationService);
         if(!validateNaturalParticipant && !validateLegalParticipant){
             return rimacRequest;
         }
@@ -72,22 +72,22 @@ public class EmissionBean {
         boolean isLegalPerson = RUC_ID.equalsIgnoreCase(tipoDoc) && StringUtils.startsWith(nroDoc, "20");
 
         if((validateNaturalParticipant && !isLegalPerson) || (isLegalPerson && validateLegalParticipant)) {
-            AgregarPersonaBO personaBO = mapRimacEmisionRequestParticipant(requestBody, processContextContractAndPolicyDTO,customerListASO,applicationConfigurationService, processContextContractAndPolicyDTO.getOperationGlossaryDesc());
+            AgregarPersonaBO personaBO = mapRimacEmisionRequestParticipant(requestBody, contextEmission,customerListASO,applicationConfigurationService, contextEmission.getOperationGlossaryDesc());
             rimacRequest.getPayload().setAgregarPersona(personaBO);
             LOGGER.info("***** RBVDR211 generalEmisionRequest => {} ****", rimacRequest);
         }
 
         if (isLegalPerson && validateLegalParticipant) {
-            OrganizationBean.setOrganization(rimacRequest,requestBody,customerListASO, processContextContractAndPolicyDTO);
+            OrganizationBean.setOrganization(rimacRequest,requestBody,customerListASO, contextEmission);
         }
 
         return rimacRequest;
     }
 
-    public static AgregarPersonaBO mapRimacEmisionRequestParticipant(PolicyDTO requestBody, ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO, CustomerListASO customerList, ApplicationConfigurationService applicationConfigurationService, String operationGlossaryDesc){
+    public static AgregarPersonaBO mapRimacEmisionRequestParticipant(PolicyDTO requestBody, ContextEmission contextEmission, CustomerListASO customerList, ApplicationConfigurationService applicationConfigurationService, String operationGlossaryDesc){
         CustomerBO customer = customerList.getData().get(0);
         List<PersonaBO> personasList = new ArrayList<>();
-        PersonaBO persona = constructPerson(requestBody,customer, processContextContractAndPolicyDTO,applicationConfigurationService);
+        PersonaBO persona = constructPerson(requestBody,customer, contextEmission,applicationConfigurationService);
 
         StringBuilder stringAddress  = new StringBuilder();
 
@@ -102,12 +102,12 @@ public class EmissionBean {
         return agregarPersonaBO;
     }
 
-    public static EmisionBO mapRimacFinancingEmisionRequest(EmisionBO rimacRequest, PolicyDTO requestBody, ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO, ApplicationConfigurationService applicationConfigurationService){
+    public static EmisionBO mapRimacFinancingEmisionRequest(EmisionBO rimacRequest, PolicyDTO requestBody, ContextEmission contextEmission, ApplicationConfigurationService applicationConfigurationService){
         EmisionBO generalEmisionRimacRequest = new EmisionBO();
         PayloadEmisionBO emisionBO = new PayloadEmisionBO();
         emisionBO.setEmision(rimacRequest.getPayload());
         String productsCalculateValidityMonths = applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","");
-        emisionBO.getEmision().setProducto(getInsuranceBusinessNameFromDB(processContextContractAndPolicyDTO.getResponseQueryGetProductById()));
+        emisionBO.getEmision().setProducto(getInsuranceBusinessNameFromDB(contextEmission.getResponseQueryGetProductById()));
         generalEmisionRimacRequest.setPayload(emisionBO);
 
         FinanciamientoBO financiamiento = new FinanciamientoBO();
@@ -118,7 +118,7 @@ public class EmissionBean {
         financiamiento.setFechaInicio(strDate);
         financiamiento.setNumeroCuotas(requestBody.getInstallmentPlan().getTotalNumberInstallments());
 
-        String operacionGlossaryDesc = processContextContractAndPolicyDTO.getOperationGlossaryDesc();
+        String operacionGlossaryDesc = contextEmission.getOperationGlossaryDesc();
         if (Arrays.asList(productsCalculateValidityMonths.split(",")).contains(operacionGlossaryDesc)) {
             if(Period.MONTHLY_LARGE.equals(requestBody.getInstallmentPlan().getPeriod().getId())){
                 financiamiento.setFrecuencia(Period.FREE_PERIOD);
@@ -144,12 +144,12 @@ public class EmissionBean {
         return generalEmisionRimacRequest;
     }
 
-    public static EmisionBO toRequestGeneralBodyRimac(EmisionBO rimacRequest, PolicyDTO requestBody, ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO, CustomerListASO customerList, ApplicationConfigurationService applicationConfigurationService, String operationGlossaryDesc){
+    public static EmisionBO toRequestGeneralBodyRimac(EmisionBO rimacRequest, PolicyDTO requestBody, ContextEmission contextEmission, CustomerListASO customerList, ApplicationConfigurationService applicationConfigurationService, String operationGlossaryDesc){
         EmisionBO generalEmisionRimacRequest = new EmisionBO();
         PayloadEmisionBO emisionBO = new PayloadEmisionBO();
         emisionBO.setEmision(rimacRequest.getPayload());
         String productsCalculateValidityMonths = applicationConfigurationService.getDefaultProperty("products.modalities.only.first.receipt","");
-        emisionBO.getEmision().setProducto(getInsuranceBusinessNameFromDB(processContextContractAndPolicyDTO.getResponseQueryGetProductById()));
+        emisionBO.getEmision().setProducto(getInsuranceBusinessNameFromDB(contextEmission.getResponseQueryGetProductById()));
         generalEmisionRimacRequest.setPayload(emisionBO);
 
         FinanciamientoBO financiamiento = new FinanciamientoBO();
@@ -176,7 +176,7 @@ public class EmissionBean {
 
         CustomerBO customer = customerList.getData().get(0);
         List<PersonaBO> personasList = new ArrayList<>();
-        PersonaBO persona = Optional.ofNullable(customer).map(customerBO -> constructPerson(requestBody,customerBO, processContextContractAndPolicyDTO,applicationConfigurationService)).orElse(new PersonaBO()) ;
+        PersonaBO persona = Optional.ofNullable(customer).map(customerBO -> constructPerson(requestBody,customerBO, contextEmission,applicationConfigurationService)).orElse(new PersonaBO()) ;
 
         StringBuilder stringAddress  = new StringBuilder();
 
@@ -637,7 +637,7 @@ public class EmissionBean {
     }
 
 
-    private static PersonaBO constructPerson(PolicyDTO requestBody, CustomerBO customer, ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO, ApplicationConfigurationService applicationConfigurationService){
+    private static PersonaBO constructPerson(PolicyDTO requestBody, CustomerBO customer, ContextEmission contextEmission, ApplicationConfigurationService applicationConfigurationService){
         PersonaBO persona = new PersonaBO();
         ContactDetailDTO emailContact = getEmailContact(requestBody);
         ContactDetailDTO mobileContact = getMobileContact(requestBody);
@@ -649,8 +649,8 @@ public class EmissionBean {
         persona.setNombres(customer.getFirstName());
         persona.setFechaNacimiento(customer.getBirthData().getBirthDate());
         persona.setSexo(getGender(customer));
-        persona.setCorreoElectronico(getEmail(emailContact, processContextContractAndPolicyDTO));
-        persona.setCelular(getMobileNumber(mobileContact, processContextContractAndPolicyDTO));
+        persona.setCorreoElectronico(getEmail(emailContact, contextEmission));
+        persona.setCelular(getMobileNumber(mobileContact, contextEmission));
         persona.setTipoPersona(getPersonType(persona).getCode());
 
         return persona;
@@ -690,12 +690,12 @@ public class EmissionBean {
         return Objects.nonNull(customer.getGender()) ? "MALE".equals(customer.getGender().getId()) ? "M" : "F" : "";
     }
 
-    private static String getEmail(ContactDetailDTO emailContact, ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO) {
-        return Objects.isNull(emailContact.getContact()) ? processContextContractAndPolicyDTO.getQuotationEmailDesc() : emailContact.getContact().getAddress();
+    private static String getEmail(ContactDetailDTO emailContact, ContextEmission contextEmission) {
+        return Objects.isNull(emailContact.getContact()) ? contextEmission.getQuotationEmailDesc() : emailContact.getContact().getAddress();
     }
 
-    private static String getMobileNumber(ContactDetailDTO mobileContact, ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO) {
-        return Objects.isNull(mobileContact.getContact()) ? processContextContractAndPolicyDTO.getQuotationCustomerPhoneDesc() : mobileContact.getContact().getPhoneNumber();
+    private static String getMobileNumber(ContactDetailDTO mobileContact, ContextEmission contextEmission) {
+        return Objects.isNull(mobileContact.getContact()) ? contextEmission.getQuotationCustomerPhoneDesc() : mobileContact.getContact().getPhoneNumber();
     }
 
     public static PersonTypeEnum getPersonType(EntidadBO person) {

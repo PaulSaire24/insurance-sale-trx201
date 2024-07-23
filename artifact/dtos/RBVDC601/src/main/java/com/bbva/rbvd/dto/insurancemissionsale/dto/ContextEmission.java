@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
-public class ProcessContextContractAndPolicyDTO {
+public class ContextEmission {
 
     private PolicyDTO policy;
     private RequiredFieldsEmissionDAO requiredFieldsEmission;
@@ -212,7 +212,7 @@ public class ProcessContextContractAndPolicyDTO {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", ProcessContextContractAndPolicyDTO.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", ContextEmission.class.getSimpleName() + "[", "]")
                 .add("policy=" + policy)
                 .add("requiredFieldsEmission=" + requiredFieldsEmission)
                 .add("asoResponse=" + asoResponse)

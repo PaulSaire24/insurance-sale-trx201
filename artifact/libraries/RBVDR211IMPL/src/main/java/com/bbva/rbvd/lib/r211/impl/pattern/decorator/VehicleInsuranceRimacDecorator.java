@@ -6,7 +6,7 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.EmissionBean;
 
@@ -19,22 +19,22 @@ public class VehicleInsuranceRimacDecorator extends InsuranceDecorator {
     }
 
     @Override
-    public ResponseLibrary<ProcessContextContractAndPolicyDTO> createPolicyOfCompany(ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO) {
-        PolicyDTO requestBody = processContextContractAndPolicyDTO.getPolicy();
-        PolicyASO asoResponse = processContextContractAndPolicyDTO.getAsoResponse();
-        RequiredFieldsEmissionDAO emissionDao = processContextContractAndPolicyDTO.getRequiredFieldsEmission();
+    public ResponseLibrary<ContextEmission> createPolicyOfCompany(ContextEmission contextEmission) {
+        PolicyDTO requestBody = contextEmission.getPolicy();
+        PolicyASO asoResponse = contextEmission.getAsoResponse();
+        RequiredFieldsEmissionDAO emissionDao = contextEmission.getRequiredFieldsEmission();
         String secondDataValue = createSecondDataValue(requestBody);
         EmisionBO rimacRequest = EmissionBean.toRequestBodyRimac(requestBody.getInspection(), secondDataValue, requestBody.getSaleChannelId(), asoResponse.getData().getId(), requestBody.getBank().getBranch().getId());
-        if(processContextContractAndPolicyDTO.getIsEndorsement()){
+        if(contextEmission.getIsEndorsement()){
             String endosatarioRuc = requestBody.getParticipants().get(1).getIdentityDocument().getNumber();
             Double endosatarioPorcentaje = requestBody.getParticipants().get(1).getBenefitPercentage();
             rimacRequest.getPayload().setEndosatario(new EndosatarioBO(endosatarioRuc, endosatarioPorcentaje.intValue()));
         }
-        processContextContractAndPolicyDTO.setRimacRequest(rimacRequest);
-        processContextContractAndPolicyDTO.setQuotationId(emissionDao.getInsuranceCompanyQuotaId());
-        processContextContractAndPolicyDTO.setTraceId(requestBody.getTraceId());
-        processContextContractAndPolicyDTO.setProductId(requestBody.getProductId());
-        return super.createPolicyOfCompany(processContextContractAndPolicyDTO);
+        contextEmission.setRimacRequest(rimacRequest);
+        contextEmission.setQuotationId(emissionDao.getInsuranceCompanyQuotaId());
+        contextEmission.setTraceId(requestBody.getTraceId());
+        contextEmission.setProductId(requestBody.getProductId());
+        return super.createPolicyOfCompany(contextEmission);
     }
 
     private String createSecondDataValue(PolicyDTO requestBody) {

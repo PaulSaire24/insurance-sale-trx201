@@ -4,7 +4,7 @@ import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.aspects.interfaces.ManagementOperation;
 import com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory;
@@ -39,16 +39,16 @@ public class EmissionPolicyNotLifeBusinessImpl {
      */
     public ResponseLibrary<PolicyDTO> executeEmissionPolicy(PolicyDTO requestBody) {
         LOGGER.info(" EmissionPolicyBusinessImpl :: executeEmissionPolicy :: [ START ]");
-        ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO = new ProcessContextContractAndPolicyDTO();
-        processContextContractAndPolicyDTO.setPolicy(requestBody);
-        ResponseLibrary<ProcessContextContractAndPolicyDTO> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(processContextContractAndPolicyDTO);
+        ContextEmission contextEmission = new ContextEmission();
+        contextEmission.setPolicy(requestBody);
+        ResponseLibrary<ContextEmission> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(contextEmission);
         try {
              if(StringUtils.isNotEmpty(requestBody.getId())){
                  contractRoyalGenerated = pipInsuranceBankFlowPreEmission.configureRoyalContract().executeGenerateInsuranceContractRoyal(contractRoyalGenerated);
              }else{
                  contractRoyalGenerated = pipInsuranceBankNotLife.configureRoyalContract().executeGenerateInsuranceContractRoyal(contractRoyalGenerated);
              }
-             ResponseLibrary<ProcessContextContractAndPolicyDTO> contractRoyalAndPolicyGenerated = insuranceCompanyFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
+             ResponseLibrary<ContextEmission> contractRoyalAndPolicyGenerated = insuranceCompanyFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
              managementOperationsCross.afterProcessBusinessExecutionNotLifeCross(contractRoyalAndPolicyGenerated.getBody());
              return ResponseLibrary.ResponseServiceBuilder.an()
                      .flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)

@@ -5,7 +5,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Step;
@@ -36,7 +36,7 @@ public class GenerateFormalizationOracleFlowPreEmission implements Step {
     }
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ProcessContextContractAndPolicyDTO> processContextContractAndPolicy, Step stepsBankContract) {
+    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         LOGGER.info(" EmissionFlowPrePolicyBusinessImpl :: executeFlowPreEmissionPolicy :: [ START ]");
         LOGGER.info(" EmissionFlowPrePolicyBusinessImpl :: executeFlowPreEmissionPolicy :: [ Body :: {} ]",processContextContractAndPolicy);
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
@@ -44,6 +44,7 @@ public class GenerateFormalizationOracleFlowPreEmission implements Step {
         List<InsuranceCtrReceiptsDAO> receiptsList = InsuranceReceiptBean.toInsuranceCtrReceiptsDAO(asoResponse, requestBody);
         List<String> productsNotGenerateMonthlyReceipts = this.dependencyBuilder.getBasicProductInsuranceProperties().obtainProductsNotGenerateMonthlyReceipts();
         String  operationGlossaryDesc = processContextContractAndPolicy.getBody().getOperationGlossaryDesc();
+
         if(RBVDInternalConstants.Period.MONTHLY_LARGE.equalsIgnoreCase(requestBody.getInstallmentPlan().getPeriod().getId()) && !productsNotGenerateMonthlyReceipts.contains(operationGlossaryDesc)){
             List<InsuranceCtrReceiptsDAO> receipts = InsuranceReceiptBean.toGenerateMonthlyReceipts(receiptsList.get(0));
             receiptsList.addAll(receipts);
@@ -57,18 +58,7 @@ public class GenerateFormalizationOracleFlowPreEmission implements Step {
             throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
         }
 
-        String[] certifyBank = FunctionsUtils.generateCodeToSearchContractInOracle(requestBody.getId());
-        ContractEntity contractEntity = ContractEntity.ContractBuilder.an()
-                .withContractStatusId(RBVDInternalConstants.CONTRACT_STATUS_ID.FOR.getValue())
-                .withInsuranceContractEntityId(certifyBank[0])
-                .withInsuranceContractBranchId(certifyBank[1])
-                .withContractFirstVerfnDigitId(certifyBank[2])
-                .withContractSecondVerfnDigitId(certifyBank[3])
-                .withInsrcContractIntAccountId(certifyBank[4])
-                .withUserAuditId(processContextContractAndPolicy.getBody().getPolicy().getUserAudit())
-                .build();
 
-        this.dependencyBuilder.getInsuranceContractDAO().updateInsuranceContractByCertifyBank(contractEntity);
 
         stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
     }

@@ -15,7 +15,7 @@ import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.ContactTypeEnum;
 import com.bbva.rbvd.dto.insrncsale.utils.PersonTypeEnum;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
@@ -68,7 +68,7 @@ public class OrganizationBeanTest {
         business.setEconomicActivity(new EconomicActivityASO());
         business.getEconomicActivity().setId("1");
 
-        ProcessContextContractAndPolicyDTO processPrePolicy = new ProcessContextContractAndPolicyDTO();
+        ContextEmission processPrePolicy = new ContextEmission();
         processPrePolicy.setListBusinessesASO(new ListBusinessesASO());
         processPrePolicy.getListBusinessesASO().setData(Collections.singletonList(business));
 
@@ -97,7 +97,7 @@ public class OrganizationBeanTest {
         customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId(RBVDInternalConstants.Endorsement.RUC_ID);
         customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentNumber("10");
 
-        ProcessContextContractAndPolicyDTO processPrePolicy = new ProcessContextContractAndPolicyDTO();
+        ContextEmission processPrePolicy = new ContextEmission();
         processPrePolicy.setListBusinessesASO(new ListBusinessesASO());
         processPrePolicy.getListBusinessesASO().setData(Collections.singletonList(new BusinessASO()));
 
@@ -125,7 +125,7 @@ public class OrganizationBeanTest {
         customerList.getData().get(0).getIdentityDocuments().get(0).setDocumentType(new DocumentTypeBO());
         customerList.getData().get(0).getIdentityDocuments().get(0).getDocumentType().setId("nonRucId");
 
-        ProcessContextContractAndPolicyDTO processPrePolicy = new ProcessContextContractAndPolicyDTO();
+        ContextEmission processPrePolicy = new ContextEmission();
         processPrePolicy.setListBusinessesASO(new ListBusinessesASO());
         processPrePolicy.getListBusinessesASO().setData(Collections.singletonList(new BusinessASO()));
 

@@ -3,7 +3,7 @@ package com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Step;
@@ -23,7 +23,7 @@ public class GeneratePaymentStep implements Step {
     }
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ProcessContextContractAndPolicyDTO> processContextContractAndPolicy, Step stepsBankContract) {
+    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         if(this.dependencyBuilder.getBasicProductInsuranceProperties().enabledPaymentICR2()){
             DataASO asoRequest = processContextContractAndPolicy.getBody().getDataASO();
             if(Objects.isNull(processContextContractAndPolicy.getBody().getPolicy().getId())){

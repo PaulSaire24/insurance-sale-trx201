@@ -4,7 +4,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.dao.*;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.crossoperations.CrossOperationsBusinessInsuranceContractBank;
@@ -33,10 +33,9 @@ public class SaveInsuranceDataNotLifeStep implements Step {
     }
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ProcessContextContractAndPolicyDTO> processContextContractAndPolicy, Step stepsBankContract) {
+    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         PolicyASO asoResponse = Objects.isNull(processContextContractAndPolicy.getBody().getAsoResponse()) ?  PolicyASOBean.PolicyDTOtoPolicyASO(requestBody) : processContextContractAndPolicy.getBody().getAsoResponse();
-        RequiredFieldsEmissionDAO emissionDao = processContextContractAndPolicy.getBody().getRequiredFieldsEmission();
         InsuranceContractDAO contractDao = processContextContractAndPolicy.getBody().getContractDao();
         IsrcContractMovDAO contractMovDao = IsrcContractMovBean.toIsrcContractMovDAO(asoResponse,requestBody.getCreationUser(),requestBody.getUserAudit());
         boolean isSavedContractMov = this.dependencyBuilder.getInsrncContractMovDAO().saveInsrncContractmov(contractMovDao);
@@ -45,16 +44,7 @@ public class SaveInsuranceDataNotLifeStep implements Step {
             this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
             throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
         }
-        List<Map<String, Object>> rolesInMap = this.dependencyBuilder.getInsrncRoleModalityDAO().findByProductIdAndModalityType(emissionDao.getInsuranceProductId(), requestBody.getProductPlan().getId());
-        if(!CollectionUtils.isEmpty(rolesInMap)){
-            List<IsrcContractParticipantDAO> participants = CrossOperationsBusinessInsuranceContractBank.toIsrcContractParticipantDAOList(requestBody, rolesInMap, asoResponse.getData().getId(),this.dependencyBuilder.getApplicationConfigurationService());
-            boolean isSavedParticipant = this.dependencyBuilder.getInsurncCtrParticipantDAO().savedContractParticipant(participants);
-            if(!isSavedParticipant){
-                String message = String.format(INSERTION_ERROR_IN_TABLE.getMessage(),RBVDInternalConstants.Tables.T_PISD_INSRNC_CTR_PARTICIPANT);
-                this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
-                throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
-            }
-        }
+
 
         if(!CollectionUtils.isEmpty(requestBody.getRelatedContracts())){
             List<RelatedContractDAO> relatedContractsDao = RelatedContractsList.toRelatedContractDAOList(requestBody, contractDao);

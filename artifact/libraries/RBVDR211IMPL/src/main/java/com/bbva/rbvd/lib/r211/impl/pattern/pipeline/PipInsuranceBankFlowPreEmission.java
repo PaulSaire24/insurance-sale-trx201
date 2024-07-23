@@ -65,9 +65,10 @@ public class PipInsuranceBankFlowPreEmission implements PipelineInsuranceContrac
     @Override
     public Pipeline configureRoyalContract() {
         return new Pipeline()
-                .addStep(new FetchRequiredDataNotLifeStep(dependencyBuilder))
+                .addStep(new FetchRequiredDataStep(dependencyBuilder))
                 .addStep(new GenerateFormalizationOracleFlowPreEmission(dependencyBuilder))
                 .addStep(new ValidateConditionsContractFlowPreEmission(dependencyBuilder))
+                .addStep(new UpdateContractFormalizedStep(dependencyBuilder))
                 .addStep(new SaveInsuranceDataNotLifeStep(dependencyBuilder))
                 .addStep(new GeneratePaymentStep(dependencyBuilder));
     }

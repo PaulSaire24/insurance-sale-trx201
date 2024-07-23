@@ -59,13 +59,21 @@ public class PipInsuranceBankNotLife implements PipelineInsuranceContractFactory
         dependencyBuilder.setCrossOperationsBusinessInsuranceContractBank(crossOperationsBusinessInsuranceContractBank) ;
     }
 
+    /**
+     * This method is used to configure the pipeline for the Royal Contract.
+     * It creates a new pipeline and adds various steps to it.
+     * Each step represents a specific operation in the process of creating a contract.
+     *
+     * @return Pipeline - This returns the configured pipeline with all the steps added.
+     */
     @Override
     public Pipeline configureRoyalContract() {
         return new Pipeline()
                 .addStep(new ValidateConditionsContractNotLifeStep(dependencyBuilder))
-                .addStep(new FetchRequiredDataNotLifeStep(dependencyBuilder))
+                .addStep(new FetchRequiredDataStep(dependencyBuilder))
                 .addStep(new GenerateContractNotLifeStep(dependencyBuilder))
                 .addStep(new SaveInsuranceDataNotLifeStep(dependencyBuilder))
+                .addStep(new SaveContractParticipantStep(dependencyBuilder))
                 .addStep(new GeneratePaymentStep(dependencyBuilder));
     }
 

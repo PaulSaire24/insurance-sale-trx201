@@ -1,6 +1,6 @@
 package com.bbva.rbvd.lib.r211.impl.pattern.factory;
 
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.pattern.decorator.Insurance;
 import com.bbva.rbvd.lib.r211.impl.pattern.decorator.LifeDefaultRimacDecorator;
@@ -20,14 +20,14 @@ public class RimacCompanyLifeFactory implements InsuranceCompanyFactory {
      * Then it decorates this instance with LifeDefaultRimacDecorator, which might add or override some functionalities.
      * Finally, it calls the createPolicyOfCompany method on the decorated instance to create the policy.
      *
-     * @param processContextContractAndPolicyDTO This is the data transfer object containing the details of the product for which the policy is to be created.
-     * @return ResponseLibrary<ProcessContextContractAndPolicyDTO> This returns the response of the policy creation process wrapped in a ResponseLibrary object.
+     * @param contextEmission This is the data transfer object containing the details of the product for which the policy is to be created.
+     * @return ResponseLibrary<ContextEmission> This returns the response of the policy creation process wrapped in a ResponseLibrary object.
      */
     @Override
-    public ResponseLibrary<ProcessContextContractAndPolicyDTO> createInsuranceByProduct(ProcessContextContractAndPolicyDTO processContextContractAndPolicyDTO){
+    public ResponseLibrary<ContextEmission> createInsuranceByProduct(ContextEmission contextEmission){
         Insurance rimacCompany = new RimacCompany(policyRBVDR201ServiceExternal);
         rimacCompany = new LifeDefaultRimacDecorator(mapperHelper,rimacCompany);
-        return rimacCompany.createPolicyOfCompany(processContextContractAndPolicyDTO);
+        return rimacCompany.createPolicyOfCompany(contextEmission);
     }
 
     public void setMapperHelper(MapperHelper mapperHelper) {

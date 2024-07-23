@@ -7,7 +7,7 @@ import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.policy.RelatedContractDTO;
-import com.bbva.rbvd.dto.insurancemissionsale.dto.ProcessContextContractAndPolicyDTO;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.EmissionBean;
 import org.springframework.util.CollectionUtils;
@@ -26,7 +26,7 @@ public class NotLifeDefaultRimacDecorator extends InsuranceDecorator {
     }
 
     @Override
-    public ResponseLibrary<ProcessContextContractAndPolicyDTO> createPolicyOfCompany(ProcessContextContractAndPolicyDTO processPrePolicy) {
+    public ResponseLibrary<ContextEmission> createPolicyOfCompany(ContextEmission processPrePolicy) {
         CustomerListASO customerList = processPrePolicy.getCustomerList();
         PolicyASO asoResponse = processPrePolicy.getAsoResponse();
         PolicyDTO requestBody = processPrePolicy.getPolicy();
