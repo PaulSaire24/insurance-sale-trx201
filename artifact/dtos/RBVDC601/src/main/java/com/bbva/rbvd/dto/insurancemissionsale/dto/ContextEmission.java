@@ -7,6 +7,7 @@ import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EmisionBO;
 import com.bbva.rbvd.dto.insrncsale.bo.emision.EndosatarioBO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
@@ -50,6 +51,9 @@ public class ContextEmission {
 
     private DataASO dataASO;
 
+    private Map<String, Object> quotationData;
+    private List<InsuranceCtrReceiptsDAO> receiptsList;
+
     public DataASO getDataASO() {
         return dataASO;
     }
@@ -60,6 +64,26 @@ public class ContextEmission {
 
     public String getRimacPaymentAccount() {
         return rimacPaymentAccount;
+    }
+
+    public Boolean getEndorsement() {
+        return isEndorsement;
+    }
+
+    public Map<String, Object> getQuotationData() {
+        return quotationData;
+    }
+
+    public void setQuotationData(Map<String, Object> quotationData) {
+        this.quotationData = quotationData;
+    }
+
+    public List<InsuranceCtrReceiptsDAO> getReceiptsList() {
+        return receiptsList;
+    }
+
+    public void setReceiptsList(List<InsuranceCtrReceiptsDAO> receiptsList) {
+        this.receiptsList = receiptsList;
     }
 
     public void setRimacPaymentAccount(String rimacPaymentAccount) {
@@ -212,25 +236,28 @@ public class ContextEmission {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", ContextEmission.class.getSimpleName() + "[", "]")
-                .add("policy=" + policy)
-                .add("requiredFieldsEmission=" + requiredFieldsEmission)
-                .add("asoResponse=" + asoResponse)
-                .add("contractDao=" + contractDao)
-                .add("operationGlossaryDesc='" + operationGlossaryDesc + "'")
-                .add("isEndorsement=" + isEndorsement)
-                .add("rimacRequest=" + rimacRequest)
-                .add("quotationId='" + quotationId + "'")
-                .add("traceId='" + traceId + "'")
-                .add("productId='" + productId + "'")
-                .add("quotationEmailDesc='" + quotationEmailDesc + "'")
-                .add("quotationCustomerPhoneDesc='" + quotationCustomerPhoneDesc + "'")
-                .add("responseQueryGetProductById=" + responseQueryGetProductById)
-                .add("customerList=" + customerList)
-                .add("listBusinessesASO=" + listBusinessesASO)
-                .add("rimacResponse=" + rimacResponse)
-                .add("insuranceBusinessName='" + insuranceBusinessName + "'")
-                .add("endosatarios=" + endosatarios)
-                .toString();
+        return "ContextEmission{" +
+                "policy=" + policy +
+                ", requiredFieldsEmission=" + requiredFieldsEmission +
+                ", asoResponse=" + asoResponse +
+                ", contractDao=" + contractDao +
+                ", operationGlossaryDesc='" + operationGlossaryDesc + '\'' +
+                ", isEndorsement=" + isEndorsement +
+                ", rimacRequest=" + rimacRequest +
+                ", quotationId='" + quotationId + '\'' +
+                ", traceId='" + traceId + '\'' +
+                ", productId='" + productId + '\'' +
+                ", quotationEmailDesc='" + quotationEmailDesc + '\'' +
+                ", quotationCustomerPhoneDesc='" + quotationCustomerPhoneDesc + '\'' +
+                ", responseQueryGetProductById=" + responseQueryGetProductById +
+                ", customerList=" + customerList +
+                ", listBusinessesASO=" + listBusinessesASO +
+                ", rimacResponse=" + rimacResponse +
+                ", insuranceBusinessName='" + insuranceBusinessName + '\'' +
+                ", endosatarios=" + endosatarios +
+                ", rimacPaymentAccount='" + rimacPaymentAccount + '\'' +
+                ", dataASO=" + dataASO +
+                ", quotationData=" + quotationData +
+                '}';
     }
 }
