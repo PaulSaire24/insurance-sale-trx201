@@ -1,0 +1,209 @@
+[33mcommit 489c5fe744c2cb8e5e3dec92b6d22f79c31a06a4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/royal2_0.21.0-v2-P041362[m[33m)[m
+Author: paulkyev <paul.saire.contractor@bbva.com>
+Date:   Wed Jul 24 23:18:28 2024 -0500
+
+    PARSRBVD-2924 PARSRBVD-4548 fix: resolve conflict
+
+[33mcommit c89f8db520031b74b2277dcf35dd48ee2ceac803[m
+Author: paulkyev <paul.saire.contractor@bbva.com>
+Date:   Wed Jul 24 21:07:41 2024 -0500
+
+    new step
+
+[33mcommit 8255d596c4b7c3ca5c2be068d0d0bc40bd1162ff[m[33m ([m[1;31morigin/feature/royal2_0.21.0-v2-P041362[m[33m)[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Tue Jul 23 12:47:36 2024 -0500
+
+    PARSRBVD-3439 : Se acopla nuevo de pre-emissión .
+
+[33mcommit c0fe1034dd62e58bddc1301accef7eb06d30b097[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun Jul 21 22:22:15 2024 -0500
+
+    PARSRBVD-3439 :  Se realiza flujo de pre-emisión .
+
+[33mcommit cfe16b0d4efc8e7b30684c5f5f000af8154841b5[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Fri Jul 5 09:25:22 2024 -0500
+
+    PARSRBVD-3439 :  Se realizo adecuación para formalización externa, se añade unit testing de pruebas .
+
+[33mcommit 284a2e39028758a767317b4caeca2475d83fb9e0[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Wed Jul 3 01:39:54 2024 -0500
+
+    PARSRBVD-3439: Se realiza fix de indicador de pre-formalización .
+
+[33mcommit 774637269e746c8d7783a094ee0d008a9c4486b3[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Tue Jun 25 23:18:43 2024 -0500
+
+    PARSRBVD-3439: Se añade validación del indicador de pre-formalización .
+
+[33mcommit 9f5d0a95b9ce0aea41d95aea118726046f7a277e[m[33m ([m[1;31morigin/feature/royal2.1_pipeline_pattern[m[33m, [m[1;32mfeature/royal2.1_pipeline_pattern[m[33m)[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Fri Jun 21 12:06:08 2024 -0500
+
+    PARSRBVD-3439: Se añade indicador de pre-formalización fix .
+
+[33mcommit acc888396937f1be863c35a9137ca1ba84c18d64[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Mon Jun 17 21:25:53 2024 -0500
+
+    PARSRBVD-3439: Se refactoriza libreria externa de conexión cics .
+
+[33mcommit 423434d252bc63338e8091d73fbe7e42e146ee53[m[33m ([m[1;31morigin/feature/flowPipeLineDesign-v1-P041362[m[33m)[m
+Author: jose.sandoval.tirado <jose.sandoval.tirado@bbva.com>
+Date:   Sun Jun 9 22:22:13 2024 -0500
+
+    PARSRBVD-3439: Se actualiza la rama con las modificaciones del tag productivo 0.20.9
+
+[33mcommit e7ec4122f14dce52a78420685f4905a0ea048527[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Mon Jun 3 13:47:09 2024 -0500
+
+    PARSRBVD-3439: Se añade fix por validaciónes y excepciones por que ocurren despues de realizar el cobro .
+
+[33mcommit 6e908b9d4c4b602bfc3c863e370c3bf47f0b368c[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Mon May 27 22:17:01 2024 -0500
+
+    PARSRBVD-2658 : Se añade fix de validación por rehuso de libreria externa de emisión .
+
+[33mcommit 3e1943a97ed1fe1e1959aa7301b6d182e92a7a16[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun May 26 15:19:17 2024 -0500
+
+    PARSRBVD-2658 : Se añade campos para la transacción ICR3 de formalización .
+
+[33mcommit 68704ed5a21b6346c720561672e407dd22960610[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sat May 25 21:09:43 2024 -0500
+
+    PARSRBVD-2658 : Se realiza mockeo de servicio por indisponibilidad .
+
+[33mcommit 30295aa7239ed00f1a8ceca17e54b7f17682b034[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Fri May 24 14:45:35 2024 -0500
+
+    PARSRBVD-2658 : Se realiza el controlador de operaciones cross a nivel de error en el llamado a la entidad aseguradora rimac .
+
+[33mcommit 34bab538fa1fe1d487d128d4ecf3aae1ff5ca817[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Mon May 20 23:10:10 2024 -0500
+
+    feat : PARSRBVD-2658 : Refactorización y detallitos documentales  .
+
+[33mcommit 54762e049ccb38b4477cfc48bc8b675ccf9db37a[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Mon May 20 22:31:00 2024 -0500
+
+    feat : PARSRBVD-2658 : Se añade cambios de validación de terceros , ultimo pase .
+
+[33mcommit ee332692c8f9f10f952d9e173b64b01aaf85a075[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Mon May 20 21:38:01 2024 -0500
+
+    feat : PARSRBVD-2658 : Se encapsula logica legacy para regresión tecnica .
+
+[33mcommit a91843485952e0379442235bb48d2a45ea7da6ff[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Mon May 20 20:08:18 2024 -0500
+
+    feat : PARSRBVD-2658 : Se realiza implementación para el flujo de los productos vida .
+
+[33mcommit 2b9dfa208ead29244147178d901bdc434a8e0baf[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Mon May 20 00:51:16 2024 -0500
+
+    feat : PARSRBVD-2658 : Se agrega trazabilidad de logs para verificación de respuesta .
+
+[33mcommit ff78d824c4700c1192c2387e065bf89ccb7ad3e9[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun May 19 23:55:36 2024 -0500
+
+    feat : PARSRBVD-2658 : Se realiza validación de datos no enviados por host .
+
+[33mcommit e405f8062b164096261360cd4f724d138a786dad[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun May 19 22:26:19 2024 -0500
+
+    feat : PARSRBVD-2658 : Se realiza corrección de parametros a nivel de llamado al metodo de emisión .
+
+[33mcommit 6a1890c21f4b239c30a290b9e41ca742c7e22e98[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun May 19 20:01:56 2024 -0500
+
+    feat : PARSRBVD-2658 : Se añade trazabilidad de parametros para la emisión en la compañia aseguradora .
+
+[33mcommit 81be8b40f2bc5748517e0607ff933d328db06610[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun May 19 19:23:33 2024 -0500
+
+    feat : PARSRBVD-2658 : Se realiza correción de mapeo de datos para la ICR3.
+
+[33mcommit cecd155c650d517a9fbe7329768c27a40366b3b3[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun May 19 18:45:00 2024 -0500
+
+    feat : PARSRBVD-2658 : Refactorización de validaciones cross .
+
+[33mcommit 9f8601c4b8bbaef58e5312cb0b591d8816543277[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun May 19 18:18:39 2024 -0500
+
+    feat : PARSRBVD-2658 : Se corrige mapeo de headers .
+
+[33mcommit 5105afa5fa404d30775efdbdc7ae6d796a7f058d[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Fri May 17 16:19:31 2024 -0500
+
+    feat : PARSRBVD-2658 : Se implementa logs de verificación .
+
+[33mcommit a1835439f49c75e40c6a53f2077482bdbfe45640[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Fri May 17 14:53:25 2024 -0500
+
+    feat : PARSRBVD-2658 : Se refactoriza por error incosistencia el libreria de fechas NoSuchMethodError .
+
+[33mcommit a01d487df9586d105eae42e65a688e7e22d8d5a3[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Fri May 17 10:30:45 2024 -0500
+
+    feat : PARSRBVD-2658 : Se refactoriza validación de cadenas .
+
+[33mcommit 24290b396865d7634c012b545da4311a90d8947f[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Thu May 16 18:00:14 2024 -0500
+
+    feat : PARSRBVD-2658 : Se refactoriza conversión de fechas por error noSuchMetodError.
+
+[33mcommit 3658358e6309daca91ff5cc2ea415649bc7df769[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Wed May 15 16:10:21 2024 -0500
+
+    feat : PARSRBVD-2658 : Se realiza correción de tipos de datos.
+
+[33mcommit a37d9fa1133a53ea6e6388af6ce8b52c0160053a[m
+Author: Roger espinoza <roger.espinoza.jaimes.contractor@bbva.com>
+Date:   Tue May 14 15:53:26 2024 -0500
+
+    [PARSRBVD-2346] modification metod executeBusinessLogicEmissionPrePolicyLifeProduct - add status
+
+[33mcommit 4aac5120edfa9eb33b9bd4e2d32f4ebae22a4a12[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun May 12 19:47:42 2024 -0500
+
+    feat : PARSRBVD-2658 : Se realiza refactorización de metodos por reglas del sonar .
+
+[33mcommit 2fa666c112f5a42126591b76a55a61e28e9ff28d[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun May 12 18:12:24 2024 -0500
+
+    feat : PARSRBVD-2658 : Termino de la refactorización de la libreria RBVDR201 con cobertura de testing .
+
+[33mcommit e4df824303db012bbafafaa3ad9c559e317183b3[m
+Author: Cristian <cristian.segovia@bbva.com>
+Date:   Sun May 12 17:48:34 2024 -0500
+
+    feat : PARSRBVD-2658 : Se realiza la r

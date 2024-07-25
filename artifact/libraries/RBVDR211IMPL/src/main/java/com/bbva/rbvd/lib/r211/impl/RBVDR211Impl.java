@@ -1,9 +1,16 @@
 package com.bbva.rbvd.lib.r211.impl;
 
+import com.bbva.apx.exception.business.BusinessException;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
+import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
+import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyLegacyBusinessImpl;
+import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.PipelineFactory;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.impl.FactoryProduct;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Pipeline;
 import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +26,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	 * This property is used to access the configuration properties related to basic insurance products.
 	 */
 	private BasicProductInsuranceProperties basicProductInsuranceProperties;
+
+	private DependencyBuilder dependencyBuilder;
 
 
 	/**
@@ -94,6 +103,39 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	public PolicyDTO executeEmissionPrePolicyLifeProductLegacy(PolicyDTO requestBody){
 		EmissionPolicyLegacyBusinessImpl emissionPolicyLegacyBusiness = new EmissionPolicyLegacyBusinessImpl(this.applicationConfigurationService, this.rbvdR201,this.pisdR012,this.ksmkR002,this.pisdR401,this.pisdR350,this.mapperHelper,this.pisdR601);
 		return emissionPolicyLegacyBusiness.executeEmissionPrePolicyLifeProductLegacy(requestBody);
+	}
+
+	@Override
+	public ResponseLibrary<PolicyDTO> executeEmissionPolicy(PolicyDTO requestBody) {
+		ContextEmission contextEmission = new ContextEmission();
+		contextEmission.setPolicy(requestBody);
+		PipelineFactory product = FactoryProduct.getProduct(requestBody.getProductId(), dependencyBuilder);
+		ResponseLibrary<ContextEmission> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(contextEmission);
+
+		try {
+			Pipeline pipeline = product.createPipeline("PC");
+			pipeline.executeGenerateInsuranceContractRoyal(contractRoyalGenerated);
+			ResponseLibrary<ContextEmission> contractRoyalAndPolicyGenerated = insuranceCompanyFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
+			managementOperationsCross.afterProcessBusinessExecutionNotLifeCross(contractRoyalAndPolicyGenerated.getBody());
+			return ResponseLibrary.ResponseServiceBuilder.an()
+					.flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+					.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
+					.body(contractRoyalAndPolicyGenerated.getBody().getPolicy());
+		}catch (BusinessException exception){
+			LOGGER.error(" :: executeEmissionPolicy[ exceptionCode :: {} ,  message :: {}]",exception.getAdviceCode(),exception.getMessage());
+			if(RBVDInternalErrors.ERROR_GENERIC_APX_IN_CALLED_RIMAC.getAdviceCode().equalsIgnoreCase(exception.getAdviceCode())){
+				this.mapperHelper.mappingOutputFields(contractRoyalGenerated.getBody().getPolicy(), contractRoyalGenerated.getBody().getAsoResponse(), contractRoyalGenerated.getBody().getRimacResponse(), contractRoyalGenerated.getBody().getRequiredFieldsEmission());
+				return ResponseLibrary.ResponseServiceBuilder.an()
+						.statusIndicatorProcess(RBVDInternalConstants.Status.OK)
+						.flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+						.body(contractRoyalGenerated.getBody().getPolicy());
+			}
+			return ResponseLibrary.ResponseServiceBuilder.an()
+					.statusIndicatorProcess( exception.isHasRollback() ? RBVDInternalConstants.Status.EWR : RBVDInternalConstants.Status.ENR)
+					.flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+					.build();
+		}
+
 	}
 
 	/**

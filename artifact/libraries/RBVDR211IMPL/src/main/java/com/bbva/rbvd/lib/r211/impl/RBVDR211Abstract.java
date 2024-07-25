@@ -9,8 +9,11 @@ import com.bbva.pisd.lib.r401.PISDR401;
 import com.bbva.pisd.lib.r601.PISDR601;
 import com.bbva.rbvd.lib.r201.RBVDR201;
 import com.bbva.rbvd.lib.r211.RBVDR211;
+import com.bbva.rbvd.lib.r211.impl.aspects.interfaces.ManagementOperation;
 import com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyLifeBusinessImpl;
 import com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyNotLifeBusinessImpl;
+import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
+import com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 /**
@@ -36,6 +39,10 @@ public abstract class RBVDR211Abstract implements RBVDR211 {
 	protected PISDR601 pisdR601;
 
 	protected PISDR226 pisdR226;
+
+	protected InsuranceCompanyFactory insuranceCompanyFactory;
+
+	protected ManagementOperation managementOperationsCross;
 
 
 	/**
