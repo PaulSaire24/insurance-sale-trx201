@@ -44,4 +44,6 @@ public interface RBVDR211 {
 	 * @return A PolicyDTO object containing the details of the emitted policy.
 	 */
 	PolicyDTO executeEmissionPrePolicyLifeProductLegacy(PolicyDTO requestBody);
+
+	ResponseLibrary<PolicyDTO> executeEmissionPolicy(PolicyDTO requestBody);
 }
