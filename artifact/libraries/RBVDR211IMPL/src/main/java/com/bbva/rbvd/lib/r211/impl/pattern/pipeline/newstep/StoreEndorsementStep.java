@@ -20,12 +20,12 @@ import java.util.Objects;
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.INSERTION_ERROR_IN_TABLE;
 import static com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils.buildValidation;
 
-public class ValidateEndorsementStep implements Step {
+public class StoreEndorsementStep implements Step {
     private final DependencyBuilder dependencyBuilder;
 
     private final ArchitectureAPXUtils architectureAPXUtils = new ArchitectureAPXUtils();
 
-    public ValidateEndorsementStep(DependencyBuilder dependencyBuilder) {
+    public StoreEndorsementStep(DependencyBuilder dependencyBuilder) {
         this.dependencyBuilder = dependencyBuilder;
     }
     @Override

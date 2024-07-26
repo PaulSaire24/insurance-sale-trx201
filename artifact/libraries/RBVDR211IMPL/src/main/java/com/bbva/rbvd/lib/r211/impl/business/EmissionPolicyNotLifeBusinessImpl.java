@@ -44,9 +44,9 @@ public class EmissionPolicyNotLifeBusinessImpl {
         ResponseLibrary<ContextEmission> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(contextEmission);
         try {
              if(StringUtils.isNotEmpty(requestBody.getId())){
-                 contractRoyalGenerated = pipInsuranceBankFlowPreEmission.configureRoyalContract().executeGenerateInsuranceContractRoyal(contractRoyalGenerated);
+                 contractRoyalGenerated = pipInsuranceBankFlowPreEmission.configureRoyalContract().generateContract(contractRoyalGenerated);
              }else{
-                 contractRoyalGenerated = pipInsuranceBankNotLife.configureRoyalContract().executeGenerateInsuranceContractRoyal(contractRoyalGenerated);
+                 contractRoyalGenerated = pipInsuranceBankNotLife.configureRoyalContract().generateContract(contractRoyalGenerated);
              }
              ResponseLibrary<ContextEmission> contractRoyalAndPolicyGenerated = insuranceCompanyFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
              managementOperationsCross.afterProcessBusinessExecutionNotLifeCross(contractRoyalAndPolicyGenerated.getBody());

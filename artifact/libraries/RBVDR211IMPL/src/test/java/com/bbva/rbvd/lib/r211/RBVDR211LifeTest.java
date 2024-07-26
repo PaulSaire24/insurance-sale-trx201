@@ -381,7 +381,7 @@ public class RBVDR211LifeTest {
 
 		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
 		assertNull(contractAndPolicyGenerated.getBody());
-		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.Status.EWR,contractAndPolicyGenerated.getStatusProcess());
 		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
 		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_NOT_RESULT_CONTRACT.getAdviceCode().equalsIgnoreCase(advice.getCode())));
 		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
@@ -424,7 +424,7 @@ public class RBVDR211LifeTest {
 
 		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
 		assertNull(contractAndPolicyGenerated.getBody());
-		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.Status.EWR,contractAndPolicyGenerated.getStatusProcess());
 		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
 		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_NOT_RESULT_CONTRACT.getAdviceCode().equalsIgnoreCase(advice.getCode())));
 		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
@@ -466,7 +466,7 @@ public class RBVDR211LifeTest {
 
 		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
 		assertNull(contractAndPolicyGenerated.getBody());
-		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.Status.EWR,contractAndPolicyGenerated.getStatusProcess());
 		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
 		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_NOT_TIMEOUT_GENERAL.getAdviceCode().equalsIgnoreCase(advice.getCode())));
 		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
@@ -509,7 +509,7 @@ public class RBVDR211LifeTest {
 		 * */
 		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
 		assertNull(contractAndPolicyGenerated.getBody());
-		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.Status.EWR,contractAndPolicyGenerated.getStatusProcess());
 		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
 		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_STATUS_CONTRACT_FOR.getAdviceCode().equalsIgnoreCase(advice.getCode())));
 		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
@@ -552,7 +552,7 @@ public class RBVDR211LifeTest {
 		 * */
 		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
 		assertNull(contractAndPolicyGenerated.getBody());
-		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.Status.EWR,contractAndPolicyGenerated.getStatusProcess());
 		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
 		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_STATUS_CONTRACT_BAJ.getAdviceCode().equalsIgnoreCase(advice.getCode())));
 		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
@@ -595,7 +595,7 @@ public class RBVDR211LifeTest {
 		 * */
 		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
 		assertNull(contractAndPolicyGenerated.getBody());
-		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.Status.EWR,contractAndPolicyGenerated.getStatusProcess());
 		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
 		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_STATUS_CONTRACT_ANU.getAdviceCode().equalsIgnoreCase(advice.getCode())));
 		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());
@@ -638,7 +638,7 @@ public class RBVDR211LifeTest {
 		 * */
 		ResponseLibrary<PolicyDTO> contractAndPolicyGenerated = this.rbvdr211.executeEmissionPrePolicyLifeProductFlowNew(this.requestBody);
 		assertNull(contractAndPolicyGenerated.getBody());
-		assertEquals(RBVDInternalConstants.Status.ENR,contractAndPolicyGenerated.getStatusProcess());
+		assertEquals(RBVDInternalConstants.Status.EWR,contractAndPolicyGenerated.getStatusProcess());
 		assertEquals(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS,contractAndPolicyGenerated.getFlowProcess());
 		assertTrue(this.context.getAdviceList().stream().anyMatch(advice -> RBVDInternalErrors.ERROR_STATUS_CONTRACT_FLOW_PRE_FORMALIZATION.getAdviceCode().equalsIgnoreCase(advice.getCode())));
 		assertEquals(messageExceptionNotResultExpected,	this.context.getAdviceList().get(0).getDescription());

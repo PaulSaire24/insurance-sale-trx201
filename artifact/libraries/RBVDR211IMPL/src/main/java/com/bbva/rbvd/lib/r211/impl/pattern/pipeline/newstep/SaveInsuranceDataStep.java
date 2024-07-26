@@ -14,9 +14,7 @@ import com.bbva.rbvd.lib.r211.impl.transfor.bean.IsrcContractMovBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.PolicyASOBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.list.RelatedContractsList;
 import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
-import org.springframework.util.CollectionUtils;
 
-import java.util.List;
 import java.util.Objects;
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.INSERTION_ERROR_IN_TABLE;

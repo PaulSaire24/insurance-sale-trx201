@@ -107,7 +107,7 @@ public class RBVDT20101PETransactionTest {
 		transaction.execute();
 
 		// Then
-		assertEquals(Severity.OK, transaction.getSeverity());
+		assertEquals(Severity.ENR, transaction.getSeverity());
 	}
 
 	@Test
@@ -120,7 +120,7 @@ public class RBVDT20101PETransactionTest {
 		transaction.execute();
 
 		// Then
-		assertEquals(Severity.ENR, transaction.getSeverity());
+		assertEquals(Severity.EWR, transaction.getSeverity());
 	}
 
 	@Test
@@ -132,7 +132,7 @@ public class RBVDT20101PETransactionTest {
 				ResponseLibrary.ResponseServiceBuilder
 						.an().statusIndicatorProcess(RBVDInternalConstants.Status.OK).flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
 						.body(simulateResponse);
-		when(rbvdr211.executeEmissionPolicyNotLifeFlowNew(anyObject())).thenReturn(response);
+		when(rbvdr211.executeEmissionPolicy(anyObject())).thenReturn(response);
 
 		// When
 		transaction.execute();
@@ -148,7 +148,7 @@ public class RBVDT20101PETransactionTest {
 				ResponseLibrary.ResponseServiceBuilder
 						.an().statusIndicatorProcess(RBVDInternalConstants.Status.EWR).flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
 						.body(new PolicyDTO());
-		when(rbvdr211.executeEmissionPolicyNotLifeFlowNew(anyObject())).thenReturn(response);
+		when(rbvdr211.executeEmissionPolicy(anyObject())).thenReturn(response);
 
 		// When
 		transaction.execute();
@@ -165,7 +165,7 @@ public class RBVDT20101PETransactionTest {
 				ResponseLibrary.ResponseServiceBuilder
 						.an().statusIndicatorProcess(RBVDInternalConstants.Status.ENR).flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
 						.body(new PolicyDTO());
-		when(rbvdr211.executeEmissionPolicyNotLifeFlowNew(anyObject())).thenReturn(response);
+		when(rbvdr211.executeEmissionPolicy(anyObject())).thenReturn(response);
 		// When
 		transaction.execute();
 
@@ -178,7 +178,11 @@ public class RBVDT20101PETransactionTest {
 		PolicyDTO simulateResponse = mockData.getCreateInsuranceRequestBody();
 		simulateResponse.setOperationDate(new Date());
 
-		when(rbvdr211.executeEmissionPrePolicyLegacy(anyObject())).thenReturn(simulateResponse);
+		ResponseLibrary<PolicyDTO> response =
+				ResponseLibrary.ResponseServiceBuilder
+						.an().statusIndicatorProcess(RBVDInternalConstants.Status.ENR).flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+						.body(simulateResponse);
+		when(rbvdr211.executeEmissionPolicy(anyObject())).thenReturn(response);
 
 		this.transaction.getContext().getParameterList().forEach(
 				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)
@@ -200,7 +204,7 @@ public class RBVDT20101PETransactionTest {
 	@Test
 	public void testNull() {
 		// Given
-		when(rbvdr211.executeEmissionPolicyNotLifeFlowNew(anyObject())).thenReturn(ResponseLibrary.ResponseServiceBuilder.an()
+		when(rbvdr211.executeEmissionPolicy(anyObject())).thenReturn(ResponseLibrary.ResponseServiceBuilder.an()
 				.flowProcess(RBVDInternalConstants.FlowProcess.LEGACY_FLOW_PROCESS).body(null));
 		this.transaction.execute();
 		assertEquals(Severity.ENR.getValue(), this.transaction.getSeverity().getValue());
@@ -217,7 +221,12 @@ public class RBVDT20101PETransactionTest {
 		this.addParameter("productId", "840");
 		simulateResponse.setOperationDate(new Date());
 
-		when(rbvdr211.executeEmissionPrePolicyLifeProductLegacy(anyObject())).thenReturn(simulateResponse);
+		ResponseLibrary<PolicyDTO> response =
+				ResponseLibrary.ResponseServiceBuilder
+						.an().statusIndicatorProcess(RBVDInternalConstants.Status.ENR).flowProcess(RBVDInternalConstants.FlowProcess.NEW_FLOW_PROCESS)
+						.body(simulateResponse);
+
+		when(rbvdr211.executeEmissionPolicy(anyObject())).thenReturn(response);
 
 		this.transaction.getContext().getParameterList().forEach(
 				(key, value) -> LOGGER.info("Key {} with value: {}", key, value)

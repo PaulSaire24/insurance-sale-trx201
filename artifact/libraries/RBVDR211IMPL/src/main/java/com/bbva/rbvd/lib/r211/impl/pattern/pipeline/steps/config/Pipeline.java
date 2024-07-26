@@ -17,15 +17,15 @@ public class Pipeline {
         return this;
     }
 
-    public ResponseLibrary<ContextEmission> executeGenerateInsuranceContractRoyal(ResponseLibrary<ContextEmission> processContextContractAndPolicy) {
+    public ResponseLibrary<ContextEmission> generateContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy) {
         LOGGER.info("------> Ejecutando pipeline : " + processContextContractAndPolicy.getBody().getPolicy().getProductId());
-        executeGenerateInsuranceContractRoyal(processContextContractAndPolicy, 0);
+        generateContract(processContextContractAndPolicy, 0);
         return processContextContractAndPolicy;
     }
 
-    private void executeGenerateInsuranceContractRoyal(ResponseLibrary<ContextEmission> processContextContractAndPolicy, int index) {
+    private void generateContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, int index) {
         if (index < pasos.size()) {
-            pasos.get(index).executeStepGenerationContract(processContextContractAndPolicy, (ctx, next) -> executeGenerateInsuranceContractRoyal(ctx, index + 1));
+            pasos.get(index).executeStepGenerationContract(processContextContractAndPolicy, (ctx, next) -> generateContract(ctx, index + 1));
         }
     }
 }

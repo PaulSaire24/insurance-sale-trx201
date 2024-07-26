@@ -285,7 +285,7 @@ public class MapperHelper {
         return datosParticulares;
     }
 
-    private static List<DatoParticularBO> getParticularDataBOLife(String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber) {
+    private static List<DatoParticularBO> getParticularDataBOLife(String channelCode, String dataId, String saleOffice,String paymentType,String paymentNumber,PolicyDTO requestBody) {
         List<DatoParticularBO> datosParticulares = new ArrayList<>();
         String[] datos = new String[]{
                 PARTICULAR_DATA_THIRD_CHANNEL, PARTICULAR_DATA_CERT_BANCO, PARTICULAR_DATA_SALE_OFFICE,
@@ -320,6 +320,24 @@ public class MapperHelper {
             if(Objects.nonNull(datoParticular.getValor())) { datosParticulares.add(datoParticular); }
 
         }
+
+
+        DatoParticularBO canalTercero = new DatoParticularBO();
+        canalTercero.setEtiqueta("CANAL_TERCERO");
+        canalTercero.setValor("PC");
+
+
+        DatoParticularBO oficinVenta = new DatoParticularBO();
+        oficinVenta.setEtiqueta("OFICINA_VENTA");
+        oficinVenta.setValor(requestBody.getBank().getBranch().getId());
+
+        DatoParticularBO tipoMedioPago = new DatoParticularBO();
+        tipoMedioPago.setEtiqueta("TIPO_MEDIO_PAGO");
+        tipoMedioPago.setValor(requestBody.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId());
+
+        DatoParticularBO numeroMedioPago = new DatoParticularBO();
+        numeroMedioPago.setEtiqueta("NUMERO_MEDIO_PAGO");
+        numeroMedioPago.setValor(requestBody.getPaymentMethod().getRelatedContracts().get(0).getNumber());
 
         return datosParticulares;
     }
@@ -1113,7 +1131,7 @@ public class MapperHelper {
         PayloadEmisionBO payload = new PayloadEmisionBO();
 
         payload.setProducto(insuranceBusinessName);
-        payload.setDatosParticulares(getParticularDataBOLife(channelCode, dataId, saleOffice,paymentType,paymentNumber));
+        payload.setDatosParticulares(getParticularDataBOLife(channelCode, dataId, saleOffice,paymentType,paymentNumber,requestBody));
 
         if(requestBody.getProductId().equals(RBVDProperties.INSURANCE_PRODUCT_TYPE_VIDA_4.getValue())){
             FacturacionBO factura = new FacturacionBO();

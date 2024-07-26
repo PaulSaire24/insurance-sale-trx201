@@ -109,12 +109,12 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	public ResponseLibrary<PolicyDTO> executeEmissionPolicy(PolicyDTO requestBody) {
 		ContextEmission contextEmission = new ContextEmission();
 		contextEmission.setPolicy(requestBody);
-		PipelineFactory product = FactoryProduct.getProduct(requestBody.getProductId(), dependencyBuilder);
+		PipelineFactory product = FactoryProduct.getInstance(requestBody.getProductId(), dependencyBuilder);
 		ResponseLibrary<ContextEmission> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(contextEmission);
 
 		try {
-			Pipeline pipeline = product.createPipeline("PC");
-			pipeline.executeGenerateInsuranceContractRoyal(contractRoyalGenerated);
+			Pipeline pipeline = product.createPipeline(requestBody.getSaleChannelId());
+			pipeline.generateContract(contractRoyalGenerated);
 			ResponseLibrary<ContextEmission> contractRoyalAndPolicyGenerated = insuranceCompanyFactory.createInsuranceByProduct(contractRoyalGenerated.getBody());
 			managementOperationsCross.afterProcessBusinessExecutionNotLifeCross(contractRoyalAndPolicyGenerated.getBody());
 			return ResponseLibrary.ResponseServiceBuilder.an()

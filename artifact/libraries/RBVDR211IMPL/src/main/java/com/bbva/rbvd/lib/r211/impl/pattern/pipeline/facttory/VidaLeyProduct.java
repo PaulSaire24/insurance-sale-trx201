@@ -1,8 +1,7 @@
 package com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory;
 
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
-import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.newstep.GetReceiptListStep;
-import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.newstep.SaveContractParticipantStep;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.newstep.*;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Pipeline;
 
 public class VidaLeyProduct implements PipelineFactory{
@@ -14,8 +13,13 @@ public class VidaLeyProduct implements PipelineFactory{
     }
 
     public  Pipeline VidaLey_PC(){
-        return new Pipeline().addStep(new GetReceiptListStep(dependencyBuilder))
-                    .addStep(new SaveContractParticipantStep(dependencyBuilder));
+        return new Pipeline().addStep(new ValidateConditionsContractStep(dependencyBuilder))
+                            .addStep(new PartyValidationStep(dependencyBuilder))
+                            .addStep(new FetchRequiredDataStep(dependencyBuilder))
+                            .addStep(new GenerateContractStep(dependencyBuilder))
+                            .addStep(new SaveInsuranceDataStep(dependencyBuilder))
+                            .addStep(new ValidateRoles(dependencyBuilder))
+                            .addStep(new StoreEndorsementStep(dependencyBuilder));
     }
 
     @Override
