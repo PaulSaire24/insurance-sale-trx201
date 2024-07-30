@@ -211,6 +211,8 @@ public class RBVDR211LifeTest {
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.833.BI", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.840.PC", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.841.PC", "0")).thenReturn("0");
+		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.842.PC", "0")).thenReturn("0");
+		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.830.PC", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.range.payment.amount.insurance", "5")).thenReturn("5");
 		when(this.applicationConfigurationService.getDefaultProperty(eq("MONTHLY"),eq(StringUtils.EMPTY))).thenReturn("M");
 		when(this.applicationConfigurationService.getDefaultProperty(eq("flow.royal2.enabled.all.products"),eq(Boolean.FALSE.toString()))).thenReturn(Boolean.TRUE.toString());
@@ -284,6 +286,8 @@ public class RBVDR211LifeTest {
 		array2[0] = 1;
 		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq("PISD.UPDATE_EXPIRATION_DATE_RECEIPTS"), Mockito.any())).
 				thenReturn(array2);
+
+
 
 		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq(RBVDProperties.QUERY_INSERT_INSURANCE_CONTRACT_DETAILS.getValue()), Mockito.any())).thenReturn(new int[2]);
 
@@ -603,6 +607,7 @@ public class RBVDR211LifeTest {
 
 	}
 
+
 	@Test
 	public void execute_flow_pre_emission_error_contract_status_id_default() {
 		/**
@@ -737,6 +742,67 @@ public class RBVDR211LifeTest {
 		assertNotNull(validation.getBody());
 	}
 
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyVidaLey_WithInsuredParticipant() throws  IOException{
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyDynamicLifeProduct_WithInsuredParticipant...");
+		AgregarTerceroBO responseAddParticipants = mockData.getAddParticipantsRimacResponse();
+		EmisionBO responseEmission = mockData.getEmissionRimacResponseLife();
+		ParticipantDTO insured = new ParticipantDTO();
+		insured.setCustomerId("84948543");
+		ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
+		participantTypeDTO.setId(ConstantsUtil.Participant.INSURED);
+		insured.setParticipantType(participantTypeDTO);
+		IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
+		identityDocumentDTO.setNumber("494830484");
+		DocumentTypeDTO documentTypeDTO = new DocumentTypeDTO();
+		documentTypeDTO.setId("DNI");
+		identityDocumentDTO.setDocumentType(documentTypeDTO);
+		insured.setIdentityDocument(identityDocumentDTO);
+		requestBody.getParticipants().add(insured);
+		requestBody.setProductId("842");
+		requestBody.setSaleChannelId("PC");
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
+
+		ResponseLibrary<PolicyDTO> validation = rbvdr211.executeEmissionPolicy(requestBody);
+		assertNotNull(validation.getBody());
+	}
+
+	@Test
+	public void executeBusinessLogicEmissionPrePolicyVehicular() throws  IOException{
+		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyDynamicLifeProduct_WithInsuredParticipant...");
+		AgregarTerceroBO responseAddParticipants = mockData.getAddParticipantsRimacResponse();
+		EmisionBO responseEmission = mockData.getEmissionRimacResponseLife();
+		ParticipantDTO insured = new ParticipantDTO();
+		insured.setCustomerId("84948543");
+		ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
+		participantTypeDTO.setId(ConstantsUtil.Participant.INSURED);
+		insured.setParticipantType(participantTypeDTO);
+		IdentityDocumentDTO identityDocumentDTO = new IdentityDocumentDTO();
+		identityDocumentDTO.setNumber("494830484");
+		DocumentTypeDTO documentTypeDTO = new DocumentTypeDTO();
+		documentTypeDTO.setId("DNI");
+		identityDocumentDTO.setDocumentType(documentTypeDTO);
+		insured.setIdentityDocument(identityDocumentDTO);
+		requestBody.getParticipants().add(insured);
+		requestBody.setProductId("830");
+		requestBody.setSaleChannelId("PC");
+
+
+		when(rbvdr201.executeGetCustomerInformation(anyString())).thenReturn(customerList);
+		when(rbvdr201.executeAddParticipantsService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseAddParticipants);
+		when(rbvdr201.executePrePolicyEmissionService(anyObject(), anyString(), anyString(), anyString())).thenReturn(responseEmission);
+
+
+
+		when(pisdR012.executeMultipleInsertionOrUpdate(Mockito.eq(RBVDProperties.QUERY_INSERT_INSURANCE_CTR_RECEIPTS.getValue()), Mockito.any())).
+				thenReturn(new int[]{1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1});
+
+		ResponseLibrary<PolicyDTO> validation = rbvdr211.executeEmissionPolicy(requestBody);
+		assertNotNull(validation.getBody());
+	}
 	@Test
 	public void executeBusinessLogicEmissionPrePolicyWithLifeDynamic_WithEndorse() throws  IOException{
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyWithLifeDynamic_WithEndorse...");

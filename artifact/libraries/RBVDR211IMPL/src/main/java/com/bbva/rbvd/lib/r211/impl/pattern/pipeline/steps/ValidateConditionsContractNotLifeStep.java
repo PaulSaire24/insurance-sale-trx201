@@ -23,7 +23,7 @@ public class ValidateConditionsContractNotLifeStep implements Step {
     }
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         Boolean existContractWithQuotation = this.dependencyBuilder.getInsuranceContractDAO().findExistenceInsuranceContract(requestBody.getQuotationId());
         if(existContractWithQuotation){
@@ -36,7 +36,7 @@ public class ValidateConditionsContractNotLifeStep implements Step {
         this.dependencyBuilder.getCrossOperationsBusinessInsuranceContractBank().validateQuotationData(quotationData, requestBody.getQuotationId());
         this.dependencyBuilder.getCrossOperationsBusinessInsuranceContractBank().validateQuotationAmount(enableValidationQuotationAmount,quotationData,requestBody);
 
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 
 

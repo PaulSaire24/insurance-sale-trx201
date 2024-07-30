@@ -7,7 +7,6 @@ import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
-import com.bbva.rbvd.lib.r211.impl.pattern.crossoperations.CrossOperationsBusinessInsuranceContractBank;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Step;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.IsrcContractMovBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.PolicyASOBean;
@@ -16,7 +15,6 @@ import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.INSERTION_ERROR_IN_TABLE;
@@ -33,7 +31,7 @@ public class SaveInsuranceDataNotLifeStep implements Step {
     }
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         PolicyASO asoResponse = Objects.isNull(processContextContractAndPolicy.getBody().getAsoResponse()) ?  PolicyASOBean.PolicyDTOtoPolicyASO(requestBody) : processContextContractAndPolicy.getBody().getAsoResponse();
         InsuranceContractDAO contractDao = processContextContractAndPolicy.getBody().getContractDao();
@@ -67,6 +65,6 @@ public class SaveInsuranceDataNotLifeStep implements Step {
             }
         }
         processContextContractAndPolicy.getBody().setPolicy(requestBody);
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

@@ -27,7 +27,7 @@ public class ValidateRelatedContractStep implements Step {
         this.dependencyBuilder = dependencyBuilder;
     }
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         InsuranceContractDAO contractDao = processContextContractAndPolicy.getBody().getContractDao();
         if(!CollectionUtils.isEmpty(requestBody.getRelatedContracts())){
@@ -39,6 +39,6 @@ public class ValidateRelatedContractStep implements Step {
                 throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
             }
         }
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

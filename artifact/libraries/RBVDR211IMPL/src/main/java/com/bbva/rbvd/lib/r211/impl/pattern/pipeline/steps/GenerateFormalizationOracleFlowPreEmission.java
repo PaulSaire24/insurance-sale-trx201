@@ -1,6 +1,5 @@
 package com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps;
 
-import com.bbva.pisd.dto.insurancedao.entities.ContractEntity;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceCtrReceiptsDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
@@ -13,7 +12,6 @@ import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsuranceReceiptBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.PolicyASOBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.map.InsuranceReceiptMap;
 import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
-import com.bbva.rbvd.lib.r211.impl.util.FunctionsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +34,7 @@ public class GenerateFormalizationOracleFlowPreEmission implements Step {
     }
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         LOGGER.info(" EmissionFlowPrePolicyBusinessImpl :: executeFlowPreEmissionPolicy :: [ START ]");
         LOGGER.info(" EmissionFlowPrePolicyBusinessImpl :: executeFlowPreEmissionPolicy :: [ Body :: {} ]",processContextContractAndPolicy);
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
@@ -60,6 +58,6 @@ public class GenerateFormalizationOracleFlowPreEmission implements Step {
 
 
 
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

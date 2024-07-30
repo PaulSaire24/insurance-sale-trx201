@@ -3,7 +3,6 @@ package com.bbva.rbvd.lib.r211.impl.pattern.pipeline.newstep;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.PolicyASO;
 import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.dao.IsrcContractMovDAO;
-import com.bbva.rbvd.dto.insrncsale.dao.RelatedContractDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
@@ -12,7 +11,6 @@ import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Step;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.IsrcContractMovBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.PolicyASOBean;
-import com.bbva.rbvd.lib.r211.impl.transfor.list.RelatedContractsList;
 import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
 
 import java.util.Objects;
@@ -29,7 +27,7 @@ public class SaveInsuranceDataStep implements Step {
         this.dependencyBuilder = dependencyBuilder;
     }
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         PolicyASO asoResponse = Objects.isNull(processContextContractAndPolicy.getBody().getAsoResponse()) ?  PolicyASOBean.PolicyDTOtoPolicyASO(requestBody) : processContextContractAndPolicy.getBody().getAsoResponse();
         InsuranceContractDAO contractDao = processContextContractAndPolicy.getBody().getContractDao();
@@ -43,6 +41,6 @@ public class SaveInsuranceDataStep implements Step {
 
         processContextContractAndPolicy.getBody().setPolicy(requestBody);
         processContextContractAndPolicy.getBody().setContractDao(contractDao);
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

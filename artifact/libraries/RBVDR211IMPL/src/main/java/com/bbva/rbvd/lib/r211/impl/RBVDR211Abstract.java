@@ -14,6 +14,7 @@ import com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyLifeBusinessImpl;
 import com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyNotLifeBusinessImpl;
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.factory.interfaces.InsuranceCompanyFactory;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.impl.FactoryProduct;
 import com.bbva.rbvd.lib.r211.impl.util.MapperHelper;
 
 /**
@@ -43,6 +44,8 @@ public abstract class RBVDR211Abstract implements RBVDR211 {
 	protected InsuranceCompanyFactory insuranceCompanyFactory;
 
 	protected ManagementOperation managementOperationsCross;
+
+	protected FactoryProduct factoryProduct;
 
 
 	/**
@@ -122,4 +125,15 @@ public abstract class RBVDR211Abstract implements RBVDR211 {
 		this.mapperHelper = mapperHelper;
 	}
 
+	public void setFactoryProduct(FactoryProduct factoryProduct) {
+		this.factoryProduct = factoryProduct;
+	}
+
+	public void setInsuranceCompanyFactory(InsuranceCompanyFactory insuranceCompanyFactory) {
+		this.insuranceCompanyFactory = insuranceCompanyFactory;
+	}
+
+	public void setManagementOperationsCross(ManagementOperation managementOperationsCross) {
+		this.managementOperationsCross = managementOperationsCross;
+	}
 }

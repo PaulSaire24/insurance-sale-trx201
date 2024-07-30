@@ -21,7 +21,7 @@ public class FetchRequiredDataLifeStep implements Step {
 
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         String frequencyType = this.dependencyBuilder.getBasicProductInsuranceProperties().obtainFrequencyTypeByPeriodId(requestBody.getInstallmentPlan().getPeriod().getId());
         this.dependencyBuilder.getCrossOperationsBusinessInsuranceContractBank().validateFrequencyType(frequencyType);
@@ -41,6 +41,6 @@ public class FetchRequiredDataLifeStep implements Step {
         processContextContractAndPolicy.getBody().setRimacPaymentAccount((String) quotationData.get(RBVDProperties.FIELD_ACCOUNT_ID.getValue()) );
         processContextContractAndPolicy.getBody().setResponseQueryGetProductById(responseQueryGetProductById);
 
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

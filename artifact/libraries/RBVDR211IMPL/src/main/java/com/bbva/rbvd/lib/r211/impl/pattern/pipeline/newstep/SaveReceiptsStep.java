@@ -25,7 +25,7 @@ public class SaveReceiptsStep implements Step {
         this.dependencyBuilder = dependencyBuilder;
     }
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         List<InsuranceCtrReceiptsDAO> receiptsList = processContextContractAndPolicy.getBody().getReceiptsList();
         Map<String, Object>[] receiptsArguments = InsuranceReceiptMap.receiptsToMaps(receiptsList);
         Boolean isSavedInsuranceReceipts = this.dependencyBuilder.getInsuranceCtrReceiptsDAO().saveInsuranceReceipts(receiptsArguments);
@@ -34,6 +34,6 @@ public class SaveReceiptsStep implements Step {
             this.architectureAPXUtils.addAdviceWithDescriptionLibrary(INSERTION_ERROR_IN_TABLE.getAdviceCode(),message);
             throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
         }
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

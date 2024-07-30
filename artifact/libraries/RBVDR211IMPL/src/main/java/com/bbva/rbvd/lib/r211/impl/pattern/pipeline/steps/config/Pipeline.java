@@ -25,7 +25,7 @@ public class Pipeline {
 
     private void generateContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, int index) {
         if (index < pasos.size()) {
-            pasos.get(index).executeStepGenerationContract(processContextContractAndPolicy, (ctx, next) -> generateContract(ctx, index + 1));
+            pasos.get(index).execute(processContextContractAndPolicy, (ctx, next) -> generateContract(ctx, index + 1));
         }
     }
 }

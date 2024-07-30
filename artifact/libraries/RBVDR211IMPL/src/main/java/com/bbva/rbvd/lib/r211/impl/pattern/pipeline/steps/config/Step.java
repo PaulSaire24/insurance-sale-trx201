@@ -5,6 +5,6 @@ import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 
 public interface Step {
 
-       void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract);
+       void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract);
 
 }

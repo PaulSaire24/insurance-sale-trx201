@@ -23,7 +23,7 @@ public class PartyValidationStep implements Step {
 
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
 
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         Map<String, Object> quotationData = processContextContractAndPolicy.getBody().getQuotationData();
@@ -44,6 +44,6 @@ public class PartyValidationStep implements Step {
             this.dependencyBuilder.getCrossOperationsBusinessInsuranceContractBank().validateResponseAddParticipantsService(responseValidateParticipants);
         }
         processContextContractAndPolicy.getBody().setCustomerList(customerList);
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

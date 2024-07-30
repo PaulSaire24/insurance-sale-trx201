@@ -33,7 +33,7 @@ public class ValidateConditionsContractFlowPreEmission implements Step {
     }
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         Boolean enableValidationQuotationAmount = this.dependencyBuilder.getBasicProductInsuranceProperties().enableValidationQuotationAmountByProductIdAndChannelId(requestBody.getProductId(),requestBody.getSaleChannelId());
         Map<String, Object> quotationData = this.dependencyBuilder.getInsrncQuotationModDAO().findQuotationByQuotationId(requestBody.getQuotationId());
@@ -73,7 +73,7 @@ public class ValidateConditionsContractFlowPreEmission implements Step {
             );
 
             processContextContractAndPolicy.getBody().setContractDao(contractDao);
-            stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+            stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
         }else if (RBVDInternalConstants.CONTRACT_STATUS_ID.FOR.getValue().equalsIgnoreCase(contractEntity.getContractStatusId())) {
             LOGGER.info(" EmissionFlowPrePolicyBusinessImpl :: executeFlowPreEmissionPolicy :: [ FOR ]");
             this.architectureAPXUtils.addAdviceWithDescriptionLibrary(RBVDInternalErrors.ERROR_STATUS_CONTRACT_FOR.getAdviceCode(), RBVDInternalErrors.ERROR_STATUS_CONTRACT_FOR.getMessage());

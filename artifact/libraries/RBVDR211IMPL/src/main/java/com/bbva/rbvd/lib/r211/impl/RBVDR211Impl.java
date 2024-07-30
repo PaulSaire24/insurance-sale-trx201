@@ -1,6 +1,7 @@
 package com.bbva.rbvd.lib.r211.impl;
 
 import com.bbva.apx.exception.business.BusinessException;
+import com.bbva.rbvd.dto.insrncsale.dao.InsuranceContractDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors;
@@ -9,7 +10,6 @@ import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.business.EmissionPolicyLegacyBusinessImpl;
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.PipelineFactory;
-import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.impl.FactoryProduct;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Pipeline;
 import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
 import org.slf4j.Logger;
@@ -26,8 +26,6 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	 * This property is used to access the configuration properties related to basic insurance products.
 	 */
 	private BasicProductInsuranceProperties basicProductInsuranceProperties;
-
-	private DependencyBuilder dependencyBuilder;
 
 
 	/**
@@ -109,7 +107,8 @@ public class RBVDR211Impl extends RBVDR211Abstract {
 	public ResponseLibrary<PolicyDTO> executeEmissionPolicy(PolicyDTO requestBody) {
 		ContextEmission contextEmission = new ContextEmission();
 		contextEmission.setPolicy(requestBody);
-		PipelineFactory product = FactoryProduct.getInstance(requestBody.getProductId(), dependencyBuilder);
+
+		PipelineFactory product = this.factoryProduct.getInstance(requestBody.getProductId());
 		ResponseLibrary<ContextEmission> contractRoyalGenerated = ResponseLibrary.ResponseServiceBuilder.an().body(contextEmission);
 
 		try {

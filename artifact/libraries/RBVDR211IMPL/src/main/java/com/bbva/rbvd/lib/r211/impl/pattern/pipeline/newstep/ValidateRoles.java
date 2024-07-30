@@ -28,7 +28,7 @@ public class ValidateRoles implements Step {
         this.dependencyBuilder = dependencyBuilder;
     }
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         RequiredFieldsEmissionDAO emissionDao = processContextContractAndPolicy.getBody().getRequiredFieldsEmission();
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         PolicyASO asoResponse = processContextContractAndPolicy.getBody().getAsoResponse();
@@ -42,6 +42,6 @@ public class ValidateRoles implements Step {
                 throw buildValidation(INSERTION_ERROR_IN_TABLE,message);
             }
         }
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

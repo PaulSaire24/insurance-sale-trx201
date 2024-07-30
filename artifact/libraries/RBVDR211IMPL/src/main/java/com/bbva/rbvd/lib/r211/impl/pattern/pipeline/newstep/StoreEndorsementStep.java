@@ -29,7 +29,7 @@ public class StoreEndorsementStep implements Step {
         this.dependencyBuilder = dependencyBuilder;
     }
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         InsuranceContractDAO contractDao = processContextContractAndPolicy.getBody().getContractDao();
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         List<EndosatarioBO>  endosatarios = new ArrayList<>();
@@ -49,7 +49,7 @@ public class StoreEndorsementStep implements Step {
         }
         processContextContractAndPolicy.getBody().setEndosatarios(endosatarios);
         processContextContractAndPolicy.getBody().setPolicy(requestBody);
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
 
     }
 }

@@ -19,7 +19,8 @@ public class VidaLeyProduct implements PipelineFactory{
                             .addStep(new GenerateContractStep(dependencyBuilder))
                             .addStep(new SaveInsuranceDataStep(dependencyBuilder))
                             .addStep(new ValidateRoles(dependencyBuilder))
-                            .addStep(new StoreEndorsementStep(dependencyBuilder));
+                            .addStep(new StoreEndorsementStep(dependencyBuilder))
+                            .addStep(new GeneratePaymentStep(dependencyBuilder));
     }
 
     @Override

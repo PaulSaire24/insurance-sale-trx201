@@ -39,7 +39,7 @@ public class GenerateContractStep implements Step {
         this.dependencyBuilder = dependencyBuilder;
     }
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         RequiredFieldsEmissionDAO emissionDao = processContextContractAndPolicy.getBody().getRequiredFieldsEmission();
 
@@ -76,7 +76,7 @@ public class GenerateContractStep implements Step {
         processContextContractAndPolicy.getBody().setPolicy(requestBody);
         processContextContractAndPolicy.getBody().setContractDao(contractDao);
         processContextContractAndPolicy.getBody().setEndorsement(isEndorsement);
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
 
     }
 }

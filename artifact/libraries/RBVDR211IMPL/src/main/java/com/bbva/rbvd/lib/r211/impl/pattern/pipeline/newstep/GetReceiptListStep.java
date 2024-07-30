@@ -6,12 +6,9 @@ import com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalConstants;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ContextEmission;
 import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
-import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.GenerateContractNotLifeStep;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Step;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.InsuranceReceiptBean;
 import com.bbva.rbvd.lib.r211.impl.util.ArchitectureAPXUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -24,7 +21,7 @@ public class GetReceiptListStep implements Step {
         this.dependencyBuilder = dependencyBuilder;
     }
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         List<InsuranceCtrReceiptsDAO> receiptsList = processContextContractAndPolicy.getBody().getReceiptsList();
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         List<String> productsNotGenerateMonthlyReceipts = this.dependencyBuilder.getBasicProductInsuranceProperties().obtainProductsNotGenerateMonthlyReceipts();
@@ -34,6 +31,6 @@ public class GetReceiptListStep implements Step {
             receiptsList.addAll(receipts);
         }
         processContextContractAndPolicy.getBody().setReceiptsList(receiptsList);
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

@@ -11,6 +11,9 @@
 		<property name="emissionPolicyNotLifeBusinessImpl" ref="emissionPolicyNotLifeBusiness"/>
 		<property name="emissionPolicyLifeBusinessImpl" ref="emissionPolicyLifeBusiness"/>
 		<property name="pisdR601" ref="pisdR601"/>
+		<property name="factoryProduct" ref="factoryProduct"/>
+		<property name="insuranceCompanyFactory" ref="rimacCompanyNotLifeFactory"/>
+		<property name="managementOperationsCross" ref="managementOperationsCross"/>
 		<property name="pisdR226" ref="pisdR226"/>
 	</bean>
 	<!-- Events -->
@@ -95,6 +98,29 @@
 		<constructor-arg index="17" ref="crossOperationsBusinessInsuranceContractBank"/>
 		<constructor-arg index="18" ref="policyRBVDR201ServiceExternal"/>
 	</bean>
+
+	<bean id="factoryProduct" class="com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.impl.FactoryProduct">
+		<constructor-arg index="0" ref="contractPISD012DAO2"/>
+		<constructor-arg index="1" ref="relatedContractPISD012DAOImpl"/>
+		<constructor-arg index="2" ref="endorsementInsurncPISD012DAO"/>
+		<constructor-arg index="3" ref="contractMovPISD012DAO"/>
+		<constructor-arg index="4" ref="insuranceCtrReceiptsPISD012DAO"/>
+		<constructor-arg index="5" ref="insrncRoleModalityPISD012DAO"/>
+		<constructor-arg index="6" ref="quotationModPISD012DAO"/>
+		<constructor-arg index="7" ref="paymentPeriodPISD012DAO"/>
+		<constructor-arg index="8" ref="insurncCtrParticipantPISD012DAO"/>
+		<constructor-arg index="9" ref="basicProductInsuranceProperties"/>
+		<constructor-arg index="10" ref="contractPISD201ServiceInternal"/>
+		<constructor-arg index="11" ref="cryptoServiceInternal"/>
+		<constructor-arg index="12" ref="customerRBVD066InternalService"/>
+		<constructor-arg index="13" ref="productPISD401Dao"/>
+		<constructor-arg index="14" ref="businessRBVD66ServiceInternal"/>
+		<constructor-arg index="15" ref="applicationConfigurationService"/>
+		<constructor-arg index="16" ref="mapperHelper"/>
+		<constructor-arg index="17" ref="crossOperationsBusinessInsuranceContractBank"/>
+		<constructor-arg index="18" ref="policyRBVDR201ServiceExternal"/>
+	</bean>
+
 	<bean id="rimacCompanyNotLifeFactory" class="com.bbva.rbvd.lib.r211.impl.pattern.factory.RimacCompanyNotLifeFactory">
 		<property name="applicationConfigurationService" ref="applicationConfigurationService"/>
 		<property name="policyRBVDR201ServiceExternal" ref="policyRBVDR201ServiceExternal"/>

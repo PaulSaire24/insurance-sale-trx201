@@ -23,7 +23,7 @@ public class GeneratePaymentStep implements Step {
     }
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         if(this.dependencyBuilder.getBasicProductInsuranceProperties().enabledPaymentICR2()){
             DataASO asoRequest = processContextContractAndPolicy.getBody().getDataASO();
             if(Objects.isNull(processContextContractAndPolicy.getBody().getPolicy().getId())){
@@ -41,7 +41,7 @@ public class GeneratePaymentStep implements Step {
             }
             processContextContractAndPolicy.getBody().setAsoResponse(responseGeneratePayment.getBody());
         }
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 
 

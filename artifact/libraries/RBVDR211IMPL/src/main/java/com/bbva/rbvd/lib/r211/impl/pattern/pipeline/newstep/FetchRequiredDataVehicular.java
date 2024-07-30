@@ -21,7 +21,7 @@ public class FetchRequiredDataVehicular implements Step {
         this.dependencyBuilder = dependencyBuilder;
     }
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         CustomerListASO customerList = null;
         ListBusinessesASO listBusinessesASO = null;
@@ -50,6 +50,6 @@ public class FetchRequiredDataVehicular implements Step {
         processContextContractAndPolicy.getBody().setCustomerList(customerList);
         processContextContractAndPolicy.getBody().setListBusinessesASO(listBusinessesASO);
         // Execute the next step in the bank contract generation process
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

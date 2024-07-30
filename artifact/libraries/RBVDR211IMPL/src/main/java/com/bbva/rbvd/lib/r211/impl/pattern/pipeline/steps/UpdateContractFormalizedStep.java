@@ -18,7 +18,7 @@ public class UpdateContractFormalizedStep implements Step {
     }
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         String[] certifyBank = FunctionsUtils.generateCodeToSearchContractInOracle(requestBody.getId());
         ContractEntity contractEntity = ContractEntity.ContractBuilder.an()
@@ -32,6 +32,6 @@ public class UpdateContractFormalizedStep implements Step {
                 .build();
 
         this.dependencyBuilder.getInsuranceContractDAO().updateInsuranceContractByCertifyBank(contractEntity);
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

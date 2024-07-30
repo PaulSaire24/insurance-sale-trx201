@@ -39,7 +39,7 @@ public class SaveInsuranceDataLifeStep implements Step {
     }
 
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         List<EndosatarioBO> endosatarios = null;
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         PolicyASO asoResponse = processContextContractAndPolicy.getBody().getAsoResponse();
@@ -80,6 +80,6 @@ public class SaveInsuranceDataLifeStep implements Step {
         }
         processContextContractAndPolicy.getBody().setEndosatarios(endosatarios);
         processContextContractAndPolicy.getBody().setPolicy(requestBody);
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

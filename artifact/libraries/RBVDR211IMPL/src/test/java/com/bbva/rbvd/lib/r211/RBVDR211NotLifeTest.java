@@ -217,6 +217,7 @@ public class RBVDR211NotLifeTest {
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.833.BI", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.840.PC", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.841.PC", "0")).thenReturn("0");
+		when(this.applicationConfigurationService.getDefaultProperty("property.validation.range.842.PC", "0")).thenReturn("0");
 		when(this.applicationConfigurationService.getDefaultProperty("property.range.payment.amount.insurance", "5")).thenReturn("5");
 		when(this.applicationConfigurationService.getDefaultProperty(eq("MONTHLY"),eq(StringUtils.EMPTY))).thenReturn("M");
 		when(this.applicationConfigurationService.getDefaultProperty(eq("flow.royal2.enabled.all.products"),eq(Boolean.FALSE.toString()))).thenReturn(Boolean.TRUE.toString());

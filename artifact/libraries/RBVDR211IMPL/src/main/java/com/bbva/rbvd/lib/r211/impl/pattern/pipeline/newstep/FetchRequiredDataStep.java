@@ -1,11 +1,7 @@
 package com.bbva.rbvd.lib.r211.impl.pattern.pipeline.newstep;
 
-import com.bbva.pisd.dto.insurance.aso.CustomerListASO;
-import com.bbva.pisd.dto.insurance.bo.customer.CustomerBO;
 import com.bbva.pisd.dto.insurance.utils.PISDProperties;
 import com.bbva.rbvd.dto.insrncsale.aso.emision.DataASO;
-import com.bbva.rbvd.dto.insrncsale.aso.listbusinesses.ListBusinessesASO;
-import com.bbva.rbvd.dto.insrncsale.bo.emision.PersonaBO;
 import com.bbva.rbvd.dto.insrncsale.dao.RequiredFieldsEmissionDAO;
 import com.bbva.rbvd.dto.insrncsale.policy.PolicyDTO;
 import com.bbva.rbvd.dto.insrncsale.utils.RBVDProperties;
@@ -14,7 +10,6 @@ import com.bbva.rbvd.dto.insurancemissionsale.dto.ResponseLibrary;
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.crossoperations.CrossOperationsBusinessInsuranceContractBank;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Step;
-import com.bbva.rbvd.lib.r211.impl.transfor.bean.EmissionBean;
 import com.bbva.rbvd.lib.r211.impl.transfor.bean.PrePolicyTransfor;
 
 import java.util.Map;
@@ -38,7 +33,7 @@ public class FetchRequiredDataStep implements Step {
      * @param stepsBankContract The next step in the bank contract generation process.
      */
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
 
         String frequencyType = this.dependencyBuilder.getBasicProductInsuranceProperties().obtainFrequencyTypeByPeriodId(requestBody.getInstallmentPlan().getPeriod().getId());
@@ -71,6 +66,6 @@ public class FetchRequiredDataStep implements Step {
         processContextContractAndPolicy.getBody().setDataASO(dataASO);
 
         // Execute the next step in the bank contract generation process
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }

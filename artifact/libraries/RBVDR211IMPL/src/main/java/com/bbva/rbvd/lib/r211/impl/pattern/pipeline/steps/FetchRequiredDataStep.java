@@ -40,7 +40,7 @@ public class FetchRequiredDataStep implements Step {
      * @param stepsBankContract The next step in the bank contract generation process.
      */
     @Override
-    public void executeStepGenerationContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
+    public void execute(ResponseLibrary<ContextEmission> processContextContractAndPolicy, Step stepsBankContract) {
         // Fetch the policy data from the process context
         PolicyDTO requestBody = processContextContractAndPolicy.getBody().getPolicy();
         CustomerListASO customerList = null;
@@ -99,6 +99,6 @@ public class FetchRequiredDataStep implements Step {
         processContextContractAndPolicy.getBody().setDataASO(dataASO);
 
         // Execute the next step in the bank contract generation process
-        stepsBankContract.executeStepGenerationContract(processContextContractAndPolicy, stepsBankContract);
+        stepsBankContract.execute(processContextContractAndPolicy, stepsBankContract);
     }
 }
