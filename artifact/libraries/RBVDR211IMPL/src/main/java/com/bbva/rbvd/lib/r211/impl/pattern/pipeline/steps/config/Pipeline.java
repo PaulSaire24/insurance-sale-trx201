@@ -6,16 +6,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Pipeline {
     private static final Logger LOGGER = LoggerFactory.getLogger(Pipeline.class);
-    private List<Step> pasos = new ArrayList<>();
+    private LinkedList<Step> pasos = new LinkedList<>();
 
     public Pipeline addStep(Step step) {
         pasos.add(step);
         return this;
     }
+    //el step inicia en 0
+    public Pipeline addStep(int index,Step step) {
+        pasos.add(index,step);
+        return this;
+    }
+    public Pipeline removeStep(int index) {
+        pasos.remove(index);
+        return this;
+    }
+
 
     public ResponseLibrary<ContextEmission> generateContract(ResponseLibrary<ContextEmission> processContextContractAndPolicy) {
         LOGGER.info("------> Ejecutando pipeline : " + processContextContractAndPolicy.getBody().getPolicy().getProductId());
