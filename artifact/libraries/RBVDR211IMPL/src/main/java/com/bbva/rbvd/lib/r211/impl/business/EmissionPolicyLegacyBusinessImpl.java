@@ -53,7 +53,15 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.temporal.ValueRange;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.HashMap;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Optional;
+import java.util.Base64;
 
 import static com.bbva.rbvd.dto.insurancemissionsale.constans.RBVDInternalErrors.ERROR_RESPONSE_SERVICE_ICR2;
 import static java.util.Collections.singletonList;

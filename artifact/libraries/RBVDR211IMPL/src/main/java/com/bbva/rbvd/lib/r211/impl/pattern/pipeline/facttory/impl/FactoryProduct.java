@@ -3,9 +3,7 @@ package com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.impl;
 import com.bbva.elara.configuration.manager.application.ApplicationConfigurationService;
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.crossoperations.CrossOperationsBusinessInsuranceContractBank;
-import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.PipelineFactory;
-import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.VehicularProduct;
-import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.VidaLeyProduct;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.*;
 import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
 import com.bbva.rbvd.lib.r211.impl.service.*;
 import com.bbva.rbvd.lib.r211.impl.service.api.BusinessRBVD66ServiceInternal;
@@ -66,6 +64,10 @@ public class FactoryProduct {
                 return new VehicularProduct(dependencyBuilder);
             case "842":
                 return new VidaLeyProduct(dependencyBuilder);
+            case "833":
+                return new NegocioTuMedidaProduct(dependencyBuilder);
+            case "832":
+                return new HogarTotalProduct(dependencyBuilder);
             default:
                 return null;
         }

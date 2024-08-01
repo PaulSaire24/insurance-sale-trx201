@@ -47,9 +47,11 @@ import java.io.IOException;
 
 import java.math.BigDecimal;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
-import static java.util.stream.Stream.of;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;

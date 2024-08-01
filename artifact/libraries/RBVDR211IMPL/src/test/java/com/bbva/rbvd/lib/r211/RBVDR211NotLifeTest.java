@@ -58,7 +58,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Calendar;
+import java.util.Date;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
@@ -935,11 +941,11 @@ public class RBVDR211NotLifeTest {
 		responseGetHomeRiskDirectionService.put("LEGAL_ADDRESS_DESC", "RISK_DIRECTION");
 
 		requestBody.setRelatedContracts(null);
-		ResponseLibrary<PolicyDTO> validation  = rbvdr211.executeEmissionPolicyNotLifeFlowNew(requestBody);
+		ResponseLibrary<PolicyDTO> validation  = rbvdr211.executeEmissionPolicy(requestBody);
 
 
 		assertNotNull(validation.getBody());
-		ResponseLibrary<PolicyDTO> validation2  = rbvdr211.executeEmissionPolicyNotLifeFlowNew(requestBody);
+		ResponseLibrary<PolicyDTO> validation2  = rbvdr211.executeEmissionPolicy(requestBody);
 
 
 

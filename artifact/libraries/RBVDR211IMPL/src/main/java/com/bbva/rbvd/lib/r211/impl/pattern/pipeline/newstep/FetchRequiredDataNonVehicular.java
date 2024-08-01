@@ -14,10 +14,10 @@ import com.bbva.rbvd.lib.r211.impl.transfor.bean.EmissionBean;
 
 import java.util.Map;
 
-public class FetchRequiredDataVehicular implements Step {
+public class FetchRequiredDataNonVehicular implements Step {
     private final DependencyBuilder dependencyBuilder;
 
-    public FetchRequiredDataVehicular(DependencyBuilder dependencyBuilder) {
+    public FetchRequiredDataNonVehicular(DependencyBuilder dependencyBuilder) {
         this.dependencyBuilder = dependencyBuilder;
     }
     @Override

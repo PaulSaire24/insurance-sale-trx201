@@ -17,6 +17,7 @@ public class BasicProduct implements PipelineFactory{
         //switch
         return new Pipeline().addStep(new ValidateConditionsContractStep(dependencyBuilder))
                 .addStep(new FetchRequiredDataStep(dependencyBuilder))
+                .addStep(new FetchRequiredDataNonVehicular(dependencyBuilder))
                 .addStep(new GenerateContractStep(dependencyBuilder))
                 .addStep(new GetReceiptListStep(dependencyBuilder))
                 .addStep(new SaveReceiptsStep(dependencyBuilder))

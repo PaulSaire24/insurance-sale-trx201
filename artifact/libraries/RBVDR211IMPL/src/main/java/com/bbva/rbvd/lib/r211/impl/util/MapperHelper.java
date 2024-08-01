@@ -35,7 +35,16 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.HashMap;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Calendar;
+import java.util.Optional;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -320,24 +329,6 @@ public class MapperHelper {
             if(Objects.nonNull(datoParticular.getValor())) { datosParticulares.add(datoParticular); }
 
         }
-
-
-        DatoParticularBO canalTercero = new DatoParticularBO();
-        canalTercero.setEtiqueta("CANAL_TERCERO");
-        canalTercero.setValor("PC");
-
-
-        DatoParticularBO oficinVenta = new DatoParticularBO();
-        oficinVenta.setEtiqueta("OFICINA_VENTA");
-        oficinVenta.setValor(requestBody.getBank().getBranch().getId());
-
-        DatoParticularBO tipoMedioPago = new DatoParticularBO();
-        tipoMedioPago.setEtiqueta("TIPO_MEDIO_PAGO");
-        tipoMedioPago.setValor(requestBody.getPaymentMethod().getRelatedContracts().get(0).getProduct().getId());
-
-        DatoParticularBO numeroMedioPago = new DatoParticularBO();
-        numeroMedioPago.setEtiqueta("NUMERO_MEDIO_PAGO");
-        numeroMedioPago.setValor(requestBody.getPaymentMethod().getRelatedContracts().get(0).getNumber());
 
         return datosParticulares;
     }
@@ -1143,6 +1134,7 @@ public class MapperHelper {
         }
 
         request.setPayload(payload);
+
 
         return request;
     }

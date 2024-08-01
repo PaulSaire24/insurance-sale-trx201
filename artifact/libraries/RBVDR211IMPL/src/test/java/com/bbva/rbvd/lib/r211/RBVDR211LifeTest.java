@@ -52,7 +52,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
@@ -747,6 +751,7 @@ public class RBVDR211LifeTest {
 		LOGGER.info("RBVDR211Test - Executing executeBusinessLogicEmissionPrePolicyDynamicLifeProduct_WithInsuredParticipant...");
 		AgregarTerceroBO responseAddParticipants = mockData.getAddParticipantsRimacResponse();
 		EmisionBO responseEmission = mockData.getEmissionRimacResponseLife();
+		responseEmission.getPayload().getCuotasFinanciamiento().get(0).setCuota(12L);
 		ParticipantDTO insured = new ParticipantDTO();
 		insured.setCustomerId("84948543");
 		ParticipantTypeDTO participantTypeDTO = new ParticipantTypeDTO();
