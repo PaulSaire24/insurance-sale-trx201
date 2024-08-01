@@ -4,11 +4,11 @@ import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.newstep.*;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Pipeline;
 
-public class BasicProduct implements PipelineFactory{
+public class BasicPreFormalizedToCharged implements PipelineFactory{
 
     protected final DependencyBuilder dependencyBuilder;
 
-    public BasicProduct(DependencyBuilder dependencyBuilder) {
+    public BasicPreFormalizedToCharged(DependencyBuilder dependencyBuilder) {
         this.dependencyBuilder = dependencyBuilder;
     }
 

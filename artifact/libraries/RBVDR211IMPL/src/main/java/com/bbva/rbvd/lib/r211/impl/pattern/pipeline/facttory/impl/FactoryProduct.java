@@ -4,6 +4,10 @@ import com.bbva.elara.configuration.manager.application.ApplicationConfiguration
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
 import com.bbva.rbvd.lib.r211.impl.pattern.crossoperations.CrossOperationsBusinessInsuranceContractBank;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.*;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.product.HogarTotalPreFormalizedToCharged;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.product.NegocioTuMedidaPreFormalizedToCharged;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.product.VehicularPreFormalizedToCharged;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.product.VidaLeyProduct;
 import com.bbva.rbvd.lib.r211.impl.properties.BasicProductInsuranceProperties;
 import com.bbva.rbvd.lib.r211.impl.service.*;
 import com.bbva.rbvd.lib.r211.impl.service.api.BusinessRBVD66ServiceInternal;
@@ -61,13 +65,13 @@ public class FactoryProduct {
     public PipelineFactory getInstance(String productId){
         switch (productId) {
             case "830":
-                return new VehicularProduct(dependencyBuilder);
+                return new VehicularPreFormalizedToCharged(dependencyBuilder);
             case "842":
                 return new VidaLeyProduct(dependencyBuilder);
             case "833":
-                return new NegocioTuMedidaProduct(dependencyBuilder);
+                return new NegocioTuMedidaPreFormalizedToCharged(dependencyBuilder);
             case "832":
-                return new HogarTotalProduct(dependencyBuilder);
+                return new HogarTotalPreFormalizedToCharged(dependencyBuilder);
             default:
                 return null;
         }

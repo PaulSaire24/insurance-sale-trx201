@@ -1,10 +1,11 @@
-package com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory;
+package com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.product;
 
 import com.bbva.rbvd.lib.r211.impl.dto.DependencyBuilder;
+import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.facttory.PipelineFactory;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.newstep.*;
 import com.bbva.rbvd.lib.r211.impl.pattern.pipeline.steps.config.Pipeline;
 
-public class VidaLeyProduct implements PipelineFactory{
+public class VidaLeyProduct implements PipelineFactory {
 
     private final DependencyBuilder dependencyBuilder;
 

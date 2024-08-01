@@ -13,6 +13,7 @@ public class Pipeline {
     private static final Logger LOGGER = LoggerFactory.getLogger(Pipeline.class);
     private LinkedList<Step> pasos = new LinkedList<>();
 
+    // añade al final
     public Pipeline addStep(Step step) {
         pasos.add(step);
         return this;
